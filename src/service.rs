@@ -11,6 +11,7 @@ use tower::Service;
 
 pub use jetstream_p9_wire_format_derive::P9WireFormat;
 
+/// Message trait for JetStream messages, which need to implement the `WireFormat` trait.
 pub trait Message: WireFormat + Send + Sync {}
 
 /// A trait for implementing a 9P service.

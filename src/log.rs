@@ -22,13 +22,13 @@ fn get_module_colour(module: &str) -> Color {
     color
 }
 
-pub fn setup_logging() -> Logger {
+pub(crate) fn setup_logging() -> Logger {
     let x = drain();
 
     slog::Logger::root(x, slog_o!())
 }
 
-pub fn drain() -> slog::Fuse<
+pub(crate) fn drain() -> slog::Fuse<
     slog_term::FullFormat<slog_term::PlainSyncDecorator<std::io::Stdout>>,
 > {
     let plain = slog_term::PlainSyncDecorator::new(std::io::stdout());

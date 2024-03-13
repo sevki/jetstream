@@ -3,13 +3,13 @@
 #  JetStream [![crates.io](https://img.shields.io/crates/v/jetstream.svg)](https://crates.io/crates/jetstream) [![docs.rs](https://docs.rs/jetstream/badge.svg)](https://docs.rs/jetstream) <!--gh actions--> ![Build Status](https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg) ![Build Status](https://github.com/sevki/jetstream/actions/workflows/release.yml/badge.svg)
 
 
-JetStream is an RPC framework built on top of s2n-quic and p9.
+JetStream is an RPC framework built on top of [s2n-quic](https://crates.io/crates/s2n-quic) and [p9](https://crates.io/crates/p9). It's designed to be a high performance, low latency, secure, and reliable RPC framework.
 
 Features:
 
 - Bidirectional streaming
 - 0-RTT
-- mTLS
+- [mTLS](https://github.com/aws/s2n-quic/tree/main/examples/s2n-mtls)
 - binary encoding
 
 ## Motivation
