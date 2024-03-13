@@ -247,7 +247,7 @@ dependencies = [
  "rustc-hash",
  "shlex",
  "syn 1.0.109",
- "which",
+ "which 4.4.2",
 ]
 
 [[package]]
@@ -270,7 +270,7 @@ dependencies = [
  "rustc-hash",
  "shlex",
  "syn 2.0.52",
- "which",
+ "which 4.4.2",
 ]
 
 [[package]]
@@ -792,7 +792,7 @@ dependencies = [
  "tokio-util",
  "tower",
  "tuple-map",
- "which",
+ "which 6.0.0",
  "x509-certificate",
 ]
 
@@ -2049,6 +2049,19 @@ dependencies = [
  "home",
  "once_cell",
  "rustix",
+]
+
+[[package]]
+name = "which"
+version = "6.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fa5e0c10bf77f44aac573e498d1a82d5fbd5e91f6fc0a99e7be4b38e85e101c"
+dependencies = [
+ "either",
+ "home",
+ "once_cell",
+ "rustix",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
