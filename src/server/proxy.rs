@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, path::Path};
 
 use anyhow::Ok;
-use p9::{Rframe, Tframe};
+use jetstream_p9::{Rframe, Tframe};
 use s2n_quic::{
     client::{Client, Connect},
     provider::tls,

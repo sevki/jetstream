@@ -9,7 +9,7 @@ mod tests {
         },
         service::ninepecho::{self, EchoService},
     };
-    use p9::{Rframe, Tframe, Tmessage, Tversion};
+    use jetstream_p9::{Rframe, Tframe, Tmessage, Tversion};
     use s2n_quic::{provider::tls, Server};
     use slog_scope::debug;
     use std::{

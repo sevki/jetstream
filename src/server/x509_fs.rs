@@ -1,6 +1,6 @@
 use std::io;
 
-use p9::messages::*;
+use jetstream_p9::messages::*;
 
 use crate::server::ninep_2000_l::NineP200L;
 

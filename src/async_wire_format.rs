@@ -4,7 +4,7 @@ use std::{
     pin::Pin,
 };
 
-use p9::WireFormat;
+use jetstream_p9::WireFormat;
 
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
@@ -55,7 +55,7 @@ mod tests {
     use std::{pin::Pin, thread::ThreadId, time::Duration};
 
     #[allow(unused_imports)]
-    use p9::*;
+    use jetstream_p9::*;
     #[allow(unused_imports)]
     use std::io::Cursor;
 

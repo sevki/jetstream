@@ -6,10 +6,10 @@ use std::{
 
 use bytes::{BufMut, Bytes, BytesMut};
 use futures::prelude::*;
-use p9::{Rframe, Rmessage, Tframe, WireFormat};
+use jetstream_p9::{Rframe, Rmessage, Tframe, WireFormat};
 use tower::Service;
 
-pub use p9_wire_format_derive::P9WireFormat;
+pub use jetstream_p9_wire_format_derive::P9WireFormat;
 
 pub trait Message: WireFormat + Send + Sync {}
 
@@ -110,7 +110,7 @@ pub mod ninepecho {
             Box::pin(async move {
                 Ok(Rframe {
                     tag: 0,
-                    msg: Rmessage::Version(p9::Rversion {
+                    msg: Rmessage::Version(jetstream_p9::Rversion {
                         msize: 0,
                         version: "9P2000".to_string(),
                     }),
@@ -162,7 +162,7 @@ pub trait ConvertWireFormat: WireFormat {
     fn from_bytes(buf: &mut Bytes) -> Result<Self, std::io::Error>;
 }
 
-impl<T: p9::WireFormat> ConvertWireFormat for T {
+impl<T: jetstream_p9::WireFormat> ConvertWireFormat for T {
     fn to_bytes(&self) -> Bytes {
         let mut buf = vec![];
         let res = self.encode(&mut buf);

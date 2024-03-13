@@ -1,6 +1,6 @@
 [package]
 name = "jetstream"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "Apache-2.0"
@@ -9,8 +9,8 @@ license = "Apache-2.0"
 
 [dependencies]
 futures = "0.3.30"
-p9_wire_format_derive = { path = "./third_party/p9_wire_format_derive", version = "0.2.3" }
-p9 = { version = "0.2.3", path = "./third_party/rust-p9" }
+jetstream_p9_wire_format_derive = { path = "./third_party/p9_wire_format_derive", version = "0.1.1" }
+jetstream_p9 = { version = "0.1.1", path = "./third_party/rust-p9" }
 tokio = { version = "1.35.1", features = ["full"] }
 anyhow = "1.0.79"
 async-trait = "0.1.77"
@@ -46,3 +46,10 @@ pkg-config = "0.3"
 which = "6.0.0"
 
 [dev-dependencies]
+
+[workspace]
+
+members = [
+    "third_party/rust-p9",
+    "third_party/p9_wire_format_derive",
+]

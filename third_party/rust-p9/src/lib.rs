@@ -7,7 +7,7 @@
 extern crate libc;
 
 #[macro_use]
-extern crate p9_wire_format_derive;
+extern crate jetstream_p9_wire_format_derive;
 
 pub mod protocol;
 pub mod server;

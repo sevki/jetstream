@@ -1,6 +1,6 @@
 use std::io;
 
-use p9::*;
+use jetstream_p9::*;
 
 /// 9p
 #[async_trait::async_trait]
