@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_p9"
-version = "0.1.3"
+version = "0.1.4"
 authors = ["The ChromiumOS Authors"]
 edition = "2021"
 license = "BSD-3-Clause"
