@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, path::Path};
 
 use anyhow::Ok;
-use p9::{Rframe, Tframe};
+use jetstream_p9::{Rframe, Tframe};
 use s2n_quic::{
     client::{Client, Connect},
     provider::tls,
@@ -12,6 +12,7 @@ use slog_scope::{debug, error};
 use crate::async_wire_format::AsyncWireFormatExt;
 
 #[derive(Debug, Clone)]
+/// Represents a DialQuic struct.
 pub struct DialQuic {
     host: String,
     port: u16,
@@ -22,6 +23,20 @@ pub struct DialQuic {
 }
 
 impl DialQuic {
+    /// Creates a new instance of `DialQuic`.
+    ///
+    /// # Arguments
+    ///
+    /// * `host` - The host to connect to.
+    /// * `port` - The port to connect to.
+    /// * `cert` - The path to the client certificate file.
+    /// * `key` - The path to the client private key file.
+    /// * `ca_cert` - The path to the CA certificate file.
+    /// * `hostname` - The hostname for the TLS handshake.
+    ///
+    /// # Returns
+    ///
+    /// A new instance of `DialQuic`.
     pub fn new(
         host: String,
         port: u16,
@@ -41,6 +56,21 @@ impl DialQuic {
     }
 }
 
+/// Establishes a QUIC connection with the specified server.
+///
+/// This function dials a QUIC connection using the provided certificates and keys.
+/// It creates a TLS client with the given CA certificate, client certificate, and client key.
+/// The connection is established with the specified server address and hostname.
+/// The connection is configured to keep alive and not time out due to inactivity.
+///
+/// # Arguments
+///
+/// - `self`: The `DialQuic` instance.
+///
+/// # Returns
+///
+/// Returns a `Result` containing the established `s2n_quic::Connection` if successful,
+/// or an `anyhow::Error` if an error occurs during the connection establishment.
 impl DialQuic {
     async fn dial(self) -> anyhow::Result<s2n_quic::Connection> {
         let ca_cert = self.ca_cert.to_str().unwrap();

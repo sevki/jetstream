@@ -7,4 +7,3 @@ Features:
 - 0-RTT
 - mTLS
 - binary encoding
-

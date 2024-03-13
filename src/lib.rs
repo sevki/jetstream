@@ -1,4 +1,4 @@
-pub use p9::protocol;
+pub use jetstream_p9::protocol;
 
 pub mod async_wire_format;
 pub mod log;

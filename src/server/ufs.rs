@@ -1,10 +1,6 @@
-use std::{
-    collections::{btree_map},
-    path::{PathBuf},
-};
+use std::{collections::btree_map, path::PathBuf};
 
-use p9::{server::Server, Rframe, Tframe};
-
+use jetstream_p9::{server::Server, Rframe, Tframe};
 
 use crate::{service::JetStreamService, service::Message};
 
@@ -64,12 +60,12 @@ impl Message for Rframe {}
 impl JetStreamService<Tframe, Rframe> for Handler {
     fn call(
         &mut self,
-        req: p9::Tframe,
+        req: Tframe,
     ) -> std::pin::Pin<
         Box<
             dyn futures::prelude::Future<
                     Output = Result<
-                        p9::Rframe,
+                        Rframe,
                         Box<dyn std::error::Error + Send + Sync>,
                     >,
                 > + Send,

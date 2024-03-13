@@ -6,10 +6,10 @@ use std::{
 
 use bytes::{BufMut, Bytes, BytesMut};
 use futures::prelude::*;
-use p9::{Rframe, Rmessage, Tframe, WireFormat};
+use jetstream_p9::{Rframe, Rmessage, Tframe, WireFormat};
 use tower::Service;
 
-pub use p9_wire_format_derive::P9WireFormat;
+pub use jetstream_p9_wire_format_derive::P9WireFormat;
 
 pub trait Message: WireFormat + Send + Sync {}
 
@@ -110,7 +110,7 @@ pub mod ninepecho {
             Box::pin(async move {
                 Ok(Rframe {
                     tag: 0,
-                    msg: Rmessage::Version(p9::Rversion {
+                    msg: Rmessage::Version(jetstream_p9::Rversion {
                         msize: 0,
                         version: "9P2000".to_string(),
                     }),
@@ -162,7 +162,11 @@ pub trait ConvertWireFormat: WireFormat {
     fn from_bytes(buf: &mut Bytes) -> Result<Self, std::io::Error>;
 }
 
-impl<T: p9::WireFormat> ConvertWireFormat for T {
+/// Implements the `ConvertWireFormat` trait for types that implement `jetstream_p9::WireFormat`.
+/// This trait provides methods for converting the type to and from bytes.
+impl<T: jetstream_p9::WireFormat> ConvertWireFormat for T {
+    /// Converts the type to bytes.
+    /// Returns a `Bytes` object containing the encoded bytes.
     fn to_bytes(&self) -> Bytes {
         let mut buf = vec![];
         let res = self.encode(&mut buf);
@@ -174,6 +178,8 @@ impl<T: p9::WireFormat> ConvertWireFormat for T {
         bytes.freeze()
     }
 
+    /// Converts bytes to the type.
+    /// Returns a `Result` containing the decoded type or an `std::io::Error` if decoding fails.
     fn from_bytes(buf: &mut Bytes) -> Result<Self, std::io::Error> {
         let buf = buf.to_vec();
         T::decode(&mut buf.as_slice())

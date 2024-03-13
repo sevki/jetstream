@@ -451,6 +451,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "diff"
+version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "56254986775e3233ffa9c4d7d3faaf6d36a2c09d30b20687e9f88bc8bafc16c8"
+
+[[package]]
 name = "dirs-next"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -737,7 +743,7 @@ checksum = "b1a46d1a171d865aa5f83f92695765caa047a9b4cbae2cbf37dbd613a793fd4c"
 
 [[package]]
 name = "jetstream"
-version = "0.1.0"
+version = "0.1.2"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -751,10 +757,10 @@ dependencies = [
  "futures",
  "futures-util",
  "genfs",
+ "jetstream_p9",
+ "jetstream_p9_wire_format_derive",
  "lazy_static",
  "libc",
- "p9",
- "p9_wire_format_derive",
  "parking_lot",
  "pkg-config",
  "s2n-quic",
@@ -772,6 +778,28 @@ dependencies = [
  "tuple-map",
  "which 6.0.0",
  "x509-certificate",
+]
+
+[[package]]
+name = "jetstream_p9"
+version = "0.1.2"
+dependencies = [
+ "genfs",
+ "jetstream_p9_wire_format_derive",
+ "libc",
+ "serde",
+ "serde_bytes",
+ "tokio",
+]
+
+[[package]]
+name = "jetstream_p9_wire_format_derive"
+version = "0.1.2"
+dependencies = [
+ "pretty_assertions",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -978,27 +1006,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fdb12b2476b595f9358c5161aa467c2438859caa136dec86c26fdd2efe17b92"
 
 [[package]]
-name = "p9"
-version = "0.2.3"
-dependencies = [
- "genfs",
- "libc",
- "p9_wire_format_derive",
- "serde",
- "serde_bytes",
- "tokio",
-]
-
-[[package]]
-name = "p9_wire_format_derive"
-version = "0.2.3"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "parking_lot"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1066,6 +1073,16 @@ name = "ppv-lite86"
 version = "0.2.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
+
+[[package]]
+name = "pretty_assertions"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "af7cee1a6c8a5b9208b3cb1061f10c0cb689087b3d8ce85fb9d2dd7a29b6ba66"
+dependencies = [
+ "diff",
+ "yansi",
+]
 
 [[package]]
 name = "prettyplease"
@@ -2226,6 +2243,12 @@ dependencies = [
  "thiserror",
  "zeroize",
 ]
+
+[[package]]
+name = "yansi"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "09041cd90cf85f7f8b2df60c646f853b7f535ce68f85244eb6731cf89fa498ec"
 
 [[package]]
 name = "zerocopy"
