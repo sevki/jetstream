@@ -1,0 +1,15 @@
+# rustfmt.toml
+
+# Set the maximum width of each line
+max_width = 80
+condense_wildcard_suffixes = true
+imports_granularity = "Crate"
+merge_derives = true
+imports_layout = "Mixed"
+reorder_imports = true
+normalize_comments = true
+normalize_doc_attributes = true
+reorder_impl_items = true
+group_imports = "StdExternalCrate"
+edition = "2021"
+unstable_features = true
