@@ -162,7 +162,11 @@ pub trait ConvertWireFormat: WireFormat {
     fn from_bytes(buf: &mut Bytes) -> Result<Self, std::io::Error>;
 }
 
+/// Implements the `ConvertWireFormat` trait for types that implement `jetstream_p9::WireFormat`.
+/// This trait provides methods for converting the type to and from bytes.
 impl<T: jetstream_p9::WireFormat> ConvertWireFormat for T {
+    /// Converts the type to bytes.
+    /// Returns a `Bytes` object containing the encoded bytes.
     fn to_bytes(&self) -> Bytes {
         let mut buf = vec![];
         let res = self.encode(&mut buf);
@@ -174,6 +178,8 @@ impl<T: jetstream_p9::WireFormat> ConvertWireFormat for T {
         bytes.freeze()
     }
 
+    /// Converts bytes to the type.
+    /// Returns a `Result` containing the decoded type or an `std::io::Error` if decoding fails.
     fn from_bytes(buf: &mut Bytes) -> Result<Self, std::io::Error> {
         let buf = buf.to_vec();
         T::decode(&mut buf.as_slice())

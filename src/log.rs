@@ -1,7 +1,5 @@
 use std::{io::Write, ops::Add, path::PathBuf};
 
-
-
 use slog::{slog_o, Drain, Logger};
 
 use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};

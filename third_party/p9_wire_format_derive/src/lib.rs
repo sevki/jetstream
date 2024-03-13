@@ -92,7 +92,7 @@ fn byte_size_sum(data: &Data) -> TokenStream {
                 0 #(+ #fields)*
             }
         } else if let Fields::Unnamed(unnamed) = &data.fields {
-            let fields = unnamed.unnamed.iter().enumerate().map(|(i, f)| {
+            let fields = unnamed.unnamed.iter().enumerate().map(|(i, _f)| {
                 let index = syn::Index::from(i);
                 quote! {
                     WireFormat::byte_size(&self.#index)
@@ -128,7 +128,7 @@ fn encode_wire_format(data: &Data) -> TokenStream {
                 Ok(())
             }
         } else if let Fields::Unnamed(unnamed) = &data.fields {
-            let fields = unnamed.unnamed.iter().enumerate().map(|(i, f)| {
+            let fields = unnamed.unnamed.iter().enumerate().map(|(i, _f)| {
                 let index = syn::Index::from(i);
                 quote! {
                     WireFormat::encode(&self.#index, _writer)?;
@@ -188,7 +188,7 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                 }
             });
 
-            let members = unnamed.unnamed.iter().enumerate().map(|(i, f)| {
+            let members = unnamed.unnamed.iter().enumerate().map(|(i, _f)| {
                 let index = syn::Index::from(i);
                 let ident = Ident::new(
                     &format!("__{}", index.index),

@@ -1,9 +1,9 @@
 [package]
 name = "jetstream"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
-license = "Apache-2.0"
+license = "BSD-3-Clause"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

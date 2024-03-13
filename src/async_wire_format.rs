@@ -1,7 +1,6 @@
 use std::{
     future::Future,
     io::{self},
-    pin::Pin,
 };
 
 use jetstream_p9::WireFormat;
@@ -18,12 +17,20 @@ pub trait AsyncWireFormat: std::marker::Sized {
     ) -> impl std::future::Future<Output = io::Result<Self>> + Send;
 }
 
-type Task = Pin<Box<dyn std::future::Future<Output = io::Result<()>> + Send>>;
-
+/// Extension trait for asynchronous wire format encoding and decoding.
 pub trait AsyncWireFormatExt
 where
     Self: WireFormat + Send,
 {
+    /// Encodes the object asynchronously into the provided writer.
+    ///
+    /// # Arguments
+    ///
+    /// * `writer` - The writer to encode the object into.
+    ///
+    /// # Returns
+    ///
+    /// A future that resolves to an `io::Result<()>` indicating the success or failure of the encoding operation.
     fn encode_async<W>(
         self,
         writer: W,
@@ -36,6 +43,15 @@ where
         async { tokio::task::block_in_place(move || self.encode(&mut writer)) }
     }
 
+    /// Decodes an object asynchronously from the provided reader.
+    ///
+    /// # Arguments
+    ///
+    /// * `reader` - The reader to decode the object from.
+    ///
+    /// # Returns
+    ///
+    /// A future that resolves to an `io::Result<Self>` indicating the success or failure of the decoding operation.
     fn decode_async<R>(
         reader: R,
     ) -> impl Future<Output = io::Result<Self>> + Send
@@ -48,11 +64,12 @@ where
     }
 }
 
+/// Implements the `AsyncWireFormatExt` trait for types that implement the `WireFormat` trait and can be sent across threads.
 impl<T: WireFormat + Send> AsyncWireFormatExt for T {}
 
 // tests
 mod tests {
-    use std::{pin::Pin, thread::ThreadId, time::Duration};
+    use std::{pin::Pin, time::Duration};
 
     #[allow(unused_imports)]
     use jetstream_p9::*;
@@ -66,15 +83,14 @@ mod tests {
     struct BlockingIO<T: Sized + Unpin> {
         delay: Duration,
         inner: T,
-        read_thread_id: Option<ThreadId>,
     }
 
     impl BlockingIO<tokio::io::DuplexStream> {
+        #[allow(dead_code)]
         fn new(delay: Duration, inner: tokio::io::DuplexStream) -> Self {
             Self {
                 delay,
                 inner: inner,
-                read_thread_id: None,
             }
         }
     }
