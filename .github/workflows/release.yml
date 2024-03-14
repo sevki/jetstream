@@ -3,7 +3,8 @@ name: Release
 on:
   push:
     tags:
-      - v[0-9]+.*
+      # tag can be v0.2 or v0.2.1 or v0.2.1-alpha.1
+      - 'v*.*.*'
 
 jobs:
   create-release:
