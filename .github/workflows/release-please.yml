@@ -18,7 +18,7 @@ jobs:
           config-file: release-please-config.json
           # optional. customize path to .release-please-manifest.json
           manifest-file: .release-please-manifest.json
-          target-branch: ${{ github.ref_name }}
+          target-branch: "release"
           release-type: rust
       - uses: actions/checkout@v4
       - name: tag major and minor versions
