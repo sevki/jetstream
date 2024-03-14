@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1](https://github.com/sevki/jetstream/compare/v0.3.0...v0.3.1) (2024-03-14)
+
+
+### Bug Fixes
+
+* broken release-please ([089bb22](https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9))
+* ci release-please ([de391e5](https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1))
+
 ## [0.3.0](https://github.com/sevki/jetstream/compare/v0.2.0...v0.3.0) (2024-03-14)
 
 
