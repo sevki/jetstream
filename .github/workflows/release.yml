@@ -1,9 +1,7 @@
 name: Release
 on:
   push:
-    # Pattern matched against refs/tags
-    tags:        
-      - '**'     
+    branches: release
       
 jobs:
   create-release:
