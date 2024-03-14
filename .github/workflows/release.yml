@@ -1,11 +1,10 @@
 name: Release
-
 on:
   push:
-    tags:
-      # Accepts tags like: v0.2, v0.2.1, v0.2.1-alpha.1, v12.5.3-beta, etc.
-      - '*' 
-
+    # Pattern matched against refs/tags
+    tags:        
+      - '**'     
+      
 jobs:
   create-release:
     runs-on: ubuntu-latest
