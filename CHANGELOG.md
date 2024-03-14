@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.4.0](https://github.com/sevki/jetstream/compare/v0.3.2...v0.4.0) (2024-03-14)
+
+
+### Features
+
+* autopub ([73a0844](https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e))
+* hide filesystem behind a feautre-flag ([9aa880d](https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98))
+
 ## [0.3.2](https://github.com/sevki/jetstream/compare/v0.3.1...v0.3.2) (2024-03-14)
 
 
