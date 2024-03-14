@@ -1,14 +1,30 @@
 {
+  "release-type": "rust",
+  "plugins": ["cargo-workspace"],
   "packages": {
-    ".": {
-      "package-name": "jetstream",
-      "component": "jetstream",
+    "src": {
       "changelog-path": "CHANGELOG.md",
       "release-type": "rust",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
-      "prerelease": false
+      "prerelease": true
+    },
+    "third_party/rust-p9": {
+      "release-type": "rust",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": true,
+      "prerelease": true
+    },
+    "third_party/p9_wire_format_derive": {
+      "release-type": "rust",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": true,
+      "prerelease": true
     }
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
