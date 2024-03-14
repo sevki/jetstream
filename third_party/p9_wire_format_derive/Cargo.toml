@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_p9_wire_format_derive"
-version = "0.1.4"
+version = "0.1.5"
 authors = ["The ChromiumOS Authors"]
 license = "BSD-3-Clause"
 description = "Supporting proc-macro for the `p9` crate."

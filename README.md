@@ -28,6 +28,6 @@ JetStream is not ready for production use. It's still in the early stages of dev
 - [jsonrpc](https://www.jsonrpc.org/)
 - [xmlrpc](http://xmlrpc.scripting.com/)
 
-## License
+## [License](LICENSE)
 
-BSD-3-Clause like the rest of the rust-p9 packages this relises on. 
+BSD-3-Clause
