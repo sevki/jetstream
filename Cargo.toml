@@ -40,6 +40,9 @@ parking_lot = "0.12.1"
 crc16 = "0.4.0"
 slog-envlogger = "2.2.0"
 
+[features]
+filesystem = []
+client = []
 
 [build-dependencies]
 bindgen = "0.69"
