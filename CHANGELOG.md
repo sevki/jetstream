@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/sevki/jetstream/compare/v0.3.1...v0.3.2) (2024-03-14)
+
+
+### Bug Fixes
+
+* auto-release feature ([6505b0f](https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769))
+
 ## [0.3.1](https://github.com/sevki/jetstream/compare/v0.3.0...v0.3.1) (2024-03-14)
 
 
