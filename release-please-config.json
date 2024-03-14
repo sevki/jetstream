@@ -1,10 +1,13 @@
 {
   "packages": {
     ".": {
+      "package-name": "jetstream",
+      "component": "jetstream",
       "changelog-path": "CHANGELOG.md",
+      "release-type": "rust",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
-      "draft": false,
+      "draft": true,
       "prerelease": false
     }
   },
