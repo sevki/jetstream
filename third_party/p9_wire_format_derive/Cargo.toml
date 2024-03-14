@@ -8,7 +8,9 @@ repository = "https://github.com/google/rust-p9"
 readme = "../rust-p9/README.md"
 
 [dependencies]
-syn = "^2"
+# rust analyzer doesn't understand the `quote` macro from `proc-macro2` so we
+# need to use `syn` to parse the input and then use `quote` to generate the
+syn = "2"
 quote = "^1"
 proc-macro2 = "^1"
 
