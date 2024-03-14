@@ -26,7 +26,7 @@ JetStream is not ready for production use. It's still in the early stages of dev
 - [capnproto](https://capnproto.org/)
 - [thrift](https://thrift.apache.org/)
 - [jsonrpc](https://www.jsonrpc.org/)
-- [xmlrpc](http://xmlrpc.scripting.com/)
+- [tarpc](https://crates.io/crates/tarpc)
 
 ## [License](LICENSE)
 
