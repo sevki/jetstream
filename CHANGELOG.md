@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.5.0](https://github.com/sevki/jetstream/compare/v0.4.0...v0.5.0) (2024-03-15)
+
+
+### Features
+
+* rust-clippy code scanning ([3dfb39f](https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18))
+
+
+### Bug Fixes
+
+* update to v2 upload sarif ([e38bacb](https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e))
+
 ## [0.4.0](https://github.com/sevki/jetstream/compare/v0.3.2...v0.4.0) (2024-03-14)
 
 
