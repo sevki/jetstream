@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.1](https://github.com/sevki/jetstream/compare/v0.5.0...v0.5.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* filesystem under feature flag, rm newline ([de4cf79](https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616))
+* Update client_tests.rs ([4c50132](https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653))
+
 ## [0.5.0](https://github.com/sevki/jetstream/compare/v0.4.0...v0.5.0) (2024-03-15)
 
 
