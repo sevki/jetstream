@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.6.0](https://github.com/sevki/jetstream/compare/v0.5.1...v0.6.0) (2024-03-21)
+
+
+### Features
+
+* virtio support ([ce13217](https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351))
+
 ## [0.5.1](https://github.com/sevki/jetstream/compare/v0.5.0...v0.5.1) (2024-03-15)
 
 
