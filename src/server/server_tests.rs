@@ -16,7 +16,7 @@ mod tests {
         path::{self, Path},
         sync::Arc,
     };
-    use tokio::{io::AsyncWriteExt, sync::Barrier};
+    use tokio::{io::AsyncWriteExt, sync::Barrier, net::UnixListener};
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
     async fn test_quic_server_unix_socket_proxy() {
@@ -72,13 +72,14 @@ mod tests {
         let mut listen = temp_dir.to_path_buf();
         listen.push("q9p.sock");
         let listen = listen.into_boxed_path();
-        let l = listen.clone();
+        let l = UnixListener::bind(listen.clone()).unwrap();
         let c = barrier.clone();
+
         let prxy_handle = tokio::spawn(async move {
             debug!("Proxy started, waiting for barrier");
             c.wait().await;
 
-            let prxy = Proxy::new(
+            let mut prxy = Proxy::new(
                 DialQuic::new(
                     "127.0.0.1".to_string(),
                     4433,
@@ -87,7 +88,7 @@ mod tests {
                     ca_cert,
                     "localhost".to_string(),
                 ),
-                l.clone(),
+                l,
             );
             let _ = prxy.run().await;
         });

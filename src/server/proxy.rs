@@ -1,4 +1,4 @@
-use std::{net::SocketAddr, path::Path};
+use std::{net::SocketAddr, path::Path, fmt::Debug};
 
 use anyhow::Ok;
 use jetstream_p9::{Rframe, Tframe};
@@ -101,81 +101,91 @@ impl DialQuic {
     }
 }
 
-pub struct Proxy {
-    dial: DialQuic,
-    listen: Box<Path>,
+use tokio::io::{AsyncRead, AsyncWrite};
+use tokio_vsock::{VsockListener, VsockAddr};
+
+#[async_trait::async_trait]
+pub trait ListenerStream: Send + Sync + Debug+ 'static{
+    type Stream: AsyncRead + AsyncWrite + Unpin + Send + Sync;
+    type Addr: std::fmt::Debug;
+    async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)>;
 }
 
-impl Proxy {
-    pub fn new(dial: DialQuic, listen: Box<Path>) -> Self {
-        Self { dial, listen }
+#[async_trait::async_trait]
+impl ListenerStream for tokio::net::UnixListener {
+    type Stream = tokio::net::UnixStream;
+    type Addr = tokio::net::unix::SocketAddr;
+    async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
+        tokio::net::UnixListener::accept(&mut self).await
     }
 }
 
-impl Proxy {
-    pub async fn run(&self) {
-        debug!("Listening on {:?}", self.listen);
-        let listener = tokio::net::UnixListener::bind(&self.listen).unwrap();
+#[async_trait::async_trait]
+impl ListenerStream for VsockListener {
+    type Stream = tokio_vsock::VsockStream;
+    type Addr = VsockAddr;
+    async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
+        VsockListener::accept(&mut self).await
+    }
+}
 
-        while let std::result::Result::Ok((down_stream, _)) =
-            listener.accept().await
-        {
-            debug!("Accepted connection from {:?}", down_stream.peer_addr());
-            async move {
-                let down_stream = down_stream;
-                let dial = self.dial.clone();
+pub struct Proxy<L>
+where
+    L: ListenerStream,
+{
+    dial: DialQuic,
+    listener: L,
+}
+
+impl<L> Proxy<L>
+where
+    L: ListenerStream,
+{
+    pub fn new(dial: DialQuic, listener: L) -> Self {
+        Self { dial, listener }
+    }
+
+    pub async fn run(&mut self) {
+        debug!("Listening on {:?}", self.listener);
+        while let std::result::Result::Ok((down_stream, _)) = self.listener.accept().await {
+            debug!("Accepted connection from");
+            let down_stream = down_stream;
+            let dial = self.dial.clone();
+            tokio::spawn(async move {
                 debug!("Dialing {:?}", dial);
                 let mut dial = dial.clone().dial().await.unwrap();
                 debug!("Connected to {:?}", dial.remote_addr());
                 let up_stream = dial.open_bidirectional_stream().await.unwrap();
-                tokio::task::spawn(async move {
-                    up_stream.connection().ping().unwrap();
-                    let (rx, mut tx) = up_stream.split();
-                    let (read, mut write) = down_stream.into_split();
-                    let mut upstream_reader = tokio::io::BufReader::new(rx);
-                    // let mut upstream_writer = tokio::io::BufWriter::new(tx);
-                    // let mut downstream_writer =
-                    //     tokio::io::BufWriter::new(write);
-                    let mut downstream_reader = tokio::io::BufReader::new(read);
-                    loop {
-                        // read and send to up_stream
-                        {
-                            debug!("Reading from down_stream");
-                            let tframe =
-                                Tframe::decode_async(&mut downstream_reader)
-                                    .await;
-                            if let Err(e) = tframe {
-                                // if error is eof, break
-                                if e.kind() == std::io::ErrorKind::UnexpectedEof
-                                {
-                                    break;
-                                } else {
-                                    error!(
-                                        "Error decoding from down_stream: {:?}",
-                                        e
-                                    );
-                                    break;
-                                }
-                            } else if let std::io::Result::Ok(tframe) = tframe {
-                                debug!("Sending to up_stream {:?}", tframe);
-                                let _ =
-                                    tframe.encode_async(&mut tx).await.unwrap();
+                let (rx, mut tx) = up_stream.split();
+                let (read, mut write) = tokio::io::split(down_stream);
+                let mut upstream_reader = tokio::io::BufReader::new(rx);
+                let mut downstream_reader = tokio::io::BufReader::new(read);
+                loop {
+                    // read and send to up_stream
+                    {
+                        debug!("Reading from down_stream");
+                        let tframe = Tframe::decode_async(&mut downstream_reader).await;
+                        if let Err(e) = tframe {
+                            if e.kind() == std::io::ErrorKind::UnexpectedEof {
+                                break;
+                            } else {
+                                error!("Error decoding from down_stream: {:?}", e);
+                                break;
                             }
-                        }
-                        // write and send to down_stream
-                        {
-                            debug!("Reading from up_stream");
-                            let rframe =
-                                Rframe::decode_async(&mut upstream_reader)
-                                    .await
-                                    .unwrap();
-                            debug!("Sending to down_stream");
-                            rframe.encode_async(&mut write).await.unwrap();
+                        } else if let std::io::Result::Ok(tframe) = tframe {
+                            debug!("Sending to up_stream {:?}", tframe);
+                            let _ = tframe.encode_async(&mut tx).await.unwrap();
                         }
                     }
-                });
-            }
-            .await;
+                    // write and send to down_stream
+                    {
+                        debug!("Reading from up_stream");
+                        let rframe = Rframe::decode_async(&mut upstream_reader).await.unwrap();
+                        debug!("Sending to down_stream");
+                        rframe.encode_async(&mut write).await.unwrap();
+                    }
+                }
+            });
         }
     }
 }
