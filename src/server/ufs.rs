@@ -1,7 +1,8 @@
 use std::{collections::btree_map, path::PathBuf};
 
-use jetstream_p9::{server::Server, Rframe, Tframe};
+use crate::protocol::{Rframe, Tframe};
 
+use crate::ufs::Server;
 use crate::{service::JetStreamService, service::Message};
 
 pub struct Handle {

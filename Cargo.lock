@@ -757,8 +757,7 @@ dependencies = [
  "futures",
  "futures-util",
  "genfs",
- "jetstream_p9",
- "jetstream_p9_wire_format_derive",
+ "jetstream_wire_format_derive",
  "lazy_static",
  "libc",
  "parking_lot",
@@ -782,20 +781,8 @@ dependencies = [
 ]
 
 [[package]]
-name = "jetstream_p9"
-version = "0.6.0"
-dependencies = [
- "genfs",
- "jetstream_p9_wire_format_derive",
- "libc",
- "serde",
- "serde_bytes",
- "tokio",
-]
-
-[[package]]
-name = "jetstream_p9_wire_format_derive"
-version = "0.6.0"
+name = "jetstream_wire_format_derive"
+version = "0.5.1"
 dependencies = [
  "pretty_assertions",
  "proc-macro2",
@@ -1527,15 +1514,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3fb1c873e1b9b056a4dc4c0c198b24c3ffa059243875552b2bd0933b1aee4ce2"
 dependencies = [
  "serde_derive",
-]
-
-[[package]]
-name = "serde_bytes"
-version = "0.11.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8b8497c313fd43ab992087548117643f6fcd935cbf36f176ffda0aacf9591734"
-dependencies = [
- "serde",
 ]
 
 [[package]]

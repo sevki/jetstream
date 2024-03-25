@@ -28,7 +28,7 @@
 //! - [jsonrpc](https://www.jsonrpc.org/)
 //! - [tarpc](https://crates.io/crates/tarpc)
 //!
-//! ## [License](LICENSE)
+//! ## [License](../LICENSE)
 //!
 //! BSD-3-Clause
 
@@ -40,14 +40,33 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-pub use jetstream_p9::protocol;
 
+#[macro_use]
+extern crate jetstream_wire_format_derive;
+#[cfg(feature = "async")]
 pub mod async_wire_format;
-pub mod log;
-
 #[cfg(feature = "client")]
 pub mod client;
 #[cfg(feature = "filesystem")]
 pub mod filesystem;
 pub mod server;
 pub mod service;
+pub mod protocol;
+pub mod ufs;
+
+pub mod log;
+
+pub use jetstream_wire_format_derive::JetStreamWireFormat;
+
+#[macro_export]
+macro_rules! syscall {
+    ($e:expr) => {{
+        let res = $e;
+        if res < 0 {
+            Err(std::io::Error::last_os_error())
+        } else {
+            Ok(res)
+        }
+    }};
+}
+

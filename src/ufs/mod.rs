@@ -756,7 +756,7 @@ impl Server {
         // Now walk the tree and break on the first error, if any.
         let expected_len = walk.wnames.len();
         let mut mds = Vec::with_capacity(expected_len);
-        let names: Vec<String> = walk.wnames.iter().map(|s| s.clone()).collect();
+        let names: Vec<String> = walk.wnames.to_vec();
 
         match do_walk(
             &self.proc,

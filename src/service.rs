@@ -4,12 +4,12 @@ use std::{
     task::{Context, Poll},
 };
 
+use crate::protocol::{Rframe, Rmessage, Tframe, WireFormat};
 use bytes::{BufMut, Bytes, BytesMut};
 use futures::prelude::*;
-use jetstream_p9::{Rframe, Rmessage, Tframe, WireFormat};
 use tower::Service;
 
-pub use jetstream_p9_wire_format_derive::P9WireFormat;
+pub use jetstream_wire_format_derive::JetStreamWireFormat;
 
 /// Message trait for JetStream messages, which need to implement the `WireFormat` trait.
 pub trait Message: WireFormat + Send + Sync {}
@@ -19,6 +19,7 @@ pub trait Message: WireFormat + Send + Sync {}
 pub trait JetStreamService<Req: Message, Resp: Message>:
     Send + Sync + Sized
 {
+    #[allow(clippy::type_complexity)]
     fn call(
         &mut self,
         req: Req,
@@ -67,12 +68,12 @@ impl<S: NinePService> JetStreamService<Tframe, Rframe> for NinePServiceImpl<S> {
 #[derive(Debug, Clone, Copy)]
 pub struct Radar;
 
-#[derive(Debug, Clone, P9WireFormat)]
+#[derive(Debug, Clone, JetStreamWireFormat)]
 struct Ping(u8);
 
 impl Message for Ping {}
 
-#[derive(Debug, Clone, P9WireFormat)]
+#[derive(Debug, Clone, JetStreamWireFormat)]
 struct Pong(u8);
 
 impl Message for Pong {}
@@ -111,7 +112,7 @@ pub mod ninepecho {
             Box::pin(async move {
                 Ok(Rframe {
                     tag: 0,
-                    msg: Rmessage::Version(jetstream_p9::Rversion {
+                    msg: Rmessage::Version(crate::protocol::Rversion {
                         msize: 0,
                         version: "9P2000".to_string(),
                     }),
@@ -165,7 +166,10 @@ pub trait ConvertWireFormat: WireFormat {
 
 /// Implements the `ConvertWireFormat` trait for types that implement `jetstream_p9::WireFormat`.
 /// This trait provides methods for converting the type to and from bytes.
-impl<T: jetstream_p9::WireFormat> ConvertWireFormat for T {
+impl<T> ConvertWireFormat for T
+where
+    T: WireFormat,
+{
     /// Converts the type to bytes.
     /// Returns a `Bytes` object containing the encoded bytes.
     fn to_bytes(&self) -> Bytes {

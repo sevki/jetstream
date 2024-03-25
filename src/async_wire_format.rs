@@ -3,7 +3,7 @@ use std::{
     io::{self},
 };
 
-use jetstream_p9::WireFormat;
+use crate::protocol::WireFormat;
 
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
@@ -72,10 +72,10 @@ mod tests {
     use std::{pin::Pin, time::Duration};
 
     #[allow(unused_imports)]
-    use jetstream_p9::*;
-    #[allow(unused_imports)]
     use std::io::Cursor;
 
+    #[allow(unused_imports)]
+    use crate::protocol::*;
     use tokio::time::sleep;
 
     use super::*;
@@ -90,7 +90,7 @@ mod tests {
         fn new(delay: Duration, inner: tokio::io::DuplexStream) -> Self {
             Self {
                 delay,
-                inner: inner,
+                inner,
             }
         }
     }
