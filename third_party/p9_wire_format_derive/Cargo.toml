@@ -1,11 +1,11 @@
 [package]
-name = "jetstream_p9_wire_format_derive"
-version = "0.6.0"
+name = "jetstream_wire_format_derive"
+version = "0.5.1"
 authors = ["The ChromiumOS Authors"]
 license = "BSD-3-Clause"
 description = "Supporting proc-macro for the `p9` crate."
-repository = "https://github.com/google/rust-p9"
-readme = "../rust-p9/README.md"
+repository = "https://github.com/sevki/jetstream"
+readme = "../../README.md"
 
 [dependencies]
 # rust analyzer doesn't understand the `quote` macro from `proc-macro2` so we

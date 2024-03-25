@@ -138,6 +138,7 @@ impl<T: WireFormat> WireFormat for Vec<T> {
 #[derive(PartialEq, Eq, Clone)]
 pub struct Data(pub Vec<u8>);
 
+
 // The maximum length of a data buffer that we support.  In practice the server's max message
 // size should prevent us from reading too much data so this check is mainly to ensure a
 // malicious client cannot trick us into allocating massive amounts of memory.
@@ -573,7 +574,7 @@ mod test {
             .expect_err("long vector");
     }
 
-    #[derive(Debug, PartialEq, P9WireFormat)]
+    #[derive(Debug, PartialEq, JetStreamWireFormat)]
     struct Item {
         a: u64,
         b: String,
@@ -657,7 +658,7 @@ mod test {
         assert_eq!(expected, actual);
     }
 
-    #[derive(Debug, PartialEq, P9WireFormat)]
+    #[derive(Debug, PartialEq, JetStreamWireFormat)]
     struct Nested {
         item: Item,
         val: Vec<u64>,

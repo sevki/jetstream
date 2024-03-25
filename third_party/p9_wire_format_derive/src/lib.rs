@@ -26,7 +26,7 @@ use syn::Fields;
 use syn::Ident;
 
 /// The function that derives the actual implementation.
-#[proc_macro_derive(P9WireFormat)]
+#[proc_macro_derive(JetStreamWireFormat)]
 pub fn p9_wire_format(
     input: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
@@ -37,7 +37,7 @@ pub fn p9_wire_format(
 fn p9_wire_format_inner(input: DeriveInput) -> TokenStream {
     if !input.generics.params.is_empty() {
         return quote! {
-            compile_error!("derive(P9WireFormat) does not support generic parameters");
+            compile_error!("derive(JetStreamWireFormat) does not support generic parameters");
         };
     }
 

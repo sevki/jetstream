@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, path::Path, fmt::Debug};
 
 use anyhow::Ok;
-use jetstream_p9::{Rframe, Tframe};
+use crate::protocol::{Rframe, Tframe};
 use s2n_quic::{
     client::{Client, Connect},
     provider::tls,
@@ -116,7 +116,7 @@ impl ListenerStream for tokio::net::UnixListener {
     type Stream = tokio::net::UnixStream;
     type Addr = tokio::net::unix::SocketAddr;
     async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
-        tokio::net::UnixListener::accept(&mut self).await
+        tokio::net::UnixListener::accept(self).await
     }
 }
 
@@ -125,7 +125,7 @@ impl ListenerStream for VsockListener {
     type Stream = tokio_vsock::VsockStream;
     type Addr = VsockAddr;
     async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
-        VsockListener::accept(&mut self).await
+        VsockListener::accept(self).await
     }
 }
 
@@ -174,7 +174,7 @@ where
                             }
                         } else if let std::io::Result::Ok(tframe) = tframe {
                             debug!("Sending to up_stream {:?}", tframe);
-                            let _ = tframe.encode_async(&mut tx).await.unwrap();
+                            tframe.encode_async(&mut tx).await.unwrap();
                         }
                     }
                     // write and send to down_stream

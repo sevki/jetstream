@@ -8,10 +8,18 @@ repository = "https://github.com/sevki/jetstream"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
+
+
+[features]
+default = ["async"]
+
+filesystem = []
+client = []
+async = []
+
 [dependencies]
 futures = "0.3.30"
-jetstream_p9_wire_format_derive = { path = "./third_party/p9_wire_format_derive", version = "0.6.0" }
-jetstream_p9 = { version = "0.6.0", path = "./third_party/rust-p9" }
+jetstream_wire_format_derive = { path = "./third_party/p9_wire_format_derive", version = "0.5.1" }
 tokio = { version = "1.35.1", features = ["full"] }
 anyhow = "1.0.81"
 async-trait = "0.1.78"
@@ -28,7 +36,7 @@ crc64 = "2.0.0"
 tuple-map = "0.4.0"
 futures-util = "0.3.30"
 colored = "2.1.0"
-serde = "1.0.196"
+serde = { version = "1.0.196", features = ["derive"] }
 lazy_static = "1.4.0"
 tower = "0.4.13"
 bytes = "1.5.0"
@@ -41,10 +49,6 @@ crc16 = "0.4.0"
 slog-envlogger = "2.2.0"
 tokio-vsock = "0.5.0"
 
-[features]
-filesystem = []
-client = []
-
 [build-dependencies]
 bindgen = "0.69"
 pkg-config = "0.3"
@@ -55,6 +59,5 @@ which = "6.0.0"
 [workspace]
 
 members = [
-    "third_party/rust-p9",
     "third_party/p9_wire_format_derive",
 ]

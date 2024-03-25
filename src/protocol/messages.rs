@@ -315,49 +315,49 @@ impl Tframe {
     }
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tversion {
     pub msize: u32,
     pub version: String,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tflush {
     pub oldtag: u16,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Twalk {
     pub fid: u32,
     pub newfid: u32,
     pub wnames: Vec<String>,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tread {
     pub fid: u32,
     pub offset: u64,
     pub count: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Twrite {
     pub fid: u32,
     pub offset: u64,
     pub data: Data,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tclunk {
     pub fid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tremove {
     pub fid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tauth {
     pub afid: u32,
     pub uname: String,
@@ -365,7 +365,7 @@ pub struct Tauth {
     pub n_uname: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tattach {
     pub fid: u32,
     pub afid: u32,
@@ -374,18 +374,18 @@ pub struct Tattach {
     pub n_uname: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tstatfs {
     pub fid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tlopen {
     pub fid: u32,
     pub flags: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tlcreate {
     pub fid: u32,
     pub name: String,
@@ -394,7 +394,7 @@ pub struct Tlcreate {
     pub gid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tsymlink {
     pub fid: u32,
     pub name: String,
@@ -402,7 +402,7 @@ pub struct Tsymlink {
     pub gid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tmknod {
     pub dfid: u32,
     pub name: String,
@@ -412,28 +412,25 @@ pub struct Tmknod {
     pub gid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Trename {
     pub fid: u32,
     pub dfid: u32,
     pub name: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Treadlink {
     pub fid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tgetattr {
     pub fid: u32,
     pub request_mask: u64,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tsetattr {
     pub fid: u32,
     pub valid: u32,
@@ -447,16 +444,14 @@ pub struct Tsetattr {
     pub mtime_nsec: u64,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Txattrwalk {
     pub fid: u32,
     pub newfid: u32,
     pub name: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Txattrcreate {
     pub fid: u32,
     pub name: String,
@@ -464,23 +459,20 @@ pub struct Txattrcreate {
     pub flags: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Treaddir {
     pub fid: u32,
     pub offset: u64,
     pub count: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tfsync {
     pub fid: u32,
     pub datasync: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tlock {
     pub fid: u32,
     pub type_: u8,
@@ -491,8 +483,7 @@ pub struct Tlock {
     pub client_id: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tgetlock {
     pub fid: u32,
     pub type_: u8,
@@ -502,16 +493,14 @@ pub struct Tgetlock {
     pub client_id: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tlink {
     pub dfid: u32,
     pub fid: u32,
     pub name: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tmkdir {
     pub dfid: u32,
     pub name: String,
@@ -519,8 +508,7 @@ pub struct Tmkdir {
     pub gid: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Trenameat {
     pub olddirfid: u32,
     pub oldname: String,
@@ -528,8 +516,7 @@ pub struct Trenameat {
     pub newname: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Tunlinkat {
     pub dirfd: u32,
     pub name: String,
@@ -741,15 +728,14 @@ impl WireFormat for Rframe {
     }
 }
 
-#[derive(Debug, Copy, Clone, P9WireFormat)]
+#[derive(Debug, Copy, Clone, JetStreamWireFormat)]
 pub struct Qid {
     pub ty: u8,
     pub version: u32,
     pub path: u64,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Dirent {
     pub qid: Qid,
     pub offset: u64,
@@ -757,51 +743,43 @@ pub struct Dirent {
     pub name: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rversion {
     pub msize: u32,
     pub version: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rwalk {
     pub wqids: Vec<Qid>,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rread {
     pub data: Data,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rwrite {
     pub count: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rauth {
     pub aqid: Qid,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rattach {
     pub qid: Qid,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rlerror {
     pub ecode: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rstatfs {
     pub ty: u32,
     pub bsize: u32,
@@ -814,40 +792,34 @@ pub struct Rstatfs {
     pub namelen: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rlopen {
     pub qid: Qid,
     pub iounit: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rlcreate {
     pub qid: Qid,
     pub iounit: u32,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rsymlink {
     pub qid: Qid,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rmknod {
     pub qid: Qid,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rreadlink {
     pub target: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rgetattr {
     pub valid: u64,
     pub qid: Qid,
@@ -871,26 +843,22 @@ pub struct Rgetattr {
     pub data_version: u64,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rxattrwalk {
     pub size: u64,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rreaddir {
     pub data: Data,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rlock {
     pub status: u8,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rgetlock {
     pub type_: u8,
     pub start: u64,
@@ -899,14 +867,13 @@ pub struct Rgetlock {
     pub client_id: String,
 }
 
-#[derive(Debug, P9WireFormat)]
-
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rmkdir {
     pub qid: Qid,
 }
 
 // Rerror
-#[derive(Debug, P9WireFormat)]
+#[derive(Debug, JetStreamWireFormat)]
 pub struct Rerror {
     pub ename: String,
 }

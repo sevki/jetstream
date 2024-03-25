@@ -10,7 +10,7 @@ fn get_module_colour(module: &str) -> Color {
     // crc16 is a good hash for this
     let hash = crc16::State::<crc16::XMODEM>::calculate(module.as_bytes());
     let hash = hash.add(5);
-    let color = match hash % 6 {
+    match hash % 6 {
         0 => Color::Red,
         1 => Color::Green,
         2 => Color::Yellow,
@@ -18,8 +18,7 @@ fn get_module_colour(module: &str) -> Color {
         4 => Color::Magenta,
         5 => Color::Cyan,
         _ => Color::White,
-    };
-    color
+    }
 }
 
 #[allow(dead_code)]
@@ -72,7 +71,7 @@ pub(crate) fn drain() -> slog::Fuse<
                     .set_underline(true)
                     .set_fg(Some(Color::White)),
             )?;
-            let _ = write!(buffer, "{}:{}", loc.to_string(), r.location().line);
+            let _ = write!(buffer, "{}:{}", loc, r.location().line);
             buffer.reset()?;
             buffer.set_color(
                 ColorSpec::new().set_fg(Some(level)).set_intense(true),
