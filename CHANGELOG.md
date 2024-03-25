@@ -1,5 +1,16 @@
 # Changelog
 
+## [1.0.0](https://github.com/sevki/jetstream/compare/v0.6.0...v1.0.0) (2024-03-25)
+
+
+### ⚠ BREAKING CHANGES
+
+* merge all the creates
+
+### Code Refactoring
+
+* merge all the creates ([faa0a1a](https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543))
+
 ## [0.6.0](https://github.com/sevki/jetstream/compare/v0.5.1...v0.6.0) (2024-03-21)
 
 
