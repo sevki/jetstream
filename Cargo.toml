@@ -48,7 +48,7 @@ client = []
 [build-dependencies]
 bindgen = "0.69"
 pkg-config = "0.3"
-which = "6.0.0"
+which = "6.0.1"
 
 [dev-dependencies]
 
