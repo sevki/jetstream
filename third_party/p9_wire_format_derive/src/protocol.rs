@@ -61,7 +61,7 @@ fn generate_return_struct(
     match &method_sig.output {
         syn::ReturnType::Type(_, ty) =>     quote! {
             #[derive(JetStreamWireFormat)]
-            pub struct #return_struct_ident (pub u16, pub #ty );
+            pub struct #return_struct_ident(pub u16, pub #ty );
         },
         syn::ReturnType::Default => quote! { 
             #[derive(JetStreamWireFormat)]
@@ -337,10 +337,19 @@ pub fn generate_jetstream_prococol(
                 let is_async = method.sig.asyncness.is_some();
                 let maybe_await = if is_async { quote! { .await } } else { quote! {} };
                 if has_req {
+                    let spread_req = method.sig.inputs.iter().map(|arg| match arg {
+                        syn::FnArg::Typed(pat) => {
+                            let name = pat.pat.clone();
+                            quote! { req.#name }
+                        }
+                        syn::FnArg::Receiver(_) => quote! {},
+                    });
                     quote! {
                         #[inline]
                         async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident {
-                            #return_struct_ident(tag, #original_trait_name::#method_name(self, req.req)#maybe_await)
+                            #return_struct_ident(tag, #original_trait_name::#method_name(self, 
+                                #(#spread_req)*
+                            )#maybe_await)
                         }
                     }
                 } else {
