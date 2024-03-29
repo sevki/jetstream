@@ -6,17 +6,43 @@ mod tests {
         server::{
             proxy::{DialQuic, Proxy},
             quic_server::QuicServer,
-        },
-        service::ninepecho::{self, EchoService},
+        }, service::JetStreamService, messages::Rmessage,
     };
     use crate::protocol::{Rframe, Tframe, Tmessage, Tversion};
+    use futures_util::Future;
     use s2n_quic::{provider::tls, Server};
     use slog_scope::debug;
     use std::{
         path::{self, Path},
-        sync::Arc,
+        sync::Arc, pin::Pin, error::Error,
     };
     use tokio::{io::AsyncWriteExt, sync::Barrier, net::UnixListener};
+
+    #[derive(Debug, Clone)]
+    pub struct EchoService;
+
+    impl JetStreamService<Tframe, Rframe> for EchoService {
+        fn call(
+            &mut self,
+            _req: Tframe,
+        ) -> Pin<
+            Box<
+                dyn Future<
+                        Output = Result<Rframe, Box<dyn Error + Send + Sync>>,
+                    > + Send,
+            >,
+        > {
+            Box::pin(async move {
+                Ok(Rframe {
+                    tag: 0,
+                    msg: Rmessage::Version(crate::protocol::Rversion {
+                        msize: 0,
+                        version: "9P2000".to_string(),
+                    }),
+                })
+            })
+        }
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
     async fn test_quic_server_unix_socket_proxy() {
@@ -58,7 +84,7 @@ mod tests {
                 .start()
                 .unwrap();
             let qsrv: QuicServer<Tframe, Rframe, EchoService> =
-                QuicServer::new(ninepecho::EchoService);
+                QuicServer::new(EchoService);
             debug!("Server started, waiting for barrier");
             c.wait().await;
             let _ = qsrv.serve(server).await;

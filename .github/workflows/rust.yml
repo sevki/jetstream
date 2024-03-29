@@ -2,19 +2,33 @@ name: Build and Test
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        rust:
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "stable" # stable is 1.77.1
+          - "beta" # beta
+          - "nightly" # nightly
     steps:
-    - uses: actions/checkout@v3
-    - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Build ${{ matrix.rust }}
+        run: cargo build --verbose
+      - name: Run tests
+        run: cargo test --verbose
+      - name: e2e tests
+        run: cargo run -p e2e_tests

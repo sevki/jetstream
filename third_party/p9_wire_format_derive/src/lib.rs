@@ -7,8 +7,6 @@
 //! This is only intended to be used from within the `p9` crate.
 
 #![recursion_limit = "256"]
-
-extern crate proc_macro;
 extern crate proc_macro2;
 
 #[macro_use]
@@ -17,13 +15,10 @@ extern crate quote;
 #[macro_use]
 extern crate syn;
 
-use proc_macro2::Span;
-use proc_macro2::TokenStream;
-use syn::spanned::Spanned;
-use syn::Data;
-use syn::DeriveInput;
-use syn::Fields;
-use syn::Ident;
+use proc_macro2::{TokenStream, Span};
+use syn::{DeriveInput, Fields, Ident, Data, spanned::Spanned};
+
+mod service;
 
 /// The function that derives the actual implementation.
 #[proc_macro_derive(JetStreamWireFormat)]
@@ -32,6 +27,14 @@ pub fn p9_wire_format(
 ) -> proc_macro::TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     p9_wire_format_inner(input).into()
+}
+
+#[proc_macro_attribute]
+pub fn service(
+    _attr: proc_macro::TokenStream,
+    item: proc_macro::TokenStream,
+) -> proc_macro::TokenStream {
+    service::derive_jet_stream_protocol_impl(_attr, item)
 }
 
 fn p9_wire_format_inner(input: DeriveInput) -> TokenStream {
@@ -56,8 +59,7 @@ fn p9_wire_format_inner(input: DeriveInput) -> TokenStream {
             use self::std::result::Result::Ok;
 
             use super::#container;
-
-            use protocol::WireFormat;
+            use super::WireFormat;
 
             impl WireFormat for #container {
                 fn byte_size(&self) -> u32 {
@@ -103,10 +105,10 @@ fn byte_size_sum(data: &Data) -> TokenStream {
                 0 #(+ #fields)*
             }
         } else {
-            unimplemented!();
+            unimplemented!("byte_size_sum for {:?}", data.struct_token.span);
         }
     } else {
-        unimplemented!();
+        unimplemented!("byte_size_sum for ");
     }
 }
 
@@ -166,7 +168,6 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                     #field: #field,
                 }
             });
-            
 
             quote! {
                 #(#values)*
@@ -176,7 +177,7 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                 })
             }
         } else if let Fields::Unnamed(unnamed) = &data.fields {
-            let values = unnamed.unnamed.iter().enumerate().map(|(i, f)| {
+            let values = unnamed.unnamed.iter().enumerate().map(|(i, _f)| {
                 let index = syn::Index::from(i);
                 // create a new ident that s __{index}
                 let ident = Ident::new(
@@ -184,7 +185,7 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                     Span::call_site(),
                 );
                 quote! {
-                    let #ident: #f = WireFormat::decode(_reader)?;
+                    let #ident = WireFormat::decode(_reader)?;
                 }
             });
 
@@ -201,8 +202,9 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
 
             quote! {
                 #(#values)*
+
                 Ok(#container(
-                    #(#members)*
+                    #(#members,)*
                 ))
             }
         } else {
@@ -315,7 +317,7 @@ mod tests {
 
                 use super::Niijima_先輩;
 
-                use protocol::WireFormat;
+                use super::WireFormat;
 
                 impl WireFormat for Niijima_先輩 {
                     fn byte_size(&self) -> u32 {
@@ -356,6 +358,72 @@ mod tests {
                             f: f,
                             g: g,
                         })
+                    }
+                }
+            }
+        };
+
+        assert_eq!(
+            p9_wire_format_inner(input).to_string(),
+            expected.to_string(),
+        );
+    }
+
+    #[test]
+    fn end_to_end_unnamed() {
+        let input: DeriveInput = parse_quote! {
+            struct Niijima_先輩(u8, u16, u32, u64, String, Vec<String>, Nested);
+        };
+
+        let expected = quote! {
+            mod wire_format_niijima_先輩 {
+                extern crate std;
+                use self::std::io;
+                use self::std::result::Result::Ok;
+
+                use super::Niijima_先輩;
+
+                use super::WireFormat;
+
+                impl WireFormat for Niijima_先輩 {
+                    fn byte_size(&self) -> u32 {
+                        0
+                        + WireFormat::byte_size(&self.0)
+                        + WireFormat::byte_size(&self.1)
+                        + WireFormat::byte_size(&self.2)
+                        + WireFormat::byte_size(&self.3)
+                        + WireFormat::byte_size(&self.4)
+                        + WireFormat::byte_size(&self.5)
+                        + WireFormat::byte_size(&self.6)
+                    }
+
+                    fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
+                        WireFormat::encode(&self.0, _writer)?;
+                        WireFormat::encode(&self.1, _writer)?;
+                        WireFormat::encode(&self.2, _writer)?;
+                        WireFormat::encode(&self.3, _writer)?;
+                        WireFormat::encode(&self.4, _writer)?;
+                        WireFormat::encode(&self.5, _writer)?;
+                        WireFormat::encode(&self.6, _writer)?;
+                        Ok(())
+                    }
+                    fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
+                        let __0 = WireFormat::decode(_reader)?;
+                        let __1= WireFormat::decode(_reader)?;
+                        let __2 = WireFormat::decode(_reader)?;
+                        let __3 = WireFormat::decode(_reader)?;
+                        let __4 = WireFormat::decode(_reader)?;
+                        let __5 = WireFormat::decode(_reader)?;
+                        let __6 = WireFormat::decode(_reader)?;
+                        Ok(Niijima_先輩(
+                            __0,
+                            __1,
+                            __2,
+                            __3,
+                            __4,
+                            __5,
+                            __6,
+                        ))
                     }
                 }
             }
