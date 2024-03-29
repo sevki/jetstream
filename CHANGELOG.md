@@ -1,5 +1,16 @@
 # Changelog
 
+## [2.0.0](https://github.com/sevki/jetstream/compare/v1.1.1...v2.0.0) (2024-03-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* protocol -> coding
+
+### Code Refactoring
+
+* protocol -&gt; coding ([5f86bc7](https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2))
+
 ## [1.1.1](https://github.com/sevki/jetstream/compare/v1.1.0...v1.1.1) (2024-03-29)
 
 
