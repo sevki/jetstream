@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/sevki/jetstream/compare/v1.1.0...v1.1.1) (2024-03-29)
+
+
+### Bug Fixes
+
+* ignore e2e tests ([e066dde](https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7))
+
 ## [1.1.0](https://github.com/sevki/jetstream/compare/v1.0.0...v1.1.0) (2024-03-29)
 
 
