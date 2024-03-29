@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.1](https://github.com/sevki/jetstream/compare/v2.0.0...v2.0.1) (2024-03-29)
+
+
+### Bug Fixes
+
+* **macros:** protocol macro fix to spread fn args ([b261a28](https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3))
+
 ## [2.0.0](https://github.com/sevki/jetstream/compare/v1.1.1...v2.0.0) (2024-03-29)
 
 
