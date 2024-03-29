@@ -53,7 +53,7 @@ pub mod client;
 pub mod filesystem;
 pub mod server;
 pub mod service;
-pub mod protocol;
+pub mod coding;
 
 pub mod ufs;
 
@@ -61,9 +61,38 @@ pub mod log;
 
 pub use jetstream_wire_format_derive::JetStreamWireFormat;
 
-pub use jetstream_wire_format_derive::service;
+#[cfg(feature = "tokio")]
+pub use tokio::io::{AsyncRead, AsyncWrite};
 
-pub use protocol::{Data, WireFormat, messages};
+/// This macro generates a JetStream protocol implementation from a module
+/// such as the following
+/// 
+/// ```rust
+/// use jetstream::JetStreamWireFormat;
+/// use async_trait::async_trait;
+/// use jetstream::protocol;
+//
+/// #[protocol]
+/// mod radar {
+///     #[derive(JetStreamWireFormat)]
+///     pub struct Version {
+///         pub msize: u32,
+///         pub version: String,
+///     }
+///     #[async_trait::async_trait]
+///     pub trait Radar {
+///         async fn version(&mut self, req: Version) -> Version;
+///         fn ping(&mut self) -> u8;
+///     }
+/// }
+/// ```
+/// 
+/// This will generate an async `Radar` trait with a `version` and `ping` methods.
+/// 
+/// 
+pub use jetstream_wire_format_derive::protocol;
+
+pub use coding::{Data, WireFormat, messages};
 
 pub use service::Message;
 

@@ -18,7 +18,7 @@ extern crate syn;
 use proc_macro2::{TokenStream, Span};
 use syn::{DeriveInput, Fields, Ident, Data, spanned::Spanned};
 
-mod service;
+mod protocol;
 
 /// The function that derives the actual implementation.
 #[proc_macro_derive(JetStreamWireFormat)]
@@ -30,11 +30,11 @@ pub fn p9_wire_format(
 }
 
 #[proc_macro_attribute]
-pub fn service(
+pub fn protocol(
     _attr: proc_macro::TokenStream,
     item: proc_macro::TokenStream,
 ) -> proc_macro::TokenStream {
-    service::derive_jet_stream_protocol_impl(_attr, item)
+    protocol::protocol_inner(_attr, item)
 }
 
 fn p9_wire_format_inner(input: DeriveInput) -> TokenStream {

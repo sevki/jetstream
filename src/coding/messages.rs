@@ -10,8 +10,8 @@ use std::mem;
 use std::string::String;
 use std::vec::Vec;
 
-use crate::protocol::wire_format::Data;
-use crate::protocol::wire_format::WireFormat;
+use super::wire_format::Data;
+use super::wire_format::WireFormat;
 
 // Message type constants.  Taken from "include/net/9p/9p.h" in the linux kernel
 // tree.  The protocol specifies each R* message to be the corresponding T*

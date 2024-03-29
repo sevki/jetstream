@@ -390,7 +390,7 @@ pub fn generate_jetstream_prococol(
                 }                
             }
             #[inline]
-            async fn handle<W: AsyncWrite + Send + Unpin, R: AsyncRead + Send + Unpin>(&mut self, reader: &mut R, writer: &mut W) -> io::Result<()> {
+            async fn handle<W: jetstream::AsyncWrite + Send + Unpin, R: jetstream::AsyncRead + Send + Unpin>(&mut self, reader: &mut R, writer: &mut W) -> io::Result<()> {
                 let req = Tframe::decode_async(reader).await?;
                 let res = self.rpc(req).await;
                 res.encode_async(writer).await?;
@@ -459,7 +459,7 @@ pub fn generate_jetstream_prococol(
     )
 }
 
-pub fn derive_jet_stream_protocol_impl(
+pub fn protocol_inner(
     _attr: TokenStream,
     item: TokenStream,
 ) -> TokenStream {

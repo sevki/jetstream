@@ -1,7 +1,7 @@
 use std::{net::SocketAddr, path::Path, fmt::Debug};
 
 use anyhow::Ok;
-use crate::protocol::{Rframe, Tframe};
+use crate::coding::{Rframe, Tframe};
 use s2n_quic::{
     client::{Client, Connect},
     provider::tls,

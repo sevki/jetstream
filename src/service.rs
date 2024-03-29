@@ -3,7 +3,7 @@ use std::{
     pin::Pin,
 };
 
-use crate::protocol::{Rframe, Tframe, WireFormat};
+use crate::coding::{Rframe, Tframe, WireFormat};
 use bytes::{BufMut, Bytes, BytesMut};
 use futures::prelude::*;
 
