@@ -1,6 +1,7 @@
 //! <img src="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png" style="width: 200px">
 //!
-//! #  JetStream [![crates.io](https://img.shields.io/crates/v/jetstream.svg)](https://crates.io/crates/jetstream) [![docs.rs](https://docs.rs/jetstream/badge.svg)](https://docs.rs/jetstream) <!--gh actions--> ![Build Status](https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg) ![Build Status](https://github.com/sevki/jetstream/actions/workflows/release.yml/badge.svg)
+//! #  JetStream 
+//! [![crates.io](https://img.shields.io/crates/v/jetstream.svg)](https://crates.io/crates/jetstream) [![docs.rs](https://docs.rs/jetstream/badge.svg)](https://docs.rs/jetstream) <!--gh actions--> ![Build Status](https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg) ![Build Status](https://github.com/sevki/jetstream/actions/workflows/release.yml/badge.svg) [![crates.io downloads](https://img.shields.io/crates/d/jetstream.svg)](https://crates.io/crates/jetstream)
 //!
 //!
 //! JetStream is an RPC framework built on top of [s2n-quic](https://crates.io/crates/s2n-quic) and [p9](https://crates.io/crates/p9). It's designed to be a high performance, low latency, secure, and reliable RPC framework.
@@ -43,6 +44,7 @@
 
 #[macro_use]
 extern crate jetstream_wire_format_derive;
+
 #[cfg(feature = "async")]
 pub mod async_wire_format;
 #[cfg(feature = "client")]
@@ -52,11 +54,18 @@ pub mod filesystem;
 pub mod server;
 pub mod service;
 pub mod protocol;
+
 pub mod ufs;
 
 pub mod log;
 
 pub use jetstream_wire_format_derive::JetStreamWireFormat;
+
+pub use jetstream_wire_format_derive::service;
+
+pub use protocol::{Data, WireFormat, messages};
+
+pub use service::Message;
 
 #[macro_export]
 macro_rules! syscall {

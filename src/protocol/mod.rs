@@ -4,7 +4,6 @@
 
 pub mod messages;
 pub mod wire_format;
-// mod serde_9p;
 
 pub use self::messages::*;
 pub use self::wire_format::Data;

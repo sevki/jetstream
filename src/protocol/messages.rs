@@ -315,213 +315,7 @@ impl Tframe {
     }
 }
 
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tversion {
-    pub msize: u32,
-    pub version: String,
-}
 
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tflush {
-    pub oldtag: u16,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Twalk {
-    pub fid: u32,
-    pub newfid: u32,
-    pub wnames: Vec<String>,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tread {
-    pub fid: u32,
-    pub offset: u64,
-    pub count: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Twrite {
-    pub fid: u32,
-    pub offset: u64,
-    pub data: Data,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tclunk {
-    pub fid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tremove {
-    pub fid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tauth {
-    pub afid: u32,
-    pub uname: String,
-    pub aname: String,
-    pub n_uname: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tattach {
-    pub fid: u32,
-    pub afid: u32,
-    pub uname: String,
-    pub aname: String,
-    pub n_uname: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tstatfs {
-    pub fid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tlopen {
-    pub fid: u32,
-    pub flags: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tlcreate {
-    pub fid: u32,
-    pub name: String,
-    pub flags: u32,
-    pub mode: u32,
-    pub gid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tsymlink {
-    pub fid: u32,
-    pub name: String,
-    pub symtgt: String,
-    pub gid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tmknod {
-    pub dfid: u32,
-    pub name: String,
-    pub mode: u32,
-    pub major: u32,
-    pub minor: u32,
-    pub gid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Trename {
-    pub fid: u32,
-    pub dfid: u32,
-    pub name: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Treadlink {
-    pub fid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tgetattr {
-    pub fid: u32,
-    pub request_mask: u64,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tsetattr {
-    pub fid: u32,
-    pub valid: u32,
-    pub mode: u32,
-    pub uid: u32,
-    pub gid: u32,
-    pub size: u64,
-    pub atime_sec: u64,
-    pub atime_nsec: u64,
-    pub mtime_sec: u64,
-    pub mtime_nsec: u64,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Txattrwalk {
-    pub fid: u32,
-    pub newfid: u32,
-    pub name: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Txattrcreate {
-    pub fid: u32,
-    pub name: String,
-    pub attr_size: u64,
-    pub flags: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Treaddir {
-    pub fid: u32,
-    pub offset: u64,
-    pub count: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tfsync {
-    pub fid: u32,
-    pub datasync: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tlock {
-    pub fid: u32,
-    pub type_: u8,
-    pub flags: u32,
-    pub start: u64,
-    pub length: u64,
-    pub proc_id: u32,
-    pub client_id: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tgetlock {
-    pub fid: u32,
-    pub type_: u8,
-    pub start: u64,
-    pub length: u64,
-    pub proc_id: u32,
-    pub client_id: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tlink {
-    pub dfid: u32,
-    pub fid: u32,
-    pub name: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tmkdir {
-    pub dfid: u32,
-    pub name: String,
-    pub mode: u32,
-    pub gid: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Trenameat {
-    pub olddirfid: u32,
-    pub oldname: String,
-    pub newdirfid: u32,
-    pub newname: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Tunlinkat {
-    pub dirfd: u32,
-    pub name: String,
-    pub flags: u32,
-}
 
 /// A message sent from a 9P server to a 9P client in response to a request from
 /// that client.  Encapsulates a full frame.
@@ -728,6 +522,589 @@ impl WireFormat for Rframe {
     }
 }
 
+/// version -- negotiate protocol version
+/// 
+/// ```text
+/// size[4] Tversion tag[2] msize[4] version[s]
+/// size[4] Rversion tag[2] msize[4] version[s]
+/// ```
+/// 
+/// version establishes the msize, which is the maximum message size inclusive of the size value that can be handled by both client and server.
+/// 
+/// It also establishes the protocol version. For 9P2000.L version must be the string 9P2000.L.
+/// 
+/// See the Plan 9 manual page for [version(5)](http://9p.io/magic/man2html/5/version).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tversion {
+    pub msize: u32,
+    pub version: String,
+}
+
+/// flush -- abort a message
+/// 
+/// ```text
+/// size[4] Tflush tag[2] oldtag[2]
+/// size[4] Rflush tag[2]
+/// ```
+/// 
+/// flush aborts an in-flight request referenced by oldtag, if any.
+/// 
+/// See the Plan 9 manual page for [flush(5)](http://9p.io/magic/man2html/5/flush).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tflush {
+    pub oldtag: u16,
+}
+
+/// walk -- descend a directory hierarchy
+/// 
+/// ```text
+/// size[4] Twalk tag[2] fid[4] newfid[4] nwname[2] nwname*(wname[s])
+/// size[4] Rwalk tag[2] nwqid[2] nwqid*(wqid[13])
+/// ```
+/// 
+/// walk is used to descend a directory represented by fid using successive path elements provided in the wname array. If successful, newfid represents the new path.
+/// 
+/// fid can be cloned to newfid by calling walk with nwname set to zero.
+/// 
+/// See the Plan 9 manual page for [walk(5)](http://9p.io/magic/man2html/5/walk).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Twalk {
+    pub fid: u32,
+    pub newfid: u32,
+    pub wnames: Vec<String>,
+}
+
+/// attach -- attach to a file tree
+/// 
+/// ```text
+/// size[4] Tattach tag[2] fid[4] afid[4] uname[s] aname[s]
+/// size[4] Rattach tag[2] qid[13]
+/// ```
+/// 
+/// attach associates the fid with the file tree rooted at aname.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tattach {
+    pub fid: u32,
+    pub afid: u32,
+    pub uname: String,
+    pub aname: String,
+    pub n_uname: u32,
+}
+
+/// auth -- authenticate a user
+/// 
+/// ```text
+/// size[4] Tauth tag[2] afid[4] uname[s] aname[s]
+/// size[4] Rauth tag[2] aqid[13]
+/// ```
+/// 
+/// auth authenticates the user named uname to access the file tree with the root named aname.
+/// 
+/// afid is used as the fid in the attach message that follows auth.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tauth {
+    pub afid: u32,
+    pub uname: String,
+    pub aname: String,
+    pub n_uname: u32,
+}
+
+
+/// read -- read data from a file
+/// 
+/// ```text
+/// size[4] Tread tag[2] fid[4] offset[8] count[4]
+/// size[4] Rread tag[2] count[4] data[count]
+/// ```
+/// 
+/// read performs I/O on the file represented by fid.
+///
+/// Under 9P2000.L, read cannot be used on directories. See [Treaddir](struct.Treaddir.html) for reading directories.
+///
+/// See the Plan 9 manual page for [read(5)](http://9p.io/magic/man2html/5/read).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tread {
+    pub fid: u32,
+    pub offset: u64,
+    pub count: u32,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rread {
+    pub data: Data,
+}
+
+/// write -- write data to a file
+/// 
+/// ```text
+/// size[4] Twrite tag[2] fid[4] offset[8] data[count]
+/// size[4] Rwrite tag[2] count[4]
+/// ```
+/// 
+/// write performs I/O on the file represented by fid. 
+/// 
+/// See the Plan 9 manual page for [write(5)](http://9p.io/magic/man2html/5/write).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Twrite {
+    pub fid: u32,
+    pub offset: u64,
+    pub data: Data,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rwrite {
+    pub count: u32,
+}
+
+/// clunk -- remove fid
+/// 
+/// ```text
+/// size[4] Tclunk tag[2] fid[4]
+/// size[4] Rclunk tag[2]
+/// ```
+/// 
+/// clunk removes the fid from the fid table.
+/// 
+/// See the Plan 9 manual page for [clunk(5)](http://9p.io/magic/man2html/5/clunk).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tclunk {
+    pub fid: u32,
+}
+
+/// remove -- remove a file
+/// 
+/// ```text
+/// size[4] Tremove tag[2] fid[4]
+/// size[4] Rremove tag[2]
+/// ```
+/// 
+/// remove removes the file represented by fid.
+/// 
+/// See the Plan 9 manual page for [remove(5)](http://9p.io/magic/man2html/5/remove).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tremove {
+    pub fid: u32,
+}
+
+/// statfs -- get file system information
+///  
+/// ```text
+/// size[4] Tstatfs tag[2] fid[4]
+/// size[4] Rstatfs tag[2] type[4] bsize[4] blocks[8] bfree[8] bavail[8] 
+///                        files[8] ffree[8] fsid[8] namelen[4]
+/// ```
+///  
+/// statfs is used to request file system information of the file system containing fid.
+/// The Rstatfs response corresponds to the fields returned by the statfs(2) system call.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tstatfs {
+    pub fid: u32,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rstatfs { 
+    pub ty: u32,
+    pub bsize: u32,
+    pub blocks: u64,
+    pub bfree: u64,
+    pub bavail: u64,
+    pub files: u64,
+    pub ffree: u64,
+    pub fsid: u64,
+    pub namelen: u32,
+}
+
+/// lopen -- open a file
+///   
+/// ```text
+/// size[4] Tlopen tag[2] fid[4] flags[4]
+/// size[4] Rlopen tag[2] qid[13] iounit[4]
+/// ```
+///   
+/// lopen prepares fid for file I/O. The flags field has the standard open(2) values.
+#[derive(Debug, JetStreamWireFormat)]  
+pub struct Tlopen {
+    pub fid: u32,
+    pub flags: u32,    
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rlopen {
+    pub qid: Qid,
+    pub iounit: u32,
+}
+
+/// lcreate -- create a file
+///    
+/// ```text   
+/// size[4] Tlcreate tag[2] fid[4] name[s] flags[4] mode[4] gid[4]    
+/// size[4] Rlcreate tag[2] qid[13] iounit[4]   
+/// ```
+///     
+/// lcreate creates a new file name in the directory represented by fid and prepares it for I/O.
+/// The flags field has the standard open(2) values.
+#[derive(Debug, JetStreamWireFormat)]    
+pub struct Tlcreate {
+    pub fid: u32,        
+    pub name: String,  
+    pub flags: u32,
+    pub mode: u32,
+    pub gid: u32,
+}
+
+#[derive(Debug, JetStreamWireFormat)]                               
+pub struct Rlcreate {                              
+    pub qid: Qid,
+    pub iounit: u32,
+}
+
+/// symlink -- create symlink
+///      
+/// ```text    
+/// size[4] Tsymlink tag[2] fid[4] name[s] symtgt[s] gid[4]    
+/// size[4] Rsymlink tag[2] qid[13]     
+/// ```
+///        
+/// symlink creates a new symbolic link name in the directory represented by fid.
+#[derive(Debug, JetStreamWireFormat)]        
+pub struct Tsymlink {                  
+    pub fid: u32,             
+    pub name: String,      
+    pub symtgt: String, 
+    pub gid: u32,   
+}                          
+
+#[derive(Debug, JetStreamWireFormat)]      
+pub struct Rsymlink {
+    pub qid: Qid,        
+}
+
+/// mknod -- create a special file
+///        
+/// ```text     
+/// size[4] Tmknod tag[2] dfid[4] name[s] mode[4] major[4] minor[4] gid[4]   
+/// size[4] Rmknod tag[2] qid[13]     
+/// ```
+///          
+/// mknod creates a new special file name in the directory represented by dfid.
+#[derive(Debug, JetStreamWireFormat)]        
+pub struct Tmknod { 
+    pub dfid: u32,    
+    pub name: String,              
+    pub mode: u32,              
+    pub major: u32,             
+    pub minor: u32,
+    pub gid: u32,                
+}
+
+#[derive(Debug, JetStreamWireFormat)]                                          
+pub struct Rmknod {  
+    pub qid: Qid,                               
+}     
+
+/// rename -- rename a file
+///
+/// ```text
+/// size[4] Trename tag[2] fid[4] dfid[4] name[s] 
+/// size[4] Rrename tag[2]
+/// ```
+///
+/// rename renames a file or directory from old name to new name in the 
+/// directory represented by dfid. fid represents the file to be renamed.
+#[derive(Debug, JetStreamWireFormat)]  
+pub struct Trename {
+    pub fid: u32,   
+    pub dfid: u32,
+    pub name: String,
+}
+
+/// readlink -- read symlink value
+/// 
+/// ```text
+/// size[4] Treadlink tag[2] fid[4]
+/// size[4] Rreadlink tag[2] target[s]  
+/// ```
+///
+/// readlink reads the target of the symbolic link represented by fid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Treadlink { 
+    pub fid: u32,
+}
+
+#[derive(Debug, JetStreamWireFormat)]  
+pub struct Rreadlink {
+    pub target: String,
+}
+
+/// getattr -- get file attributes
+/// 
+/// ```text
+/// size[4] Tgetattr tag[2] fid[4] request_mask[8]
+/// size[4] Rgetattr tag[2] valid[8] qid[13] mode[4] uid[4] gid[4] nlink[8]
+///     rdev[8] size[8] blksize[8] blocks[8] atime_sec[8] atime_nsec[8]
+///     mtime_sec[8] mtime_nsec[8] ctime_sec[8] ctime_nsec[8] btime_sec[8]
+///     btime_nsec[8] gen[8] data_version[8]
+/// ```
+/// 
+/// getattr gets attributes of the file system object represented by fid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tgetattr {  
+    pub fid: u32,
+    pub request_mask: u64,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rgetattr {
+    pub valid: u64,
+    pub qid: Qid, 
+    pub mode: u32,
+    pub uid: u32,
+    pub gid: u32,
+    pub nlink: u64,
+    pub rdev: u64,
+    pub size: u64,  
+    pub blksize: u64,
+    pub blocks: u64,
+    pub atime_sec: u64, 
+    pub atime_nsec: u64,
+    pub mtime_sec: u64,
+    pub mtime_nsec: u64,
+    pub ctime_sec: u64,
+    pub ctime_nsec: u64,
+    pub btime_sec: u64,
+    pub btime_nsec: u64,
+    pub gen: u64,
+    pub data_version: u64,
+}
+
+/// setattr -- set file attributes
+/// 
+/// ```text
+/// size[4] Tsetattr tag[2] fid[4] valid[4] mode[4] uid[4] gid[4] size[8]
+///     atime_sec[8] atime_nsec[8] mtime_sec[8] mtime_nsec[8]
+/// size[4] Rsetattr tag[2]
+/// ```
+/// 
+/// setattr sets attributes of the file system object represented by fid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tsetattr {
+    pub fid: u32, 
+    pub valid: u32,
+    pub mode: u32,
+    pub uid: u32, 
+    pub gid: u32,
+    pub size: u64,
+    pub atime_sec: u64,
+    pub atime_nsec: u64,
+    pub mtime_sec: u64,
+    pub mtime_nsec: u64,
+}
+
+/// xattrwalk -- walk extended attributes
+/// 
+/// ```text
+/// size[4] Txattrwalk tag[2] fid[4] newfid[4] name[s]
+/// size[4] Rxattrwalk tag[2] size[8]
+/// ```
+/// 
+/// xattrwalk gets a new fid pointing to the extended attribute directory 
+/// of the file represented by fid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Txattrwalk {
+    pub fid: u32,
+    pub newfid: u32,
+    pub name: String,
+}
+ 
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rxattrwalk {
+    pub size: u64,  
+}
+
+/// xattrcreate -- create an extended attribute
+/// 
+/// ```text
+/// size[4] Txattrcreate tag[2] fid[4] name[s] attr_size[8] flags[4]
+/// size[4] Rxattrcreate tag[2]
+/// ```
+/// 
+/// xattrcreate creates a new extended attribute named name of the file represented by fid.
+#[derive(Debug, JetStreamWireFormat)] 
+pub struct Txattrcreate {
+    pub fid: u32,
+    pub name: String,  
+    pub attr_size: u64,
+    pub flags: u32,
+}
+
+/// readdir -- read directory entries
+/// 
+/// ```text
+/// size[4] Treaddir tag[2] fid[4] offset[8] count[4]
+/// size[4] Rreaddir tag[2] count[4] data[count]
+/// ```
+/// 
+/// readdir reads directory entries from the directory represented by fid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Treaddir {
+    pub fid: u32,
+    pub offset: u64,
+    pub count: u32,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rreaddir {  
+    pub data: Data,
+}
+
+/// fsync -- synchronize file
+/// 
+/// ```text 
+/// size[4] Tfsync tag[2] fid[4] datasync[4]
+/// size[4] Rfsync tag[2] 
+/// ```
+/// 
+/// fsync flushes any cached data and metadata for the file represented by fid to stable storage.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tfsync { 
+    pub fid: u32,
+    pub datasync: u32,
+}
+
+/// lock -- acquire or release a POSIX record lock
+/// 
+/// ```text
+/// size[4] Tlock tag[2] fid[4] type[1] flags[4] start[8] length[8] proc_id[4] client_id[s]
+/// size[4] Rlock tag[2] status[1] 
+/// ```
+/// 
+/// lock acquires or releases a POSIX record lock on the open file fid.
+/// 
+/// See the Plan 9 manual page for [lock(5)](http://9p.io/magic/man2html/5/lock).
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tlock {
+    pub fid: u32,
+    pub type_: u8,
+    pub flags: u32,
+    pub start: u64,
+    pub length: u64, 
+    pub proc_id: u32,
+    pub client_id: String,
+}
+
+#[derive(Debug, JetStreamWireFormat)]  
+pub struct Rlock {
+    pub status: u8,  
+}
+
+/// getlock -- test for the existence of a POSIX record lock
+/// 
+/// ```text
+/// size[4] Tgetlock tag[2] fid[4] type[1] start[8] length[8] proc_id[4] client_id[s]  
+/// size[4] Rgetlock tag[2] type[1] start[8] length[8] proc_id[4] client_id[s]
+/// ```
+/// 
+/// getlock tests for the existence of a POSIX record lock on the open file fid.
+/// 
+/// See the Plan 9 manual page for [getlock(5)](http://9p.io/magic/man2html/5/getlock).  
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tgetlock {
+    pub fid: u32, 
+    pub type_: u8,
+    pub start: u64,
+    pub length: u64,
+    pub proc_id: u32,
+    pub client_id: String,    
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rgetlock {
+    pub type_: u8,
+    pub start: u64,
+    pub length: u64,
+    pub proc_id: u32,
+    pub client_id: String,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rlerror {
+    pub ecode: u32,
+}
+
+// Rerror
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rerror {
+    pub ename: String,
+}
+/// link -- create hard link
+/// 
+/// ```text
+/// size[4] Tlink tag[2] dfid[4] fid[4] name[s]
+/// size[4] Rlink tag[2]
+/// ```
+/// 
+/// link creates a new hard link name in the directory dfid that refers to the same file as fid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tlink {
+    pub dfid: u32,
+    pub fid: u32,
+    pub name: String,
+}
+
+/// mkdir -- create directory
+/// 
+/// ```text
+/// size[4] Tmkdir tag[2] dfid[4] name[s] mode[4] gid[4]
+/// size[4] Rmkdir tag[2] qid[13]
+/// ```
+/// 
+/// mkdir creates a new directory name in the directory represented by dfid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tmkdir {
+    pub dfid: u32,
+    pub name: String,
+    pub mode: u32,
+    pub gid: u32,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Rmkdir {
+    pub qid: Qid,
+}
+
+/// renameat -- rename a file or directory
+/// 
+/// ```text
+/// size[4] Trenameat tag[2] olddirfid[4] oldname[s] newdirfid[4] newname[s]
+/// size[4] Rrenameat tag[2]
+/// ```
+/// 
+/// renameat renames a file or directory from oldname in the directory represented by 
+/// olddirfid to newname in the directory represented by newdirfid.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Trenameat {
+    pub olddirfid: u32,
+    pub oldname: String,
+    pub newdirfid: u32,
+    pub newname: String,
+}
+
+/// unlinkat -- unlink a file or directory
+/// 
+/// ```text
+/// size[4] Tunlinkat tag[2] dirfd[4] name[s] flags[4]
+/// size[4] Runlinkat tag[2]
+/// ```
+/// 
+/// unlinkat removes the file name from the directory represented by dirfd.
+#[derive(Debug, JetStreamWireFormat)]
+pub struct Tunlinkat {
+    pub dirfd: u32,
+    pub name: String,
+    pub flags: u32,
+}
+
+/// Qid
 #[derive(Debug, Copy, Clone, JetStreamWireFormat)]
 pub struct Qid {
     pub ty: u8,
@@ -735,6 +1112,7 @@ pub struct Qid {
     pub path: u64,
 }
 
+/// Dirent -- directory entry
 #[derive(Debug, JetStreamWireFormat)]
 pub struct Dirent {
     pub qid: Qid,
@@ -755,125 +1133,11 @@ pub struct Rwalk {
 }
 
 #[derive(Debug, JetStreamWireFormat)]
-pub struct Rread {
-    pub data: Data,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rwrite {
-    pub count: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
 pub struct Rauth {
     pub aqid: Qid,
 }
 
-#[derive(Debug, JetStreamWireFormat)]
+#[derive(Debug, JetStreamWireFormat)] 
 pub struct Rattach {
     pub qid: Qid,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rlerror {
-    pub ecode: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rstatfs {
-    pub ty: u32,
-    pub bsize: u32,
-    pub blocks: u64,
-    pub bfree: u64,
-    pub bavail: u64,
-    pub files: u64,
-    pub ffree: u64,
-    pub fsid: u64,
-    pub namelen: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rlopen {
-    pub qid: Qid,
-    pub iounit: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rlcreate {
-    pub qid: Qid,
-    pub iounit: u32,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rsymlink {
-    pub qid: Qid,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rmknod {
-    pub qid: Qid,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rreadlink {
-    pub target: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rgetattr {
-    pub valid: u64,
-    pub qid: Qid,
-    pub mode: u32,
-    pub uid: u32,
-    pub gid: u32,
-    pub nlink: u64,
-    pub rdev: u64,
-    pub size: u64,
-    pub blksize: u64,
-    pub blocks: u64,
-    pub atime_sec: u64,
-    pub atime_nsec: u64,
-    pub mtime_sec: u64,
-    pub mtime_nsec: u64,
-    pub ctime_sec: u64,
-    pub ctime_nsec: u64,
-    pub btime_sec: u64,
-    pub btime_nsec: u64,
-    pub gen: u64,
-    pub data_version: u64,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rxattrwalk {
-    pub size: u64,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rreaddir {
-    pub data: Data,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rlock {
-    pub status: u8,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rgetlock {
-    pub type_: u8,
-    pub start: u64,
-    pub length: u64,
-    pub proc_id: u32,
-    pub client_id: String,
-}
-
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rmkdir {
-    pub qid: Qid,
-}
-
-// Rerror
-#[derive(Debug, JetStreamWireFormat)]
-pub struct Rerror {
-    pub ename: String,
 }

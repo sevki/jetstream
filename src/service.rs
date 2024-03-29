@@ -1,15 +1,11 @@
 use std::{
     error::Error,
     pin::Pin,
-    task::{Context, Poll},
 };
 
-use crate::protocol::{Rframe, Rmessage, Tframe, WireFormat};
+use crate::protocol::{Rframe, Tframe, WireFormat};
 use bytes::{BufMut, Bytes, BytesMut};
 use futures::prelude::*;
-use tower::Service;
-
-pub use jetstream_wire_format_derive::JetStreamWireFormat;
 
 /// Message trait for JetStream messages, which need to implement the `WireFormat` trait.
 pub trait Message: WireFormat + Send + Sync {}
@@ -61,85 +57,6 @@ impl<S: NinePService> JetStreamService<Tframe, Rframe> for NinePServiceImpl<S> {
         >,
     > {
         self.inner.call(req)
-    }
-}
-
-/// A static 9p service that always returns a version message.
-#[derive(Debug, Clone, Copy)]
-pub struct Radar;
-
-#[derive(Debug, Clone, JetStreamWireFormat)]
-struct Ping(u8);
-
-impl Message for Ping {}
-
-#[derive(Debug, Clone, JetStreamWireFormat)]
-struct Pong(u8);
-
-impl Message for Pong {}
-
-impl JetStreamService<Ping, Pong> for Radar {
-    fn call(
-        &mut self,
-        req: Ping,
-    ) -> Pin<
-        Box<
-            dyn Future<Output = Result<Pong, Box<dyn Error + Send + Sync>>>
-                + Send,
-        >,
-    > {
-        Box::pin(async move { Ok(Pong(req.0)) })
-    }
-}
-
-pub mod ninepecho {
-    use super::*;
-
-    #[derive(Debug, Clone, Copy)]
-    pub struct EchoService;
-
-    impl JetStreamService<Tframe, Rframe> for EchoService {
-        fn call(
-            &mut self,
-            _req: Tframe,
-        ) -> Pin<
-            Box<
-                dyn Future<
-                        Output = Result<Rframe, Box<dyn Error + Send + Sync>>,
-                    > + Send,
-            >,
-        > {
-            Box::pin(async move {
-                Ok(Rframe {
-                    tag: 0,
-                    msg: Rmessage::Version(crate::protocol::Rversion {
-                        msize: 0,
-                        version: "9P2000".to_string(),
-                    }),
-                })
-            })
-        }
-    }
-}
-
-struct Echo;
-
-impl Service<bytes::Bytes> for Echo {
-    type Error = Box<dyn Error + Send + Sync>;
-    type Future = Pin<
-        Box<dyn Future<Output = Result<Self::Response, Self::Error>> + Send>,
-    >;
-    type Response = bytes::Bytes;
-
-    fn poll_ready(
-        &mut self,
-        _cx: &mut Context<'_>,
-    ) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(Ok(()))
-    }
-
-    fn call(&mut self, req: bytes::Bytes) -> Self::Future {
-        Box::pin(async move { Ok(req) })
     }
 }
 

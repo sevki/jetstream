@@ -12,6 +12,9 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::string::String;
 use std::vec::Vec;
+use zerocopy::{AsBytes, LittleEndian};
+
+use crate::messages::Rlerror;
 
 /// A type that can be encoded on the wire using the 9P protocol.
 pub trait WireFormat: std::marker::Sized + Send {
@@ -38,36 +41,41 @@ macro_rules! uint_wire_format_impl {
             }
 
             fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                let mut buf = [0u8; mem::size_of::<$Ty>()];
-
-                // Encode the bytes into the buffer in little endian order.
-                for idx in 0..mem::size_of::<$Ty>() {
-                    buf[idx] = (self >> (8 * idx)) as u8;
-                }
-
-                writer.write_all(&buf)
+                writer.write_all(&self.as_bytes())
             }
 
             fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                let mut buf = [0u8; mem::size_of::<$Ty>()];
+                let mut buf = [0; mem::size_of::<$Ty>()];
                 reader.read_exact(&mut buf)?;
-
-                // Read bytes from the buffer in little endian order.
-                let mut result = 0;
-                for idx in 0..mem::size_of::<$Ty>() {
-                    result |= (buf[idx] as $Ty) << (8 * idx);
+                paste::expr! {
+                    let num: zerocopy::[<$Ty:snake:upper>]<LittleEndian> =  zerocopy::byteorder::[<$Ty:snake:upper>]::from_bytes(buf);
+                    Ok(num.get())
                 }
-
-                Ok(result)
             }
         }
     };
 }
-uint_wire_format_impl!(u8);
+
 uint_wire_format_impl!(u16);
 uint_wire_format_impl!(u32);
 uint_wire_format_impl!(u64);
 uint_wire_format_impl!(i32);
+
+impl WireFormat for u8 {
+    fn byte_size(&self) -> u32 {
+        1
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(&[*self])
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let mut byte = [0u8; 1];
+        reader.read_exact(&mut byte)?;
+        Ok(byte[0])
+    }
+}
 
 // The 9P protocol requires that strings are UTF-8 encoded.  The wire format is a u16
 // count |N|, encoded in little endian, followed by |N| bytes of UTF-8 data.
@@ -137,7 +145,6 @@ impl<T: WireFormat> WireFormat for Vec<T> {
 /// using a `u32` instead of a `u16`.
 #[derive(PartialEq, Eq, Clone)]
 pub struct Data(pub Vec<u8>);
-
 
 // The maximum length of a data buffer that we support.  In practice the server's max message
 // size should prevent us from reading too much data so this check is mainly to ensure a
@@ -229,6 +236,84 @@ impl WireFormat for Data {
                     buf.len()
                 ),
             ))
+        }
+    }
+}
+
+impl WireFormat for () {
+    fn byte_size(&self) -> u32 {
+        0
+    }
+
+    fn encode<W: Write>(&self, _writer: &mut W) -> io::Result<()> {
+        Ok(())
+    }
+
+    fn decode<R: Read>(_reader: &mut R) -> io::Result<Self> {
+        Ok(())
+    }
+}
+
+fn error_to_rmessage(err: &io::Error) -> Rlerror {
+    let errno = if let Some(errno) = err.raw_os_error() {
+        errno
+    } else {
+        // Make a best-effort guess based on the kind.
+        match err.kind() {
+            io::ErrorKind::NotFound => libc::ENOENT,
+            io::ErrorKind::PermissionDenied => libc::EPERM,
+            io::ErrorKind::ConnectionRefused => libc::ECONNREFUSED,
+            io::ErrorKind::ConnectionReset => libc::ECONNRESET,
+            io::ErrorKind::ConnectionAborted => libc::ECONNABORTED,
+            io::ErrorKind::NotConnected => libc::ENOTCONN,
+            io::ErrorKind::AddrInUse => libc::EADDRINUSE,
+            io::ErrorKind::AddrNotAvailable => libc::EADDRNOTAVAIL,
+            io::ErrorKind::BrokenPipe => libc::EPIPE,
+            io::ErrorKind::AlreadyExists => libc::EEXIST,
+            io::ErrorKind::WouldBlock => libc::EWOULDBLOCK,
+            io::ErrorKind::InvalidInput => libc::EINVAL,
+            io::ErrorKind::InvalidData => libc::EINVAL,
+            io::ErrorKind::TimedOut => libc::ETIMEDOUT,
+            io::ErrorKind::WriteZero => libc::EIO,
+            io::ErrorKind::Interrupted => libc::EINTR,
+            io::ErrorKind::Other => libc::EIO,
+            io::ErrorKind::UnexpectedEof => libc::EIO,
+            _ => libc::EIO,
+        }
+    };
+
+    Rlerror {
+        ecode: errno as u32,
+    }
+}
+
+impl<T: WireFormat> WireFormat for io::Result<T> {
+    fn byte_size(&self) -> u32 {
+        match self {
+            Ok(value) => value.byte_size(),
+            Err(err) => {
+                let error = error_to_rmessage(err);
+                error.byte_size()
+            }
+        }
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        match self {
+            Ok(value) => value.encode(writer),
+            Err(err) => {
+                let error = error_to_rmessage(err);
+                error.encode(writer)
+            }
+        }
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let error = Rlerror::decode(reader)?;
+        if error.ecode == 0 {
+            Ok(Ok(T::decode(reader)?))
+        } else {
+            Err(io::Error::from_raw_os_error(error.ecode as i32))
         }
     }
 }
