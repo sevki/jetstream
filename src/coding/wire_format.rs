@@ -318,6 +318,13 @@ impl<T: WireFormat> WireFormat for io::Result<T> {
     }
 }
 
+
+impl io::Read for Data {
+    fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
+        self.0.read(buf)
+    }
+}
+
 #[cfg(test)]
 mod test {
     use std::io::Cursor;
