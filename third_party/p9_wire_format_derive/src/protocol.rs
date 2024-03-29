@@ -340,7 +340,7 @@ pub fn generate_jetstream_prococol(
                     quote! {
                         #[inline]
                         async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident {
-                            #return_struct_ident(tag, #original_trait_name::#method_name(self, req.req)#maybe_await)
+                            #return_struct_ident(tag, #original_trait_name::#method_name(self, req.msg)#maybe_await)
                         }
                     }
                 } else {
