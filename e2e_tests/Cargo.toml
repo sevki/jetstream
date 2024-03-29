@@ -1,6 +1,6 @@
 [package]
 name = "e2e_tests"
-version = "0.1.0"
+version = "1.1.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -8,5 +8,5 @@ edition = "2021"
 [dependencies]
 async-trait = "0.1.79"
 futures = "0.3.30"
-jetstream = { version = "*", path = ".." }
+jetstream = { version = "1.1.0", path = ".." }
 tokio = { version = "1.37.0", features = ["full"] }

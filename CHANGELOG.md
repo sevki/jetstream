@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.0](https://github.com/sevki/jetstream/compare/v1.0.0...v1.1.0) (2024-03-29)
+
+
+### Features
+
+* **macros:** service macro to remove boilerplate code ([e0a9295](https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4))
+
 ## [1.0.0](https://github.com/sevki/jetstream/compare/v0.6.0...v1.0.0) (2024-03-25)
 
 
