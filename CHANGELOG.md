@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.0.2](https://github.com/sevki/jetstream/compare/v2.0.1...v2.0.2) (2024-03-29)
+
+
+### Bug Fixes
+
+* make data io::Read ([77b3680](https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f))
+
 ## [2.0.1](https://github.com/sevki/jetstream/compare/v2.0.0...v2.0.1) (2024-03-29)
 
 
