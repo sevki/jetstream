@@ -59,6 +59,11 @@ which = "6.0.1"
 
 [workspace]
 
-members = [ "e2e_tests",
+members = [ 
+    "e2e_tests",
     "third_party/p9_wire_format_derive",
+]
+
+exclude = [
+    "e2e_tests"
 ]
