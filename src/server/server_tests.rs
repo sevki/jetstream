@@ -8,7 +8,7 @@ mod tests {
             quic_server::QuicServer,
         }, service::JetStreamService, messages::Rmessage,
     };
-    use crate::protocol::{Rframe, Tframe, Tmessage, Tversion};
+    use crate::coding::{Rframe, Tframe, Tmessage, Tversion};
     use futures_util::Future;
     use s2n_quic::{provider::tls, Server};
     use slog_scope::debug;
@@ -35,7 +35,7 @@ mod tests {
             Box::pin(async move {
                 Ok(Rframe {
                     tag: 0,
-                    msg: Rmessage::Version(crate::protocol::Rversion {
+                    msg: Rmessage::Version(crate::coding::Rversion {
                         msize: 0,
                         version: "9P2000".to_string(),
                     }),

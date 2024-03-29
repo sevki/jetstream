@@ -1,6 +1,6 @@
 use std::io;
 
-use crate::protocol::*;
+use crate::coding::*;
 
 /// 9p
 #[async_trait::async_trait]

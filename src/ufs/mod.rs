@@ -29,7 +29,7 @@ use read_dir::read_dir;
 use serde::Deserialize;
 use serde::Serialize;
 
-use crate::protocol::*;
+use crate::coding::*;
 use crate::syscall;
 
 // Tlopen and Tlcreate flags.  Taken from "include/net/9p/9p.h" in the linux tree.

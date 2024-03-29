@@ -4,9 +4,8 @@ use radar::{
 };
 pub use tokio::io::{AsyncRead, AsyncWrite};
 
-#[jetstream::service]
+#[jetstream::protocol]
 mod radar {
-
     #[derive(JetStreamWireFormat)]
     pub struct Version {
         pub msize: u32,
@@ -15,14 +14,14 @@ mod radar {
     #[async_trait::async_trait]
     pub trait Radar {
         async fn version(&mut self, req: Version) -> Version;
-        fn ping(&mut self) -> u8;
+        fn ping(&mut self) -> ();
     }
 }
 struct MyRadar;
 
 impl Radar for MyRadar {
-    fn ping(&mut self) -> u8 {
-        0
+    fn ping(&mut self) -> () {
+        ()
     }
 
     #[must_use]

@@ -3,7 +3,7 @@ use std::{
     io::{self},
 };
 
-use crate::protocol::WireFormat;
+use crate::coding::WireFormat;
 
 use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
 
@@ -75,7 +75,7 @@ mod tests {
     use std::io::Cursor;
 
     #[allow(unused_imports)]
-    use crate::protocol::*;
+    use crate::coding::*;
     use tokio::time::sleep;
 
     use super::*;
