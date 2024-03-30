@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use bytes::Buf;
 use std::fmt;
 use std::io;
 use std::io::ErrorKind;
@@ -318,10 +319,9 @@ impl<T: WireFormat> WireFormat for io::Result<T> {
     }
 }
 
-
 impl io::Read for Data {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
-        self.0.read(buf)
+        self.0.reader().read(buf)
     }
 }
 
@@ -847,5 +847,16 @@ mod test {
             <Nested as WireFormat>::decode(&mut Cursor::new(&*input))
                 .expect("failed to decode value")
         );
+    }
+
+    #[test]
+    fn test_io_read_for_data() {
+        let mut data =
+            Data(vec![0x8b, 0xad, 0xf0, 0x0d, 0x0d, 0xf0, 0xad, 0x8b]);
+        let mut buf = [0; 8];
+
+        let _ = io::Read::read_exact(&mut data, &mut buf);
+
+        assert_eq!(buf, [0x8b, 0xad, 0xf0, 0x0d, 0x0d, 0xf0, 0xad, 0x8b]);
     }
 }
