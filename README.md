@@ -29,6 +29,11 @@ JetStream is not ready for production use. It's still in the early stages of dev
 - [jsonrpc](https://www.jsonrpc.org/)
 - [tarpc](https://crates.io/crates/tarpc)
 
+## Docs
+
+- [API Documentation](https://docs.rs/jetstream)
+
+
 ## Example [test](src/server/server_tests.rs)
 
 ```rust
