@@ -497,7 +497,7 @@ pub fn protocol_inner(
         mod #module_name {
             pub use async_trait::async_trait;
             use std::io;
-            pub use jetstream::{Message, WireFormat, JetStreamWireFormat, async_wire_format::AsyncWireFormatExt};
+            pub use jetstream::{Message, WireFormat, JetStreamWireFormat, wire_format_extensions::AsyncWireFormatExt};
             pub use std::mem;
             pub use std::io::{Read, Write, ErrorKind};
             pub use std::future::Future;

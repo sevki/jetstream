@@ -9,7 +9,7 @@ use s2n_quic::{
 
 use slog_scope::{debug, error};
 
-use crate::async_wire_format::AsyncWireFormatExt;
+use crate::wire_format_extensions::AsyncWireFormatExt;
 
 #[derive(Debug, Clone)]
 /// Represents a DialQuic struct.

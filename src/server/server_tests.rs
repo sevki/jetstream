@@ -1,7 +1,7 @@
 #[cfg(test)]
 mod tests {
     use crate::{
-        async_wire_format::AsyncWireFormatExt,
+        wire_format_extensions::AsyncWireFormatExt,
         log::{drain, setup_logging},
         server::{
             proxy::{DialQuic, Proxy},

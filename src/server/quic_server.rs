@@ -1,6 +1,6 @@
 use s2n_quic::Server;
 
-use crate::async_wire_format::AsyncWireFormatExt;
+use crate::wire_format_extensions::AsyncWireFormatExt;
 
 use slog_scope::{debug, error};
 

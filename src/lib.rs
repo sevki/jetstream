@@ -46,7 +46,7 @@
 extern crate jetstream_wire_format_derive;
 
 #[cfg(feature = "async")]
-pub mod async_wire_format;
+pub mod wire_format_extensions;
 #[cfg(feature = "client")]
 pub mod client;
 #[cfg(feature = "filesystem")]
