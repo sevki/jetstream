@@ -38,7 +38,7 @@ crc64 = "2.0.0"
 tuple-map = "0.4.0"
 futures-util = "0.3.30"
 colored = "2.1.0"
-serde = { version = "1.0.196", features = ["derive"] }
+serde = { version = "1.0.201", features = ["derive"] }
 lazy_static = "1.4.0"
 tower = "0.4.13"
 bytes = "1.6.0"
