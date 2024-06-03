@@ -51,7 +51,7 @@ crc16 = "0.4.0"
 slog-envlogger = "2.2.0"
 tokio-vsock = "0.5.0"
 zerocopy = { version = "0.7.32", features = ["derive", "simd"] }
-paste = "1.0.14"
+paste = "1.0.15"
 
 [build-dependencies]
 pkg-config = "0.3"
