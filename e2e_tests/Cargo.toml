@@ -10,4 +10,4 @@ publish = false
 async-trait = "0.1.80"
 futures = "0.3.30"
 jetstream = { version = "3.0.0", path = ".." }
-tokio = { version = "1.37.0", features = ["full"] }
+tokio = { version = "1.38.1", features = ["full"] }
