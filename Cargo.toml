@@ -25,7 +25,7 @@ jetstream_wire_format_derive = { path = "./third_party/p9_wire_format_derive", v
 tokio = { version = "1.35.1", features = ["full"] }
 anyhow = "1.0.82"
 async-trait = "0.1.80"
-libc = "0.2.152"
+libc = "0.2.157"
 s2n-quic = "1.37.0"
 genfs = "0.1.4"
 tokio-stream = { version = "0.1.15", features = ["full"] }
