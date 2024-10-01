@@ -1,6 +1,9 @@
 #[cfg(test)]
+mod tests {
+    use super::*;
 
-#[test]
-fn it_works() {
-    
+    #[test]
+    fn test_jetbridge_new() {
+
+    }
 }

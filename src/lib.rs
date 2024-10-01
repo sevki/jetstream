@@ -1,6 +1,6 @@
 //! <img src="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png" style="width: 200px">
 //!
-//! #  JetStream 
+//! #  JetStream
 //! [![crates.io](https://img.shields.io/crates/v/jetstream.svg)](https://crates.io/crates/jetstream) [![docs.rs](https://docs.rs/jetstream/badge.svg)](https://docs.rs/jetstream) <!--gh actions--> ![Build Status](https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg) ![Build Status](https://github.com/sevki/jetstream/actions/workflows/release.yml/badge.svg) [![crates.io downloads](https://img.shields.io/crates/d/jetstream.svg)](https://crates.io/crates/jetstream)
 //!
 //!
@@ -41,32 +41,29 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-
 #[macro_use]
-extern crate jetstream_wire_format_derive;
+extern crate jetstream_derive;
 
-#[cfg(feature = "async")]
-pub mod wire_format_extensions;
 #[cfg(feature = "client")]
 pub mod client;
+pub mod coding;
 #[cfg(feature = "filesystem")]
 pub mod filesystem;
 pub mod server;
 pub mod service;
-pub mod coding;
+#[cfg(feature = "async")]
+pub mod wire_format_extensions;
 
 pub mod ufs;
 
-pub mod log;
-
-pub use jetstream_wire_format_derive::JetStreamWireFormat;
+pub use jetstream_derive::{protocol, JetStreamWireFormat};
 
 #[cfg(feature = "tokio")]
 pub use tokio::io::{AsyncRead, AsyncWrite};
 
 /// This macro generates a JetStream protocol implementation from a module
 /// such as the following
-/// 
+///
 /// ```rust
 /// use jetstream::JetStreamWireFormat;
 /// use async_trait::async_trait;
@@ -86,14 +83,13 @@ pub use tokio::io::{AsyncRead, AsyncWrite};
 ///     }
 /// }
 /// ```
-/// 
+///
 /// This will generate an async `Radar` trait with a `version` and `ping` methods.
-/// 
-/// 
-pub use jetstream_wire_format_derive::protocol;
+///
+///
+pub use coding::{messages, Data, WireFormat};
 
-pub use coding::{Data, WireFormat, messages};
-
+pub use service::JetStreamProtocol;
 pub use service::Message;
 
 #[macro_export]
@@ -107,4 +103,3 @@ macro_rules! syscall {
         }
     }};
 }
-
