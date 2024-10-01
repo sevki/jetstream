@@ -1,24 +1,34 @@
+use std::error::Error;
 use std::{collections::btree_map, path::PathBuf};
 
 use crate::coding::{Rframe, Tframe};
 
+use crate::service::JetStreamProtocol;
 use crate::ufs::Server;
-use crate::{service::JetStreamService, service::Message};
+use crate::{service::JetStreamAsyncService, service::Message};
 
-pub struct Handle {
-    tframe: Tframe,
-    reply_to: tokio::sync::oneshot::Sender<Rframe>,
+pub struct Handle<Protocol: JetStreamProtocol> {
+    tframe: Protocol::Request,
+    reply_to: tokio::sync::oneshot::Sender<Protocol::Response>,
 }
 
 pub struct Ufs {
-    sender: tokio::sync::mpsc::UnboundedSender<Handle>,
-    processor: tokio::sync::mpsc::UnboundedReceiver<Handle>,
+    sender: tokio::sync::mpsc::UnboundedSender<Handle<UfsProtocol>>,
+    processor: tokio::sync::mpsc::UnboundedReceiver<Handle<UfsProtocol>>,
     server: Server,
+}
+
+struct UfsProtocol;
+
+impl JetStreamProtocol for UfsProtocol {
+    type Request = Tframe;
+    type Response = Rframe;
 }
 
 impl Ufs {
     pub fn new(path: PathBuf) -> Self {
-        let (tx, rx) = tokio::sync::mpsc::unbounded_channel::<Handle>();
+        let (tx, rx) =
+            tokio::sync::mpsc::unbounded_channel::<Handle<UfsProtocol>>();
         Self {
             sender: tx,
             processor: rx,
@@ -31,7 +41,7 @@ impl Ufs {
         }
     }
 
-    pub fn get_handler(&self) -> Handler {
+    pub fn get_handler(&self) -> Handler<UfsProtocol> {
         Handler {
             tx: self.sender.clone(),
         }
@@ -51,28 +61,45 @@ impl Ufs {
 }
 
 #[derive(Clone)]
-pub struct Handler {
-    tx: tokio::sync::mpsc::UnboundedSender<Handle>,
+pub struct Handler<Protocol: JetStreamProtocol> {
+    tx: tokio::sync::mpsc::UnboundedSender<Handle<Protocol>>,
 }
 
 impl Message for Tframe {}
 impl Message for Rframe {}
 
-impl JetStreamService<Tframe, Rframe> for Handler {
-    fn call(
-        &mut self,
-        req: Tframe,
-    ) -> std::pin::Pin<
+impl<Protocol: JetStreamProtocol> JetStreamProtocol for Handler<Protocol> {
+    type Request = Protocol::Request;
+
+    type Response = Protocol::Response;
+}
+
+impl<Protocol> JetStreamAsyncService for Handler<Protocol>
+where
+    Protocol: JetStreamProtocol,
+{
+    #[must_use]
+    #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
+    fn rpc<'life0, 'async_trait>(
+        &'life0 mut self,
+        req: Protocol::Request,
+    ) -> ::core::pin::Pin<
         Box<
-            dyn futures::prelude::Future<
+            dyn ::core::future::Future<
                     Output = Result<
-                        Rframe,
-                        Box<dyn std::error::Error + Send + Sync>,
+                        Protocol::Response,
+                        Box<dyn Error + Send + Sync>,
                     >,
-                > + Send,
+                > + ::core::marker::Send
+                + 'async_trait,
         >,
-    > {
-        let (reply, result) = tokio::sync::oneshot::channel::<Rframe>();
+    >
+    where
+        'life0: 'async_trait,
+        Self: 'async_trait,
+    {
+        let (reply, result) =
+            tokio::sync::oneshot::channel::<Protocol::Response>();
         self.tx
             .send(Handle {
                 tframe: req,

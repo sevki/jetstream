@@ -10,6 +10,8 @@ use std::mem;
 use std::string::String;
 use std::vec::Vec;
 
+use crate::service::JetStreamProtocol;
+
 use super::wire_format::Data;
 use super::wire_format::WireFormat;
 
@@ -1140,4 +1142,11 @@ pub struct Rauth {
 #[derive(Debug, JetStreamWireFormat)] 
 pub struct Rattach {
     pub qid: Qid,
+}
+
+pub struct NineP200LProtocol;
+
+impl JetStreamProtocol for NineP200LProtocol {
+    type Request =  Tframe;
+    type Response = Rframe;
 }

@@ -1,37 +1,71 @@
 #[cfg(test)]
 mod tests {
-    use crate::{
-        wire_format_extensions::AsyncWireFormatExt,
-        log::{drain, setup_logging},
-        server::{
-            proxy::{DialQuic, Proxy},
-            quic_server::QuicServer,
-        }, service::JetStreamService, messages::Rmessage,
-    };
+    use crate::client::DialQuic;
     use crate::coding::{Rframe, Tframe, Tmessage, Tversion};
-    use futures_util::Future;
-    use s2n_quic::{provider::tls, Server};
-    use slog_scope::debug;
-    use std::{
-        path::{self, Path},
-        sync::Arc, pin::Pin, error::Error,
+    use crate::service::{
+        JetStreamProtocol, JetStreamService, JetStreamSharedService,
     };
-    use tokio::{io::AsyncWriteExt, sync::Barrier, net::UnixListener};
+    use crate::{
+        messages::Rmessage,
+        server::{proxy::Proxy, quic_server::QuicServer},
+        service::JetStreamAsyncService,
+        wire_format_extensions::AsyncWireFormatExt,
+    };
+    use futures_util::Future;
+
+    use okstd::prelude::*;
+    use s2n_quic::{provider::tls, Server};
+    use std::{
+        error::Error,
+        path::{self, Path},
+        pin::Pin,
+        sync::Arc,
+    };
+    use tokio::{io::AsyncWriteExt, net::UnixListener, sync::Barrier};
 
     #[derive(Debug, Clone)]
     pub struct EchoService;
 
-    impl JetStreamService<Tframe, Rframe> for EchoService {
-        fn call(
+    impl JetStreamProtocol for EchoService {
+        type Request = Tframe;
+        type Response = Rframe;
+    }
+
+    impl JetStreamService for EchoService {
+        fn rpc(
             &mut self,
-            _req: Tframe,
-        ) -> Pin<
+            req: Self::Request,
+        ) -> Result<Self::Response, Box<dyn Error + Send + Sync>> {
+            Ok(Rframe {
+                tag: 0,
+                msg: Rmessage::Version(crate::coding::Rversion {
+                    msize: 0,
+                    version: "9P2000".to_string(),
+                }),
+            })
+        }
+    }
+
+    impl JetStreamSharedService for EchoService {}
+
+    impl JetStreamAsyncService for EchoService {
+        #[must_use]
+        #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
+        fn rpc<'life0, 'async_trait>(
+            &'life0 mut self,
+            req: Tframe,
+        ) -> ::core::pin::Pin<
             Box<
-                dyn Future<
+                dyn ::core::future::Future<
                         Output = Result<Rframe, Box<dyn Error + Send + Sync>>,
-                    > + Send,
+                    > + ::core::marker::Send
+                    + 'async_trait,
             >,
-        > {
+        >
+        where
+            'life0: 'async_trait,
+            Self: 'async_trait,
+        {
             Box::pin(async move {
                 Ok(Rframe {
                     tag: 0,
@@ -46,8 +80,7 @@ mod tests {
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
     async fn test_quic_server_unix_socket_proxy() {
-        let _guard = slog_scope::set_global_logger(setup_logging());
-        let _guard = slog_envlogger::new(drain());
+        setup_logging(LevelFilter::Debug).expect("set logger");
         let (_tx, _rx) = tokio::io::duplex(1024);
         pub static CA_CERT_PEM: &str =
             concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
@@ -83,8 +116,7 @@ mod tests {
                 .unwrap()
                 .start()
                 .unwrap();
-            let qsrv: QuicServer<Tframe, Rframe, EchoService> =
-                QuicServer::new(EchoService);
+            let qsrv: QuicServer<EchoService> = QuicServer::new(EchoService);
             debug!("Server started, waiting for barrier");
             c.wait().await;
             let _ = qsrv.serve(server).await;

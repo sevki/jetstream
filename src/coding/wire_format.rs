@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 use bytes::Buf;
+#[cfg(feature = "git")]
+use git2::Oid;
 use std::fmt;
 use std::io;
 use std::io::ErrorKind;
@@ -11,6 +13,7 @@ use std::io::Write;
 use std::mem;
 use std::ops::Deref;
 use std::ops::DerefMut;
+use std::result;
 use std::string::String;
 use std::vec::Vec;
 use zerocopy::{AsBytes, LittleEndian};
@@ -288,40 +291,28 @@ fn error_to_rmessage(err: &io::Error) -> Rlerror {
     }
 }
 
-impl<T: WireFormat> WireFormat for io::Result<T> {
-    fn byte_size(&self) -> u32 {
-        match self {
-            Ok(value) => value.byte_size(),
-            Err(err) => {
-                let error = error_to_rmessage(err);
-                error.byte_size()
-            }
-        }
-    }
-
-    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        match self {
-            Ok(value) => value.encode(writer),
-            Err(err) => {
-                let error = error_to_rmessage(err);
-                error.encode(writer)
-            }
-        }
-    }
-
-    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-        let error = Rlerror::decode(reader)?;
-        if error.ecode == 0 {
-            Ok(Ok(T::decode(reader)?))
-        } else {
-            Err(io::Error::from_raw_os_error(error.ecode as i32))
-        }
-    }
-}
 
 impl io::Read for Data {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.reader().read(buf)
+    }
+}
+
+#[cfg(feature = "git")]
+impl WireFormat for Oid {
+    fn byte_size(&self) -> u32 {
+        self.as_bytes().len() as u32
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(self.as_bytes())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let mut buf = [0; 20];
+        reader.read_exact(&mut buf)?;
+        Oid::from_bytes(&buf)
+            .map_err(|_| io::Error::new(ErrorKind::InvalidData, "invalid oid"))
     }
 }
 
@@ -347,7 +338,7 @@ mod test {
 
         assert_eq!(
             0xef_u8,
-            WireFormat::decode(&mut Cursor::new(&buf)).unwrap()
+            u8::decode(&mut Cursor::new(&buf)).unwrap()
         );
         assert_eq!(0xbeef_u16, u16::decode(&mut Cursor::new(&buf)).unwrap());
         assert_eq!(
