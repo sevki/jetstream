@@ -39,13 +39,14 @@ fn generate_input_struct(
             let name = pat.pat.clone();
             let ty = pat.ty.clone();
             quote! {
-                pub #name: #ty
+                pub #name: #ty,
             }
         }
         syn::FnArg::Receiver(_) => quote! {},
     });
 
     quote! {
+        #[allow(non_camel_case_types)]
         #[derive(JetStreamWireFormat)]
         pub struct #request_struct_ident {
             pub tag: u16,
@@ -60,11 +61,13 @@ fn generate_return_struct(
 ) -> proc_macro2::TokenStream {
     match &method_sig.output {
         syn::ReturnType::Type(_, ty) =>     quote! {
-            #[derive(JetStreamWireFormat)]
+            #[allow(non_camel_case_types)]
+            #[derive(Debug, JetStreamWireFormat)]
             pub struct #return_struct_ident(pub u16, pub #ty );
         },
         syn::ReturnType::Default => quote! { 
-            #[derive(JetStreamWireFormat)]
+            #[allow(non_camel_case_types)]
+            #[derive(Debug, JetStreamWireFormat)]
             pub struct #return_struct_ident(pub u16);
          },
     }
@@ -83,17 +86,43 @@ impl IdentCased {
         let s = self.0.to_string();
         IdentCased(Ident::new(&s[1..], self.0.span()))
     }
+    #[allow(dead_code)]
     fn to_title_case(&self) -> Self {
         let converter =
             convert_case::Converter::new().to_case(convert_case::Case::Title);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
+    #[allow(dead_code)]
     fn to_upper_case(&self) -> Self {
         let converter =
             convert_case::Converter::new().to_case(convert_case::Case::Upper);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
+    }
+    fn to_screaming_snake_case(&self) -> Self {
+        let converter =
+            convert_case::Converter::new().to_case(convert_case::Case::ScreamingSnake);
+        let converted = converter.convert(self.0.to_string());
+        IdentCased(Ident::new(&converted, self.0.span()))
+    }
+    fn to_pascale_case(&self) -> Self {
+        let converter =
+            convert_case::Converter::new().to_case(convert_case::Case::Pascal);
+        let converted = converter.convert(self.0.to_string());
+        IdentCased(Ident::new(&converted, self.0.span()))
+    }
+    #[allow(dead_code)]
+    fn to_upper_flat(&self) -> Self {
+        let converter =
+            convert_case::Converter::new().to_case(convert_case::Case::UpperFlat);
+        let converted = converter.convert(self.0.to_string());
+        IdentCased(Ident::new(&converted, self.0.span()))
+    }
+    #[allow(dead_code)]
+    fn remove_whitespace(&self) -> Self {
+        let s = self.0.to_string().split_whitespace().collect::<String>();
+        IdentCased(Ident::new(&s, self.0.span()))
     }
 }
 
@@ -118,17 +147,17 @@ fn generate_frame(
         Direction::Rx => quote! { Rframe },
         Direction::Tx => quote! { Tframe },
     };
-
-    let rmsg_variants = msgs.iter().map(|(ident, _)| {
+    
+    let msg_variants = msgs.iter().map(|(ident, _p)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_title_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
         quote! {
             #variant_name(#ident),
         }
     });
     let cloned_byte_sizes = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_title_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
         quote! {
             #enum_name::#variant_name(msg) => msg.byte_size()
         }
@@ -136,7 +165,7 @@ fn generate_frame(
 
     let match_arms = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_title_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
         quote! {
             #enum_name::#variant_name(msg)
         }
@@ -144,7 +173,8 @@ fn generate_frame(
 
     let encode_bodies = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.to_upper_case().into();
+        let variant_name: Ident = name.to_screaming_snake_case().into();
+       
         let new_ident = Ident::new(&format!("{}", variant_name), ident.span());
         quote!{
             #new_ident,
@@ -153,8 +183,9 @@ fn generate_frame(
 
     let decode_bodies = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_title_case().into();
-        let const_name: Ident = name.to_upper_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
+
+        let const_name: Ident = name.to_screaming_snake_case().into();
         quote!{
                 #const_name => Ok(#enum_name::#variant_name(WireFormat::decode(reader)?)),         
         }
@@ -172,10 +203,17 @@ fn generate_frame(
         }
     });
 
-
+    let debugger =match direction {
+        Direction::Rx => {
+            quote!{debug!("rframe byte_size: {}", byte_size);}
+        },
+        Direction::Tx => {
+            quote!{debug!("tframe byte_size: {}", byte_size);}
+        }
+    };
     quote! {
         pub enum #enum_name {
-            #( #rmsg_variants )*
+            #( #msg_variants )*
         }
 
         pub struct #frame_name {
@@ -229,13 +267,15 @@ fn generate_frame(
                         ErrorKind::InvalidData,
                         format!("byte_size(= {}) is less than 4 bytes", byte_size),
                     ));
+                } else {
+                    let byte_size = byte_size - 
+                    (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32;
                 }
 
-                let reader = &mut reader.take(byte_size as u64 - mem::size_of::<u32>() as u64);
-
-                let mut ty: u8 = WireFormat::decode(reader)?;
-
-                let tag: u16 = WireFormat::decode(reader)?;
+                let ty = u8::decode(reader)?;
+                
+                let tag: u16 = u16::decode(reader)?;
+                let reader = &mut reader.take((byte_size) as u64);
 
                 let msg: #enum_name = Self::decode_message(reader, ty)?;
                 
@@ -276,7 +316,7 @@ fn generate_match_arms(
 ) -> impl Iterator<Item = proc_macro2::TokenStream> {
     tmsgs.map(|(ident, _)| {
         let name: IdentCased = (&ident).into();
-        let variant_name: Ident = name.remove_prefix().to_title_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
         quote! {
             Tmessage::#variant_name(msg)
         }
@@ -290,19 +330,34 @@ pub fn generate_jetstream_prococol(
     let trait_name: &Ident = &item.ident;
     let original_trait_name = trait_name.clone();
     let mut trait_ident: IdentCased = trait_name.into();
-    trait_ident = trait_ident.to_title_case();
+    trait_ident = trait_ident.to_pascale_case();
     let trait_name:Ident =  trait_ident.into();
     // rename the trait to have a prefix
-    let trait_name = Ident::new(
+    let proto_name = Ident::new(
         &format!("{}Protocol", trait_name),
         trait_name.span(),
     );
+    let server_name = Ident::new(
+        &format!("{}Server", trait_name),
+        trait_name.span(),
+    );
+    let client_name = Ident::new(
+        &format!("{}Client", trait_name),
+        trait_name.span(),
+    );
+        // rename the trait to have a prefix
+    let trait_name = Ident::new(
+        &format!("{}Service", trait_name),
+        trait_name.span(),
+    );
+
 
     let mut tmsgs = vec![];
     let mut rmsgs = vec![];
     let mut calls = vec![];
     let mut msg_ids = vec![];
-
+    let mut signatures = vec![];
+    let mut server_calls = vec![];
     {
         let with_calls = item
         .items
@@ -311,6 +366,7 @@ pub fn generate_jetstream_prococol(
         .map(|(index, item)| match item {
             TraitItem::Fn(method) => {
                 let method_name = &method.sig.ident;
+                
                 let request_struct_ident = Ident::new(
                     &format!("T{}", method_name),
                     method_name.span(),
@@ -319,7 +375,6 @@ pub fn generate_jetstream_prococol(
                     &format!("R{}", method_name),
                     method_name.span(),
                 );
-                
                 let _output_type = match &method.sig.output {
                     syn::ReturnType::Type(_, ty) => quote! { #ty },
                     syn::ReturnType::Default => quote! { () },
@@ -330,7 +385,8 @@ pub fn generate_jetstream_prococol(
                     generate_input_struct(&request_struct_ident.clone(), &method.sig);
                 let return_struct =
                     generate_return_struct(&return_struct_ident.clone(), &method.sig);
-                    
+   
+                        
                 tmsgs.push((request_struct_ident.clone(),request_struct.clone()));
                 rmsgs.push((return_struct_ident.clone(),return_struct.clone()));
                 let has_req = method.sig.inputs.iter().count() > 1;
@@ -340,14 +396,14 @@ pub fn generate_jetstream_prococol(
                     let spread_req = method.sig.inputs.iter().map(|arg| match arg {
                         syn::FnArg::Typed(pat) => {
                             let name = pat.pat.clone();
-                            quote! { req.#name }
+                            quote! { req.#name, }
                         }
                         syn::FnArg::Receiver(_) => quote! {},
                     });
                     quote! {
                         #[inline]
                         async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident {
-                            #return_struct_ident(tag, #original_trait_name::#method_name(self, 
+                            #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner, 
                                 #(#spread_req)*
                             )#maybe_await)
                         }
@@ -356,29 +412,76 @@ pub fn generate_jetstream_prococol(
                     quote! {
                         #[inline]
                         async fn #method_name(&mut self,tag: u16, req: #request_struct_ident)-> #return_struct_ident {
-                            #return_struct_ident(tag, #original_trait_name::#method_name(self)#maybe_await)
+                            #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner)#maybe_await)
                         }
+                    }
+                }
+                
+            }
+            _ => quote! { #item },
+        });
+        calls.extend(with_calls);
+        let with_signatures = item.items.iter().enumerate().map(|(index, item)| match item {
+            TraitItem::Fn(method) => {
+                let method_name = &method.sig.ident;
+                let request_struct_ident = Ident::new(
+                    &format!("T{}", method_name),
+                    method_name.span(),
+                );
+                let return_struct_ident = Ident::new(
+                    &format!("R{}", method_name),
+                    method_name.span(),
+                );
+                let _output_type = match &method.sig.output {
+                    syn::ReturnType::Type(_, ty) => quote! { #ty },
+                    syn::ReturnType::Default => quote! { () },
+                };
+                let msg_id = generate_msg_id(index, method_name);
+                // msg_ids.push(msg_id);
+                let request_struct =
+                    generate_input_struct(&request_struct_ident.clone(), &method.sig);
+                let return_struct =
+                    generate_return_struct(&return_struct_ident.clone(), &method.sig);
+                // tmsgs.push((request_struct_ident.clone(),request_struct.clone()));
+                //        rmsgs.push((return_struct_ident.clone(),return_struct.clone()));
+                let has_req = method.sig.inputs.iter().count() > 1;
+                let is_async = method.sig.asyncness.is_some();
+                let maybe_await = if is_async { quote! { .await } } else { quote! {} };
+                if has_req {
+                    let spread_req = method.sig.inputs.iter().map(|arg| match arg {
+                        syn::FnArg::Typed(pat) => {
+                            let name = pat.pat.clone();
+                            quote! { req.#name, }
+                        }
+                        syn::FnArg::Receiver(_) => quote! {},
+                    });
+                    quote! {
+                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident;
+                    }
+                } else {
+                    quote! {
+                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident;
                     }
                 }
             }
             _ => quote! { #item },
         });
-        calls.extend(with_calls);
+
+        signatures.extend(with_signatures);
 
         let match_arms = generate_match_arms(tmsgs.clone().into_iter());
         let match_arm_bodies: Vec<proc_macro2::TokenStream> = item.items.clone().iter().map(|item| match item {
             TraitItem::Fn(method) => {
                 let method_name = &method.sig.ident;
                 let name: IdentCased = method_name.into();
-                let variant_name: Ident = name.to_title_case().into();
-
+                let variant_name: Ident = name.to_pascale_case().into();
                 quote! {
                      {
                         let msg = #trait_name::#method_name(self,req.tag, msg).await;
-                        Rframe{
+                        Ok(Rframe{
                             tag: req.tag,
                             msg: Rmessage::#variant_name(msg)
-                        }
+                        })
                     }
                 }
             }
@@ -389,22 +492,16 @@ pub fn generate_jetstream_prococol(
                 #arm => #body
             }
         });
-        calls.extend(iter::once(quote! {
+        server_calls.extend(iter::once(quote! {
             #[inline]
-            async fn rpc(&mut self, req:Tframe) -> Rframe {
+            async fn rpc(&mut self, req:Self::Request) -> Result<Self::Response,Box<dyn Error + Send + Sync>> {
                 match req.msg {
                     #( 
                         #matches
                      )*
                 }                
             }
-            #[inline]
-            async fn handle<W: jetstream::AsyncWrite + Send + Unpin, R: jetstream::AsyncRead + Send + Unpin>(&mut self, reader: &mut R, writer: &mut W) -> io::Result<()> {
-                let req = Tframe::decode_async(reader).await?;
-                let res = self.rpc(req).await;
-                res.encode_async(writer).await?;
-                Ok(())
-            }
+
         }));
     }
     let tmsg_definitions = tmsgs.iter().map(|(_ident, def)| {
@@ -412,13 +509,13 @@ pub fn generate_jetstream_prococol(
             #def
         }
     });
-
+    
     let rmsg_definitions = rmsgs.iter().map(|(_ident, def)| {
         quote! {
             #def
         }
     });
-
+    
     let tframe = generate_tframe(tmsgs.clone());
     let rframe = generate_rframe(rmsgs.clone());
     
@@ -456,15 +553,60 @@ pub fn generate_jetstream_prococol(
 
         #tframe
 
+        impl Message for Tframe {}
+
         #rframe
 
+        impl Message for Rframe {}
+
+        pub struct #proto_name;
+        impl JetStreamProtocol for #proto_name {
+            type Request = Tframe;
+            type Response = Rframe;
+        }
+
         #[async_trait::async_trait]
-        pub trait #trait_name: #original_trait_name + Send + Sync {
+        pub trait #trait_name
+            where
+             Self: Sized + Send + Sync,
+         {
+            type Protocol: JetStreamProtocol;
+            #(
+                #signatures
+            )*
+        }
+        pub struct #server_name<T: #original_trait_name+Send+Sync +?Sized> {
+            inner: T
+        }
+        impl<T: #original_trait_name+Send + Sync + Sized> #server_name<T>
+            where Self: Send + Sync + Sized 
+        {
+            pub fn new(inner: T) -> Self {
+                Self { inner }
+            }
+        }
+        impl<T:#original_trait_name+Send + Sync + Sized> JetStreamProtocol for #server_name<T> {
+            type Request = Tframe;
+            type Response = Rframe;
+        }
+        #[async_trait::async_trait]
+        impl<T: #original_trait_name+Send + Sync + Sized> JetStreamAsyncService for #server_name<T>
+            where Self: Send + Sync + Sized 
+        {
+            #(
+                #server_calls
+            )*
+        }
+        #[async_trait::async_trait]
+        impl<T: #original_trait_name+Send + Sync + Sized> #trait_name for #server_name<T>
+            where Self: Send + Sync + Sized
+         {
+            type Protocol = #proto_name;
+            
             #(
                 #calls
             )*
         }
-
     )
 }
 
@@ -493,15 +635,18 @@ pub fn protocol_inner(
             _ => quote! { },
         });
     // Construct the final output TokenStream
+    let visibility = &item_mod.vis;
+
     TokenStream::from(quote! {
-        mod #module_name {
+        #visibility mod #module_name {
             pub use async_trait::async_trait;
             use std::io;
-            pub use jetstream::{Message, WireFormat, JetStreamWireFormat, wire_format_extensions::AsyncWireFormatExt};
+            pub use jetstream::{Message, WireFormat, JetStreamWireFormat, wire_format_extensions::AsyncWireFormatExt, JetStreamProtocol, service::{JetStreamAsyncService}};
             pub use std::mem;
             pub use std::io::{Read, Write, ErrorKind};
             pub use std::future::Future;
             pub use std::pin::Pin;
+            pub use std::error::Error;
             pub use super::*;
             
             #(#transformed_items)*

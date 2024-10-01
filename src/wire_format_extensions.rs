@@ -4,6 +4,8 @@ use std::{
 };
 
 use bytes::{BufMut, Bytes, BytesMut};
+use futures::TryFutureExt;
+use okstd::prelude::*;
 
 use crate::coding::WireFormat;
 
@@ -69,7 +71,6 @@ where
 /// Implements the `AsyncWireFormatExt` trait for types that implement the `WireFormat` trait and can be sent across threads.
 impl<T: WireFormat + Send> AsyncWireFormatExt for T {}
 
-
 /// A trait for converting types to and from a wire format.
 pub trait ConvertWireFormat: WireFormat {
     /// Converts the type to a byte representation.
@@ -118,8 +119,6 @@ where
     }
 }
 
-
-
 // tests
 mod tests {
     use std::{pin::Pin, time::Duration};
@@ -141,10 +140,7 @@ mod tests {
     impl BlockingIO<tokio::io::DuplexStream> {
         #[allow(dead_code)]
         fn new(delay: Duration, inner: tokio::io::DuplexStream) -> Self {
-            Self {
-                delay,
-                inner,
-            }
+            Self { delay, inner }
         }
     }
 

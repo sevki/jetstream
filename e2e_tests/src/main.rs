@@ -1,12 +1,16 @@
+use jetstream::JetStreamProtocol;
 use radar::{
-    Radar, RadarProtocol, Rmessage, Tframe, Tmessage, Tversion, Version,
-    PROTOCOL_VERSION,
+    Radar, RadarProtocol, RadarService, Rframe, Rmessage, Rping, Rversion,
+    Tframe, Tmessage, Tping, Tversion, Version, PROTOCOL_VERSION,
 };
 pub use tokio::io::{AsyncRead, AsyncWrite};
 
 #[jetstream::protocol]
 mod radar {
-    #[derive(JetStreamWireFormat)]
+    use std::fmt::Debug;
+    use slog_scope::debug;
+
+    #[derive(Debug, JetStreamWireFormat)]
     pub struct Version {
         pub msize: u32,
         pub version: String,
@@ -17,13 +21,10 @@ mod radar {
         fn ping(&mut self) -> ();
     }
 }
+
 struct MyRadar;
 
 impl Radar for MyRadar {
-    fn ping(&mut self) -> () {
-        ()
-    }
-
     #[must_use]
     #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
     fn version<'life0, 'async_trait>(
@@ -42,14 +43,20 @@ impl Radar for MyRadar {
     {
         Box::pin(async move { req })
     }
+
+    fn ping(&mut self) -> () {
+        ()
+    }
 }
 
-impl RadarProtocol for MyRadar {}
+use jetstream::service::JetStreamAsyncService;
 
 fn main() {
     let mut r = MyRadar;
+    let mut server = radar::RadarServer::new(r);
+    
     futures::executor::block_on(async {
-        let ver = r
+        let ver = server
             .rpc(Tframe {
                 tag: 0,
                 msg: Tmessage::Version(Tversion {
@@ -60,7 +67,7 @@ fn main() {
                     },
                 }),
             })
-            .await;
+            .await.unwrap();
 
         match ver.msg {
             Rmessage::Version(v) => {

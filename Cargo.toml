@@ -9,24 +9,24 @@ repository = "https://github.com/sevki/jetstream"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 
-
 [features]
-default = ["async", "tokio"]
+default = ["async", "tokio", "git", "client"]
 
 filesystem = []
-client = []
+client = ["cros-async"]
 async = []
 tokio = []
-cros-async = []
+cros-async = ["dep:okstd"]
+git = []
 
 [dependencies]
 futures = "0.3.30"
-jetstream_wire_format_derive = { path = "./third_party/p9_wire_format_derive", version = "3.0.0" }
+jetstream_derive = { path = "./jetstream_derive", version = "3.0.0" }
 tokio = { version = "1.35.1", features = ["full"] }
-anyhow = "1.0.82"
-async-trait = "0.1.80"
+anyhow = "1.0.81"
+async-trait = "0.1.79"
 libc = "0.2.152"
-s2n-quic = "1.37.0"
+s2n-quic = "1.34.0"
 genfs = "0.1.4"
 tokio-stream = { version = "0.1.15", features = ["full"] }
 async-stream = "0.3.5"
@@ -42,16 +42,18 @@ serde = { version = "1.0.196", features = ["derive"] }
 lazy_static = "1.4.0"
 tower = "0.4.13"
 bytes = "1.6.0"
-slog = "2.7.0"
-slog-term = "2.9.1"
-slog-scope = "4.4.0"
+# slog = "2.7.0"
+# slog-term = "2.9.1"
+# slog-scope = "4.4.0"
 termcolor = "1.4.1"
 parking_lot = "0.12.1"
 crc16 = "0.4.0"
-slog-envlogger = "2.2.0"
+# slog-envlogger = "2.2.0"
 tokio-vsock = "0.5.0"
 zerocopy = { version = "0.7.32", features = ["derive", "simd"] }
 paste = "1.0.14"
+git2 = "0.18.3"
+okstd = { version = "0.1.10", optional = true, registry = "oksoftware" }
 
 [build-dependencies]
 pkg-config = "0.3"
@@ -61,7 +63,4 @@ which = "6.0.1"
 
 [workspace]
 
-members = [ 
-    "e2e_tests",
-    "third_party/p9_wire_format_derive",
-]
+members = ["e2e_tests", "jetstream_derive"]

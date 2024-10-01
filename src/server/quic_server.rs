@@ -1,36 +1,26 @@
 use s2n_quic::Server;
 
-use crate::wire_format_extensions::AsyncWireFormatExt;
+use crate::{
+    service::{JetStreamProtocol, JetStreamSharedService},
+    wire_format_extensions::AsyncWireFormatExt,
+};
 
-use slog_scope::{debug, error};
+use okstd::prelude::*;
 
-use crate::service::{JetStreamService, Message};
+use crate::service::{JetStreamAsyncService, Message};
 
-pub struct QuicServer<
-    Req: Message,
-    Resp: Message,
-    S: JetStreamService<Req, Resp>,
-> {
+pub struct QuicServer<S: JetStreamAsyncService + JetStreamSharedService> {
     svc: S,
-    _ghost: std::marker::PhantomData<(Req, Resp)>,
 }
 
-impl<Req: Message, Resp: Message, S: JetStreamService<Req, Resp>>
-    QuicServer<Req, Resp, S>
-{
+impl<S: JetStreamAsyncService + JetStreamSharedService> QuicServer<S> {
     pub fn new(svc: S) -> Self {
-        Self {
-            svc,
-            _ghost: std::marker::PhantomData,
-        }
+        Self { svc }
     }
 }
 
-impl<
-        Req: Message,
-        Resp: Message,
-        T: JetStreamService<Req, Resp> + Clone + 'static,
-    > QuicServer<Req, Resp, T>
+impl<S: JetStreamAsyncService + JetStreamSharedService + 'static>
+    QuicServer<S>
 {
     pub async fn serve(self, mut server: Server) -> anyhow::Result<()> {
         debug!("Server started");
@@ -60,11 +50,25 @@ impl<
                         loop {
                             // read and send to up_stream
                             {
+                                // debug!("handling message");
+                                let _res = svc
+                                    .clone()
+                                    .handle_message(
+                                        &mut downstream_reader,
+                                        &mut write,
+                                    )
+                                    .await;
+                                if _res.is_err() {
+                                    error!(
+                                        "Error handling message: {:?}",
+                                        _res
+                                    );
+                                    break;
+                                }
                                 debug!("Reading from down_stream");
                                 let tframe =
-                                    Req::decode_async(&mut downstream_reader)
+                                    <S as JetStreamProtocol>::Request::decode_async(&mut downstream_reader)
                                         .await;
-                                // debug!("got tframe: {:?}", tframe);
                                 if let Err(e) = tframe {
                                     // if error is eof, break
                                     if e.kind()
@@ -82,8 +86,12 @@ impl<
                                     tframe
                                 {
                                     debug!("Sending to up_stream");
-                                    let rframe =
-                                        svc.clone().call(tframe).await.unwrap();
+                                    let rframe = JetStreamAsyncService::rpc(
+                                        &mut svc.clone(),
+                                        tframe,
+                                    )
+                                    .await
+                                    .unwrap();
                                     // debug!("got rframe: {:?}", rframe);
                                     debug!("writing to down_stream");
                                     rframe
