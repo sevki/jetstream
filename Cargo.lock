@@ -539,7 +539,7 @@ checksum = "92773504d58c093f6de2459af4af33faa518c13451eb8f2b5698ed3d36e7c813"
 
 [[package]]
 name = "e2e_tests"
-version = "3.0.0"
+version = "4.0.0"
 dependencies = [
  "async-trait",
  "futures",
@@ -892,7 +892,7 @@ checksum = "49f1f14873335454500d59611f1cf4a4b0f786f9ac11f4312a78e4cf2566695b"
 
 [[package]]
 name = "jetstream"
-version = "3.0.0"
+version = "4.0.0"
 dependencies = [
  "anyhow",
  "async-stream",
@@ -930,7 +930,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_derive"
-version = "3.0.0"
+version = "4.0.0"
 dependencies = [
  "convert_case",
  "paste",
