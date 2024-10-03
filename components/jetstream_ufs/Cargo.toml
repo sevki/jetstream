@@ -2,12 +2,14 @@
 name = "jetstream_ufs"
 version = "5.0.0"
 edition = "2021"
-publish = ["oksoftware"]
+description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
+license = "BSD-3-Clause"
+repository = "https://github.com/sevki/jetstream"
 
 [dependencies]
-jetstream_9p = { version = "5.0.0", path = "../jetstream_9p", registry = "oksoftware" }
-jetstream_wireformat = { version = "5.0.0", path = "../jetstream_wireformat", registry = "oksoftware" }
-jetstream_rpc = { version = "5.0.0", path = "../jetstream_rpc", registry = "oksoftware" }
+jetstream_9p = { version = "5.0.0", path = "../jetstream_9p" }
+jetstream_wireformat = { version = "5.0.0", path = "../jetstream_wireformat" }
+jetstream_rpc = { version = "5.0.0", path = "../jetstream_rpc" }
 serde = { version = "1.0.210", features = ["derive"] }
 libc = "0.2.159"
 tokio = { version = "1.40.0", features = ["full"] }
