@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.1.1](https://github.com/sevki/jetstream/compare/v5.1.0...v5.1.1) (2024-10-03)
+
+
+### Bug Fixes
+
+* release again ([3a6e65e](https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2))
+* warnings ([62d8013](https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83))
+
 ## [5.1.0](https://github.com/sevki/jetstream/compare/v5.0.0...v5.1.0) (2024-10-03)
 
 
