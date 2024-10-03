@@ -10,7 +10,7 @@
       "draft": true,
       "prerelease": true
     },
-    "third_party/rust-p9": {
+    "components/jetstream_9p": {
       "release-type": "rust",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": false,
@@ -18,14 +18,46 @@
       "draft": true,
       "prerelease": true
     },
-    "third_party/p9_wire_format_derive": {
+    "components/jetstream_client": {
       "release-type": "rust",
       "changelog-path": "CHANGELOG.md",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
       "prerelease": true
-    }
+    },
+    "components/jetstream_server": {
+      "release-type": "rust",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": true,
+      "prerelease": true
+    },
+    "components/jetstream_derive": {
+      "release-type": "rust",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": true,
+      "prerelease": true
+    },
+    "components/jetstream_rpc": {
+      "release-type": "rust",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": true,
+      "prerelease": true
+    },
+    "components/jetstream_ufs": {
+      "release-type": "rust",
+      "changelog-path": "CHANGELOG.md",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": true,
+      "prerelease": true
+    },
   },
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json"
 }
