@@ -33,6 +33,4 @@ jobs:
       - name: Build ${{ matrix.rust }}
         run: cargo build --verbose
       - name: Run tests
-        run: cargo test --verbose
-      - name: e2e tests
-        run: cargo run -p e2e_tests
+        run: cargo test --verbose -F all

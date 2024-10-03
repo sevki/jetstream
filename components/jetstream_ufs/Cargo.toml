@@ -1,0 +1,14 @@
+[package]
+name = "jetstream_ufs"
+version = "5.0.0"
+edition = "2021"
+publish = ["oksoftware"]
+
+[dependencies]
+jetstream_9p = { version = "5.0.0", path = "../jetstream_9p", registry = "oksoftware" }
+jetstream_wireformat = { version = "5.0.0", path = "../jetstream_wireformat", registry = "oksoftware" }
+jetstream_rpc = { version = "5.0.0", path = "../jetstream_rpc", registry = "oksoftware" }
+serde = { version = "1.0.210", features = ["derive"] }
+libc = "0.2.159"
+tokio = { version = "1.40.0", features = ["full"] }
+anyhow = "1.0.89"

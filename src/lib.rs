@@ -44,62 +44,16 @@
 #[macro_use]
 extern crate jetstream_derive;
 
-#[cfg(feature = "client")]
-pub mod client;
-pub mod coding;
-#[cfg(feature = "filesystem")]
-pub mod filesystem;
-pub mod server;
-pub mod service;
-#[cfg(feature = "async")]
-pub mod wire_format_extensions;
-
-pub mod ufs;
-
 pub use jetstream_derive::{protocol, JetStreamWireFormat};
 
 #[cfg(feature = "tokio")]
 pub use tokio::io::{AsyncRead, AsyncWrite};
 
-/// This macro generates a JetStream protocol implementation from a module
-/// such as the following
-///
-/// ```rust,no_run
-/// use jetstream::JetStreamWireFormat;
-/// use async_trait::async_trait;
-/// use jetstream::protocol;
-//
-/// #[protocol]
-/// mod radar {
-///     #[derive(JetStreamWireFormat, Debug)]
-///     pub struct Version {
-///         pub msize: u32,
-///         pub version: String,
-///     }
-///     #[async_trait::async_trait]
-///     pub trait Radar {
-///         async fn version(&mut self, req: Version) -> Version;
-///         fn ping(&mut self) -> u8;
-///     }
-/// }
-/// ```
-///
-/// This will generate an async `Radar` trait with a `version` and `ping` methods.
-///
-///
-pub use coding::{messages, Data, WireFormat};
+#[cfg(feature = "client")]
+pub use jetstream_client::*;
 
-pub use service::JetStreamProtocol;
-pub use service::Message;
+#[cfg(feature = "server")]
+pub use jetstream_server::*;
 
-#[macro_export]
-macro_rules! syscall {
-    ($e:expr) => {{
-        let res = $e;
-        if res < 0 {
-            Err(std::io::Error::last_os_error())
-        } else {
-            Ok(res)
-        }
-    }};
-}
+#[cfg(feature = "ufs")]
+pub use jetstream_ufs::*;
