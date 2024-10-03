@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.1.0](https://github.com/sevki/jetstream/compare/v5.0.0...v5.1.0) (2024-10-03)
+
+
+### Features
+
+* **wireformat:** add u128 ([c76f6c4](https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab))
+
+
+### Bug Fixes
+
+* release workflow ([4abeb24](https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094))
+
 ## [5.0.0](https://github.com/sevki/jetstream/compare/v4.0.0...v5.0.0) (2024-10-03)
 
 
