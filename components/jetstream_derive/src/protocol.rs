@@ -1,13 +1,10 @@
 extern crate proc_macro;
 
-use std::iter;
-use sha256::digest;
 use self::proc_macro::TokenStream;
 use quote::quote;
-use syn::{
-    Ident, Item, ItemMod,
-    ItemTrait, TraitItem, parse_str,
-};
+use sha256::digest;
+use std::iter;
+use syn::{parse_str, Ident, Item, ItemMod, ItemTrait, TraitItem};
 
 fn generate_msg_id(
     index: usize,
@@ -60,16 +57,16 @@ fn generate_return_struct(
     method_sig: &syn::Signature,
 ) -> proc_macro2::TokenStream {
     match &method_sig.output {
-        syn::ReturnType::Type(_, ty) =>     quote! {
+        syn::ReturnType::Type(_, ty) => quote! {
             #[allow(non_camel_case_types)]
             #[derive(Debug, JetStreamWireFormat)]
             pub struct #return_struct_ident(pub u16, pub #ty );
         },
-        syn::ReturnType::Default => quote! { 
-            #[allow(non_camel_case_types)]
-            #[derive(Debug, JetStreamWireFormat)]
-            pub struct #return_struct_ident(pub u16);
-         },
+        syn::ReturnType::Default => quote! {
+           #[allow(non_camel_case_types)]
+           #[derive(Debug, JetStreamWireFormat)]
+           pub struct #return_struct_ident(pub u16);
+        },
     }
 }
 
@@ -101,8 +98,8 @@ impl IdentCased {
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     fn to_screaming_snake_case(&self) -> Self {
-        let converter =
-            convert_case::Converter::new().to_case(convert_case::Case::ScreamingSnake);
+        let converter = convert_case::Converter::new()
+            .to_case(convert_case::Case::ScreamingSnake);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
@@ -114,8 +111,8 @@ impl IdentCased {
     }
     #[allow(dead_code)]
     fn to_upper_flat(&self) -> Self {
-        let converter =
-            convert_case::Converter::new().to_case(convert_case::Case::UpperFlat);
+        let converter = convert_case::Converter::new()
+            .to_case(convert_case::Case::UpperFlat);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
@@ -132,8 +129,10 @@ impl From<IdentCased> for Ident {
     }
 }
 
-enum Direction{Rx, Tx}
-
+enum Direction {
+    Rx,
+    Tx,
+}
 
 fn generate_frame(
     direction: Direction,
@@ -147,7 +146,7 @@ fn generate_frame(
         Direction::Rx => quote! { Rframe },
         Direction::Tx => quote! { Tframe },
     };
-    
+
     let msg_variants = msgs.iter().map(|(ident, _p)| {
         let name: IdentCased = ident.into();
         let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
@@ -169,14 +168,14 @@ fn generate_frame(
         quote! {
             #enum_name::#variant_name(msg)
         }
-    }); 
+    });
 
     let encode_bodies = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
         let variant_name: Ident = name.to_screaming_snake_case().into();
-       
+
         let new_ident = Ident::new(&format!("{}", variant_name), ident.span());
-        quote!{
+        quote! {
             #new_ident,
         }
     });
@@ -187,15 +186,18 @@ fn generate_frame(
 
         let const_name: Ident = name.to_screaming_snake_case().into();
         quote!{
-                #const_name => Ok(#enum_name::#variant_name(WireFormat::decode(reader)?)),         
+                #const_name => Ok(#enum_name::#variant_name(WireFormat::decode(reader)?)),
         }
     });
 
-    let type_match_arms = std::iter::zip(match_arms.clone(), encode_bodies.clone()).map(|(arm, body)| {
-        quote! {
-            #arm => #body
-        }
-    });
+    let type_match_arms =
+        std::iter::zip(match_arms.clone(), encode_bodies.clone()).map(
+            |(arm, body)| {
+                quote! {
+                    #arm => #body
+                }
+            },
+        );
 
     let encode_match_arms = match_arms.clone().map(|arm| {
         quote! {
@@ -203,14 +205,6 @@ fn generate_frame(
         }
     });
 
-    let debugger =match direction {
-        Direction::Rx => {
-            quote!{debug!("rframe byte_size: {}", byte_size);}
-        },
-        Direction::Tx => {
-            quote!{debug!("tframe byte_size: {}", byte_size);}
-        }
-    };
     quote! {
         pub enum #enum_name {
             #( #msg_variants )*
@@ -224,7 +218,7 @@ fn generate_frame(
             fn byte_size(&self) -> u32 {
                 let msg = &self.msg;
                 let msg_size = match msg {
-                    #( 
+                    #(
                         #cloned_byte_sizes,
                      )*
                 };
@@ -238,7 +232,7 @@ fn generate_frame(
                 self.byte_size().encode(writer)?;
 
                 let ty = match &self.msg {
-                    #( 
+                    #(
                         #type_match_arms
                      )*
                 };
@@ -248,11 +242,11 @@ fn generate_frame(
                 self.tag.encode(writer)?;
 
                 match &self.msg {
-                    #( 
+                    #(
                         #encode_match_arms
                      )*
                 }
-                
+
                 Ok(())
             }
 
@@ -268,24 +262,24 @@ fn generate_frame(
                         format!("byte_size(= {}) is less than 4 bytes", byte_size),
                     ));
                 } else {
-                    let byte_size = byte_size - 
+                    let byte_size = byte_size -
                     (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32;
                 }
 
                 let ty = u8::decode(reader)?;
-                
+
                 let tag: u16 = u16::decode(reader)?;
                 let reader = &mut reader.take((byte_size) as u64);
 
                 let msg: #enum_name = Self::decode_message(reader, ty)?;
-                
+
                 Ok(#frame_name { tag, msg })
             }
         }
         impl #frame_name {
             fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<#enum_name> {
                 match ty {
-                    #( 
+                    #(
                         #decode_bodies
                      )*
                     _ => Err(io::Error::new(
@@ -298,11 +292,10 @@ fn generate_frame(
     }
 }
 
-
 fn generate_tframe(
     tmsgs: Vec<(Ident, proc_macro2::TokenStream)>,
 ) -> proc_macro2::TokenStream {
-   generate_frame(Direction::Tx, tmsgs)
+    generate_frame(Direction::Tx, tmsgs)
 }
 
 fn generate_rframe(
@@ -312,7 +305,7 @@ fn generate_rframe(
 }
 
 fn generate_match_arms(
-    tmsgs:  impl Iterator<Item = (Ident, proc_macro2::TokenStream)>,
+    tmsgs: impl Iterator<Item = (Ident, proc_macro2::TokenStream)>,
 ) -> impl Iterator<Item = proc_macro2::TokenStream> {
     tmsgs.map(|(ident, _)| {
         let name: IdentCased = (&ident).into();
@@ -331,26 +324,17 @@ pub fn generate_jetstream_prococol(
     let original_trait_name = trait_name.clone();
     let mut trait_ident: IdentCased = trait_name.into();
     trait_ident = trait_ident.to_pascale_case();
-    let trait_name:Ident =  trait_ident.into();
+    let trait_name: Ident = trait_ident.into();
     // rename the trait to have a prefix
-    let proto_name = Ident::new(
-        &format!("{}Protocol", trait_name),
-        trait_name.span(),
-    );
-    let server_name = Ident::new(
-        &format!("{}Server", trait_name),
-        trait_name.span(),
-    );
-    let client_name = Ident::new(
-        &format!("{}Client", trait_name),
-        trait_name.span(),
-    );
-        // rename the trait to have a prefix
-    let trait_name = Ident::new(
-        &format!("{}Service", trait_name),
-        trait_name.span(),
-    );
-
+    let proto_name =
+        Ident::new(&format!("{}Protocol", trait_name), trait_name.span());
+    let server_name =
+        Ident::new(&format!("{}Server", trait_name), trait_name.span());
+    let _client_name =
+        Ident::new(&format!("{}Client", trait_name), trait_name.span());
+    // rename the trait to have a prefix
+    let trait_name =
+        Ident::new(&format!("{}Service", trait_name), trait_name.span());
 
     let mut tmsgs = vec![];
     let mut rmsgs = vec![];
@@ -366,7 +350,7 @@ pub fn generate_jetstream_prococol(
         .map(|(index, item)| match item {
             TraitItem::Fn(method) => {
                 let method_name = &method.sig.ident;
-                
+
                 let request_struct_ident = Ident::new(
                     &format!("T{}", method_name),
                     method_name.span(),
@@ -385,8 +369,8 @@ pub fn generate_jetstream_prococol(
                     generate_input_struct(&request_struct_ident.clone(), &method.sig);
                 let return_struct =
                     generate_return_struct(&return_struct_ident.clone(), &method.sig);
-   
-                        
+
+
                 tmsgs.push((request_struct_ident.clone(),request_struct.clone()));
                 rmsgs.push((return_struct_ident.clone(),return_struct.clone()));
                 let has_req = method.sig.inputs.iter().count() > 1;
@@ -403,7 +387,7 @@ pub fn generate_jetstream_prococol(
                     quote! {
                         #[inline]
                         async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident {
-                            #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner, 
+                            #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner,
                                 #(#spread_req)*
                             )#maybe_await)
                         }
@@ -416,7 +400,7 @@ pub fn generate_jetstream_prococol(
                         }
                     }
                 }
-                
+
             }
             _ => quote! { #item },
         });
@@ -436,19 +420,19 @@ pub fn generate_jetstream_prococol(
                     syn::ReturnType::Type(_, ty) => quote! { #ty },
                     syn::ReturnType::Default => quote! { () },
                 };
-                let msg_id = generate_msg_id(index, method_name);
+                let _msg_id = generate_msg_id(index, method_name);
                 // msg_ids.push(msg_id);
-                let request_struct =
+                let _request_struct =
                     generate_input_struct(&request_struct_ident.clone(), &method.sig);
-                let return_struct =
+                let _return_struct =
                     generate_return_struct(&return_struct_ident.clone(), &method.sig);
                 // tmsgs.push((request_struct_ident.clone(),request_struct.clone()));
                 //        rmsgs.push((return_struct_ident.clone(),return_struct.clone()));
                 let has_req = method.sig.inputs.iter().count() > 1;
                 let is_async = method.sig.asyncness.is_some();
-                let maybe_await = if is_async { quote! { .await } } else { quote! {} };
+                let _maybe_await = if is_async { quote! { .await } } else { quote! {} };
                 if has_req {
-                    let spread_req = method.sig.inputs.iter().map(|arg| match arg {
+                    let _spread_req = method.sig.inputs.iter().map(|arg| match arg {
                         syn::FnArg::Typed(pat) => {
                             let name = pat.pat.clone();
                             quote! { req.#name, }
@@ -487,19 +471,21 @@ pub fn generate_jetstream_prococol(
             }
             _ => quote! {},
         }).collect();
-        let matches = std::iter::zip(match_arms, match_arm_bodies.iter()).map(|(arm, body)| {
-            quote! {
-                #arm => #body
-            }
-        });
+        let matches = std::iter::zip(match_arms, match_arm_bodies.iter()).map(
+            |(arm, body)| {
+                quote! {
+                    #arm => #body
+                }
+            },
+        );
         server_calls.extend(iter::once(quote! {
             #[inline]
             async fn rpc(&mut self, req:Self::Request) -> Result<Self::Response,Box<dyn Error + Send + Sync>> {
                 match req.msg {
-                    #( 
+                    #(
                         #matches
                      )*
-                }                
+                }
             }
 
         }));
@@ -509,29 +495,30 @@ pub fn generate_jetstream_prococol(
             #def
         }
     });
-    
+
     let rmsg_definitions = rmsgs.iter().map(|(_ident, def)| {
         quote! {
             #def
         }
     });
-    
+
     let tframe = generate_tframe(tmsgs.clone());
     let rframe = generate_rframe(rmsgs.clone());
-    
-    #[allow(clippy::to_string_in_format_args)] 
-    let protocol_version = format!("pub const PROTOCOL_VERSION: &str = \"dev.branch.jetstream.proto/{}/{}.{}.{}-{}\";", 
+
+    #[allow(clippy::to_string_in_format_args)]
+    let protocol_version = format!("pub const PROTOCOL_VERSION: &str = \"dev.branch.jetstream.proto/{}/{}.{}.{}-{}\";",
         original_trait_name.to_string().to_lowercase(),
         env!("CARGO_PKG_VERSION_MAJOR"),
         env!("CARGO_PKG_VERSION_MINOR"),
         env!("CARGO_PKG_VERSION_PATCH"),
         digest[0..8].to_string()
     );
-    
+
     // make a const with the digest
     let digest = format!("pub const DIGEST: &str = \"{}\";", digest);
     let digest = parse_str::<Item>(digest.as_str()).unwrap();
-    let protocol_version = parse_str::<Item>(protocol_version.as_str()).unwrap();   
+    let protocol_version =
+        parse_str::<Item>(protocol_version.as_str()).unwrap();
     quote!(
         const MESSAGE_ID_START: u8 = 101;
 
@@ -579,7 +566,7 @@ pub fn generate_jetstream_prococol(
             inner: T
         }
         impl<T: #original_trait_name+Send + Sync + Sized> #server_name<T>
-            where Self: Send + Sync + Sized 
+            where Self: Send + Sync + Sized
         {
             pub fn new(inner: T) -> Self {
                 Self { inner }
@@ -591,7 +578,7 @@ pub fn generate_jetstream_prococol(
         }
         #[async_trait::async_trait]
         impl<T: #original_trait_name+Send + Sync + Sized> JetStreamAsyncService for #server_name<T>
-            where Self: Send + Sync + Sized 
+            where Self: Send + Sync + Sized
         {
             #(
                 #server_calls
@@ -602,7 +589,7 @@ pub fn generate_jetstream_prococol(
             where Self: Send + Sync + Sized
          {
             type Protocol = #proto_name;
-            
+
             #(
                 #calls
             )*
@@ -610,18 +597,16 @@ pub fn generate_jetstream_prococol(
     )
 }
 
-pub fn protocol_inner(
-    _attr: TokenStream,
-    item: TokenStream,
-) -> TokenStream {
+pub fn protocol_inner(_attr: TokenStream, item: TokenStream) -> TokenStream {
     let mut item_mod: ItemMod = parse_macro_input!(item as ItemMod);
     let module_name = item_mod.ident.clone();
-    
+
     // get all the original items in the module
     let original_mod = item_mod.clone();
-    let original_content = original_mod.content.as_ref().expect("module content");
+    let original_content =
+        original_mod.content.as_ref().expect("module content");
     let original_items = &original_content.1;
-    let p =quote! { #original_mod }.to_string();
+    let p = quote! { #original_mod }.to_string();
     let dig: String = digest(p);
 
     let transformed_items = item_mod
@@ -630,9 +615,11 @@ pub fn protocol_inner(
         .expect("module content")
         .1
         .iter_mut()
-        .map(| trait_item| match trait_item {
-            Item::Trait(trait_item) => generate_jetstream_prococol(trait_item, dig.clone()),
-            _ => quote! { },
+        .map(|trait_item| match trait_item {
+            Item::Trait(trait_item) => {
+                generate_jetstream_prococol(trait_item, dig.clone())
+            }
+            _ => quote! {},
         });
     // Construct the final output TokenStream
     let visibility = &item_mod.vis;
@@ -648,7 +635,7 @@ pub fn protocol_inner(
             pub use std::pin::Pin;
             pub use std::error::Error;
             pub use super::*;
-            
+
             #(#transformed_items)*
 
             #(#original_items)*

@@ -1,15 +1,11 @@
-use std::net::SocketAddr;
-use std::path::Path;
-use std::sync::{Arc, Mutex};
-
-use futures::AsyncReadExt;
-use jetstream_rpc::{
-    JetStreamProtocol, JetStreamService,
-};
+use jetstream_rpc::{JetStreamProtocol, JetStreamService};
 use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
 use okstd::okasync::{Runtime, Runtimes};
 use s2n_quic::client::Connect;
 use s2n_quic::provider::tls;
+use std::net::SocketAddr;
+use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 use s2n_quic::stream::SplittableStream;
 use s2n_quic::Client;
@@ -86,7 +82,7 @@ impl<P: JetStreamProtocol + Send + Sync> JetStreamService for Handle<P> {
         let rt = self.rt.clone();
         let rt = rt.lock().unwrap();
         rt.block_on(async {
-            let _ = req.encode_async(&mut self.stream);
+            let _ = req.encode_async(&mut self.stream).await;
             let resp = P::Response::decode_async(&mut self.stream).await;
             resp.map_err(|e| e.into())
         })
