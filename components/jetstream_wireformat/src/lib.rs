@@ -63,6 +63,7 @@ uint_wire_format_impl!(u16);
 uint_wire_format_impl!(u32);
 uint_wire_format_impl!(u64);
 uint_wire_format_impl!(i32);
+uint_wire_format_impl!(u128);
 
 impl WireFormat for u8 {
     fn byte_size(&self) -> u32 {
