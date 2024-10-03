@@ -1,5 +1,16 @@
 # Changelog
 
+## [4.0.0](https://github.com/sevki/jetstream/compare/v3.0.0...v4.0.0) (2024-10-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* move modules to sensible parents
+
+### Code Refactoring
+
+* move modules to sensible parents ([4eba5fb](https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b))
+
 ## [3.0.0](https://github.com/sevki/jetstream/compare/v2.0.2...v3.0.0) (2024-03-30)
 
 
