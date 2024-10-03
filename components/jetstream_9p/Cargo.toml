@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_9p"
-version = "5.0.0"
+version = "5.1.0"
 edition = "2021"
 description = "Jetstream 9p implementation"
 license = "BSD-3-Clause"
@@ -8,8 +8,8 @@ readme = "../../README.md"
 repository = "https://github.com/sevki/jetstream"
 
 [dependencies]
-jetstream_derive = { version = "5.0.0", path = "../jetstream_derive" }
-jetstream_wireformat = { version = "5.0.0", path = "../jetstream_wireformat" }
-jetstream_rpc = { version = "5.0.0", path = "../jetstream_rpc" }
+jetstream_derive = { version = "5.1.0", path = "../jetstream_derive" }
+jetstream_wireformat = { version = "5.1.0", path = "../jetstream_wireformat" }
+jetstream_rpc = { version = "5.1.0", path = "../jetstream_rpc" }
 libc = "0.2.159"
 async-trait = "0.1.83"
