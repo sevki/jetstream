@@ -1,11 +1,10 @@
+use std::error::Error;
 use std::io;
 use std::sync::Arc;
-use std::error::Error;
 
 use jetstream_wireformat::{
     wire_format_extensions::AsyncWireFormatExt, WireFormat,
 };
-use okstd::prelude::*;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
 /// Message trait for JetStream messages, which need to implement the `WireFormat` trait.
