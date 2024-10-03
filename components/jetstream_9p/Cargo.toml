@@ -2,8 +2,9 @@
 name = "jetstream_9p"
 version = "5.0.0"
 edition = "2021"
-description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
+description = "Jetstream 9p implementation"
 license = "BSD-3-Clause"
+readme = "../../README.md"
 repository = "https://github.com/sevki/jetstream"
 
 [dependencies]

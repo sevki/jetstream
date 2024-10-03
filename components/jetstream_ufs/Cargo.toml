@@ -2,9 +2,10 @@
 name = "jetstream_ufs"
 version = "5.0.0"
 edition = "2021"
-description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
+description = "Jetstream UFS Server"
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
+readme = "../../README.md"
 
 [dependencies]
 jetstream_9p = { version = "5.0.0", path = "../jetstream_9p" }
