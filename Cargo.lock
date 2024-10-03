@@ -662,7 +662,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream"
-version = "4.0.0"
+version = "5.0.0"
 dependencies = [
  "futures-util",
  "jetstream_9p",
