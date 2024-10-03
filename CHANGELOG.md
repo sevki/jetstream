@@ -7,6 +7,13 @@
 
 * lint errors ([4f50d0b](https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134))
 
+## [5.1.4](https://github.com/sevki/jetstream/compare/v5.1.3...v5.1.4) (2024-10-03)
+
+
+### Bug Fixes
+
+* lint errors ([4f50d0b](https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134))
+
 ## [5.1.3](https://github.com/sevki/jetstream/compare/v5.1.2...v5.1.3) (2024-10-03)
 
 
