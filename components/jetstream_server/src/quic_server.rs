@@ -5,7 +5,7 @@ use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
 use okstd::prelude::*;
 
 use jetstream_rpc::{
-    JetStreamAsyncService, JetStreamProtocol, JetStreamSharedService, Message,
+    JetStreamAsyncService, JetStreamProtocol, JetStreamSharedService,
 };
 
 pub struct QuicServer<S: JetStreamAsyncService + JetStreamSharedService> {

@@ -88,7 +88,7 @@ impl WireFormat for String {
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        if self.len() > std::u16::MAX as usize {
+        if self.len() > u16::MAX as usize {
             return Err(io::Error::new(
                 ErrorKind::InvalidInput,
                 "string is too long",
@@ -116,7 +116,7 @@ impl<T: WireFormat> WireFormat for Vec<T> {
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        if self.len() > std::u16::MAX as usize {
+        if self.len() > u16::MAX as usize {
             return Err(io::Error::new(
                 ErrorKind::InvalidInput,
                 "too many elements in vector",
@@ -206,7 +206,7 @@ impl WireFormat for Data {
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        if self.len() > std::u32::MAX as usize {
+        if self.len() > u32::MAX as usize {
             return Err(io::Error::new(
                 ErrorKind::InvalidInput,
                 "data is too large",

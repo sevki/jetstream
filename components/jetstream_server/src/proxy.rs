@@ -1,11 +1,6 @@
-use anyhow::Ok;
 use jetstream_9p::{Rframe, Tframe};
 use jetstream_client::{self, DialQuic};
-use s2n_quic::{
-    client::{Client, Connect},
-    provider::tls,
-};
-use std::{fmt::Debug, net::SocketAddr, path::Path};
+use std::fmt::Debug;
 
 use okstd::prelude::*;
 

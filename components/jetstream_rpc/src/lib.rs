@@ -1,6 +1,6 @@
 use std::io;
 use std::sync::Arc;
-use std::{error::Error, pin::Pin};
+use std::error::Error;
 
 use jetstream_wireformat::{
     wire_format_extensions::AsyncWireFormatExt, WireFormat,

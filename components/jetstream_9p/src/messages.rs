@@ -13,7 +13,6 @@ use std::vec::Vec;
 use jetstream_derive::JetStreamWireFormat;
 use jetstream_rpc::JetStreamProtocol;
 use jetstream_rpc::JetStreamService;
-use jetstream_rpc::JetStreamServiceImpl;
 use jetstream_rpc::Message;
 use jetstream_wireformat::Data;
 use jetstream_wireformat::WireFormat;

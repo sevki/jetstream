@@ -20,7 +20,6 @@ use std::os::unix::fs::MetadataExt;
 use std::path::Component;
 use std::path::Path;
 use std::path::PathBuf;
-use std::u32;
 
 use jetstream_wireformat::Data;
 use jetstream_wireformat::WireFormat;

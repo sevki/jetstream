@@ -1,20 +1,10 @@
-use std::cell::Cell;
-use std::collections::{btree_map, BTreeMap};
-use std::io::{self, Read, Write};
 use std::net::SocketAddr;
-use std::ops::DerefMut;
-use std::os::raw::c_int;
 use std::path::Path;
-use std::sync::atomic::{AtomicU32, Ordering};
-use std::sync::{self, Arc, Mutex};
+use std::sync::{Arc, Mutex};
 
-use futures::{AsyncReadExt, AsyncWriteExt};
-use jetstream_9p::{
-    Qid, Rframe, Rlerror, Rmessage, Tframe, Tmessage, Tversion,
-};
+use futures::AsyncReadExt;
 use jetstream_rpc::{
-    JetStreamAsyncService, JetStreamProtocol, JetStreamService,
-    JetStreamSharedService,
+    JetStreamProtocol, JetStreamService,
 };
 use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
 use okstd::okasync::{Runtime, Runtimes};

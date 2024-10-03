@@ -174,9 +174,9 @@ impl From<String> for Version {
     }
 }
 
-impl Into<String> for Version {
-    fn into(self) -> String {
-        match self {
+impl From<Version> for String {
+    fn from(val: Version) -> Self {
+        match val {
             Version::V9P2000 => "9P2000".to_string(),
             Version::V9P2000U => "9P2000.u".to_string(),
             Version::V9P2000L => "9P2000.L".to_string(),
@@ -186,27 +186,14 @@ impl Into<String> for Version {
     }
 }
 
-impl Into<&str> for Version {
-    fn into(self) -> &'static str {
-        match self {
+impl From<Version> for &str {
+    fn from(val: Version) -> Self {
+        match val {
             Version::V9P2000 => "9P2000",
             Version::V9P2000U => "9P2000.u",
             Version::V9P2000L => "9P2000.L",
             Version::V9P2000Lu => "9P2000.Lu",
             Version::V9P2024q9p => "9P2024.q9p",
-        }
-    }
-}
-
-impl Version {
-    pub(crate) fn from_str(version: &str) -> Option<Self> {
-        match version {
-            "9P2000" => Some(Version::V9P2000),
-            "9P2000.u" => Some(Version::V9P2000U),
-            "9P2000.L" => Some(Version::V9P2000L),
-            "9P2000.Lu" => Some(Version::V9P2000Lu),
-            "9P2024.q9p" => Some(Version::V9P2024q9p),
-            _ => None,
         }
     }
 }

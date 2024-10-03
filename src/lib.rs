@@ -41,13 +41,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-#[macro_use]
-extern crate jetstream_derive;
-
 pub use jetstream_derive::{protocol, JetStreamWireFormat};
-
-#[cfg(feature = "tokio")]
-pub use tokio::io::{AsyncRead, AsyncWrite};
 
 #[cfg(feature = "client")]
 pub use jetstream_client::*;

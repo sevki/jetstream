@@ -13,7 +13,6 @@ use s2n_quic::{provider::tls, Server};
 use std::{
     error::Error,
     path::{self, Path},
-    pin::Pin,
     sync::Arc,
 };
 use tokio::{io::AsyncWriteExt, net::UnixListener, sync::Barrier};
