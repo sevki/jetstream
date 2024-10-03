@@ -9,7 +9,7 @@ use std::io;
 
 pub use self::messages::*;
 
-fn error_to_rmessage(err: &io::Error) -> Rlerror {
+pub fn error_to_rmessage(err: &io::Error) -> Rlerror {
     let errno = if let Some(errno) = err.raw_os_error() {
         errno
     } else {
@@ -198,4 +198,4 @@ impl From<Version> for &str {
     }
 }
 
-pub(crate) const DEFAULT_MSIZE: u32 = 8192;
+pub const DEFAULT_MSIZE: u32 = 8192;

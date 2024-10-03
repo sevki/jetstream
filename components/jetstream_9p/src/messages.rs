@@ -2,6 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use jetstream_derive::JetStreamWireFormat;
+use jetstream_rpc::JetStreamProtocol;
+use jetstream_rpc::Message;
+use jetstream_wireformat::Data;
+use jetstream_wireformat::WireFormat;
 use std::io;
 use std::io::ErrorKind;
 use std::io::Read;
@@ -10,36 +15,12 @@ use std::mem;
 use std::string::String;
 use std::vec::Vec;
 
-use jetstream_derive::JetStreamWireFormat;
-use jetstream_rpc::JetStreamProtocol;
-use jetstream_rpc::JetStreamService;
-use jetstream_rpc::Message;
-use jetstream_wireformat::Data;
-use jetstream_wireformat::WireFormat;
-
 use crate::P9_QTDIR;
 use crate::P9_QTFILE;
 use crate::P9_QTSYMLINK;
 
-struct JetStream9P {}
-
 impl Message for Tframe {}
 impl Message for Rframe {}
-
-impl JetStreamProtocol for JetStream9P {
-    type Request = Tframe;
-
-    type Response = Rframe;
-}
-
-impl JetStreamService for JetStream9P {
-    fn rpc(
-        &mut self,
-        req: Self::Request,
-    ) -> Result<Self::Response, Box<dyn std::error::Error + Send + Sync>> {
-        todo!()
-    }
-}
 
 // Message type constants.  Taken from "include/net/9p/9p.h" in the linux kernel
 // tree.  The protocol specifies each R* message to be the corresponding T*

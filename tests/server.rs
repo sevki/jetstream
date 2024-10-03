@@ -28,7 +28,7 @@ impl JetStreamProtocol for EchoService {
 impl JetStreamService for EchoService {
     fn rpc(
         &mut self,
-        req: Self::Request,
+        _req: Self::Request,
     ) -> Result<Self::Response, Box<dyn Error + Send + Sync>> {
         Ok(Rframe {
             tag: 0,
@@ -42,14 +42,10 @@ impl JetStreamService for EchoService {
 
 impl JetStreamAsyncService for EchoService {
     #[must_use]
-    #[allow(
-        elided_named_lifetimes,
-        clippy::type_complexity,
-        clippy::type_repetition_in_bounds
-    )]
+    #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
     fn rpc<'life0, 'async_trait>(
         &'life0 mut self,
-        req: Self::Request,
+        _req: Self::Request,
     ) -> ::core::pin::Pin<
         Box<
             dyn ::core::future::Future<

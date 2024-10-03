@@ -309,8 +309,8 @@ fn data_decode() {
 #[test]
 fn error_cases() {
     // string is too long.
-    let mut long_str = String::with_capacity(std::u16::MAX as usize);
-    while long_str.len() < std::u16::MAX as usize {
+    let mut long_str = String::with_capacity(u16::MAX as usize);
+    while long_str.len() < u16::MAX as usize {
         long_str.push_str("long");
     }
     long_str.push('!');
@@ -323,8 +323,8 @@ fn error_cases() {
         .expect_err("long string");
 
     // vector is too long.
-    let mut long_vec: Vec<u32> = Vec::with_capacity(std::u16::MAX as usize);
-    while long_vec.len() < std::u16::MAX as usize {
+    let mut long_vec: Vec<u32> = Vec::with_capacity(u16::MAX as usize);
+    while long_vec.len() < u16::MAX as usize {
         long_vec.push(0x8bad_f00d);
     }
     long_vec.push(0x00ba_b10c);
