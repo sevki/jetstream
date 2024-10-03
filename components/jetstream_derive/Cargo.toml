@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_derive"
-version = "5.1.2"
+version = "5.1.3"
 authors = ["Sevki <s@sevki.io>", "The ChromiumOS Authors"]
 license = "BSD-3-Clause"
 description = "Supporting proc-macro for the `jetstream` crate."
