@@ -1,5 +1,21 @@
 # Changelog
 
+## [5.0.0](https://github.com/sevki/jetstream/compare/v4.0.0...v5.0.0) (2024-10-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* splits up packages
+
+### Features
+
+* modularize components ([7262a66](https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a))
+
+
+### Bug Fixes
+
+* version ([822bf0e](https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945))
+
 ## [4.0.0](https://github.com/sevki/jetstream/compare/v3.0.0...v4.0.0) (2024-10-01)
 
 
