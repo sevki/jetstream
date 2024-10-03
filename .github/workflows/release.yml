@@ -1,6 +1,9 @@
 name: Release
 on:
-  create
+  push:
+    tags:
+      - v**
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
