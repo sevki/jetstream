@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_server"
-version = "5.1.3"
+version = "5.1.4"
 edition = "2021"
 description = "Jetstream Server"
 license = "BSD-3-Clause"
@@ -10,10 +10,10 @@ readme = "../../README.md"
 [dependencies]
 anyhow = "1.0.89"
 async-trait = "0.1.83"
-jetstream_9p = { version = "5.1.3", path = "../jetstream_9p" }
-jetstream_client = { version = "5.1.3", path = "../jetstream_client" }
-jetstream_rpc = { version = "5.1.3", path = "../jetstream_rpc" }
-jetstream_wireformat = { version = "5.1.3", path = "../jetstream_wireformat" }
+jetstream_9p = { version = "5.1.4", path = "../jetstream_9p" }
+jetstream_client = { version = "5.1.4", path = "../jetstream_client" }
+jetstream_rpc = { version = "5.1.4", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "5.1.4", path = "../jetstream_wireformat" }
 okstd = { version = "0.1.10", features = ["macros"] }
 s2n-quic = "1.47.0"
 tokio = { version = "1.40.0", features = ["full"] }

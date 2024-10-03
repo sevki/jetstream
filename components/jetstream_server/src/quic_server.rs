@@ -1,3 +1,6 @@
+// Copyright (c) 2024, Sevki <s@sevki.io>
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 use s2n_quic::Server;
 
 use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;

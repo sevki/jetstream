@@ -1,3 +1,6 @@
+// Copyright (c) 2024, Sevki <s@sevki.io>
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 use jetstream_9p::{Rframe, Tframe};
 use jetstream_client::{self, DialQuic};
 use std::fmt::Debug;
