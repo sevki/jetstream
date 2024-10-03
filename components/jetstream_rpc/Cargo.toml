@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_rpc"
-version = "5.1.0"
+version = "5.1.1"
 edition = "2021"
 description = "Jetstream RPC library"
 license = "BSD-3-Clause"
@@ -10,7 +10,7 @@ readme = "../../README.md"
 [dependencies]
 async-trait = "0.1.83"
 git2 = { version = "0.18.3", optional = true }
-jetstream_wireformat = { version = "5.1.0", path = "../jetstream_wireformat" }
+jetstream_wireformat = { version = "5.1.1", path = "../jetstream_wireformat" }
 okstd = { version = "0.1.10" }
 tokio = { version = "1.40.0", features = ["full"] }
 
