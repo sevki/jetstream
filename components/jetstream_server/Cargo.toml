@@ -2,6 +2,10 @@
 name = "jetstream_server"
 version = "5.0.0"
 edition = "2021"
+description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
+license = "BSD-3-Clause"
+repository = "https://github.com/sevki/jetstream"
+
 
 [dependencies]
 anyhow = "1.0.89"
