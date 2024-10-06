@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_wireformat"
-version = "5.1.4"
+version = "5.2.0"
 edition = "2021"
 description = "Jetstream Wireformat"
 license = "BSD-3-Clause"
@@ -14,7 +14,7 @@ git = ["dep:git2"]
 
 [dependencies]
 bytes = "1.7.2"
-jetstream_derive = { version = "5.1.4", path = "../jetstream_derive" }
+jetstream_derive = { version = "5.2.0", path = "../jetstream_derive" }
 libc = "0.2.159"
 paste = "1.0.15"
 zerocopy = "0.7.35"
