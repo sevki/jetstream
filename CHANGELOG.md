@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.2.0](https://github.com/sevki/jetstream/compare/v5.1.3...v5.2.0) (2024-10-06)
+
+
+### Features
+
+* use serde_bytes::ByteBuf instead of Bytes ([a1101d9](https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b))
+
+
+### Bug Fixes
+
+* lint errors ([4f50d0b](https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134))
+
 ## [5.1.4](https://github.com/sevki/jetstream/compare/v5.1.3...v5.1.4) (2024-10-03)
 
 
