@@ -9,7 +9,7 @@ use std::{pin::Pin, time::Duration};
 use tokio::io::{AsyncRead, AsyncWrite};
 #[allow(unused_imports)]
 use tokio::time::sleep;
-use wire_format_extensions::AsyncWireFormatExt;
+use wire_format_extensions::{AsyncWireFormatExt, ConvertWireFormat};
 
 #[test]
 fn integer_byte_size() {
@@ -638,5 +638,20 @@ async fn test_async_wire_format_delayed() {
 
     test.encode_async(writer).await.unwrap();
     let decoded = Tframe::decode_async(reader).await.unwrap();
+    assert_eq!(decoded.tag, 0);
+}
+
+#[test]
+fn test_convert_wire_format() {
+    let test = Tframe {
+        tag: 0,
+        msg: Ok(Tmessage::Version(Tversion {
+            msize: 8192,
+            version: "9P2000.L".to_string(),
+        })),
+    };
+
+    let buf = test.to_bytes();
+    let decoded = Tframe::from_bytes(&buf).unwrap();
     assert_eq!(decoded.tag, 0);
 }

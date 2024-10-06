@@ -90,7 +90,7 @@ pub trait ConvertWireFormat: WireFormat {
     /// # Returns
     ///
     /// A `Result` containing the converted type or an `std::io::Error` if the conversion fails.
-    fn from_bytes(buf: &mut ByteBuf) -> Result<Self, std::io::Error>;
+    fn from_bytes(buf: &ByteBuf) -> Result<Self, std::io::Error>;
 
     /// AsRef<[u8]> for the type.
     ///
@@ -121,7 +121,7 @@ where
 
     /// Converts bytes to the type.
     /// Returns a `Result` containing the decoded type or an `std::io::Error` if decoding fails.
-    fn from_bytes(buf: &mut ByteBuf) -> Result<Self, std::io::Error> {
+    fn from_bytes(buf: &ByteBuf) -> Result<Self, std::io::Error> {
         let buf = buf.to_vec();
         T::decode(&mut buf.as_slice())
     }
