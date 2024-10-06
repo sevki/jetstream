@@ -24,3 +24,4 @@ okstd = { version = "0.1.10" }
 futures = { version = "0.3.30", optional = true }
 tokio-util = { version = "0.7.12", features = ["full", "io", "time"] }
 time = "0.3.36"
+serde_bytes = "0.11.15"

@@ -13,6 +13,7 @@ jetstream_derive = { version = "5.1.4", path = "components/jetstream_derive" }
 jetstream_server = { version = "5.1.4", path = "components/jetstream_server", optional = true }
 jetstream_ufs = { version = "5.1.4", path = "components/jetstream_ufs", optional = true }
 jetstream_wireformat = { version = "5.1.4", path = "components/jetstream_wireformat" }
+
 [build-dependencies]
 pkg-config = "0.3"
 which = "6.0.1"

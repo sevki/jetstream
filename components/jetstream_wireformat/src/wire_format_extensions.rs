@@ -6,7 +6,7 @@ use std::{
     io::{self},
 };
 
-use bytes::{BufMut, Bytes, BytesMut};
+use serde_bytes::ByteBuf;
 
 use super::WireFormat;
 
@@ -78,19 +78,28 @@ pub trait ConvertWireFormat: WireFormat {
     ///
     /// # Returns
     ///
-    /// A `Bytes` object representing the byte representation of the type.
-    fn to_bytes(&self) -> Bytes;
+    /// A `ByteBuf` object representing the byte representation of the type.
+    fn to_bytes(&self) -> ByteBuf;
 
     /// Converts a byte buffer to the type.
     ///
     /// # Arguments
     ///
-    /// * `buf` - A mutable reference to a `Bytes` object containing the byte buffer.
+    /// * `buf` - A mutable reference to a `ByteBuf` object containing the byte buffer.
     ///
     /// # Returns
     ///
     /// A `Result` containing the converted type or an `std::io::Error` if the conversion fails.
-    fn from_bytes(buf: &mut Bytes) -> Result<Self, std::io::Error>;
+    fn from_bytes(buf: &mut ByteBuf) -> Result<Self, std::io::Error>;
+
+    /// AsRef<[u8]> for the type.
+    ///
+    /// # Returns
+    ///
+    /// A reference to the byte representation of the type.
+    fn as_bytes(&self) -> Vec<u8> {
+        self.to_bytes().to_vec()
+    }
 }
 
 /// Implements the `ConvertWireFormat` trait for types that implement `jetstream_p9::WireFormat`.
@@ -100,21 +109,19 @@ where
     T: WireFormat,
 {
     /// Converts the type to bytes.
-    /// Returns a `Bytes` object containing the encoded bytes.
-    fn to_bytes(&self) -> Bytes {
+    /// Returns a `ByteBuf` object containing the encoded bytes.
+    fn to_bytes(&self) -> ByteBuf {
         let mut buf = vec![];
         let res = self.encode(&mut buf);
         if let Err(e) = res {
             panic!("Failed to encode: {}", e);
         }
-        let mut bytes = BytesMut::new();
-        bytes.put_slice(buf.as_slice());
-        bytes.freeze()
+        ByteBuf::from(buf)
     }
 
     /// Converts bytes to the type.
     /// Returns a `Result` containing the decoded type or an `std::io::Error` if decoding fails.
-    fn from_bytes(buf: &mut Bytes) -> Result<Self, std::io::Error> {
+    fn from_bytes(buf: &mut ByteBuf) -> Result<Self, std::io::Error> {
         let buf = buf.to_vec();
         T::decode(&mut buf.as_slice())
     }
