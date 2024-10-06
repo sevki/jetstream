@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.1](https://github.com/sevki/jetstream/compare/v5.2.0...v5.2.1) (2024-10-06)
+
+
+### Bug Fixes
+
+* **wireformat:** from_bytes doesn't require a mutable buf ([437c35c](https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725))
+
 ## [5.2.0](https://github.com/sevki/jetstream/compare/v5.1.3...v5.2.0) (2024-10-06)
 
 
