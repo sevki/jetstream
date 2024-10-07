@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.2.2](https://github.com/sevki/jetstream/compare/v5.2.1...v5.2.2) (2024-10-07)
+
+
+### Bug Fixes
+
+* revert serde_bytes to bytes with serde ([2e02460](https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54))
+
 ## [5.2.1](https://github.com/sevki/jetstream/compare/v5.2.0...v5.2.1) (2024-10-06)
 
 
