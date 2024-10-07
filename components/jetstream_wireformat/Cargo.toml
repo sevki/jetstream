@@ -21,6 +21,6 @@ zerocopy = "0.7.35"
 git2 = { version = "0.18.3", optional = true }
 tokio = { version = "1.40.0", features = ["full"], optional = true }
 okstd = { version = "0.1.10" }
-futures = { version = "0.3.30", optional = true }
+futures = { version = "0.3.31", optional = true }
 tokio-util = { version = "0.7.12", features = ["full", "io", "time"] }
 time = "0.3.36"

@@ -9,7 +9,7 @@ readme = "../../README.md"
 
 [dependencies]
 anyhow = "1.0.89"
-futures = "0.3.30"
+futures = "0.3.31"
 jetstream_9p = { version = "5.2.2", path = "../jetstream_9p" }
 jetstream_rpc = { version = "5.2.2", path = "../jetstream_rpc" }
 jetstream_wireformat = { version = "5.2.2", path = "../jetstream_wireformat", features = [
