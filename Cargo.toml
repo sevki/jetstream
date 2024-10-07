@@ -19,7 +19,7 @@ pkg-config = "0.3"
 which = "6.0.1"
 
 [dev-dependencies]
-futures-util = "0.3.30"
+futures-util = "0.3.31"
 jetstream_9p = { version = "5.2.2", path = "components/jetstream_9p" }
 jetstream_client = { version = "5.2.2", path = "components/jetstream_client" }
 jetstream_derive = { version = "5.2.2", path = "components/jetstream_derive" }
