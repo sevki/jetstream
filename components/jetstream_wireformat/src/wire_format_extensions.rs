@@ -78,14 +78,14 @@ pub trait ConvertWireFormat: WireFormat {
     ///
     /// # Returns
     ///
-    /// A `ByteBuf` object representing the byte representation of the type.
+    /// A `Bytes` object representing the byte representation of the type.
     fn to_bytes(&self) -> Bytes;
 
     /// Converts a byte buffer to the type.
     ///
     /// # Arguments
     ///
-    /// * `buf` - A mutable reference to a `ByteBuf` object containing the byte buffer.
+    /// * `buf` - A mutable reference to a `Bytes` object containing the byte buffer.
     ///
     /// # Returns
     ///
@@ -109,7 +109,7 @@ where
     T: WireFormat,
 {
     /// Converts the type to bytes.
-    /// Returns a `ByteBuf` object containing the encoded bytes.
+    /// Returns a `Bytes` object containing the encoded bytes.
     fn to_bytes(&self) -> Bytes {
         let mut buf = vec![];
         let res = self.encode(&mut buf);
