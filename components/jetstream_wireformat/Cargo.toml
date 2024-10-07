@@ -17,7 +17,7 @@ bytes = { version = "1.7.2", features = ["serde"] }
 jetstream_derive = { version = "5.2.2", path = "../jetstream_derive" }
 libc = "0.2.159"
 paste = "1.0.15"
-zerocopy = "0.7.35"
+zerocopy = "0.8.2"
 git2 = { version = "0.18.3", optional = true }
 tokio = { version = "1.40.0", features = ["full"], optional = true }
 okstd = { version = "0.1.10" }
