@@ -12,8 +12,6 @@
 pub use jetstream_derive::{protocol, JetStreamWireFormat};
 
 use bytes::Buf;
-#[cfg(feature = "git")]
-use git2::Oid;
 use std::fmt;
 use std::io;
 use std::io::ErrorKind;
