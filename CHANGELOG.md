@@ -1,5 +1,13 @@
 # Changelog
 
+## [5.2.3](https://github.com/sevki/jetstream/compare/v5.2.2...v5.2.3) (2024-10-10)
+
+
+### Bug Fixes
+
+* bump zero copy ([#140](https://github.com/sevki/jetstream/issues/140)) ([4bb933f](https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454))
+* unused git ([3fe908e](https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68))
+
 ## [5.2.2](https://github.com/sevki/jetstream/compare/v5.2.1...v5.2.2) (2024-10-07)
 
 
