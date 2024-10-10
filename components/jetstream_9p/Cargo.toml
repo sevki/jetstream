@@ -1,11 +1,11 @@
 [package]
 name = "jetstream_9p"
-version = "5.2.2"
-edition = "2021"
-description = "Jetstream 9p implementation"
-license = "BSD-3-Clause"
-readme = "../../README.md"
-repository = "https://github.com/sevki/jetstream"
+version = { workspace = true }
+edition = { workspace = true }
+description = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+readme = { workspace = true }
 
 [dependencies]
 jetstream_derive = { version = "5.2.2", path = "../jetstream_derive" }

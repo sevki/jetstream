@@ -1,11 +1,11 @@
 [package]
 name = "jetstream_client"
-version = "5.2.2"
-edition = "2021"
-description = "Jetstream Client"
-license = "BSD-3-Clause"
-repository = "https://github.com/sevki/jetstream"
-readme = "../../README.md"
+version = { workspace = true }
+edition = { workspace = true }
+description = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+readme = { workspace = true }
 
 [dependencies]
 anyhow = "1.0.89"
