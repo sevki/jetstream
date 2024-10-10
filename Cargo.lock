@@ -26,7 +26,7 @@ dependencies = [
  "cfg-if",
  "once_cell",
  "version_check",
- "zerocopy",
+ "zerocopy 0.7.35",
 ]
 
 [[package]]
@@ -774,7 +774,7 @@ dependencies = [
  "time",
  "tokio",
  "tokio-util",
- "zerocopy",
+ "zerocopy 0.8.3",
 ]
 
 [[package]]
@@ -1139,7 +1139,7 @@ version = "0.2.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "77957b295656769bb8ad2b6a6b09d897d94f05c41b069aede1fcdaa675eaea04"
 dependencies = [
- "zerocopy",
+ "zerocopy 0.7.35",
 ]
 
 [[package]]
@@ -1379,7 +1379,7 @@ checksum = "36c100e27d5ae9a875be47f3e62be60e8319471b983d1d3ec534153047dcb7ab"
 dependencies = [
  "byteorder",
  "bytes",
- "zerocopy",
+ "zerocopy 0.7.35",
 ]
 
 [[package]]
@@ -1402,7 +1402,7 @@ dependencies = [
  "s2n-quic-tls-default",
  "s2n-quic-transport",
  "tokio",
- "zerocopy",
+ "zerocopy 0.7.35",
  "zeroize",
 ]
 
@@ -1424,7 +1424,7 @@ dependencies = [
  "pin-project-lite",
  "s2n-codec",
  "subtle",
- "zerocopy",
+ "zerocopy 0.7.35",
 ]
 
 [[package]]
@@ -2081,7 +2081,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1b9b4fd18abc82b8136838da5d50bae7bdea537c574d8dc1a34ed098d6c166f0"
 dependencies = [
  "byteorder",
- "zerocopy-derive",
+ "zerocopy-derive 0.7.35",
+]
+
+[[package]]
+name = "zerocopy"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "199837a02c176ffe66ac6e3f6195ff49ed0ae9c0fc9c905970f924909812aba6"
+dependencies = [
+ "zerocopy-derive 0.8.3",
 ]
 
 [[package]]
@@ -2089,6 +2098,17 @@ name = "zerocopy-derive"
 version = "0.7.35"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa4f8080344d4671fb4e831a13ad1e68092748387dfc4f55e356242fae12ce3e"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "zerocopy-derive"
+version = "0.8.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8c76c8bc3d9d3594dabe11d4ffab6cd71cc2c3ce38526c6de5a0d81dd0039627"
 dependencies = [
  "proc-macro2",
  "quote",
