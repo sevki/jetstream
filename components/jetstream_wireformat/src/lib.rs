@@ -24,7 +24,7 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::string::String;
 use std::vec::Vec;
-use zerocopy::{AsBytes, LittleEndian};
+use zerocopy::{IntoBytes, LittleEndian};
 pub mod wire_format_extensions;
 
 /// A type that can be encoded on the wire using the 9P protocol.
@@ -269,23 +269,5 @@ impl WireFormat for () {
 impl io::Read for Data {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.reader().read(buf)
-    }
-}
-
-#[cfg(feature = "git")]
-impl WireFormat for Oid {
-    fn byte_size(&self) -> u32 {
-        self.as_bytes().len() as u32
-    }
-
-    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        writer.write_all(self.as_bytes())
-    }
-
-    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-        let mut buf = [0; 20];
-        reader.read_exact(&mut buf)?;
-        Oid::from_bytes(&buf)
-            .map_err(|_| io::Error::new(ErrorKind::InvalidData, "invalid oid"))
     }
 }

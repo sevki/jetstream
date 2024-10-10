@@ -1,12 +1,11 @@
 [package]
 name = "jetstream_ufs"
-version = "5.2.2"
-edition = "2021"
-description = "Jetstream UFS Server"
-license = "BSD-3-Clause"
-repository = "https://github.com/sevki/jetstream"
-readme = "../../README.md"
-
+version = { workspace = true }
+edition = { workspace = true }
+description = { workspace = true }
+license = { workspace = true }
+repository = { workspace = true }
+readme = { workspace = true }
 [dependencies]
 jetstream_9p = { version = "5.2.2", path = "../jetstream_9p" }
 jetstream_wireformat = { version = "5.2.2", path = "../jetstream_wireformat" }
