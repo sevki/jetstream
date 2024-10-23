@@ -1,5 +1,17 @@
 # Changelog
 
+## [5.3.0](https://github.com/sevki/jetstream/compare/v5.2.3...v5.3.0) (2024-10-23)
+
+
+### Features
+
+* use sccache ([#142](https://github.com/sevki/jetstream/issues/142)) ([89f96ab](https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6))
+
+
+### Bug Fixes
+
+* update release flow ([#144](https://github.com/sevki/jetstream/issues/144)) ([36dd4af](https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489))
+
 ## [5.2.3](https://github.com/sevki/jetstream/compare/v5.2.2...v5.2.3) (2024-10-10)
 
 

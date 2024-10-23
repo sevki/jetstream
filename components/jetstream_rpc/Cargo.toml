@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_rpc"
-version = "5.2.3"
+version = "5.3.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -9,6 +9,6 @@ readme = { workspace = true }
 
 [dependencies]
 async-trait = "0.1.83"
-jetstream_wireformat = { version = "5.2.3", path = "../jetstream_wireformat" }
+jetstream_wireformat = { version = "5.3.0", path = "../jetstream_wireformat" }
 okstd = { version = "0.1.10" }
 tokio = { version = "1.40.0", features = ["full"] }
