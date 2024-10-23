@@ -2,7 +2,7 @@
 name = "jetstream_derive"
 
 authors = ["Sevki <s@sevki.io>", "The ChromiumOS Authors"]
-version = "5.2.3"
+version = "5.3.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
