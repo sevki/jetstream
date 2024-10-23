@@ -23,6 +23,8 @@ jobs:
           - "stable"
           - "beta" # beta
           - "nightly" # nightly
+    env:
+      SCCACHE_GHA_ENABLED: on
     steps:
       - uses: actions/checkout@v3
       - name: Set up Rust ${{ matrix.rust }}
@@ -30,6 +32,16 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build ${{ matrix.rust }}
         run: cargo build --verbose
       - name: Run tests
