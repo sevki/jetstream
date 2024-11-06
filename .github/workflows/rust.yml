@@ -20,6 +20,7 @@ jobs:
           - "1.79.0"
           - "1.80.0"
           - "1.81.0"
+          - "1.82.0"
           - "stable"
           - "beta" # beta
           - "nightly" # nightly
