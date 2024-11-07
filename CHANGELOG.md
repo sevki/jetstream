@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.2](https://github.com/sevki/jetstream/compare/v5.4.1...v5.4.2) (2024-11-07)
+
+
+### Bug Fixes
+
+* auto-release ([964036c](https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972))
+
 ## [5.4.1](https://github.com/sevki/jetstream/compare/v5.4.0...v5.4.1) (2024-11-07)
 
 

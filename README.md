@@ -1,4 +1,4 @@
-<img src="https://github.com/sevki/jetstream/blob/main/logo/JetStream.png" style="width: 200px">
+<img src="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png" style="width: 200px">
 
 # JetStream
 
