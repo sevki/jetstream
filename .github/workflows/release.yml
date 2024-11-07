@@ -1,6 +1,9 @@
 name: Release
 on:
   push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+" # This will match tags like v5.4.1, v1.0.0, etc.
+
 jobs:
   create-release:
     runs-on: ubuntu-latest
@@ -11,6 +14,5 @@ jobs:
           toolchain: stable
           override: true
       - uses: katyo/publish-crates@v2
-        if: github.event_name == 'release'
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
