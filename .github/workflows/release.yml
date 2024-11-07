@@ -1,18 +1,29 @@
 name: Release
 on:
   push:
+
 jobs:
   create-release:
-    # Only run if the tag was created by release-please
-
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for git describe to work
+
+      - name: Check if we're on a tag
+        run: |
+          DESCRIBE=$(git describe --exact-match --tags)
+          if [[ ! $DESCRIBE =~ ^v[0-9].* ]]; then
+            echo "Not a version tag: $DESCRIBE"
+            exit 1
+          fi
+          echo "On version tag: $DESCRIBE"
+
       - uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
           override: true
+
       - uses: katyo/publish-crates@v2
-        if: ${{ startsWith(github.event.base_ref, 'refs/tags/v') }}
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
