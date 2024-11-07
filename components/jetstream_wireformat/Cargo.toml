@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_wireformat"
-version = "5.4.2"
+version = "6.0.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -13,7 +13,7 @@ async = ["dep:tokio", "dep:futures"]
 
 [dependencies]
 bytes = { version = "1.7.2", features = ["serde"] }
-jetstream_derive = { version = "5.4.2", path = "../jetstream_derive" }
+jetstream_derive = { version = "6.0.0", path = "../jetstream_derive" }
 libc = "0.2.159"
 paste = "1.0.15"
 zerocopy = "0.8.3"
