@@ -1,18 +1,34 @@
 name: Release
 on:
   push:
+
 jobs:
   create-release:
-    # Only run if the tag was created by release-please
-
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if we're on a tag
+        id: check_tag
+        run: |
+          if DESCRIBE=$(git describe --exact-match --tags 2>/dev/null); then
+            echo "We are on tag: $DESCRIBE"
+            echo "is_tag=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$DESCRIBE" >> "$GITHUB_OUTPUT"
+          else
+            echo "Not on a tag"
+            echo "is_tag=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions-rs/toolchain@v1
+        if: steps.check_tag.outputs.is_tag == 'true'
         with:
           toolchain: stable
           override: true
+
       - uses: katyo/publish-crates@v2
-        if: ${{ startsWith(github.event.base_ref, 'refs/tags/v') }}
+        if: steps.check_tag.outputs.is_tag == 'true'
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
