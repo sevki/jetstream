@@ -1,5 +1,12 @@
 # Changelog
 
+## [5.4.0](https://github.com/sevki/jetstream/compare/v5.3.0...v5.4.0) (2024-11-07)
+
+
+### Features
+
+* revamp service ([#147](https://github.com/sevki/jetstream/issues/147)) ([6d96be8](https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706))
+
 ## [5.3.0](https://github.com/sevki/jetstream/compare/v5.2.3...v5.3.0) (2024-10-23)
 
 
