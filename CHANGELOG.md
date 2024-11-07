@@ -1,5 +1,67 @@
 # Changelog
 
+## [6.0.0](https://github.com/sevki/jetstream/compare/v5.4.2...v6.0.0) (2024-11-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* splits up packages
+* move modules to sensible parents
+* protocol -> coding
+* merge all the creates
+
+### Features
+
+* autopub ([73a0844](https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e))
+* hide filesystem behind a feautre-flag ([9aa880d](https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98))
+* **macros:** service macro to remove boilerplate code ([e0a9295](https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4))
+* modularize components ([7262a66](https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a))
+* release please ([7d7bedd](https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47))
+* release please ([044cceb](https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847))
+* revamp service ([#147](https://github.com/sevki/jetstream/issues/147)) ([6d96be8](https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706))
+* rust-clippy code scanning ([3dfb39f](https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18))
+* use sccache ([#142](https://github.com/sevki/jetstream/issues/142)) ([89f96ab](https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6))
+* use serde_bytes::ByteBuf instead of Bytes ([a1101d9](https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b))
+* virtio support ([ce13217](https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351))
+* **wireformat:** add u128 ([c76f6c4](https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab))
+
+
+### Bug Fixes
+
+* auto-release ([964036c](https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972))
+* auto-release feature ([6505b0f](https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769))
+* bothced update ([b3b7003](https://github.com/sevki/jetstream/commit/b3b7003f565fc833804a70519aeb0741d03f34be))
+* broken release-please ([089bb22](https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9))
+* bump zero copy ([#140](https://github.com/sevki/jetstream/issues/140)) ([4bb933f](https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454))
+* ci release-please ([de391e5](https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1))
+* filesystem under feature flag, rm newline ([de4cf79](https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616))
+* ignore e2e tests ([e066dde](https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7))
+* lint errors ([4f50d0b](https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134))
+* **macros:** protocol macro fix to spread fn args ([b261a28](https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3))
+* make data io::Read ([12a864e](https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd))
+* make data io::Read ([910c75a](https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5))
+* make data io::Read ([77b3680](https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f))
+* readme ([dc77722](https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820))
+* release again ([3a6e65e](https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2))
+* release workflow ([4abeb24](https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094))
+* revert serde_bytes to bytes with serde ([2e02460](https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54))
+* unused git ([3fe908e](https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68))
+* Update client_tests.rs ([4c50132](https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653))
+* update release flow ([#144](https://github.com/sevki/jetstream/issues/144)) ([36dd4af](https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489))
+* Update release.yml ([b058b38](https://github.com/sevki/jetstream/commit/b058b38367db97630b91af82e6bb11e26728708e))
+* Update release.yml ([#122](https://github.com/sevki/jetstream/issues/122)) ([566fe1f](https://github.com/sevki/jetstream/commit/566fe1f64c6d6f25d157a227b261c69c9b3e83b5))
+* update to v2 upload sarif ([e38bacb](https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e))
+* version ([822bf0e](https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945))
+* warnings ([62d8013](https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83))
+* **wireformat:** from_bytes doesn't require a mutable buf ([437c35c](https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725))
+
+
+### Code Refactoring
+
+* merge all the creates ([faa0a1a](https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543))
+* move modules to sensible parents ([4eba5fb](https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b))
+* protocol -&gt; coding ([5f86bc7](https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2))
+
 ## [5.4.2](https://github.com/sevki/jetstream/compare/v5.4.1...v5.4.2) (2024-11-07)
 
 
