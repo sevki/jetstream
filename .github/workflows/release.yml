@@ -1,8 +1,13 @@
 name: Release
 on:
   push:
+    tags:
+      - "v[0-9]*" # This will match v5.4.1, v5, v5.4, etc.
+
 jobs:
   create-release:
+    # Only run if the tag was created by release-please
+    if: ${{ startsWith(github.event.base_ref, 'refs/tags/v') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -11,6 +16,5 @@ jobs:
           toolchain: stable
           override: true
       - uses: katyo/publish-crates@v2
-        if: github.event_name == 'release'
         with:
           registry-token: ${{ secrets.CARGO_REGISTRY_TOKEN }}
