@@ -10,7 +10,15 @@ readme = { workspace = true }
 jetstream_9p = { version = "5.3.0", path = "../jetstream_9p" }
 jetstream_wireformat = { version = "5.3.0", path = "../jetstream_wireformat" }
 jetstream_rpc = { version = "5.3.0", path = "../jetstream_rpc" }
+jetstream_server = { version = "5.3.0", path = "../jetstream_server" }
 serde = { version = "1.0.210", features = ["derive"] }
 libc = "0.2.159"
 tokio = { version = "1.40.0", features = ["full"] }
 anyhow = "1.0.89"
+okstd = { version = "0.1.10", features = ["macros", "argh"] }
+argh = "0.1.12"
+
+
+[[bin]]
+name = "jetstream_ufs"
+path = "src/main.rs"

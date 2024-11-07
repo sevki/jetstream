@@ -14,13 +14,16 @@ description = "Jetstream is a RPC framework for Rust, based on the 9P protocol a
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
 
-
 [dependencies]
 jetstream_client = { version = "5.3.0", path = "components/jetstream_client", optional = true }
 jetstream_derive = { version = "5.3.0", path = "components/jetstream_derive" }
 jetstream_server = { version = "5.3.0", path = "components/jetstream_server", optional = true }
 jetstream_ufs = { version = "5.3.0", path = "components/jetstream_ufs", optional = true }
 jetstream_wireformat = { version = "5.3.0", path = "components/jetstream_wireformat" }
+jetstream_rpc = { version = "5.3.0", path = "components/jetstream_rpc" }
+jetstream_9p = { version = "5.3.0", path = "components/jetstream_9p", optional = true }
+trait-variant = "0.1.2"
+
 
 [build-dependencies]
 pkg-config = "0.3"
@@ -57,8 +60,14 @@ name = "wire_format"
 [[test]]
 name = "server"
 
+[[example]]
+name = "echo"
+
+
 [features]
+default = []
 client = ["dep:jetstream_client"]
 ufs = ["dep:jetstream_ufs"]
 server = ["dep:jetstream_server"]
-all = ["client", "ufs", "server"]
+all = ["client", "ufs", "server", "9p"]
+9p = ["dep:jetstream_9p"]

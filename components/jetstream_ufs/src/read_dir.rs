@@ -39,6 +39,7 @@ impl LinuxDirent64 {
 }
 
 pub struct DirEntry<'r> {
+    #[allow(dead_code)]
     pub ino: libc::ino64_t,
     pub offset: u64,
     pub type_: u8,

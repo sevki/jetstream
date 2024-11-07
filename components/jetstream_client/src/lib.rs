@@ -8,7 +8,7 @@
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-use jetstream_rpc::{JetStreamProtocol, JetStreamService};
+use jetstream_rpc::{Protocol, Service};
 use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
 use okstd::okasync::{Runtime, Runtimes};
 use s2n_quic::client::Connect;
@@ -20,17 +20,15 @@ use std::sync::{Arc, Mutex};
 use s2n_quic::stream::SplittableStream;
 use s2n_quic::Client;
 
-type Error = anyhow::Error;
+type Result<T> = std::result::Result<T, jetstream_rpc::Error>;
 
-type Result<T> = std::result::Result<T, Error>;
-
-pub struct Connection<P: JetStreamProtocol> {
+pub struct Connection<P: Protocol> {
     inner: s2n_quic::Connection,
     rt: Arc<Mutex<Runtimes>>,
     _phantom: std::marker::PhantomData<P>,
 }
 
-impl<P: JetStreamProtocol> Connection<P> {
+impl<P: Protocol> Connection<P> {
     pub fn new(inner: s2n_quic::Connection, rt: Runtimes) -> Self {
         Connection {
             inner,
@@ -40,7 +38,7 @@ impl<P: JetStreamProtocol> Connection<P> {
     }
 }
 
-impl<P: JetStreamProtocol> Connection<P> {
+impl<P: Protocol> Connection<P> {
     pub async fn new_handle(&mut self) -> Result<Handle<P>> {
         let stream = self.inner.open_bidirectional_stream().await?;
         Ok(Handle::<P> {
@@ -58,18 +56,18 @@ impl<P: JetStreamProtocol> Connection<P> {
     }
 }
 
-pub struct Handle<P: JetStreamProtocol> {
+pub struct Handle<P: Protocol> {
     stream: s2n_quic::stream::BidirectionalStream,
     rt: Arc<Mutex<Runtimes>>,
     _phantom: std::marker::PhantomData<P>,
 }
 
-impl<P: JetStreamProtocol> JetStreamProtocol for Handle<P> {
+impl<P: Protocol> Protocol for Handle<P> {
     type Request = P::Request;
     type Response = P::Response;
 }
 
-impl<P: JetStreamProtocol + Send + Sync> SplittableStream for Handle<P> {
+impl<P: Protocol + Send + Sync> SplittableStream for Handle<P> {
     fn split(
         self,
     ) -> (
@@ -81,20 +79,21 @@ impl<P: JetStreamProtocol + Send + Sync> SplittableStream for Handle<P> {
     }
 }
 
-impl<P: JetStreamProtocol + Send + Sync> JetStreamService for Handle<P> {
+impl<P: Protocol + Send + Sync> Service for Handle<P> {
+    #[doc = " Handles an RPC call asynchronously."]
     fn rpc(
         &mut self,
         req: Self::Request,
-    ) -> std::prelude::v1::Result<
-        Self::Response,
-        Box<dyn std::error::Error + Send + Sync>,
-    > {
-        let rt = self.rt.clone();
-        let rt = rt.lock().unwrap();
-        rt.block_on(async {
-            let _ = req.encode_async(&mut self.stream).await;
-            let resp = P::Response::decode_async(&mut self.stream).await;
-            resp.map_err(|e| e.into())
+    ) -> impl ::core::future::Future<Output = Result<Self::Response>> + Send + Sync
+    {
+        Box::pin(async move {
+            let rt = self.rt.clone();
+            let rt = rt.lock().unwrap();
+            rt.block_on(async {
+                let _ = req.encode_async(&mut self.stream).await;
+                let resp = P::Response::decode_async(&mut self.stream).await;
+                resp.map_err(|e| e.into())
+            })
         })
     }
 }

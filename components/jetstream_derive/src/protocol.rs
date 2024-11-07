@@ -389,17 +389,25 @@ pub fn generate_jetstream_prococol(
                     });
                     quote! {
                         #[inline]
-                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident {
-                            #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner,
-                                #(#spread_req)*
-                            )#maybe_await)
+                        fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> impl ::core::future::Future<
+                            Output = Result<#return_struct_ident, Box<dyn Error + Send + Sync>>,
+                        > + Send + Sync {
+                            Box::pin(async move {
+                                #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner,
+                                    #(#spread_req)*
+                                )#maybe_await)
+                            })
                         }
                     }
                 } else {
                     quote! {
                         #[inline]
-                        async fn #method_name(&mut self,tag: u16, req: #request_struct_ident)-> #return_struct_ident {
-                            #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner)#maybe_await)
+                        fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> impl ::core::future::Future<
+                            Output = Result<#return_struct_ident, Box<dyn Error + Send + Sync>>,
+                        > + Send + Sync {
+                            Box::pin(async move {
+                                #return_struct_ident(tag, #original_trait_name::#method_name(&mut self.inner)#maybe_await)
+                            })
                         }
                     }
                 }
@@ -443,11 +451,11 @@ pub fn generate_jetstream_prococol(
                         syn::FnArg::Receiver(_) => quote! {},
                     });
                     quote! {
-                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident;
+                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> Result<#return_struct_ident,Box<dyn Error + Send + Sync>>;
                     }
                 } else {
                     quote! {
-                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> #return_struct_ident;
+                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> Result<#return_struct_ident,Box<dyn Error + Send + Sync>>;
                     }
                 }
             }
@@ -483,12 +491,14 @@ pub fn generate_jetstream_prococol(
         );
         server_calls.extend(iter::once(quote! {
             #[inline]
-            async fn rpc(&mut self, req:Self::Request) -> Result<Self::Response,Box<dyn Error + Send + Sync>> {
-                match req.msg {
+            fn rpc(&mut self, req:Self::Request) -> impl ::core::future::Future<
+                Output = Result<Self::Response, Box<dyn Error + Send + Sync>>,
+            > + Send + Sync {
+                Box::pin(async move {match req.msg {
                     #(
                         #matches
                      )*
-                }
+                }})
             }
 
         }));
@@ -555,41 +565,49 @@ pub fn generate_jetstream_prococol(
             type Response = Rframe;
         }
 
-        #[async_trait::async_trait]
-        pub trait #trait_name
-            where
-             Self: Sized + Send + Sync,
-         {
+        #[trait_variant::make(Send+Sync+Sized)]
+        pub trait #trait_name {
             type Protocol: JetStreamProtocol;
             #(
                 #signatures
             )*
         }
-        pub struct #server_name<T: #original_trait_name+Send+Sync +?Sized> {
-            inner: T
+
+        pub struct #server_name<Proto = #original_trait_name> {
+            inner: Proto
         }
-        impl<T: #original_trait_name+Send + Sync + Sized> #server_name<T>
-            where Self: Send + Sync + Sized
+
+        impl <Proto = #original_trait_name> #server_name<Proto> {
+            pub fn new(inner: Proto) -> Self {
+                Self { inner }
+            }
+        }
+
+        impl<T =#original_trait_name> #server_name<T>
+            where T: Send + Sync + Sized
         {
             pub fn new(inner: T) -> Self {
                 Self { inner }
             }
         }
-        impl<T:#original_trait_name+Send + Sync + Sized> JetStreamProtocol for #server_name<T> {
+
+        impl<T =#original_trait_name> JetStreamProtocol for #server_name<T>
+            where T: Send + Sync + Sized
+        {
             type Request = Tframe;
             type Response = Rframe;
         }
-        #[async_trait::async_trait]
-        impl<T: #original_trait_name+Send + Sync + Sized> JetStreamAsyncService for #server_name<T>
-            where Self: Send + Sync + Sized
+
+        impl<T =#original_trait_name> JetStreamAsyncService for #server_name<T>
+            where T: Send + Sync + Sized
         {
             #(
                 #server_calls
             )*
         }
-        #[async_trait::async_trait]
-        impl<T: #original_trait_name+Send + Sync + Sized> #trait_name for #server_name<T>
-            where Self: Send + Sync + Sized
+
+        impl<T =#original_trait_name> #trait_name for #server_name<T>
+            where T: Send + Sync + Sized
          {
             type Protocol = #proto_name;
 
@@ -629,9 +647,10 @@ pub fn protocol_inner(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
     TokenStream::from(quote! {
         #visibility mod #module_name {
-            pub use async_trait::async_trait;
+            pub use trait_variant;
             use std::io;
-            pub use jetstream::{Message, WireFormat, JetStreamWireFormat, wire_format_extensions::AsyncWireFormatExt, JetStreamProtocol, service::{JetStreamAsyncService}};
+            // reexport jetstream prelude
+            pub use jetstream::prelude::*;
             pub use std::mem;
             pub use std::io::{Read, Write, ErrorKind};
             pub use std::future::Future;

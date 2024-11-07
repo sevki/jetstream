@@ -1,205 +1,165 @@
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
-#![doc(
-    html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
-// Copyright (c) 2024, Sevki <s@sevki.io>
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-use std::error::Error;
-use std::io;
-use std::sync::Arc;
-
 use jetstream_wireformat::{
     wire_format_extensions::AsyncWireFormatExt, WireFormat,
 };
+use std::fmt::Display;
+use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-/// Message trait for JetStream messages, which need to implement the `WireFormat` trait.
+/// A trait representing a message that can be encoded and decoded.
 pub trait Message: WireFormat + Send + Sync {}
 
-pub trait JetStreamProtocol {
+/// Defines the request and response types for the JetStream protocol.
+pub trait Protocol {
     type Request: Message;
     type Response: Message;
 }
 
-pub trait JetStreamService: JetStreamProtocol + Send + Sync + Sized {
-    fn rpc(
-        &mut self,
-        req: Self::Request,
-    ) -> Result<Self::Response, Box<dyn Error + Send + Sync>>;
+#[derive(Debug)]
+pub enum Error {
+    WireFormat,
+    Io(std::io::Error),
+    Anyhow(anyhow::Error),
+    Quic(s2n_quic::connection::Error),
+    Custom(Box<dyn std::error::Error + Send + Sync>),
+}
 
-    fn handle_message<R, W>(
-        &mut self,
-        reader: &mut R,
-        writer: &mut W,
-    ) -> Result<(), io::Error>
-    where
-        R: std::io::Read,
-        W: std::io::Write,
-    {
-        let req = Self::Request::decode(reader)?;
-        let resp = self
-            .rpc(req)
-            .map_err(|err| io::Error::new(io::ErrorKind::Other, err));
-        match resp {
-            Ok(resp) => resp.encode(writer),
-            Err(err) => Err(io::Error::new(io::ErrorKind::Other, err)),
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
+        Error::Io(e)
+    }
+}
+
+impl From<anyhow::Error> for Error {
+    fn from(e: anyhow::Error) -> Self {
+        Error::Anyhow(e)
+    }
+}
+
+impl From<s2n_quic::connection::Error> for Error {
+    fn from(e: s2n_quic::connection::Error) -> Self {
+        Error::Quic(e)
+    }
+}
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Error::Io(e) => write!(f, "I/O error: {}", e),
+            Error::WireFormat => write!(f, "Wire format error"),
+            Error::Custom(e) => write!(f, "Custom error: {}", e),
+            Error::Anyhow(e) => write!(f, "Anyhow error: {}", e),
+            Error::Quic(e) => write!(f, "Quic error: {}", e),
         }
     }
 }
 
-/// A trait for implementing a 9P service.
-/// This trait is implemented for types that can handle 9P requests.
-#[async_trait::async_trait]
-pub trait JetStreamAsyncService:
-    JetStreamProtocol + Send + Sync + Sized
-{
+/// An asynchronous JetStream service that can handle RPC calls and messages.
+#[trait_variant::make(Send+Sync)]
+pub trait Service: Protocol {
+    /// Handles an RPC call asynchronously.
     async fn rpc(
         &mut self,
         req: Self::Request,
-    ) -> Result<Self::Response, Box<dyn Error + Send + Sync>>;
+    ) -> Result<Self::Response, Error>;
 
+    /// Handles a message by reading from the reader, processing it, and writing the response.
     async fn handle_message<R, W>(
         &mut self,
         reader: &mut R,
         writer: &mut W,
-    ) -> Result<(), Box<dyn Error + Send + Sync>>
+    ) -> Result<(), Error>
     where
-        R: AsyncReadExt + Unpin + Send,
-        W: AsyncWriteExt + Unpin + Send,
+        R: AsyncReadExt + Unpin + Send + Sync,
+        W: AsyncWriteExt + Unpin + Send + Sync,
     {
-        // debug!("handling message");
-        let req = Self::Request::decode_async(reader).await?;
-        let resp = self.rpc(req).await?;
-        resp.encode_async(writer).await?;
-        Ok(())
+        Box::pin(async move {
+            let req = Self::Request::decode_async(reader).await?;
+            let resp = self.rpc(req).await?;
+            resp.encode_async(writer).await?;
+            Ok(())
+        })
     }
 }
 
-/// A trait for implementing a 9P service.
-/// This trait is implemented for types that can handle 9P requests.
-pub trait JetStreamSharedService:
-    JetStreamAsyncService + Send + Sync + Clone
-{
+/// A shared, thread-safe JetStream service that can be cloned.
+#[derive(Clone)]
+pub struct SharedJetStreamService<S: Service> {
+    inner: Arc<tokio::sync::Mutex<S>>,
 }
 
-/// A service that implements the 9P protocol.
-#[derive(Debug, Clone, Copy)]
-pub struct JetStreamServiceAsyncImpl<S: JetStreamAsyncService> {
-    inner: S,
-}
-
-impl<S: JetStreamSharedService> JetStreamServiceAsyncImpl<S> {
-    pub fn new(inner: S) -> Self {
-        JetStreamServiceAsyncImpl { inner }
+impl<S: Service> SharedJetStreamService<S> {
+    /// Creates a new shared JetStream service.
+    pub fn new(service: S) -> Self {
+        Self {
+            inner: Arc::new(tokio::sync::Mutex::new(service)),
+        }
     }
 }
 
-impl<S: JetStreamAsyncService> JetStreamProtocol
-    for JetStreamServiceAsyncImpl<S>
-{
+impl<S: Service> Protocol for SharedJetStreamService<S> {
     type Request = S::Request;
     type Response = S::Response;
 }
 
-impl<S: JetStreamSharedService + JetStreamAsyncService> JetStreamAsyncService
-    for JetStreamServiceAsyncImpl<S>
-{
-    #[must_use]
-    #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
-    fn rpc<'life0, 'async_trait>(
-        &'life0 mut self,
+impl<S: Service> Service for SharedJetStreamService<S> {
+    async fn rpc(
+        &mut self,
         req: Self::Request,
-    ) -> ::core::pin::Pin<
-        Box<
-            dyn ::core::future::Future<
-                    Output = Result<
-                        Self::Response,
-                        Box<dyn Error + Send + Sync>,
-                    >,
-                > + ::core::marker::Send
-                + 'async_trait,
-        >,
-    >
-    where
-        'life0: 'async_trait,
-        Self: 'async_trait,
-    {
-        Box::pin(async move { self.inner.rpc(req).await })
+    ) -> Result<Self::Response, Error> {
+        let mut service = self.inner.lock().await;
+        service.rpc(req).await
     }
 }
 
-pub struct JetStreamServiceImpl<S: JetStreamService> {
-    inner: S,
-}
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use jetstream_wireformat::{
+        wire_format_extensions::ConvertWireFormat, JetStreamWireFormat,
+    };
+    use okstd::prelude::*;
+    use std::io::Cursor;
 
-impl<S: JetStreamService> JetStreamServiceImpl<S> {
-    pub fn new(inner: S) -> Self {
-        JetStreamServiceImpl { inner }
+    struct TestService;
+
+    #[derive(Debug, PartialEq, Eq, Clone, JetStreamWireFormat)]
+    struct TestMessage {
+        value: u32,
     }
-}
 
-impl<S: JetStreamService> JetStreamProtocol for JetStreamServiceImpl<S> {
-    type Request = S::Request;
-    type Response = S::Response;
-}
+    impl Message for TestMessage {}
 
-#[derive(Debug)]
-pub struct JetStreamRCService<T: Send + JetStreamAsyncService>(
-    Arc<tokio::sync::Mutex<T>>,
-);
-
-impl<T: JetStreamAsyncService> JetStreamProtocol for JetStreamRCService<T> {
-    type Request = T::Request;
-    type Response = T::Response;
-}
-
-impl<T: Send + JetStreamAsyncService> JetStreamAsyncService
-    for JetStreamRCService<T>
-{
-    #[must_use]
-    #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
-    fn rpc<'life0, 'async_trait>(
-        &'life0 mut self,
-        req: Self::Request,
-    ) -> ::core::pin::Pin<
-        Box<
-            dyn ::core::future::Future<
-                    Output = Result<
-                        Self::Response,
-                        Box<dyn Error + Send + Sync>,
-                    >,
-                > + ::core::marker::Send
-                + 'async_trait,
-        >,
-    >
-    where
-        'life0: 'async_trait,
-        Self: 'async_trait,
-    {
-        Box::pin(async move { self.0.lock().await.rpc(req).await })
+    impl Protocol for TestService {
+        type Request = TestMessage;
+        type Response = TestMessage;
     }
-}
 
-impl<T: Send + JetStreamAsyncService> JetStreamRCService<T> {
-    pub fn new(inner: T) -> Self {
-        JetStreamRCService(Arc::new(tokio::sync::Mutex::new(inner)))
+    impl Service for TestService {
+        #[doc = " Handles an RPC call asynchronously."]
+        async fn rpc(
+            &mut self,
+            req: Self::Request,
+        ) -> Result<Self::Response, Error> {
+            Ok(TestMessage {
+                value: req.value + 1,
+            })
+        }
     }
-}
 
-impl<T> Clone for JetStreamRCService<T>
-where
-    T: Send + JetStreamAsyncService,
-{
-    fn clone(&self) -> Self {
-        Self(self.0.clone())
+    #[okstd::test]
+    async fn test_shared_service() {
+        let mut service = SharedJetStreamService::new(TestService);
+        let mut reader = Cursor::new(TestMessage { value: 42 }.to_bytes());
+        let mut writer = Cursor::new(vec![]);
+
+        service
+            .handle_message(&mut reader, &mut writer)
+            .await
+            .unwrap();
+
+        let resp =
+            TestMessage::from_bytes(&bytes::Bytes::from(writer.into_inner()))
+                .unwrap();
+        assert_eq!(resp, TestMessage { value: 43 });
     }
-}
-
-impl<T> JetStreamSharedService for JetStreamRCService<T> where
-    T: Send + JetStreamAsyncService
-{
 }
