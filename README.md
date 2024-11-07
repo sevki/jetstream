@@ -8,10 +8,10 @@ JetStream is an RPC framework built on top of [s2n-quic](https://crates.io/crate
 
 Features:
 
-- Bidirectional streaming
-- 0-RTT
+- [Bidirectional streaming](https://datatracker.ietf.org/meeting/99/materials/slides-99-quic-sessb-quic-unidirectional-and-bidirectional-streams-01)
+- [0-RTT](https://blog.cloudflare.com/even-faster-connection-establishment-with-quic-0-rtt-resumption/)
 - [mTLS](https://github.com/aws/s2n-quic/tree/main/examples/s2n-mtls)
-- binary encoding
+- [binary encoding](https://docs.rs/jetstream_wireformat/latest/jetstream_wireformat/)
 
 ## Motivation
 
