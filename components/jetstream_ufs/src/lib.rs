@@ -25,6 +25,9 @@ macro_rules! syscall {
 mod read_dir;
 mod ufs;
 
+pub use ufs::Handler;
+pub use ufs::Ufs;
+
 use std::cmp::min;
 use std::collections::btree_map;
 use std::collections::BTreeMap;

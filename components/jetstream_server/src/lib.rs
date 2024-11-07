@@ -10,3 +10,34 @@
 // found in the LICENSE file.
 pub mod proxy;
 pub mod quic_server;
+use std::fmt::Debug;
+use tokio::io::{AsyncRead, AsyncWrite};
+
+#[cfg(feature = "vsock")]
+use tokio_vsock::{VsockAddr, VsockListener};
+
+#[async_trait::async_trait]
+pub trait ListenerStream: Send + Sync + Debug + 'static {
+    type Stream: AsyncRead + AsyncWrite + Unpin + Send + Sync;
+    type Addr: std::fmt::Debug;
+    async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)>;
+}
+
+#[async_trait::async_trait]
+impl ListenerStream for tokio::net::UnixListener {
+    type Stream = tokio::net::UnixStream;
+    type Addr = tokio::net::unix::SocketAddr;
+    async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
+        tokio::net::UnixListener::accept(self).await
+    }
+}
+
+#[cfg(feature = "vsock")]
+#[async_trait::async_trait]
+impl ListenerStream for VsockListener {
+    type Stream = tokio_vsock::VsockStream;
+    type Addr = VsockAddr;
+    async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
+        VsockListener::accept(self).await
+    }
+}

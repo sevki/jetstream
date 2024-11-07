@@ -1,17 +1,16 @@
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-use std::error::Error;
 use std::{collections::btree_map, path::PathBuf};
 
 use jetstream_9p::{Rframe, Tframe};
-use jetstream_rpc::{JetStreamAsyncService, JetStreamProtocol};
+use jetstream_rpc::{Protocol, Service};
 
 pub use crate::Server;
 
-pub struct Handle<Protocol: JetStreamProtocol> {
-    tframe: Protocol::Request,
-    reply_to: tokio::sync::oneshot::Sender<Protocol::Response>,
+pub struct Handle<P: Protocol> {
+    tframe: P::Request,
+    reply_to: tokio::sync::oneshot::Sender<P::Response>,
 }
 
 pub struct Ufs {
@@ -20,9 +19,10 @@ pub struct Ufs {
     server: Server,
 }
 
-struct UfsProtocol;
+#[derive(Clone)]
+pub struct UfsProtocol;
 
-impl JetStreamProtocol for UfsProtocol {
+impl Protocol for UfsProtocol {
     type Request = Tframe;
     type Response = Rframe;
 }
@@ -63,42 +63,33 @@ impl Ufs {
 }
 
 #[derive(Clone)]
-pub struct Handler<Protocol: JetStreamProtocol> {
-    tx: tokio::sync::mpsc::UnboundedSender<Handle<Protocol>>,
+pub struct Handler<P: Protocol> {
+    tx: tokio::sync::mpsc::UnboundedSender<Handle<P>>,
 }
 
-impl<Protocol: JetStreamProtocol> JetStreamProtocol for Handler<Protocol> {
-    type Request = Protocol::Request;
-
-    type Response = Protocol::Response;
+impl Default for Handler<UfsProtocol> {
+    fn default() -> Self {
+        let (tx, _) =
+            tokio::sync::mpsc::unbounded_channel::<Handle<UfsProtocol>>();
+        Self { tx }
+    }
 }
 
-impl<Protocol> JetStreamAsyncService for Handler<Protocol>
+impl<P: Protocol> Protocol for Handler<P> {
+    type Request = P::Request;
+
+    type Response = P::Response;
+}
+
+impl<P> Service for Handler<P>
 where
-    Protocol: JetStreamProtocol,
+    P: Protocol,
 {
-    #[must_use]
-    #[allow(clippy::type_complexity, clippy::type_repetition_in_bounds)]
-    fn rpc<'life0, 'async_trait>(
-        &'life0 mut self,
-        req: Protocol::Request,
-    ) -> ::core::pin::Pin<
-        Box<
-            dyn ::core::future::Future<
-                    Output = Result<
-                        Protocol::Response,
-                        Box<dyn Error + Send + Sync>,
-                    >,
-                > + ::core::marker::Send
-                + 'async_trait,
-        >,
-    >
-    where
-        'life0: 'async_trait,
-        Self: 'async_trait,
-    {
-        let (reply, result) =
-            tokio::sync::oneshot::channel::<Protocol::Response>();
+    async fn rpc(
+        &mut self,
+        req: Self::Request,
+    ) -> Result<Self::Response, jetstream_rpc::Error> {
+        let (reply, result) = tokio::sync::oneshot::channel::<P::Response>();
         self.tx
             .send(Handle {
                 tframe: req,
@@ -106,6 +97,8 @@ where
             })
             .unwrap();
 
-        Box::pin(async { result.await.map_err(|e| e.into()) })
+        result
+            .await
+            .map_err(|e| jetstream_rpc::Error::Anyhow(e.into()))
     }
 }

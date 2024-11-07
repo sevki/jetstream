@@ -4,8 +4,8 @@
 // found in the LICENSE file.
 
 use jetstream_derive::JetStreamWireFormat;
-use jetstream_rpc::JetStreamProtocol;
 use jetstream_rpc::Message;
+use jetstream_rpc::Protocol;
 use jetstream_wireformat::Data;
 use jetstream_wireformat::WireFormat;
 use std::io;
@@ -1169,7 +1169,7 @@ pub struct Rattach {
 
 pub struct NineP200LProtocol;
 
-impl JetStreamProtocol for NineP200LProtocol {
+impl Protocol for NineP200LProtocol {
     type Request = Tframe;
     type Response = Rframe;
 }

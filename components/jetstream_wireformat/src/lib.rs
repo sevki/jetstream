@@ -9,7 +9,7 @@
 // Copyright 2018 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-pub use jetstream_derive::{protocol, JetStreamWireFormat};
+pub use jetstream_derive::JetStreamWireFormat;
 
 use bytes::Buf;
 use std::fmt;
@@ -124,8 +124,8 @@ impl<T: WireFormat> WireFormat for Vec<T> {
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
         if self.len() > u16::MAX as usize {
-            return Err(io::Error::new(
-                ErrorKind::InvalidInput,
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
                 "too many elements in vector",
             ));
         }
@@ -214,8 +214,8 @@ impl WireFormat for Data {
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
         if self.len() > u32::MAX as usize {
-            return Err(io::Error::new(
-                ErrorKind::InvalidInput,
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
                 "data is too large",
             ));
         }
@@ -226,8 +226,8 @@ impl WireFormat for Data {
     fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
         let len: u32 = WireFormat::decode(reader)?;
         if len > MAX_DATA_LENGTH {
-            return Err(io::Error::new(
-                ErrorKind::InvalidData,
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
                 format!("data length ({} bytes) is too large", len),
             ));
         }
@@ -239,7 +239,7 @@ impl WireFormat for Data {
             Ok(Data(buf))
         } else {
             Err(io::Error::new(
-                ErrorKind::UnexpectedEof,
+                std::io::ErrorKind::UnexpectedEof,
                 format!(
                     "unexpected end of data: want: {} bytes, got: {} bytes",
                     len,

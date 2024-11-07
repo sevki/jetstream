@@ -1,7 +1,6 @@
 use jetstream_9p::*;
 use jetstream_derive::JetStreamWireFormat;
 use jetstream_wireformat::*;
-use okstd::prelude::*;
 use std::io::{self, Cursor};
 use std::mem;
 use std::string::String;

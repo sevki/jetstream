@@ -146,7 +146,6 @@ async fn main() {
         _ = prxy_handle => {
             panic!("Proxy failed");
         }
-        _ = client_handle => {
-        }
+        _ = client_handle => {}
     }
 }

@@ -1,28 +1,29 @@
+use std::path::Path;
+
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-use s2n_quic::Server;
+use s2n_quic::{provider::tls, Server};
 
 use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
 
 use okstd::prelude::*;
 
-use jetstream_rpc::{
-    JetStreamAsyncService, JetStreamProtocol, JetStreamSharedService,
-};
+use jetstream_rpc::{Protocol, Service, SharedJetStreamService};
 
-pub struct QuicServer<S: JetStreamAsyncService + JetStreamSharedService> {
+pub struct QuicServer<S: Service> {
     svc: S,
 }
 
-impl<S: JetStreamAsyncService + JetStreamSharedService> QuicServer<S> {
+impl<S: Service> QuicServer<S> {
     pub fn new(svc: S) -> Self {
         Self { svc }
     }
 }
 
-impl<S: JetStreamAsyncService + JetStreamSharedService + 'static>
-    QuicServer<S>
+impl<S> QuicServer<S>
+where
+    S: Service + Clone + 'static,
 {
     pub async fn serve(self, mut server: Server) -> anyhow::Result<()> {
         debug!("Server started");
@@ -69,8 +70,10 @@ impl<S: JetStreamAsyncService + JetStreamSharedService + 'static>
                                 }
                                 debug!("Reading from down_stream");
                                 let tframe =
-                                    <S as JetStreamProtocol>::Request::decode_async(&mut downstream_reader)
-                                        .await;
+                                    <S as Protocol>::Request::decode_async(
+                                        &mut downstream_reader,
+                                    )
+                                    .await;
                                 if let Err(e) = tframe {
                                     // if error is eof, break
                                     if e.kind()
@@ -88,12 +91,10 @@ impl<S: JetStreamAsyncService + JetStreamSharedService + 'static>
                                     tframe
                                 {
                                     debug!("Sending to up_stream");
-                                    let rframe = JetStreamAsyncService::rpc(
-                                        &mut svc.clone(),
-                                        tframe,
-                                    )
-                                    .await
-                                    .unwrap();
+                                    let rframe =
+                                        Service::rpc(&mut svc.clone(), tframe)
+                                            .await
+                                            .unwrap();
                                     // debug!("got rframe: {:?}", rframe);
                                     debug!("writing to down_stream");
                                     rframe
@@ -110,4 +111,35 @@ impl<S: JetStreamAsyncService + JetStreamSharedService + 'static>
         }
         Ok(())
     }
+}
+
+pub async fn start_server(svc: impl Service + Clone + 'static) {
+    pub static CA_CERT_PEM: &str =
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
+    pub static SERVER_CERT_PEM: &str =
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
+    pub static SERVER_KEY_PEM: &str =
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
+
+    let tls = tls::default::Server::builder()
+        .with_trusted_certificate(Path::new(CA_CERT_PEM))
+        .unwrap()
+        .with_certificate(Path::new(SERVER_CERT_PEM), Path::new(SERVER_KEY_PEM))
+        .unwrap()
+        .with_client_authentication()
+        .unwrap()
+        .build()
+        .unwrap();
+
+    let server = Server::builder()
+        .with_tls(tls)
+        .unwrap()
+        .with_io("127.0.0.1:4433")
+        .unwrap()
+        .start()
+        .unwrap();
+
+    let qsrv = QuicServer::new(SharedJetStreamService::new(svc));
+
+    qsrv.serve(server).await.unwrap();
 }
