@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.2.0](https://github.com/sevki/jetstream/compare/v6.1.0...v6.2.0) (2024-11-08)
+
+
+### Features
+
+* add i16,i32,i64,i128 types ([3f0751a](https://github.com/sevki/jetstream/commit/3f0751a8588bf0fb5d189865f65417a717f414c4))
+
 ## [6.1.0](https://github.com/sevki/jetstream/compare/v6.0.2...v6.1.0) (2024-11-08)
 
 
