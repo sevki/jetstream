@@ -12,7 +12,9 @@ jobs:
 
       - name: Check if we're on a tag
         id: check_tag
+        # sleep for a minute to fetch the tags
         run: |
+          sleep 60
           git fetch --depth=1 origin
           if DESCRIBE=$(git describe --tags 2>/dev/null); then
             echo "We are on tag: $DESCRIBE"
