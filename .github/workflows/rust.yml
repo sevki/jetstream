@@ -45,7 +45,19 @@ jobs:
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build ${{ matrix.rust }}
         run: cargo build --verbose
-      - name: Run tests
-        run: cargo test --verbose -F all
-      - name: Run examples
+      - name: Run tests jetstream
+        run: cargo test --verbose --all-features -p jetstream
+      - name: Run tests jetstream_9p
+        run: cargo test --verbose --all-features -p jetstream_9p
+      - name: Run tests jetstream_client
+        run: cargo test --verbose --all-features -p jetstream_client
+      - name: Run tests jetstream_derive
+        run: cargo test --verbose --all-features -p jetstream_derive
+      - name: Run tests jetstream_server
+        run: cargo test --verbose --all-features -p jetstream_server
+      - name: Run tests jetstream_ufs
+        run: cargo test --verbose --all-features -p jetstream_ufs
+      - name: Run tests jetstream_wireformat
+        run: cargo test --verbose --all-features -p jetstream_wireformat
+      - name: Run example echo
         run: cargo run --example echo
