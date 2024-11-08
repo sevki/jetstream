@@ -121,6 +121,24 @@ pub struct QuicConfig {
     pub listen_addr: String,
 }
 
+impl Default for QuicConfig {
+    fn default() -> Self {
+        let ca_cert: &str =
+            concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
+        let server_cert_pem: &str =
+            concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
+        let server_key_pem: &str =
+            concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
+
+        Self {
+            ca_cert: ca_cert.to_string(),
+            server_cert: server_cert_pem.to_string(),
+            server_key: server_key_pem.to_string(),
+            listen_addr: "127.0.0.1:4433".to_string(),
+        }
+    }
+}
+
 /// Start a QUIC server with the given service and configuration
 pub async fn start_server(
     svc: impl Service + Clone + 'static,

@@ -633,8 +633,31 @@ pub(crate) fn service_impl(item: ItemTrait) -> TokenStream {
 
 #[cfg(test)]
 mod tests {
+    use core::panic;
+
     use super::*;
     use syn::parse_quote;
+
+    fn run_test_with_filters<F>(test_fn: F)
+    where
+        F: FnOnce() + panic::UnwindSafe,
+    {
+        let filters = vec![
+            // Filter for protocol version strings
+            (
+                r"dev\.branch\.jetstream\.proto/\w+/\d+\.\d+\.\d+-[a-f0-9]{8}",
+                "dev.branch.jetstream.proto/NAME/VERSION-HASH",
+            ),
+            // Filter for digest strings
+            (r"[a-f0-9]{64}", "DIGEST_HASH"),
+        ];
+
+        insta::with_settings!({
+            filters => filters,
+        }, {
+            test_fn();
+        });
+    }
 
     #[test]
     fn test_simple_service() {
@@ -646,210 +669,212 @@ mod tests {
         let output = service_impl(input);
         let syntax_tree: syn::File = syn::parse2(output).unwrap();
         let output_str = prettyplease::unparse(&syntax_tree);
-        insta::assert_snapshot!(output_str, @r###"
-        mod echo_protocol {
-            use jetstream::prelude::*;
-            use std::io::{self, Read, Write};
-            use std::mem;
-            use super::Echo;
-            const MESSAGE_ID_START: u8 = 101;
-            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.2-8d935c22";
-            const DIGEST: &str = "8d935c22bef12403928f57643f3e513d37adf7e1b300719f6d3f62e50c4ad006";
-            pub const TPING: u8 = MESSAGE_ID_START + 0u8;
-            pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
-            #[allow(non_camel_case_types)]
-            #[derive(Debug, JetStreamWireFormat)]
-            pub struct Tping {}
-            #[allow(non_camel_case_types)]
-            #[derive(Debug, JetStreamWireFormat)]
-            pub struct Rping(pub ());
-            #[derive(Debug)]
-            pub enum Tmessage {
-                Ping(Tping),
-            }
-            #[derive(Debug)]
-            pub struct Tframe {
-                pub tag: u16,
-                pub msg: Tmessage,
-            }
-            impl WireFormat for Tframe {
-                fn byte_size(&self) -> u32 {
-                    let msg = &self.msg;
-                    let msg_size = match msg {
-                        Tmessage::Ping(msg) => msg.byte_size(),
-                    };
-                    (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                        + std::mem::size_of::<u16>()) as u32 + msg_size
+        run_test_with_filters(|| {
+            insta::assert_snapshot!(output_str, @r###"
+            mod echo_protocol {
+                use jetstream::prelude::*;
+                use std::io::{self, Read, Write};
+                use std::mem;
+                use super::Echo;
+                const MESSAGE_ID_START: u8 = 101;
+                pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/NAME/VERSION-HASH";
+                const DIGEST: &str = "DIGEST_HASH";
+                pub const TPING: u8 = MESSAGE_ID_START + 0u8;
+                pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
+                #[allow(non_camel_case_types)]
+                #[derive(Debug, JetStreamWireFormat)]
+                pub struct Tping {}
+                #[allow(non_camel_case_types)]
+                #[derive(Debug, JetStreamWireFormat)]
+                pub struct Rping(pub ());
+                #[derive(Debug)]
+                pub enum Tmessage {
+                    Ping(Tping),
                 }
-                fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                    self.byte_size().encode(writer)?;
-                    let ty = match &self.msg {
-                        Tmessage::Ping(msg) => TPING,
-                    };
-                    ty.encode(writer)?;
-                    self.tag.encode(writer)?;
-                    match &self.msg {
-                        Tmessage::Ping(msg) => msg.encode(writer)?,
+                #[derive(Debug)]
+                pub struct Tframe {
+                    pub tag: u16,
+                    pub msg: Tmessage,
+                }
+                impl WireFormat for Tframe {
+                    fn byte_size(&self) -> u32 {
+                        let msg = &self.msg;
+                        let msg_size = match msg {
+                            Tmessage::Ping(msg) => msg.byte_size(),
+                        };
+                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
+                            + std::mem::size_of::<u16>()) as u32 + msg_size
                     }
-                    Ok(())
-                }
-                fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                    let byte_size = u32::decode(reader)?;
-                    if byte_size < mem::size_of::<u32>() as u32 {
-                        return Err(
-                            std::io::Error::new(
-                                std::io::ErrorKind::InvalidData,
-                                format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                            ),
-                        );
-                    } else {
-                        let byte_size = byte_size
-                            - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                + mem::size_of::<u16>()) as u32;
+                    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+                        self.byte_size().encode(writer)?;
+                        let ty = match &self.msg {
+                            Tmessage::Ping(msg) => TPING,
+                        };
+                        ty.encode(writer)?;
+                        self.tag.encode(writer)?;
+                        match &self.msg {
+                            Tmessage::Ping(msg) => msg.encode(writer)?,
+                        }
+                        Ok(())
                     }
-                    let ty = u8::decode(reader)?;
-                    let tag: u16 = u16::decode(reader)?;
-                    let reader = &mut reader.take((byte_size) as u64);
-                    let msg: Tmessage = Self::decode_message(reader, ty)?;
-                    Ok(Tframe { tag, msg })
-                }
-            }
-            impl Tframe {
-                fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
-                    match ty {
-                        TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
-                        _ => {
-                            Err(
+                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+                        let byte_size = u32::decode(reader)?;
+                        if byte_size < mem::size_of::<u32>() as u32 {
+                            return Err(
                                 std::io::Error::new(
                                     std::io::ErrorKind::InvalidData,
-                                    format!("unknown message type: {}", ty),
+                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
                                 ),
-                            )
+                            );
+                        } else {
+                            let byte_size = byte_size
+                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
+                                    + mem::size_of::<u16>()) as u32;
                         }
+                        let ty = u8::decode(reader)?;
+                        let tag: u16 = u16::decode(reader)?;
+                        let reader = &mut reader.take((byte_size) as u64);
+                        let msg: Tmessage = Self::decode_message(reader, ty)?;
+                        Ok(Tframe { tag, msg })
                     }
                 }
-            }
-            impl Message for Tframe {}
-            #[derive(Debug)]
-            pub enum Rmessage {
-                Ping(Rping),
-            }
-            #[derive(Debug)]
-            pub struct Rframe {
-                pub tag: u16,
-                pub msg: Rmessage,
-            }
-            impl WireFormat for Rframe {
-                fn byte_size(&self) -> u32 {
-                    let msg = &self.msg;
-                    let msg_size = match msg {
-                        Rmessage::Ping(msg) => msg.byte_size(),
-                    };
-                    (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                        + std::mem::size_of::<u16>()) as u32 + msg_size
-                }
-                fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                    self.byte_size().encode(writer)?;
-                    let ty = match &self.msg {
-                        Rmessage::Ping(msg) => RPING,
-                    };
-                    ty.encode(writer)?;
-                    self.tag.encode(writer)?;
-                    match &self.msg {
-                        Rmessage::Ping(msg) => msg.encode(writer)?,
-                    }
-                    Ok(())
-                }
-                fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                    let byte_size = u32::decode(reader)?;
-                    if byte_size < mem::size_of::<u32>() as u32 {
-                        return Err(
-                            std::io::Error::new(
-                                std::io::ErrorKind::InvalidData,
-                                format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                            ),
-                        );
-                    } else {
-                        let byte_size = byte_size
-                            - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                + mem::size_of::<u16>()) as u32;
-                    }
-                    let ty = u8::decode(reader)?;
-                    let tag: u16 = u16::decode(reader)?;
-                    let reader = &mut reader.take((byte_size) as u64);
-                    let msg: Rmessage = Self::decode_message(reader, ty)?;
-                    Ok(Rframe { tag, msg })
-                }
-            }
-            impl Rframe {
-                fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
-                    match ty {
-                        RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
-                        _ => {
-                            Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("unknown message type: {}", ty),
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
-            impl Message for Rframe {}
-            #[derive(Clone)]
-            pub struct EchoProtocol<T: Echo>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                inner: T,
-            }
-            impl<T: Echo> EchoProtocol<T>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                pub fn new(inner: T) -> Self {
-                    Self { inner }
-                }
-            }
-            impl<T> Protocol for EchoProtocol<T>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                type Request = Tframe;
-                type Response = Rframe;
-            }
-            impl<T> Service for EchoProtocol<T>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                #[inline]
-                fn rpc(
-                    &mut self,
-                    req: Self::Request,
-                ) -> impl ::core::future::Future<
-                    Output = Result<Self::Response, Error>,
-                > + Send + Sync {
-                    Box::pin(async move {
-                        match req.msg {
-                            Tmessage::Ping(msg) => {
-                                let msg = Echo::ping(&self.inner).await?;
-                                let ret = Rping(msg);
-                                Ok(Rframe {
-                                    tag: req.tag,
-                                    msg: Rmessage::Ping(ret),
-                                })
+                impl Tframe {
+                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
+                        match ty {
+                            TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
+                            _ => {
+                                Err(
+                                    std::io::Error::new(
+                                        std::io::ErrorKind::InvalidData,
+                                        format!("unknown message type: {}", ty),
+                                    ),
+                                )
                             }
                         }
-                    })
+                    }
+                }
+                impl Message for Tframe {}
+                #[derive(Debug)]
+                pub enum Rmessage {
+                    Ping(Rping),
+                }
+                #[derive(Debug)]
+                pub struct Rframe {
+                    pub tag: u16,
+                    pub msg: Rmessage,
+                }
+                impl WireFormat for Rframe {
+                    fn byte_size(&self) -> u32 {
+                        let msg = &self.msg;
+                        let msg_size = match msg {
+                            Rmessage::Ping(msg) => msg.byte_size(),
+                        };
+                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
+                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                    }
+                    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+                        self.byte_size().encode(writer)?;
+                        let ty = match &self.msg {
+                            Rmessage::Ping(msg) => RPING,
+                        };
+                        ty.encode(writer)?;
+                        self.tag.encode(writer)?;
+                        match &self.msg {
+                            Rmessage::Ping(msg) => msg.encode(writer)?,
+                        }
+                        Ok(())
+                    }
+                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+                        let byte_size = u32::decode(reader)?;
+                        if byte_size < mem::size_of::<u32>() as u32 {
+                            return Err(
+                                std::io::Error::new(
+                                    std::io::ErrorKind::InvalidData,
+                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
+                                ),
+                            );
+                        } else {
+                            let byte_size = byte_size
+                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
+                                    + mem::size_of::<u16>()) as u32;
+                        }
+                        let ty = u8::decode(reader)?;
+                        let tag: u16 = u16::decode(reader)?;
+                        let reader = &mut reader.take((byte_size) as u64);
+                        let msg: Rmessage = Self::decode_message(reader, ty)?;
+                        Ok(Rframe { tag, msg })
+                    }
+                }
+                impl Rframe {
+                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
+                        match ty {
+                            RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
+                            _ => {
+                                Err(
+                                    std::io::Error::new(
+                                        std::io::ErrorKind::InvalidData,
+                                        format!("unknown message type: {}", ty),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+                impl Message for Rframe {}
+                #[derive(Clone)]
+                pub struct EchoProtocol<T: Echo>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    inner: T,
+                }
+                impl<T: Echo> EchoProtocol<T>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    pub fn new(inner: T) -> Self {
+                        Self { inner }
+                    }
+                }
+                impl<T> Protocol for EchoProtocol<T>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    type Request = Tframe;
+                    type Response = Rframe;
+                }
+                impl<T> Service for EchoProtocol<T>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    #[inline]
+                    fn rpc(
+                        &mut self,
+                        req: Self::Request,
+                    ) -> impl ::core::future::Future<
+                        Output = Result<Self::Response, Error>,
+                    > + Send + Sync {
+                        Box::pin(async move {
+                            match req.msg {
+                                Tmessage::Ping(msg) => {
+                                    let msg = Echo::ping(&self.inner).await?;
+                                    let ret = Rping(msg);
+                                    Ok(Rframe {
+                                        tag: req.tag,
+                                        msg: Rmessage::Ping(ret),
+                                    })
+                                }
+                            }
+                        })
+                    }
                 }
             }
-        }
-        #[jetstream::prelude::trait_variant::make(Send+Sync)]
-        pub trait Echo {
-            async fn ping(&self) -> Result<(), std::io::Error>;
-        }
-        "###)
+            #[jetstream::prelude::trait_variant::make(Send+Sync)]
+            pub trait Echo {
+                async fn ping(&self) -> Result<(), std::io::Error>;
+            }
+            "###)
+        })
     }
 
     #[test]
@@ -862,211 +887,213 @@ mod tests {
         let output = service_impl(input);
         let syntax_tree: syn::File = syn::parse2(output).unwrap();
         let output_str = prettyplease::unparse(&syntax_tree);
-        insta::assert_snapshot!(output_str, @r###"
-        mod echo_protocol {
-            use jetstream::prelude::*;
-            use std::io::{self, Read, Write};
-            use std::mem;
-            use super::Echo;
-            const MESSAGE_ID_START: u8 = 101;
-            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.2-423bf765";
-            const DIGEST: &str = "423bf765c290b0887475654092b49358060592507ba9f4fbafaab630ab27add4";
-            pub const TPING: u8 = MESSAGE_ID_START + 0u8;
-            pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
-            #[allow(non_camel_case_types)]
-            #[derive(Debug, JetStreamWireFormat)]
-            pub struct Tping {
-                pub message: String,
-            }
-            #[allow(non_camel_case_types)]
-            #[derive(Debug, JetStreamWireFormat)]
-            pub struct Rping(pub String);
-            #[derive(Debug)]
-            pub enum Tmessage {
-                Ping(Tping),
-            }
-            #[derive(Debug)]
-            pub struct Tframe {
-                pub tag: u16,
-                pub msg: Tmessage,
-            }
-            impl WireFormat for Tframe {
-                fn byte_size(&self) -> u32 {
-                    let msg = &self.msg;
-                    let msg_size = match msg {
-                        Tmessage::Ping(msg) => msg.byte_size(),
-                    };
-                    (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                        + std::mem::size_of::<u16>()) as u32 + msg_size
+        run_test_with_filters(|| {
+            insta::assert_snapshot!(output_str, @r###"
+            mod echo_protocol {
+                use jetstream::prelude::*;
+                use std::io::{self, Read, Write};
+                use std::mem;
+                use super::Echo;
+                const MESSAGE_ID_START: u8 = 101;
+                pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/NAME/VERSION-HASH";
+                const DIGEST: &str = "DIGEST_HASH";
+                pub const TPING: u8 = MESSAGE_ID_START + 0u8;
+                pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
+                #[allow(non_camel_case_types)]
+                #[derive(Debug, JetStreamWireFormat)]
+                pub struct Tping {
+                    pub message: String,
                 }
-                fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                    self.byte_size().encode(writer)?;
-                    let ty = match &self.msg {
-                        Tmessage::Ping(msg) => TPING,
-                    };
-                    ty.encode(writer)?;
-                    self.tag.encode(writer)?;
-                    match &self.msg {
-                        Tmessage::Ping(msg) => msg.encode(writer)?,
+                #[allow(non_camel_case_types)]
+                #[derive(Debug, JetStreamWireFormat)]
+                pub struct Rping(pub String);
+                #[derive(Debug)]
+                pub enum Tmessage {
+                    Ping(Tping),
+                }
+                #[derive(Debug)]
+                pub struct Tframe {
+                    pub tag: u16,
+                    pub msg: Tmessage,
+                }
+                impl WireFormat for Tframe {
+                    fn byte_size(&self) -> u32 {
+                        let msg = &self.msg;
+                        let msg_size = match msg {
+                            Tmessage::Ping(msg) => msg.byte_size(),
+                        };
+                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
+                            + std::mem::size_of::<u16>()) as u32 + msg_size
                     }
-                    Ok(())
-                }
-                fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                    let byte_size = u32::decode(reader)?;
-                    if byte_size < mem::size_of::<u32>() as u32 {
-                        return Err(
-                            std::io::Error::new(
-                                std::io::ErrorKind::InvalidData,
-                                format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                            ),
-                        );
-                    } else {
-                        let byte_size = byte_size
-                            - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                + mem::size_of::<u16>()) as u32;
+                    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+                        self.byte_size().encode(writer)?;
+                        let ty = match &self.msg {
+                            Tmessage::Ping(msg) => TPING,
+                        };
+                        ty.encode(writer)?;
+                        self.tag.encode(writer)?;
+                        match &self.msg {
+                            Tmessage::Ping(msg) => msg.encode(writer)?,
+                        }
+                        Ok(())
                     }
-                    let ty = u8::decode(reader)?;
-                    let tag: u16 = u16::decode(reader)?;
-                    let reader = &mut reader.take((byte_size) as u64);
-                    let msg: Tmessage = Self::decode_message(reader, ty)?;
-                    Ok(Tframe { tag, msg })
-                }
-            }
-            impl Tframe {
-                fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
-                    match ty {
-                        TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
-                        _ => {
-                            Err(
+                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+                        let byte_size = u32::decode(reader)?;
+                        if byte_size < mem::size_of::<u32>() as u32 {
+                            return Err(
                                 std::io::Error::new(
                                     std::io::ErrorKind::InvalidData,
-                                    format!("unknown message type: {}", ty),
+                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
                                 ),
-                            )
+                            );
+                        } else {
+                            let byte_size = byte_size
+                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
+                                    + mem::size_of::<u16>()) as u32;
                         }
+                        let ty = u8::decode(reader)?;
+                        let tag: u16 = u16::decode(reader)?;
+                        let reader = &mut reader.take((byte_size) as u64);
+                        let msg: Tmessage = Self::decode_message(reader, ty)?;
+                        Ok(Tframe { tag, msg })
                     }
                 }
-            }
-            impl Message for Tframe {}
-            #[derive(Debug)]
-            pub enum Rmessage {
-                Ping(Rping),
-            }
-            #[derive(Debug)]
-            pub struct Rframe {
-                pub tag: u16,
-                pub msg: Rmessage,
-            }
-            impl WireFormat for Rframe {
-                fn byte_size(&self) -> u32 {
-                    let msg = &self.msg;
-                    let msg_size = match msg {
-                        Rmessage::Ping(msg) => msg.byte_size(),
-                    };
-                    (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                        + std::mem::size_of::<u16>()) as u32 + msg_size
-                }
-                fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                    self.byte_size().encode(writer)?;
-                    let ty = match &self.msg {
-                        Rmessage::Ping(msg) => RPING,
-                    };
-                    ty.encode(writer)?;
-                    self.tag.encode(writer)?;
-                    match &self.msg {
-                        Rmessage::Ping(msg) => msg.encode(writer)?,
-                    }
-                    Ok(())
-                }
-                fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                    let byte_size = u32::decode(reader)?;
-                    if byte_size < mem::size_of::<u32>() as u32 {
-                        return Err(
-                            std::io::Error::new(
-                                std::io::ErrorKind::InvalidData,
-                                format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                            ),
-                        );
-                    } else {
-                        let byte_size = byte_size
-                            - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                + mem::size_of::<u16>()) as u32;
-                    }
-                    let ty = u8::decode(reader)?;
-                    let tag: u16 = u16::decode(reader)?;
-                    let reader = &mut reader.take((byte_size) as u64);
-                    let msg: Rmessage = Self::decode_message(reader, ty)?;
-                    Ok(Rframe { tag, msg })
-                }
-            }
-            impl Rframe {
-                fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
-                    match ty {
-                        RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
-                        _ => {
-                            Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("unknown message type: {}", ty),
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
-            impl Message for Rframe {}
-            #[derive(Clone)]
-            pub struct EchoProtocol<T: Echo>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                inner: T,
-            }
-            impl<T: Echo> EchoProtocol<T>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                pub fn new(inner: T) -> Self {
-                    Self { inner }
-                }
-            }
-            impl<T> Protocol for EchoProtocol<T>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                type Request = Tframe;
-                type Response = Rframe;
-            }
-            impl<T> Service for EchoProtocol<T>
-            where
-                T: Echo + Send + Sync + Sized,
-            {
-                #[inline]
-                fn rpc(
-                    &mut self,
-                    req: Self::Request,
-                ) -> impl ::core::future::Future<
-                    Output = Result<Self::Response, Error>,
-                > + Send + Sync {
-                    Box::pin(async move {
-                        match req.msg {
-                            Tmessage::Ping(msg) => {
-                                let msg = Echo::ping(&self.inner, msg.message).await?;
-                                let ret = Rping(msg);
-                                Ok(Rframe {
-                                    tag: req.tag,
-                                    msg: Rmessage::Ping(ret),
-                                })
+                impl Tframe {
+                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
+                        match ty {
+                            TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
+                            _ => {
+                                Err(
+                                    std::io::Error::new(
+                                        std::io::ErrorKind::InvalidData,
+                                        format!("unknown message type: {}", ty),
+                                    ),
+                                )
                             }
                         }
-                    })
+                    }
+                }
+                impl Message for Tframe {}
+                #[derive(Debug)]
+                pub enum Rmessage {
+                    Ping(Rping),
+                }
+                #[derive(Debug)]
+                pub struct Rframe {
+                    pub tag: u16,
+                    pub msg: Rmessage,
+                }
+                impl WireFormat for Rframe {
+                    fn byte_size(&self) -> u32 {
+                        let msg = &self.msg;
+                        let msg_size = match msg {
+                            Rmessage::Ping(msg) => msg.byte_size(),
+                        };
+                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
+                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                    }
+                    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+                        self.byte_size().encode(writer)?;
+                        let ty = match &self.msg {
+                            Rmessage::Ping(msg) => RPING,
+                        };
+                        ty.encode(writer)?;
+                        self.tag.encode(writer)?;
+                        match &self.msg {
+                            Rmessage::Ping(msg) => msg.encode(writer)?,
+                        }
+                        Ok(())
+                    }
+                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+                        let byte_size = u32::decode(reader)?;
+                        if byte_size < mem::size_of::<u32>() as u32 {
+                            return Err(
+                                std::io::Error::new(
+                                    std::io::ErrorKind::InvalidData,
+                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
+                                ),
+                            );
+                        } else {
+                            let byte_size = byte_size
+                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
+                                    + mem::size_of::<u16>()) as u32;
+                        }
+                        let ty = u8::decode(reader)?;
+                        let tag: u16 = u16::decode(reader)?;
+                        let reader = &mut reader.take((byte_size) as u64);
+                        let msg: Rmessage = Self::decode_message(reader, ty)?;
+                        Ok(Rframe { tag, msg })
+                    }
+                }
+                impl Rframe {
+                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
+                        match ty {
+                            RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
+                            _ => {
+                                Err(
+                                    std::io::Error::new(
+                                        std::io::ErrorKind::InvalidData,
+                                        format!("unknown message type: {}", ty),
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+                impl Message for Rframe {}
+                #[derive(Clone)]
+                pub struct EchoProtocol<T: Echo>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    inner: T,
+                }
+                impl<T: Echo> EchoProtocol<T>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    pub fn new(inner: T) -> Self {
+                        Self { inner }
+                    }
+                }
+                impl<T> Protocol for EchoProtocol<T>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    type Request = Tframe;
+                    type Response = Rframe;
+                }
+                impl<T> Service for EchoProtocol<T>
+                where
+                    T: Echo + Send + Sync + Sized,
+                {
+                    #[inline]
+                    fn rpc(
+                        &mut self,
+                        req: Self::Request,
+                    ) -> impl ::core::future::Future<
+                        Output = Result<Self::Response, Error>,
+                    > + Send + Sync {
+                        Box::pin(async move {
+                            match req.msg {
+                                Tmessage::Ping(msg) => {
+                                    let msg = Echo::ping(&self.inner, msg.message).await?;
+                                    let ret = Rping(msg);
+                                    Ok(Rframe {
+                                        tag: req.tag,
+                                        msg: Rmessage::Ping(ret),
+                                    })
+                                }
+                            }
+                        })
+                    }
                 }
             }
-        }
-        #[jetstream::prelude::trait_variant::make(Send+Sync)]
-        pub trait Echo {
-            async fn ping(&self, message: String) -> Result<String, std::io::Error>;
-        }
-        "###)
+            #[jetstream::prelude::trait_variant::make(Send+Sync)]
+            pub trait Echo {
+                async fn ping(&self, message: String) -> Result<String, std::io::Error>;
+            }
+            "###)
+        })
     }
 }
