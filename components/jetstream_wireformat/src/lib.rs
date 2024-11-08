@@ -64,12 +64,16 @@ macro_rules! uint_wire_format_impl {
         }
     };
 }
-
+// unsigned integers
 uint_wire_format_impl!(u16);
 uint_wire_format_impl!(u32);
 uint_wire_format_impl!(u64);
-uint_wire_format_impl!(i32);
 uint_wire_format_impl!(u128);
+// signed integers
+uint_wire_format_impl!(i16);
+uint_wire_format_impl!(i32);
+uint_wire_format_impl!(i64);
+uint_wire_format_impl!(i128);
 
 impl WireFormat for u8 {
     fn byte_size(&self) -> u32 {
