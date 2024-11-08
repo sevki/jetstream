@@ -572,9 +572,6 @@ pub(crate) fn service_impl(item: ItemTrait) -> TokenStream {
     let proto_mod =
         format_ident!("{}_protocol", trait_name.to_string().to_lowercase());
     quote! {
-        pub use trait_variant;
-
-
         mod #proto_mod{
             use jetstream::prelude::*;
             use std::io::{self,Read,Write};
@@ -650,14 +647,13 @@ mod tests {
         let syntax_tree: syn::File = syn::parse2(output).unwrap();
         let output_str = prettyplease::unparse(&syntax_tree);
         insta::assert_snapshot!(output_str, @r###"
-        pub use trait_variant;
         mod echo_protocol {
             use jetstream::prelude::*;
             use std::io::{self, Read, Write};
             use std::mem;
             use super::Echo;
             const MESSAGE_ID_START: u8 = 101;
-            const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/5.3.0-8d935c22";
+            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.1-8d935c22";
             const DIGEST: &str = "8d935c22bef12403928f57643f3e513d37adf7e1b300719f6d3f62e50c4ad006";
             pub const TPING: u8 = MESSAGE_ID_START + 0u8;
             pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
@@ -849,7 +845,7 @@ mod tests {
                 }
             }
         }
-        #[trait_variant::make(Send+Sync)]
+        #[jetstream::prelude::trait_variant::make(Send+Sync)]
         pub trait Echo {
             async fn ping(&self) -> Result<(), std::io::Error>;
         }
@@ -867,14 +863,13 @@ mod tests {
         let syntax_tree: syn::File = syn::parse2(output).unwrap();
         let output_str = prettyplease::unparse(&syntax_tree);
         insta::assert_snapshot!(output_str, @r###"
-        pub use trait_variant;
         mod echo_protocol {
             use jetstream::prelude::*;
             use std::io::{self, Read, Write};
             use std::mem;
             use super::Echo;
             const MESSAGE_ID_START: u8 = 101;
-            const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/5.3.0-423bf765";
+            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.1-423bf765";
             const DIGEST: &str = "423bf765c290b0887475654092b49358060592507ba9f4fbafaab630ab27add4";
             pub const TPING: u8 = MESSAGE_ID_START + 0u8;
             pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
@@ -1068,7 +1063,7 @@ mod tests {
                 }
             }
         }
-        #[trait_variant::make(Send+Sync)]
+        #[jetstream::prelude::trait_variant::make(Send+Sync)]
         pub trait Echo {
             async fn ping(&self, message: String) -> Result<String, std::io::Error>;
         }
