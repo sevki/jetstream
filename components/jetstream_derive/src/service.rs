@@ -581,7 +581,7 @@ pub(crate) fn service_impl(item: ItemTrait) -> TokenStream {
             use std::mem;
             use super::#trait_name;
             const MESSAGE_ID_START: u8 = 101;
-            const PROTOCOL_VERSION: &str = #protocol_version;
+            pub const PROTOCOL_VERSION: &str = #protocol_version;
             const DIGEST: &str = #digest;
 
             #(#msg_ids)*
@@ -627,7 +627,7 @@ pub(crate) fn service_impl(item: ItemTrait) -> TokenStream {
             }
         }
 
-        #[trait_variant::make(Send + Sync)]
+        #[jetstream::prelude::trait_variant::make(Send + Sync)]
         #vis trait #trait_name {
             #(#trait_items)*
         }

@@ -13,7 +13,8 @@ jobs:
       - name: Check if we're on a tag
         id: check_tag
         run: |
-          if DESCRIBE=$(git describe --exact-match --tags 2>/dev/null); then
+          git fetch --depth=1 origin
+          if DESCRIBE=$(git describe --tags 2>/dev/null); then
             echo "We are on tag: $DESCRIBE"
             echo "is_tag=true" >> "$GITHUB_OUTPUT"
             echo "tag=$DESCRIBE" >> "$GITHUB_OUTPUT"
