@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.1](https://github.com/sevki/jetstream/compare/v6.0.0...v6.0.1) (2024-11-08)
+
+
+### Bug Fixes
+
+* trait_variant use ([#155](https://github.com/sevki/jetstream/issues/155)) ([3cd5665](https://github.com/sevki/jetstream/commit/3cd5665454bb42c3e38606c4a3dd9355ef63fc9b))
+
 ## [6.0.0](https://github.com/sevki/jetstream/compare/v5.4.2...v6.0.0) (2024-11-07)
 
 
