@@ -860,7 +860,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "futures-util",
  "jetstream_9p",
@@ -881,7 +881,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "async-trait",
  "jetstream_derive",
@@ -892,7 +892,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_client"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "anyhow",
  "futures",
@@ -905,7 +905,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_derive"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "convert_case",
  "insta",
@@ -920,7 +920,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -933,7 +933,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_server"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -949,7 +949,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "anyhow",
  "argh",
@@ -965,7 +965,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "6.0.2"
+version = "6.1.0"
 dependencies = [
  "bytes",
  "futures",

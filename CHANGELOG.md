@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.1.0](https://github.com/sevki/jetstream/compare/v6.0.2...v6.1.0) (2024-11-08)
+
+
+### Features
+
+* start quic server with config ([#159](https://github.com/sevki/jetstream/issues/159)) ([3433981](https://github.com/sevki/jetstream/commit/34339819f26044e0a19c5c668c2fb710734af564))
+
 ## [6.0.2](https://github.com/sevki/jetstream/compare/v6.0.1...v6.0.2) (2024-11-08)
 
 
