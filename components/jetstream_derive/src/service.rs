@@ -653,7 +653,7 @@ mod tests {
             use std::mem;
             use super::Echo;
             const MESSAGE_ID_START: u8 = 101;
-            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.1-8d935c22";
+            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.2-8d935c22";
             const DIGEST: &str = "8d935c22bef12403928f57643f3e513d37adf7e1b300719f6d3f62e50c4ad006";
             pub const TPING: u8 = MESSAGE_ID_START + 0u8;
             pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
@@ -869,7 +869,7 @@ mod tests {
             use std::mem;
             use super::Echo;
             const MESSAGE_ID_START: u8 = 101;
-            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.1-423bf765";
+            pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/6.0.2-423bf765";
             const DIGEST: &str = "423bf765c290b0887475654092b49358060592507ba9f4fbafaab630ab27add4";
             pub const TPING: u8 = MESSAGE_ID_START + 0u8;
             pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
