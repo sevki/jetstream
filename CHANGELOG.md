@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.0.2](https://github.com/sevki/jetstream/compare/v6.0.1...v6.0.2) (2024-11-08)
+
+
+### Bug Fixes
+
+* ci/cd ([#157](https://github.com/sevki/jetstream/issues/157)) ([3f7ff1e](https://github.com/sevki/jetstream/commit/3f7ff1ea0b561136bc51c65f1acc0f683cfafb01))
+
 ## [6.0.1](https://github.com/sevki/jetstream/compare/v6.0.0...v6.0.1) (2024-11-08)
 
 
