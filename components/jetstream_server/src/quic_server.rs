@@ -113,18 +113,44 @@ where
     }
 }
 
-pub async fn start_server(svc: impl Service + Clone + 'static) {
-    pub static CA_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
-    pub static SERVER_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
-    pub static SERVER_KEY_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
+/// Configuration for the QUIC server
+pub struct QuicConfig {
+    pub ca_cert: String,
+    pub server_cert: String,
+    pub server_key: String,
+    pub listen_addr: String,
+}
 
+impl Default for QuicConfig {
+    fn default() -> Self {
+        let ca_cert: &str =
+            concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
+        let server_cert_pem: &str =
+            concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
+        let server_key_pem: &str =
+            concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
+
+        Self {
+            ca_cert: ca_cert.to_string(),
+            server_cert: server_cert_pem.to_string(),
+            server_key: server_key_pem.to_string(),
+            listen_addr: "127.0.0.1:4433".to_string(),
+        }
+    }
+}
+
+/// Start a QUIC server with the given service and configuration
+pub async fn start_server(
+    svc: impl Service + Clone + 'static,
+    config: QuicConfig,
+) {
     let tls = tls::default::Server::builder()
-        .with_trusted_certificate(Path::new(CA_CERT_PEM))
+        .with_trusted_certificate(Path::new(&config.ca_cert))
         .unwrap()
-        .with_certificate(Path::new(SERVER_CERT_PEM), Path::new(SERVER_KEY_PEM))
+        .with_certificate(
+            Path::new(&config.server_cert),
+            Path::new(&config.server_key),
+        )
         .unwrap()
         .with_client_authentication()
         .unwrap()
@@ -134,7 +160,7 @@ pub async fn start_server(svc: impl Service + Clone + 'static) {
     let server = Server::builder()
         .with_tls(tls)
         .unwrap()
-        .with_io("127.0.0.1:4433")
+        .with_io(config.listen_addr.as_str())
         .unwrap()
         .start()
         .unwrap();
