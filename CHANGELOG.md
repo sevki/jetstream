@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.1](https://github.com/sevki/jetstream/compare/v6.3.0...v6.3.1) (2024-11-09)
+
+
+### Bug Fixes
+
+* ci workflows ([4c12f04](https://github.com/sevki/jetstream/commit/4c12f046e9ff9a5d39f4f0619f6ed68b25edcfe7))
+
 ## [6.3.0](https://github.com/sevki/jetstream/compare/v6.2.0...v6.3.0) (2024-11-09)
 
 
