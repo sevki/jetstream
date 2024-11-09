@@ -42,7 +42,6 @@ pub(crate) fn wire_format_inner(input: DeriveInput) -> TokenStream {
     }
 }
 
-// Generate code that recursively calls byte_size on every field in the struct.
 fn byte_size_sum(data: &Data) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
@@ -69,14 +68,53 @@ fn byte_size_sum(data: &Data) -> TokenStream {
                 0 #(+ #fields)*
             }
         } else {
-            unimplemented!("byte_size_sum for {:?}", data.struct_token.span);
+            unimplemented!();
+        }
+    } else if let Data::Enum(ref data) = *data {
+        let variants = data.variants.iter().map(|variant| {
+            let variant_ident = &variant.ident;
+            match &variant.fields {
+                Fields::Named(fields) => {
+                    let field_idents = fields
+                        .named
+                        .iter()
+                        .map(|f| &f.ident)
+                        .collect::<Vec<_>>();
+                    quote! {
+                        Self::#variant_ident { #(ref #field_idents),* } => {
+                            1 #(+ WireFormat::byte_size(#field_idents))*
+                        }
+                    }
+                }
+                Fields::Unnamed(fields) => {
+                    let refs = (0..fields.unnamed.len())
+                        .map(|i| format!("__{}", i))
+                        .map(|name| Ident::new(&name, Span::call_site()))
+                        .collect::<Vec<_>>();
+                    quote! {
+                        Self::#variant_ident(#(ref #refs),*) => {
+                            1 #(+ WireFormat::byte_size(#refs))*
+                        }
+                    }
+                }
+                Fields::Unit => {
+                    quote! {
+                        Self::#variant_ident => 1
+                    }
+                }
+            }
+        });
+
+        quote! {
+            match self {
+                #(#variants),*
+            }
         }
     } else {
-        unimplemented!("byte_size_sum for ");
+        unimplemented!();
     }
 }
 
-// Generate code that recursively calls encode on every field in the struct.
 fn encode_wire_format(data: &Data) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
@@ -90,7 +128,6 @@ fn encode_wire_format(data: &Data) -> TokenStream {
 
             quote! {
                 #(#fields)*
-
                 Ok(())
             }
         } else if let Fields::Unnamed(unnamed) = &data.fields {
@@ -102,19 +139,65 @@ fn encode_wire_format(data: &Data) -> TokenStream {
             });
 
             quote! {
-                 #(#fields)*
-
+                #(#fields)*
                 Ok(())
             }
         } else {
             unimplemented!();
+        }
+    } else if let Data::Enum(ref data) = *data {
+        let variants =
+            data.variants.iter().enumerate().map(|(idx, variant)| {
+                let variant_ident = &variant.ident;
+                let idx = idx as u8;
+
+                match &variant.fields {
+                    Fields::Named(ref fields) => {
+                        let field_idents = fields
+                            .named
+                            .iter()
+                            .map(|f| &f.ident)
+                            .collect::<Vec<_>>();
+                        quote! {
+                            Self::#variant_ident { #(ref #field_idents),* } => {
+                                WireFormat::encode(&(#idx), _writer)?;
+                                #(WireFormat::encode(#field_idents, _writer)?;)*
+                            }
+                        }
+                    }
+                    Fields::Unnamed(ref fields) => {
+                        let field_refs = (0..fields.unnamed.len())
+                            .map(|i| format!("__{}", i))
+                            .map(|name| Ident::new(&name, Span::call_site()))
+                            .collect::<Vec<_>>();
+                        quote! {
+                            Self::#variant_ident(#(ref #field_refs),*) => {
+                                WireFormat::encode(&(#idx), _writer)?;
+                                #(WireFormat::encode(#field_refs, _writer)?;)*
+                            }
+                        }
+                    }
+                    Fields::Unit => {
+                        quote! {
+                            Self::#variant_ident => {
+                                WireFormat::encode(&(#idx), _writer)?;
+                            }
+                        }
+                    }
+                }
+            });
+
+        quote! {
+            match self {
+                #(#variants),*
+            }
+            Ok(())
         }
     } else {
         unimplemented!();
     }
 }
 
-// Generate code that recursively calls decode on every field in the struct.
 fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
@@ -135,30 +218,20 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
 
             quote! {
                 #(#values)*
-
                 Ok(#container {
                     #(#members)*
                 })
             }
         } else if let Fields::Unnamed(unnamed) = &data.fields {
             let values = unnamed.unnamed.iter().enumerate().map(|(i, _f)| {
-                let index = syn::Index::from(i);
-                // create a new ident that s __{index}
-                let ident = Ident::new(
-                    &format!("__{}", index.index),
-                    Span::call_site(),
-                );
+                let ident = Ident::new(&format!("__{}", i), Span::call_site());
                 quote! {
                     let #ident = WireFormat::decode(_reader)?;
                 }
             });
 
             let members = unnamed.unnamed.iter().enumerate().map(|(i, _f)| {
-                let index = syn::Index::from(i);
-                let ident = Ident::new(
-                    &format!("__{}", index.index),
-                    Span::call_site(),
-                );
+                let ident = Ident::new(&format!("__{}", i), Span::call_site());
                 quote! {
                     #ident
                 }
@@ -166,13 +239,65 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
 
             quote! {
                 #(#values)*
-
                 Ok(#container(
                     #(#members,)*
                 ))
             }
         } else {
             unimplemented!();
+        }
+    } else if let Data::Enum(ref data) = *data {
+        let mut variant_matches = data.variants.iter().enumerate().map(|(idx, variant)| {
+            let variant_ident = &variant.ident;
+            let idx = idx as u8;
+
+            match &variant.fields {
+                Fields::Named(ref fields) => {
+                    let field_decodes = fields.named.iter().map(|f| {
+                        let field_ident = &f.ident;
+                        quote! { let #field_ident = WireFormat::decode(_reader)?; }
+                    });
+                    let field_names = fields.named.iter().map(|f| &f.ident);
+
+                    quote! {
+                        #idx => {
+                            #(#field_decodes)*
+                            Ok(Self::#variant_ident { #(#field_names),* })
+                        }
+                    }
+                }
+                Fields::Unnamed(ref fields) => {
+                    let field_decodes = (0..fields.unnamed.len()).map(|i| {
+                        let field_name = Ident::new(&format!("__{}", i), Span::call_site());
+                        quote! { let #field_name = WireFormat::decode(_reader)?; }
+                    });
+                    let field_names = (0..fields.unnamed.len())
+                        .map(|i| Ident::new(&format!("__{}", i), Span::call_site()));
+
+                    quote! {
+                        #idx => {
+                            #(#field_decodes)*
+                            Ok(Self::#variant_ident(#(#field_names),*))
+                        }
+                    }
+                }
+                Fields::Unit => {
+                    quote! {
+                        #idx => Ok(Self::#variant_ident)
+                    }
+                }
+            }
+        }).collect::<Vec<_>>();
+
+        variant_matches.push(quote! {
+            _ => Err(::std::io::Error::new(::std::io::ErrorKind::InvalidData, "invalid variant index"))
+        });
+
+        quote! {
+            let variant_index: u8 = WireFormat::decode(_reader)?;
+            match variant_index {
+                #(#variant_matches),*
+            }
         }
     } else {
         unimplemented!();
@@ -274,62 +399,54 @@ mod tests {
                 g: Nested,
             }
         };
-
-        let expected = quote! {
-            mod wire_format_niijima_先輩 {
-                extern crate std;
-                use self::std::io;
-                use self::std::result::Result::Ok;
-
-                use super::Niijima_先輩;
-
-                use jetstream_wireformat::WireFormat;
-
-                impl WireFormat for Niijima_先輩 {
-                    fn byte_size(&self) -> u32 {
-                        0
-                        + WireFormat::byte_size(&self.a)
-                        + WireFormat::byte_size(&self.b)
-                        + WireFormat::byte_size(&self.c)
-                        + WireFormat::byte_size(&self.d)
-                        + WireFormat::byte_size(&self.e)
-                        + WireFormat::byte_size(&self.f)
+        let output = wire_format_inner(input);
+        let syntax_tree: syn::File = syn::parse2(output).unwrap();
+        let output_str = prettyplease::unparse(&syntax_tree);
+        insta::assert_snapshot!(output_str, @r###"
+        mod wire_format_niijima_先輩 {
+            extern crate std;
+            use self::std::io;
+            use self::std::result::Result::Ok;
+            use super::Niijima_先輩;
+            use jetstream_wireformat::WireFormat;
+            impl WireFormat for Niijima_先輩 {
+                fn byte_size(&self) -> u32 {
+                    0 + WireFormat::byte_size(&self.a) + WireFormat::byte_size(&self.b)
+                        + WireFormat::byte_size(&self.c) + WireFormat::byte_size(&self.d)
+                        + WireFormat::byte_size(&self.e) + WireFormat::byte_size(&self.f)
                         + WireFormat::byte_size(&self.g)
-                    }
-
-                    fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
-                        WireFormat::encode(&self.a, _writer)?;
-                        WireFormat::encode(&self.b, _writer)?;
-                        WireFormat::encode(&self.c, _writer)?;
-                        WireFormat::encode(&self.d, _writer)?;
-                        WireFormat::encode(&self.e, _writer)?;
-                        WireFormat::encode(&self.f, _writer)?;
-                        WireFormat::encode(&self.g, _writer)?;
-                        Ok(())
-                    }
-                    fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
-                        let a = WireFormat::decode(_reader)?;
-                        let b = WireFormat::decode(_reader)?;
-                        let c = WireFormat::decode(_reader)?;
-                        let d = WireFormat::decode(_reader)?;
-                        let e = WireFormat::decode(_reader)?;
-                        let f = WireFormat::decode(_reader)?;
-                        let g = WireFormat::decode(_reader)?;
-                        Ok(Niijima_先輩 {
-                            a: a,
-                            b: b,
-                            c: c,
-                            d: d,
-                            e: e,
-                            f: f,
-                            g: g,
-                        })
-                    }
+                }
+                fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
+                    WireFormat::encode(&self.a, _writer)?;
+                    WireFormat::encode(&self.b, _writer)?;
+                    WireFormat::encode(&self.c, _writer)?;
+                    WireFormat::encode(&self.d, _writer)?;
+                    WireFormat::encode(&self.e, _writer)?;
+                    WireFormat::encode(&self.f, _writer)?;
+                    WireFormat::encode(&self.g, _writer)?;
+                    Ok(())
+                }
+                fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
+                    let a = WireFormat::decode(_reader)?;
+                    let b = WireFormat::decode(_reader)?;
+                    let c = WireFormat::decode(_reader)?;
+                    let d = WireFormat::decode(_reader)?;
+                    let e = WireFormat::decode(_reader)?;
+                    let f = WireFormat::decode(_reader)?;
+                    let g = WireFormat::decode(_reader)?;
+                    Ok(Niijima_先輩 {
+                        a: a,
+                        b: b,
+                        c: c,
+                        d: d,
+                        e: e,
+                        f: f,
+                        g: g,
+                    })
                 }
             }
-        };
-
-        assert_eq!(wire_format_inner(input).to_string(), expected.to_string(),);
+        }
+        "###);
     }
 
     #[test]
@@ -338,60 +455,205 @@ mod tests {
             struct Niijima_先輩(u8, u16, u32, u64, String, Vec<String>, Nested);
         };
 
-        let expected = quote! {
-            mod wire_format_niijima_先輩 {
-                extern crate std;
-                use self::std::io;
-                use self::std::result::Result::Ok;
-
-                use super::Niijima_先輩;
-
-                use jetstream_wireformat::WireFormat;
-
-                impl WireFormat for Niijima_先輩 {
-                    fn byte_size(&self) -> u32 {
-                        0
-                        + WireFormat::byte_size(&self.0)
-                        + WireFormat::byte_size(&self.1)
-                        + WireFormat::byte_size(&self.2)
-                        + WireFormat::byte_size(&self.3)
-                        + WireFormat::byte_size(&self.4)
-                        + WireFormat::byte_size(&self.5)
+        let output = wire_format_inner(input);
+        let syntax_tree: syn::File = syn::parse2(output).unwrap();
+        let output_str = prettyplease::unparse(&syntax_tree);
+        insta::assert_snapshot!(output_str, @r###"
+        mod wire_format_niijima_先輩 {
+            extern crate std;
+            use self::std::io;
+            use self::std::result::Result::Ok;
+            use super::Niijima_先輩;
+            use jetstream_wireformat::WireFormat;
+            impl WireFormat for Niijima_先輩 {
+                fn byte_size(&self) -> u32 {
+                    0 + WireFormat::byte_size(&self.0) + WireFormat::byte_size(&self.1)
+                        + WireFormat::byte_size(&self.2) + WireFormat::byte_size(&self.3)
+                        + WireFormat::byte_size(&self.4) + WireFormat::byte_size(&self.5)
                         + WireFormat::byte_size(&self.6)
-                    }
-
-                    fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
-                        WireFormat::encode(&self.0, _writer)?;
-                        WireFormat::encode(&self.1, _writer)?;
-                        WireFormat::encode(&self.2, _writer)?;
-                        WireFormat::encode(&self.3, _writer)?;
-                        WireFormat::encode(&self.4, _writer)?;
-                        WireFormat::encode(&self.5, _writer)?;
-                        WireFormat::encode(&self.6, _writer)?;
-                        Ok(())
-                    }
-                    fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
-                        let __0 = WireFormat::decode(_reader)?;
-                        let __1= WireFormat::decode(_reader)?;
-                        let __2 = WireFormat::decode(_reader)?;
-                        let __3 = WireFormat::decode(_reader)?;
-                        let __4 = WireFormat::decode(_reader)?;
-                        let __5 = WireFormat::decode(_reader)?;
-                        let __6 = WireFormat::decode(_reader)?;
-                        Ok(Niijima_先輩(
-                            __0,
-                            __1,
-                            __2,
-                            __3,
-                            __4,
-                            __5,
-                            __6,
-                        ))
-                    }
                 }
+                fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
+                    WireFormat::encode(&self.0, _writer)?;
+                    WireFormat::encode(&self.1, _writer)?;
+                    WireFormat::encode(&self.2, _writer)?;
+                    WireFormat::encode(&self.3, _writer)?;
+                    WireFormat::encode(&self.4, _writer)?;
+                    WireFormat::encode(&self.5, _writer)?;
+                    WireFormat::encode(&self.6, _writer)?;
+                    Ok(())
+                }
+                fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
+                    let __0 = WireFormat::decode(_reader)?;
+                    let __1 = WireFormat::decode(_reader)?;
+                    let __2 = WireFormat::decode(_reader)?;
+                    let __3 = WireFormat::decode(_reader)?;
+                    let __4 = WireFormat::decode(_reader)?;
+                    let __5 = WireFormat::decode(_reader)?;
+                    let __6 = WireFormat::decode(_reader)?;
+                    Ok(Niijima_先輩(__0, __1, __2, __3, __4, __5, __6))
+                }
+            }
+        }
+        "###);
+    }
+
+    #[test]
+    fn enum_byte_size() {
+        let input: DeriveInput = parse_quote! {
+            enum Message {
+                Ping,
+                Text { content: String },
+                Binary(Vec<u8>),
             }
         };
 
-        assert_eq!(wire_format_inner(input).to_string(), expected.to_string(),);
+        let expected = quote! {
+            match self {
+                Self::Ping => 1,
+                Self::Text { ref content } => { 1 + WireFormat::byte_size(content) },
+                Self::Binary(ref __0) => { 1 + WireFormat::byte_size(__0) }
+            }
+        };
+
+        assert_eq!(
+            byte_size_sum(&input.data).to_string(),
+            expected.to_string()
+        );
+    }
+
+    #[test]
+    fn enum_encode() {
+        let input: DeriveInput = parse_quote! {
+            enum Message {
+                Ping,
+                Text { content: String },
+                Binary(Vec<u8>),
+            }
+        };
+
+        let expected = quote! {
+            match self {
+                Self::Ping => {
+                    WireFormat::encode(&(0u8), _writer)?;
+                },
+                Self::Text { ref content } => {
+                    WireFormat::encode(&(1u8), _writer)?;
+                    WireFormat::encode(content, _writer)?;
+                },
+                Self::Binary(ref __0) => {
+                    WireFormat::encode(&(2u8), _writer)?;
+                    WireFormat::encode(__0, _writer)?;
+                }
+            }
+            Ok(())
+        };
+
+        assert_eq!(
+            encode_wire_format(&input.data).to_string(),
+            expected.to_string()
+        );
+    }
+
+    #[test]
+    fn enum_decode() {
+        let input: DeriveInput = parse_quote! {
+            enum Message {
+                Ping,
+                Text { content: String },
+                Binary(Vec<u8>),
+            }
+        };
+
+        let container = Ident::new("Message", Span::call_site());
+        let expected = quote! {
+            let variant_index: u8 = WireFormat::decode(_reader)?;
+            match variant_index {
+                0u8 => Ok(Self::Ping) ,
+                1u8 => {
+                    let content = WireFormat::decode(_reader)?;
+                    Ok(Self::Text { content })
+                },
+                2u8 => {
+                    let __0 = WireFormat::decode(_reader)?;
+                    Ok(Self::Binary(__0))
+                },
+                _ => Err(::std::io::Error::new(::std::io::ErrorKind::InvalidData, "invalid variant index"))
+            }
+        };
+
+        assert_eq!(
+            decode_wire_format(&input.data, &container).to_string(),
+            expected.to_string()
+        );
+    }
+
+    #[test]
+    fn enum_end_to_end() {
+        let input: DeriveInput = parse_quote! {
+            enum Message {
+                Ping,
+                Text { content: String },
+                Binary(Vec<u8>),
+            }
+        };
+        let output = wire_format_inner(input);
+        let syntax_tree: syn::File = syn::parse2(output).unwrap();
+        let output_str = prettyplease::unparse(&syntax_tree);
+        insta::assert_snapshot!(output_str, @r###"
+        mod wire_format_message {
+            extern crate std;
+            use self::std::io;
+            use self::std::result::Result::Ok;
+            use super::Message;
+            use jetstream_wireformat::WireFormat;
+            impl WireFormat for Message {
+                fn byte_size(&self) -> u32 {
+                    match self {
+                        Self::Ping => 1,
+                        Self::Text { ref content } => 1 + WireFormat::byte_size(content),
+                        Self::Binary(ref __0) => 1 + WireFormat::byte_size(__0),
+                    }
+                }
+                fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
+                    match self {
+                        Self::Ping => {
+                            WireFormat::encode(&(0u8), _writer)?;
+                        }
+                        Self::Text { ref content } => {
+                            WireFormat::encode(&(1u8), _writer)?;
+                            WireFormat::encode(content, _writer)?;
+                        }
+                        Self::Binary(ref __0) => {
+                            WireFormat::encode(&(2u8), _writer)?;
+                            WireFormat::encode(__0, _writer)?;
+                        }
+                    }
+                    Ok(())
+                }
+                fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
+                    let variant_index: u8 = WireFormat::decode(_reader)?;
+                    match variant_index {
+                        0u8 => Ok(Self::Ping),
+                        1u8 => {
+                            let content = WireFormat::decode(_reader)?;
+                            Ok(Self::Text { content })
+                        }
+                        2u8 => {
+                            let __0 = WireFormat::decode(_reader)?;
+                            Ok(Self::Binary(__0))
+                        }
+                        _ => {
+                            Err(
+                                ::std::io::Error::new(
+                                    ::std::io::ErrorKind::InvalidData,
+                                    "invalid variant index",
+                                ),
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        "###);
     }
 }
