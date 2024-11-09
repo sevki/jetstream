@@ -1,5 +1,18 @@
 # Changelog
 
+## [6.3.0](https://github.com/sevki/jetstream/compare/v6.2.0...v6.3.0) (2024-11-09)
+
+
+### Features
+
+* add i16,i32,i64,i128 types ([ba741bd](https://github.com/sevki/jetstream/commit/ba741bd0d2aed8d33d2b5589ca2a3da83b1abce8))
+* enum support ([c4552d8](https://github.com/sevki/jetstream/commit/c4552d8bd056debdbb7845145f964defae6f90d2))
+
+
+### Bug Fixes
+
+* remove jj ([02fefd9](https://github.com/sevki/jetstream/commit/02fefd9e82f0f260d54f703daa0eb4667cdbce5d))
+
 ## [6.2.0](https://github.com/sevki/jetstream/compare/v6.1.0...v6.2.0) (2024-11-08)
 
 
