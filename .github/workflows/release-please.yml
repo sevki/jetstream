@@ -42,7 +42,7 @@ jobs:
           toolchain: stable
           override: true
 
-      - name: tag major and minor versions
+      - name: publish to crates.io
         if: ${{ steps.release.outputs.release_created }}
         uses: katyo/publish-crates@v2
         with:
