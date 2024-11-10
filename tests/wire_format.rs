@@ -717,3 +717,35 @@ fn test_nested_option() {
     let decoded: Option<Option<u32>> = WireFormat::decode(&mut cursor).unwrap();
     assert_eq!(value, decoded);
 }
+
+#[test]
+fn test_bool_encode() {
+    let mut buf = Vec::new();
+    true.encode(&mut buf).unwrap();
+    assert_eq!(buf, vec![1]);
+
+    buf.clear();
+    false.encode(&mut buf).unwrap();
+    assert_eq!(buf, vec![0]);
+}
+
+#[test]
+fn test_bool_decode() {
+    let mut cursor = Cursor::new(vec![1]);
+    let decoded: bool = WireFormat::decode(&mut cursor).unwrap();
+    assert_eq!(decoded, true);
+
+    cursor = Cursor::new(vec![0]);
+    let decoded: bool = WireFormat::decode(&mut cursor).unwrap();
+    assert_eq!(decoded, false);
+}
+
+#[test]
+fn test_bool_invalid_decode() {
+    let mut cursor = Cursor::new(vec![2]);
+    let result: Result<bool, _> = WireFormat::decode(&mut cursor);
+    assert!(result.is_err());
+    if let Err(e) = result {
+        assert_eq!(e.kind(), io::ErrorKind::InvalidData);
+    }
+}
