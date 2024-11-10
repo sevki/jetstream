@@ -654,3 +654,66 @@ fn test_convert_wire_format() {
     let decoded = Tframe::from_bytes(&buf).unwrap();
     assert_eq!(decoded.tag, 0);
 }
+#[test]
+fn test_option_none() {
+    let value: Option<u32> = None;
+
+    // Test byte size
+    assert_eq!(value.byte_size(), 1);
+
+    // Test encode
+    let mut buf = Vec::new();
+    value.encode(&mut buf).unwrap();
+    assert_eq!(buf.len(), 1);
+    assert_eq!(buf[0], 0);
+
+    // Test decode
+    let mut cursor = Cursor::new(buf);
+    let decoded: Option<u32> = WireFormat::decode(&mut cursor).unwrap();
+    assert_eq!(value, decoded);
+}
+
+#[test]
+fn test_option_some() {
+    let value = Some(42u32);
+
+    // Test byte size
+    assert_eq!(value.byte_size(), 5); // 1 byte tag + 4 bytes for u32
+
+    // Test encode
+    let mut buf = Vec::new();
+    value.encode(&mut buf).unwrap();
+    assert_eq!(buf.len(), 5);
+    assert_eq!(buf[0], 1);
+
+    // Test decode
+    let mut cursor = Cursor::new(buf);
+    let decoded: Option<u32> = WireFormat::decode(&mut cursor).unwrap();
+    assert_eq!(value, decoded);
+}
+
+#[test]
+fn test_option_invalid_tag() {
+    let mut buf = vec![2u8]; // Invalid tag
+    let mut cursor = Cursor::new(buf);
+    let result: Result<Option<u32>, _> = WireFormat::decode(&mut cursor);
+    assert!(result.is_err());
+    if let Err(e) = result {
+        assert_eq!(e.kind(), io::ErrorKind::InvalidData);
+    }
+}
+
+#[test]
+fn test_nested_option() {
+    let value = Some(Some(42u32));
+
+    // Test byte size
+    assert_eq!(value.byte_size(), 6); // outer tag + inner tag + u32
+
+    // Test encode/decode
+    let mut buf = Vec::new();
+    value.encode(&mut buf).unwrap();
+    let mut cursor = Cursor::new(buf);
+    let decoded: Option<Option<u32>> = WireFormat::decode(&mut cursor).unwrap();
+    assert_eq!(value, decoded);
+}
