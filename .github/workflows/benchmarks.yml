@@ -1,5 +1,8 @@
-name: benchmark pull requests
 on: [pull_request]
+name: benchmark pull requests
+permissions:
+  contents: write
+  pull-requests: write
 
 jobs:
   runBenchmark:
@@ -7,31 +10,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-
-      # Setup Rust toolchain
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          override: true
-
-      # Run benchmark on base branch to establish baseline
-      - name: Run benchmark baseline
-        run: |
-          cargo bench -- --save-baseline base
-
-      # Checkout PR branch
-      - name: Checkout PR
-        run: |
-          git fetch origin pull/${{ github.event.pull_request.number }}/head:pr
-          git checkout pr
-
-      # Run benchmark on PR
-      - name: Run benchmark PR
-        run: |
-          cargo bench -- --baseline base
-
       - uses: boa-dev/criterion-compare-action@v3
         with:
           defaultFeatures: true
           branchName: ${{ github.base_ref }}
+          # Optional. Default is `${{ github.token }}`.
           token: ${{ secrets.GITHUB_TOKEN }}
