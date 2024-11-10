@@ -28,8 +28,8 @@ impl Echo for EchoImpl {
     }
 }
 
-#[okstd::main]
-async fn main() {
+#[okstd::test]
+async fn test_server() {
     use echo_protocol::*;
     setup_logging(LevelFilter::Debug).expect("set logger");
     let (_tx, _rx) = tokio::io::duplex(1024);

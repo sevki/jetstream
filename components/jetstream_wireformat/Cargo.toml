@@ -6,6 +6,8 @@ description = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 readme = { workspace = true }
+[lib]
+bench = false
 
 [features]
 default = ["async"]

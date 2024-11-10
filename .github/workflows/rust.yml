@@ -61,9 +61,3 @@ jobs:
         run: cargo test --verbose --all-features -p jetstream_wireformat
       - name: Run example echo
         run: cargo run --example echo
-      - name: Run performance tests
-        run: cargo test --test performance_tests
-      - name: Run stress tests
-        run: cargo test --test stress_tests
-      - name: Run input validation tests
-        run: cargo test --test input_validation_tests

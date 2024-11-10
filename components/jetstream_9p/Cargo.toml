@@ -6,6 +6,8 @@ description = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 readme = { workspace = true }
+[lib]
+bench = false
 
 [dependencies]
 jetstream_derive = { version = "6.3.4", path = "../jetstream_derive" }

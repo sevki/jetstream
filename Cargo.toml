@@ -28,7 +28,8 @@ pkg-config = "0.3"
 which = "6.0.1"
 
 [dev-dependencies]
-criterion = "0.5.1"
+arbitrary = "1.4.1"
+criterion = { version = "0.5.1", features = ["async_tokio"] }
 futures-util = "0.3.30"
 jetstream_9p = { version = "6.3.4", path = "components/jetstream_9p" }
 jetstream_client = { version = "6.3.4", path = "components/jetstream_client" }
@@ -41,7 +42,6 @@ prost = "0.13.3"
 s2n-quic = "1.47.0"
 tmpdir = "1.0.0"
 tokio = { version = "1.40.0", features = ["full"] }
-libfuzzer_sys = "0.4.0"
 
 [workspace]
 
@@ -53,7 +53,10 @@ members = [
     "components/jetstream_server",
     "components/jetstream_ufs",
     "components/jetstream_wireformat",
+    "jetstream_fuzz",
 ]
+[lib]
+bench = false
 
 [[test]]
 name = "wire_format"
@@ -61,8 +64,14 @@ name = "wire_format"
 [[test]]
 name = "server"
 
+[[bench]]
+name = "performance_tests"
+harness = false
+
+
 [[example]]
 name = "echo"
+bench = false
 
 
 [features]
