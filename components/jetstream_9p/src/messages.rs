@@ -1112,7 +1112,7 @@ pub struct Tunlinkat {
 }
 
 /// Qid
-#[derive(Debug, Copy, Clone, JetStreamWireFormat)]
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct Qid {
     pub ty: u8,
     pub version: u32,
