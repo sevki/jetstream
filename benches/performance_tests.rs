@@ -1,10 +1,11 @@
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use criterion::{criterion_group, criterion_main, Criterion};
 use echo_protocol::{Rframe, Tframe, Tmessage, Tping};
 use jetstream::prelude::*;
 use jetstream_client::DialQuic;
 use jetstream_rpc::SharedJetStreamService;
 use jetstream_server::{proxy::Proxy, quic_server::QuicServer};
 use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
+#[allow(unused_imports)]
 use okstd::prelude::*;
 use s2n_quic::{provider::tls, Server};
 use std::sync::OnceLock;
@@ -13,8 +14,6 @@ use std::{
     sync::Arc,
 };
 use tokio::{io::AsyncWriteExt, net::UnixListener, sync::Barrier};
-
-static SOCKET_PATH: OnceLock<Box<Path>> = OnceLock::new();
 
 // Certificate paths
 pub static CA_CERT_PEM: &str =
@@ -148,7 +147,7 @@ pub fn jetstream_benchmarks(c: &mut Criterion) {
                 Ok(_) => {}
                 Err(_) => return, // Handle potential write errors gracefully
             }
-            if let Err(_) = write.flush().await {
+            if (write.flush().await).is_err() {
                 return;
             }
 
@@ -157,9 +156,8 @@ pub fn jetstream_benchmarks(c: &mut Criterion) {
                 Err(_) => return,
             }
 
-            match Rframe::decode_async(&mut read).await {
-                Ok(resp) => assert_eq!(resp.tag, 0),
-                Err(_) => return,
+            if let Ok(resp) = Rframe::decode_async(&mut read).await {
+                assert_eq!(resp.tag, 0)
             }
         });
     });
