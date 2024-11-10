@@ -1,7 +1,8 @@
 #![no_main]
+
 use libfuzzer_sys::fuzz_target;
-use jetstream_9p::*;
-use jetstream_rpc::*;
+
+use jetstream::prelude::*;
 use std::io::Cursor;
 
 fuzz_target!(|data: &[u8]| {
@@ -17,7 +18,10 @@ fuzz_target!(|data: &[u8]| {
         fn byte_size(&self) -> u32 {
             0
         }
-        fn encode<W: std::io::Write>(&self, _writer: &mut W) -> std::io::Result<()> {
+        fn encode<W: std::io::Write>(
+            &self,
+            _writer: &mut W,
+        ) -> std::io::Result<()> {
             Ok(())
         }
         fn decode<R: std::io::Read>(_reader: &mut R) -> std::io::Result<Self> {

@@ -6,6 +6,8 @@ description = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 readme = { workspace = true }
+[lib]
+bench = false
 
 [dependencies]
 trait-variant = "0.1.2"

@@ -6,6 +6,8 @@ description = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 readme = { workspace = true }
+[lib]
+bench = false
 
 [dependencies]
 anyhow = "1.0.89"
