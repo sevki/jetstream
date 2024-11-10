@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.2](https://github.com/sevki/jetstream/compare/v6.3.1...v6.3.2) (2024-11-10)
+
+
+### Bug Fixes
+
+* option&lt;T&gt; support ([2e224ca](https://github.com/sevki/jetstream/commit/2e224cad47d775fb2c967c4d37d33b8aabeb7470))
+
 ## [6.3.1](https://github.com/sevki/jetstream/compare/v6.3.0...v6.3.1) (2024-11-09)
 
 
