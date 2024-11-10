@@ -280,6 +280,29 @@ impl WireFormat for () {
     }
 }
 
+impl WireFormat for bool {
+    fn byte_size(&self) -> u32 {
+        1
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(&[*self as u8])
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let mut byte = [0u8; 1];
+        reader.read_exact(&mut byte)?;
+        match byte[0] {
+            0 => Ok(false),
+            1 => Ok(true),
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "invalid byte for bool",
+            )),
+        }
+    }
+}
+
 impl io::Read for Data {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.reader().read(buf)
