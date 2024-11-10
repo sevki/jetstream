@@ -3,13 +3,14 @@ name: Fuzzing
 on:
   schedule:
     - cron: "0 0 * * *"
+  workflow_dispatch:
 
 jobs:
   fuzz:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Set up Rust
         uses: actions-rs/toolchain@v1
@@ -21,3 +22,4 @@ jobs:
 
       - name: Run fuzz tests
         run: cargo fuzz run fuzz_tests
+        timeout-minutes: 360
