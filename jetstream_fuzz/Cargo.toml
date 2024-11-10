@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_fuzz"
-version = "0.0.0"
+version = "6.4.0"
 publish = false
 edition = "2021"
 
