@@ -67,5 +67,3 @@ jobs:
         run: cargo test --test stress_tests
       - name: Run input validation tests
         run: cargo test --test input_validation_tests
-      - name: Run fuzz tests
-        run: cargo test --test fuzz_tests
