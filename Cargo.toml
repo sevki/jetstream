@@ -28,6 +28,7 @@ pkg-config = "0.3"
 which = "6.0.1"
 
 [dev-dependencies]
+criterion = "0.5.1"
 futures-util = "0.3.30"
 jetstream_9p = { version = "6.3.4", path = "components/jetstream_9p" }
 jetstream_client = { version = "6.3.4", path = "components/jetstream_client" }
