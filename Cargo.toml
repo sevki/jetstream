@@ -60,14 +60,14 @@ bench = false
 
 [[test]]
 name = "wire_format"
-
+bench = false
 [[test]]
 name = "server"
+bench = false
 
 [[bench]]
 name = "performance_tests"
 harness = false
-
 
 [[example]]
 name = "echo"
