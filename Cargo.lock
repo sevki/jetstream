@@ -898,6 +898,7 @@ dependencies = [
  "jetstream_rpc",
  "jetstream_wireformat",
  "libc",
+ "trait-variant",
 ]
 
 [[package]]
