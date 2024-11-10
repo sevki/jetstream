@@ -1,5 +1,20 @@
 # Changelog
 
+## [6.4.0](https://github.com/sevki/jetstream/compare/v6.3.4...v6.4.0) (2024-11-10)
+
+
+### Features
+
+* Add support for bool in WireFormat ([640c6ca](https://github.com/sevki/jetstream/commit/640c6ca3e22d0ed1dc7ec9c58af998e96efab235))
+* Add tests for jetstream modules ([18462d9](https://github.com/sevki/jetstream/commit/18462d96f8dd71b528d49441dc257d2038f3e39f))
+
+
+### Bug Fixes
+
+* benchmarks ([94767dd](https://github.com/sevki/jetstream/commit/94767ddfbd2b43f9562621dbbd679b3ec2215da6))
+* more tests ([9a5071f](https://github.com/sevki/jetstream/commit/9a5071fb22c4a63e0af4fb1af9c7133f00cbc26e))
+* some tests ([c65ded1](https://github.com/sevki/jetstream/commit/c65ded107a254d283e165563b0b97fa735741399))
+
 ## [6.3.4](https://github.com/sevki/jetstream/compare/v6.3.3...v6.3.4) (2024-11-10)
 
 
