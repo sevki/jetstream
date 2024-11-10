@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.4](https://github.com/sevki/jetstream/compare/v6.3.3...v6.3.4) (2024-11-10)
+
+
+### Bug Fixes
+
+* make qid eq,hash ([522de0d](https://github.com/sevki/jetstream/commit/522de0d41e5cbda8d29ea6a20f1cb2cba7b5bb82))
+
 ## [6.3.3](https://github.com/sevki/jetstream/compare/v6.3.2...v6.3.3) (2024-11-10)
 
 
