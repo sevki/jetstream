@@ -1,8 +1,7 @@
 use criterion::{criterion_group, criterion_main, Criterion};
 use tokio::runtime::Runtime;
-use jetstream_client::{DialQuic, Connection};
+use jetstream_client::{DialQuic};
 use jetstream_server::quic_server::{start_server, QuicConfig};
-use jetstream_rpc::{SharedJetStreamService, Service};
 use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Barrier;
@@ -11,7 +10,7 @@ use tokio::sync::Barrier;
 async fn setup_server() {
     let server = jetstream_ufs::Ufs::new(PathBuf::from("/tmp"));
     let config = QuicConfig::default();
-    start_server(server.get_handler(), config).await.unwrap();
+    start_server(server.get_handler(), config).await;
 }
 
 fn performance_test_jetstream_client(c: &mut Criterion) {
@@ -29,7 +28,7 @@ fn performance_test_jetstream_client(c: &mut Criterion) {
             "localhost".to_string(),
         );
         let mut connection = dial.dial().await.unwrap();
-        let mut handle = connection.new_handle().await.unwrap();
+        let mut handle = connection.handle().await.unwrap();
 
         c.bench_function("jetstream_client_ping", |b| {
             b.iter(|| {
@@ -64,7 +63,7 @@ fn performance_test_jetstream_server(c: &mut Criterion) {
             "localhost".to_string(),
         );
         let mut connection = dial.dial().await.unwrap();
-        let mut handle = connection.new_handle().await.unwrap();
+        let mut handle = connection.handle().await.unwrap();
 
         c.bench_function("jetstream_server_ping", |b| {
             b.iter(|| {
