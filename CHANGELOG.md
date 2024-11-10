@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.3.3](https://github.com/sevki/jetstream/compare/v6.3.2...v6.3.3) (2024-11-10)
+
+
+### Bug Fixes
+
+* update 9p to use trait_variant ([96db410](https://github.com/sevki/jetstream/commit/96db410d8e5e04c4beb9100be2b58c271cdd7b8c))
+
 ## [6.3.2](https://github.com/sevki/jetstream/compare/v6.3.1...v6.3.2) (2024-11-10)
 
 
