@@ -158,6 +158,7 @@ impl<T: WireFormat> WireFormat for Vec<T> {
 /// Twrite messages.  This differs from a `Vec<u8>` in that it encodes the number of bytes
 /// using a `u32` instead of a `u16`.
 #[derive(PartialEq, Eq, Clone)]
+#[repr(transparent)]
 pub struct Data(pub Vec<u8>);
 
 // The maximum length of a data buffer that we support.  In practice the server's max message
@@ -191,21 +192,32 @@ where
     T: WireFormat,
 {
     fn byte_size(&self) -> u32 {
-        match self {
-            Some(value) => value.byte_size(),
+        1 + match self {
             None => 0,
+            Some(value) => value.byte_size(),
         }
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
         match self {
-            Some(value) => value.encode(writer),
-            None => Ok(()),
+            None => WireFormat::encode(&0u8, writer),
+            Some(value) => {
+                WireFormat::encode(&1u8, writer)?;
+                WireFormat::encode(value, writer)
+            }
         }
     }
 
     fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-        Ok(Some(T::decode(reader)?))
+        let tag: u8 = WireFormat::decode(reader)?;
+        match tag {
+            0 => Ok(None),
+            1 => Ok(Some(WireFormat::decode(reader)?)),
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Invalid Option tag: {}", tag),
+            )),
+        }
     }
 }
 
