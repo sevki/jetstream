@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.1](https://github.com/sevki/jetstream/compare/v6.4.0...v6.4.1) (2024-11-11)
+
+
+### Bug Fixes
+
+* make the proto mod same vis as trait ([a43c0a2](https://github.com/sevki/jetstream/commit/a43c0a2e3fbcb2991f6f3396eba9e30c96a47663))
+
 ## [6.4.0](https://github.com/sevki/jetstream/compare/v6.3.4...v6.4.0) (2024-11-10)
 
 
