@@ -572,7 +572,7 @@ pub(crate) fn service_impl(item: ItemTrait) -> TokenStream {
     let proto_mod =
         format_ident!("{}_protocol", trait_name.to_string().to_lowercase());
     quote! {
-        mod #proto_mod{
+        #vis mod #proto_mod{
             use jetstream::prelude::*;
             use std::io::{self,Read,Write};
             use std::mem;
@@ -671,7 +671,7 @@ mod tests {
         let output_str = prettyplease::unparse(&syntax_tree);
         run_test_with_filters(|| {
             insta::assert_snapshot!(output_str, @r###"
-            mod echo_protocol {
+            pub mod echo_protocol {
                 use jetstream::prelude::*;
                 use std::io::{self, Read, Write};
                 use std::mem;
@@ -889,7 +889,7 @@ mod tests {
         let output_str = prettyplease::unparse(&syntax_tree);
         run_test_with_filters(|| {
             insta::assert_snapshot!(output_str, @r###"
-            mod echo_protocol {
+            pub mod echo_protocol {
                 use jetstream::prelude::*;
                 use std::io::{self, Read, Write};
                 use std::mem;
