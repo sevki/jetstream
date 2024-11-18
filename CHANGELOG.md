@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.4.2](https://github.com/sevki/jetstream/compare/v6.4.1...v6.4.2) (2024-11-18)
+
+
+### Bug Fixes
+
+* bump deps ([0dbd81b](https://github.com/sevki/jetstream/commit/0dbd81b248e3d34aee458116f7aa82cddc31d570))
+
 ## [6.4.1](https://github.com/sevki/jetstream/compare/v6.4.0...v6.4.1) (2024-11-11)
 
 
