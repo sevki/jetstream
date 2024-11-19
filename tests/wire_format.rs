@@ -1,5 +1,5 @@
 use jetstream_9p::*;
-use jetstream_derive::JetStreamWireFormat;
+use jetstream_macros::JetStreamWireFormat;
 use jetstream_wireformat::*;
 use std::io::{self, Cursor};
 use std::mem;
@@ -694,7 +694,7 @@ fn test_option_some() {
 
 #[test]
 fn test_option_invalid_tag() {
-    let mut buf = vec![2u8]; // Invalid tag
+    let buf = vec![2u8]; // Invalid tag
     let mut cursor = Cursor::new(buf);
     let result: Result<Option<u32>, _> = WireFormat::decode(&mut cursor);
     assert!(result.is_err());
@@ -733,11 +733,11 @@ fn test_bool_encode() {
 fn test_bool_decode() {
     let mut cursor = Cursor::new(vec![1]);
     let decoded: bool = WireFormat::decode(&mut cursor).unwrap();
-    assert_eq!(decoded, true);
+    assert!(decoded);
 
     cursor = Cursor::new(vec![0]);
     let decoded: bool = WireFormat::decode(&mut cursor).unwrap();
-    assert_eq!(decoded, false);
+    assert!(!decoded);
 }
 
 #[test]

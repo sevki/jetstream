@@ -1,0 +1,11 @@
+[book]
+authors = ["sevki"]
+language = "en"
+multilingual = false
+src = "docs"
+title = "JetStream"
+[output.html]
+additional-css = ["ok.css"]
+preferred-dark-theme = "rust"
+no-section-label = false
+create-missing = false

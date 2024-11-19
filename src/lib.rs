@@ -10,7 +10,7 @@
 pub mod prelude {
     pub use trait_variant;
 
-    pub use jetstream_derive::{service, JetStreamWireFormat};
+    pub use jetstream_macros::{service, JetStreamWireFormat};
 
     pub use jetstream_rpc::{Error, Message, Protocol, Service};
 
@@ -27,4 +27,7 @@ pub mod prelude {
 
     #[cfg(feature = "ufs")]
     pub use jetstream_ufs::*;
+
+    #[cfg(feature = "cluster")]
+    pub use jetstream_cluster::*;
 }

@@ -1,3 +1,13 @@
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
+#![doc(
+    html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
+//! # JetStream Rpc
+//! Defines Rpc primitives for JetStream.
+//! Of note is the `Protocol` trait which is meant to be used with the `service` attribute macro.
+#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 use jetstream_wireformat::{
     wire_format_extensions::AsyncWireFormatExt, WireFormat,
 };

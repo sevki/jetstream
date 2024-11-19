@@ -3,7 +3,7 @@ use echo_protocol::{Rframe, Tframe, Tmessage, Tping};
 use jetstream::prelude::*;
 use jetstream_client::DialQuic;
 use jetstream_rpc::SharedJetStreamService;
-use jetstream_server::{proxy::Proxy, quic_server::QuicServer};
+use jetstream_server::{proxy::Proxy, quic::QuicServer};
 use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
 #[allow(unused_imports)]
 use okstd::prelude::*;
