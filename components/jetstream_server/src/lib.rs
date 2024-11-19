@@ -4,6 +4,10 @@
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
+//! # JetStream Server
+//! ## Feature Flags
+//! - `proxy` - Enables the proxy server
+//! - `quic` - Enables the QUIC server
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Use of this source code is governed by a BSD-style license that can be
@@ -11,7 +15,8 @@
 #[cfg(feature = "proxy")]
 pub mod proxy;
 #[cfg(feature = "quic")]
-pub mod quic_server;
+pub mod quic;
+
 use std::fmt::Debug;
 use tokio::io::{AsyncRead, AsyncWrite};
 

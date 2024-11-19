@@ -1,5 +1,5 @@
 [package]
-name = "jetstream_derive"
+name = "jetstream_macros"
 
 authors = ["Sevki <s@sevki.io>", "The ChromiumOS Authors"]
 version = "6.4.2"

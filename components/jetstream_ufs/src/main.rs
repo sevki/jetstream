@@ -1,4 +1,4 @@
-use jetstream_server::quic_server::{start_server, QuicConfig};
+use jetstream_server::quic::{start_server, QuicConfig};
 use okstd::prelude::*;
 use std::path::PathBuf;
 

@@ -1,5 +1,5 @@
 use jetstream_rpc::SharedJetStreamService;
-use jetstream_server::{proxy::Proxy, quic_server::QuicServer};
+use jetstream_server::{proxy::Proxy, quic::QuicServer};
 
 use jetstream_client::DialQuic;
 
@@ -12,7 +12,7 @@ use std::{
 };
 use tokio::{io::AsyncWriteExt, net::UnixListener, sync::Barrier};
 
-use jetstream_derive::service;
+use jetstream_macros::service;
 
 #[service]
 pub trait Echo: Send + Sync {

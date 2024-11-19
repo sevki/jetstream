@@ -3,7 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use jetstream_derive::JetStreamWireFormat;
+use jetstream_macros::JetStreamWireFormat;
 use jetstream_rpc::Message;
 use jetstream_rpc::Protocol;
 use jetstream_wireformat::Data;

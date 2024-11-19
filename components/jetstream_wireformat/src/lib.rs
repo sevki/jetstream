@@ -9,7 +9,7 @@
 // Copyright 2018 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-pub use jetstream_derive::JetStreamWireFormat;
+pub use jetstream_macros::JetStreamWireFormat;
 
 use bytes::Buf;
 use std::fmt;
@@ -75,6 +75,32 @@ uint_wire_format_impl!(i32);
 uint_wire_format_impl!(i64);
 uint_wire_format_impl!(i128);
 
+macro_rules! float_wire_format_impl {
+    ($Ty:ty) => {
+        impl WireFormat for $Ty {
+            fn byte_size(&self) -> u32 {
+                mem::size_of::<$Ty>() as u32
+            }
+
+            fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+                writer.write_all(&self.as_bytes())
+            }
+
+            fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+                let mut buf = [0; mem::size_of::<$Ty>()];
+                reader.read_exact(&mut buf)?;
+                paste::expr! {
+                    let num: zerocopy::[<$Ty:snake:upper>]<LittleEndian> =  zerocopy::byteorder::[<$Ty:snake:upper>]::from_bytes(buf);
+                    Ok(num.get())
+                }
+            }
+        }
+    };
+}
+
+float_wire_format_impl!(f32);
+float_wire_format_impl!(f64);
+
 impl WireFormat for u8 {
     fn byte_size(&self) -> u32 {
         1
@@ -88,6 +114,38 @@ impl WireFormat for u8 {
         let mut byte = [0u8; 1];
         reader.read_exact(&mut byte)?;
         Ok(byte[0])
+    }
+}
+
+impl WireFormat for usize {
+    fn byte_size(&self) -> u32 {
+        mem::size_of::<usize>() as u32
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(&self.to_le_bytes())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let mut buf = [0; mem::size_of::<usize>()];
+        reader.read_exact(&mut buf)?;
+        Ok(usize::from_le_bytes(buf))
+    }
+}
+
+impl WireFormat for isize {
+    fn byte_size(&self) -> u32 {
+        mem::size_of::<isize>() as u32
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(&self.to_le_bytes())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let mut buf = [0; mem::size_of::<isize>()];
+        reader.read_exact(&mut buf)?;
+        Ok(isize::from_le_bytes(buf))
     }
 }
 

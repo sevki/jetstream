@@ -4,6 +4,13 @@
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
+//! # JetStream Derive
+//! This crate provides macros for JetStream.
+//! ## `service`
+//! The `service` macro is used to define a JetStream service.
+//!
+//! ## `JetStreamWireFormat`
+//! The `JetStreamWireFormat` macro is used to derive the `WireFormat` trait for a struct.
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 #![recursion_limit = "256"]
 
