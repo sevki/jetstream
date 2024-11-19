@@ -4,8 +4,15 @@ language = "en"
 multilingual = false
 src = "docs"
 title = "JetStream"
+
 [output.html]
 additional-css = ["ok.css"]
 preferred-dark-theme = "rust"
 no-section-label = false
 create-missing = false
+
+[preprocessor.rustdoc]
+enabled = true
+path = "target/doc"
+crate_prefix = "doc/jetstream_"
+out = "docs/crates"
