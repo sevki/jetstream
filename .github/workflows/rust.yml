@@ -1,9 +1,7 @@
 name: Build and Test
-
 on:
   pull_request:
     branches: ["main"]
-
 env:
   CARGO_TERM_COLOR: always
 
@@ -14,8 +12,8 @@ jobs:
       matrix:
         rust:
           - "stable"
-          - "beta" # beta
-          - "nightly" # nightly
+          - "beta"
+          - "nightly"
           - "1.75.0"
           - "1.76.0"
           - "1.77.0"
@@ -45,21 +43,327 @@ jobs:
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build ${{ matrix.rust }}
         run: cargo build --verbose
-      - name: Run tests jetstream
+
+  test-jetstream:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream
         run: cargo test --verbose --all-features -p jetstream
-      - name: Run tests jetstream_9p
+
+  test-9p:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream_9p
         run: cargo test --verbose --all-features -p jetstream_9p
-      - name: Run tests jetstream_client
+
+  test-client:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream_client
         run: cargo test --verbose --all-features -p jetstream_client
-      - name: Run tests jetstream_cluster
+
+  test-cluster:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream_cluster
         run: cargo test --verbose --all-features -p jetstream_cluster
-      - name: Run tests jetstream_derive
+
+  test-macros:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream_macros
         run: cargo test --verbose --all-features -p jetstream_macros
-      - name: Run tests jetstream_server
+
+  test-server:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream_server
         run: cargo test --verbose --all-features -p jetstream_server
-      - name: Run tests jetstream_ufs
+
+  test-ufs:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream_ufs
         run: cargo test --verbose --all-features -p jetstream_ufs
-      - name: Run tests jetstream_wireformat
+
+  test-wireformat:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Test jetstream_wireformat
         run: cargo test --verbose --all-features -p jetstream_wireformat
+
+  run-examples:
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - "stable"
+          - "beta"
+          - "nightly"
+          - "1.75.0"
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+    env:
+      SCCACHE_GHA_ENABLED: on
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Run sccache-cache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Run example echo
         run: cargo run --example echo

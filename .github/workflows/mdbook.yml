@@ -40,6 +40,12 @@ jobs:
           curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf -y | sh
           rustup update
           cargo install --version ${MDBOOK_VERSION} mdbook
+      - name: Run sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Run Cargo Doc
         run: |
           cargo doc --release --all-features
