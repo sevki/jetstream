@@ -6,9 +6,6 @@ description = "Jetstream is a RPC framework for Rust, based on the 9P protocol a
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
 
-[profile.release]
-build = "build.rs"
-
 [workspace.package]
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
@@ -26,15 +23,6 @@ jetstream_9p = { version = "6.4.1", path = "components/jetstream_9p", optional =
 trait-variant = "0.1.2"
 jetstream_cluster = { version = "6.4.1", path = "components/jetstream_cluster", optional = true }
 
-
-[build-dependencies]
-anyhow = "1.0.93"
-glob = "0.3.1"
-pkg-config = "0.3"
-which = "6.0.1"
-indexed_docs = { git = "https://github.com/zed-industries/zed.git", version = "0.1.0", optional = true }
-html_to_markdown = { git = "https://github.com/zed-industries/zed.git", version = "0.1.0", optional = true }
-comrak = { version = "0.29.0", optional = true }
 
 [dev-dependencies]
 arbitrary = "1.4.1"
@@ -65,6 +53,7 @@ members = [
     "components/jetstream_server",
     "components/jetstream_ufs",
     "components/jetstream_wireformat",
+    "components/rustdoc_to_mdbook",
     "jetstream_fuzz",
 ]
 [lib]
@@ -94,4 +83,3 @@ server = ["dep:jetstream_server"]
 all = ["client", "ufs", "server", "9p"]
 9p = ["dep:jetstream_9p"]
 cluster = ["dep:jetstream_cluster"]
-docs = ["dep:indexed_docs", "dep:html_to_markdown"]

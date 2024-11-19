@@ -51,8 +51,10 @@ jobs:
         run: cargo test --verbose --all-features -p jetstream_9p
       - name: Run tests jetstream_client
         run: cargo test --verbose --all-features -p jetstream_client
+      - name: Run tests jetstream_cluster
+        run: cargo test --verbose --all-features -p jetstream_cluster
       - name: Run tests jetstream_derive
-        run: cargo test --verbose --all-features -p jetstream_derive
+        run: cargo test --verbose --all-features -p jetstream_macros
       - name: Run tests jetstream_server
         run: cargo test --verbose --all-features -p jetstream_server
       - name: Run tests jetstream_ufs
