@@ -16,9 +16,14 @@ fn try_make_books() -> anyhow::Result<()> {
     let current_dir = std::env::current_dir()?;
     let docs_path = current_dir.clone().join(target_dir).join("doc");
 
-    let org_docs = ["0intro.md", "cluster/0intro.md", "crates.md"]
-        .map(PathBuf::from)
-        .to_vec();
+    let org_docs = [
+        "0intro.md",
+        "cluster/0intro.md",
+        "CHANGELOG.md",
+        "crates.md",
+    ]
+    .map(PathBuf::from)
+    .to_vec();
 
     let mut docs: Vec<_> = glob::glob(
         format!("{}/**/*.html", docs_path.as_path().to_string_lossy()).as_str(),
@@ -181,7 +186,7 @@ fn try_make_books() -> anyhow::Result<()> {
                 "Constant" => "&#xeb5d;",
                 "Module" => "&#xea8b;",
                 "Crate" => "&#xeb29;",
-                "Crates" => "🦀",
+                "Crates" => "",
                 _ => "",
             };
             writeln!(file, "- [{} {}]({})", icon, ti, doc.to_str().unwrap())

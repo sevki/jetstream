@@ -3,7 +3,7 @@
   "plugins": ["cargo-workspace"],
   "packages": {
     "src": {
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "docs/CHANGELOG.md",
       "release-type": "rust",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
@@ -12,7 +12,7 @@
     },
     "components/jetstream_9p": {
       "release-type": "rust",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
@@ -20,7 +20,7 @@
     },
     "components/jetstream_client": {
       "release-type": "rust",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
@@ -28,7 +28,7 @@
     },
     "components/jetstream_server": {
       "release-type": "rust",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
@@ -36,7 +36,7 @@
     },
     "components/jetstream_derive": {
       "release-type": "rust",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
@@ -44,7 +44,7 @@
     },
     "components/jetstream_rpc": {
       "release-type": "rust",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
@@ -52,7 +52,7 @@
     },
     "components/jetstream_ufs": {
       "release-type": "rust",
-      "changelog-path": "CHANGELOG.md",
+      "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
       "bump-patch-for-minor-pre-major": true,
       "draft": true,
