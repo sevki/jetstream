@@ -209,7 +209,7 @@ impl Coordinate {
 mod tests {
     use super::*;
 
-    fn verify_equal_vectors(v1: &[f64], v2: &[f64], epsilon: f64) {
+    fn _verify_equal_vectors(v1: &[f64], v2: &[f64], epsilon: f64) {
         assert_eq!(v1.len(), v2.len());
         for (a, b) in v1.iter().zip(v2.iter()) {
             assert!((a - b).abs() < epsilon, "Expected {a} to equal {b}");
@@ -240,8 +240,11 @@ mod tests {
 
     #[test]
     fn test_incompatible_dimensions() {
-        let mut config = Config::default();
-        config.dimensionality = 3;
+        let mut config = Config {
+            dimensionality: 3,
+            ..Default::default()
+        };
+
         let coord1 = Coordinate::new(&config);
 
         config.dimensionality = 2;
