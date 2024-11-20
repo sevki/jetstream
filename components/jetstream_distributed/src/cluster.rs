@@ -1,5 +1,5 @@
-//! Cluster module
-
+//! Cluster provides memebership primitives for JetStream.
+use jetstream_rpc::{Protocol, Service};
 use okid::OkId;
 
 use super::{coordinate::Coordinate, Result};
@@ -8,17 +8,20 @@ use super::{coordinate::Coordinate, Result};
 #[trait_variant::make(Send+Sync)]
 pub trait Cluster {
     /// Join a cluster
-    fn join(&self, node: impl Node) -> Result<()>;
+    fn join(&self, node: impl IntoNode) -> Result<()>;
     /// Leave a cluster
-    fn leave(&self, node: impl Node) -> Result<()>;
+    fn leave(&self, node: impl IntoNode) -> Result<()>;
 }
 
 /// A Node trait
+#[trait_variant::make(Send+Sync)]
 pub trait Node {
     /// ID, this is a unique identifier for the node.
     fn id(&self) -> NodeId;
     /// Coordinate
     fn coordinate(&self) -> Result<Coordinate>;
+    /// dial
+    async fn dial<P: Protocol>(&self) -> Result<impl Service<P>>;
 }
 
 /// IntoNode trait

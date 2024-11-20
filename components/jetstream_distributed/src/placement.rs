@@ -1,4 +1,5 @@
-//! Placement traits.
+//! Placement module is used to determine the placement of the object,
+//! and later to locate the object.
 
 use crate::cluster::IntoNode;
 

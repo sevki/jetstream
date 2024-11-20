@@ -79,12 +79,12 @@ impl<P: Protocol + Send + Sync> SplittableStream for Handle<P> {
     }
 }
 
-impl<P: Protocol + Send + Sync> Service for Handle<P> {
+impl<P: Protocol + Send + Sync> Service<P> for Handle<P> {
     #[doc = " Handles an RPC call asynchronously."]
     fn rpc(
         &mut self,
-        req: Self::Request,
-    ) -> impl ::core::future::Future<Output = Result<Self::Response>> + Send + Sync
+        req: P::Request,
+    ) -> impl ::core::future::Future<Output = Result<P::Response>> + Send + Sync
     {
         Box::pin(async move {
             let rt = self.rt.clone();

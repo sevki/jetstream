@@ -34,7 +34,6 @@ pub mod prelude {
         pub use jetstream_server::*;
     }
 
-    /// JetStream Cluster is under development.
     #[cfg(feature = "distributed")]
     pub mod distributed {
         pub use jetstream_distributed::*;
