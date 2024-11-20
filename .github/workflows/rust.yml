@@ -52,7 +52,7 @@ jobs:
       - name: Run tests jetstream_client
         run: cargo test --verbose --all-features -p jetstream_client
       - name: Run tests jetstream_cluster
-        run: cargo test --verbose --all-features -p jetstream_cluster
+        run: cargo test --verbose --all-features -p jetstream_distributed
       - name: Run tests jetstream_derive
         run: cargo test --verbose --all-features -p jetstream_macros
       - name: Run tests jetstream_server

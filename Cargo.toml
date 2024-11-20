@@ -23,7 +23,7 @@ jetstream_wireformat = { version = "6.5.0", path = "components/jetstream_wirefor
 jetstream_rpc = { version = "6.5.0", path = "components/jetstream_rpc" }
 jetstream_9p = { version = "6.5.0", path = "components/jetstream_9p", optional = true }
 trait-variant = "0.1.2"
-jetstream_cluster = { version = "6.5.0", path = "components/jetstream_cluster", optional = true }
+jetstream_distributed = { version = "6.4.1", path = "components/jetstream_distributed", optional = true }
 
 
 [dev-dependencies]
@@ -49,7 +49,7 @@ tokio = { version = "1.40.0", features = ["full"] }
 members = [
     "components/jetstream_9p",
     "components/jetstream_client",
-    "components/jetstream_cluster",
+    "components/jetstream_distributed",
     "components/jetstream_macros",
     "components/jetstream_rpc",
     "components/jetstream_server",
@@ -84,4 +84,4 @@ ufs = ["dep:jetstream_ufs"]
 server = ["dep:jetstream_server"]
 all = ["client", "ufs", "server", "9p"]
 9p = ["dep:jetstream_9p"]
-cluster = ["dep:jetstream_cluster"]
+distributed = ["dep:jetstream_distributed"]
