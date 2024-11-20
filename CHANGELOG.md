@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.1](https://github.com/sevki/jetstream/compare/v6.6.0...v6.6.1) (2024-11-20)
+
+
+### Bug Fixes
+
+* broken okid lockfile ([63bae5e](https://github.com/sevki/jetstream/commit/63bae5e68e8707273b13dd06a74981f635556923))
+
 ## [6.6.0](https://github.com/sevki/jetstream/compare/v6.5.0...v6.6.0) (2024-11-20)
 
 
