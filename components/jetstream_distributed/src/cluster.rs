@@ -16,9 +16,15 @@ pub trait Cluster {
 /// A Node trait
 pub trait Node {
     /// ID, this is a unique identifier for the node.
-
+    fn id(&self) -> NodeId;
     /// Coordinate
     fn coordinate(&self) -> Result<Coordinate>;
+}
+
+/// IntoNode trait
+pub trait IntoNode {
+    /// Convert into a node
+    fn into_node(self) -> impl Node;
 }
 
 /// Node ID

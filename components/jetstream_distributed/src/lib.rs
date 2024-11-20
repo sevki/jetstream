@@ -13,6 +13,7 @@
 pub mod access_control;
 pub mod cluster;
 pub mod coordinate;
+pub mod placement;
 
 /// Error type
 #[derive(thiserror::Error, Debug)]

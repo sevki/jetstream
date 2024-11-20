@@ -1,0 +1,15 @@
+//! Placement traits.
+
+use crate::cluster::IntoNode;
+
+/// Placement trait.
+pub trait Placement {
+    /// Returns the placement of the object.
+    fn map<V>(&self, value: &V) -> Vec<impl IntoNode>
+    where
+        V: Ord + Eq;
+    /// Returns the placement of the object.
+    fn locate<V>(&self, value: &V) -> Vec<impl IntoNode>
+    where
+        V: Ord + Eq;
+}
