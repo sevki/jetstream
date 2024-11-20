@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_server"
-version = "6.4.2"
+version = "6.5.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -13,10 +13,10 @@ bench = false
 [dependencies]
 anyhow = "1.0.89"
 async-trait = "0.1.83"
-jetstream_9p = { version = "6.4.2", path = "../jetstream_9p" }
-jetstream_client = { version = "6.4.2", path = "../jetstream_client", optional = true }
-jetstream_rpc = { version = "6.4.2", path = "../jetstream_rpc" }
-jetstream_wireformat = { version = "6.4.2", path = "../jetstream_wireformat" }
+jetstream_9p = { version = "6.5.0", path = "../jetstream_9p" }
+jetstream_client = { version = "6.5.0", path = "../jetstream_client", optional = true }
+jetstream_rpc = { version = "6.5.0", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "6.5.0", path = "../jetstream_wireformat" }
 okstd = { version = "0.1.10", features = ["macros"] }
 s2n-quic = { version = "1.47.0", optional = true }
 tokio = { version = "1.40.0", features = ["full"] }
