@@ -1,5 +1,19 @@
 # Changelog
 
+## [6.5.0](https://github.com/sevki/jetstream/compare/v6.4.2...v6.5.0) (2024-11-20)
+
+
+### Features
+
+* jetstream cluster ([80b5727](https://github.com/sevki/jetstream/commit/80b5727722b1b44d522eb793c18e5bf117660d8b))
+* rustdoc_to_mdbook ([32deadf](https://github.com/sevki/jetstream/commit/32deadf98614a9365e9991c3cd76620280c85b5d))
+
+
+### Bug Fixes
+
+* only build docs in release ([02b02bc](https://github.com/sevki/jetstream/commit/02b02bc6348a3ec537683d9b18047c02e8b7c502))
+* update doc links ([80a5e1e](https://github.com/sevki/jetstream/commit/80a5e1efc9b2a275b8d49be7eedc832602914c0c))
+
 ## [6.4.2](https://github.com/sevki/jetstream/compare/v6.4.1...v6.4.2) (2024-11-18)
 
 
