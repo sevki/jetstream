@@ -11,19 +11,24 @@ use okstd::prelude::*;
 
 use jetstream_rpc::{Protocol, Service, SharedJetStreamService};
 
-pub struct QuicServer<S: Service> {
+pub struct QuicServer<P: Protocol, S: Service<P>> {
     svc: S,
+    _phantom: std::marker::PhantomData<P>,
 }
 
-impl<S: Service> QuicServer<S> {
+impl<P: Protocol, S: Service<P>> QuicServer<P, S> {
     pub fn new(svc: S) -> Self {
-        Self { svc }
+        Self {
+            svc,
+            _phantom: std::marker::PhantomData,
+        }
     }
 }
 
-impl<S> QuicServer<S>
+impl<P, S> QuicServer<P, S>
 where
-    S: Service + Clone + 'static,
+    P: Protocol,
+    S: Service<P> + Clone + 'static,
 {
     pub async fn serve(self, mut server: Server) -> anyhow::Result<()> {
         debug!("Server started");
@@ -69,11 +74,10 @@ where
                                     break;
                                 }
                                 debug!("Reading from down_stream");
-                                let tframe =
-                                    <S as Protocol>::Request::decode_async(
-                                        &mut downstream_reader,
-                                    )
-                                    .await;
+                                let tframe = P::Request::decode_async(
+                                    &mut downstream_reader,
+                                )
+                                .await;
                                 if let Err(e) = tframe {
                                     // if error is eof, break
                                     if e.kind()
@@ -140,8 +144,8 @@ impl Default for QuicConfig {
 }
 
 /// Start a QUIC server with the given service and configuration
-pub async fn start_server(
-    svc: impl Service + Clone + 'static,
+pub async fn start_server<P: Protocol + Clone + 'static>(
+    svc: impl Service<P> + Clone + 'static,
     config: QuicConfig,
 ) {
     let tls = tls::default::Server::builder()

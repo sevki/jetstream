@@ -6,10 +6,8 @@
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
-//! # JetStream Cluster
-//! JetStream Cluster implements some distributed systems primitives to,
-//! build distributed systems with JetStream.
-
+//! # JetStream Distributed
+//! JetStream Distributed is a collection of primitives for building distributed systems with JetStream.
 pub mod access_control;
 pub mod cluster;
 pub mod coordinate;

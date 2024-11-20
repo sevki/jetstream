@@ -541,8 +541,8 @@ pub(crate) fn service_impl(item: ItemTrait) -> TokenStream {
         );
         server_calls.extend(iter::once(quote! {
             #[inline]
-            fn rpc(&mut self, req:Self::Request) -> impl ::core::future::Future<
-                Output = Result<Self::Response, Error>,
+            fn rpc(&mut self, req:<Self as Protocol>::Request) -> impl ::core::future::Future<
+                Output = Result<<Self as Protocol>::Response, Error>,
             > + Send + Sync {
                 Box::pin(async move {match req.msg {
                     #(
@@ -616,7 +616,7 @@ pub(crate) fn service_impl(item: ItemTrait) -> TokenStream {
                 type Request = Tframe;
                 type Response = Rframe;
             }
-            impl<T> Service for #protocol_name<T>
+            impl<T> Service<#protocol_name<T>> for #protocol_name<T>
             where
                 T: #trait_name+ Send + Sync + Sized
             {
@@ -843,16 +843,16 @@ mod tests {
                     type Request = Tframe;
                     type Response = Rframe;
                 }
-                impl<T> Service for EchoProtocol<T>
+                impl<T> Service<EchoProtocol<T>> for EchoProtocol<T>
                 where
                     T: Echo + Send + Sync + Sized,
                 {
                     #[inline]
                     fn rpc(
                         &mut self,
-                        req: Self::Request,
+                        req: <Self as Protocol>::Request,
                     ) -> impl ::core::future::Future<
-                        Output = Result<Self::Response, Error>,
+                        Output = Result<<Self as Protocol>::Response, Error>,
                     > + Send + Sync {
                         Box::pin(async move {
                             match req.msg {
@@ -1063,16 +1063,16 @@ mod tests {
                     type Request = Tframe;
                     type Response = Rframe;
                 }
-                impl<T> Service for EchoProtocol<T>
+                impl<T> Service<EchoProtocol<T>> for EchoProtocol<T>
                 where
                     T: Echo + Send + Sync + Sized,
                 {
                     #[inline]
                     fn rpc(
                         &mut self,
-                        req: Self::Request,
+                        req: <Self as Protocol>::Request,
                     ) -> impl ::core::future::Future<
-                        Output = Result<Self::Response, Error>,
+                        Output = Result<<Self as Protocol>::Response, Error>,
                     > + Send + Sync {
                         Box::pin(async move {
                             match req.msg {

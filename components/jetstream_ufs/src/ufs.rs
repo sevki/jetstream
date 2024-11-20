@@ -81,14 +81,14 @@ impl<P: Protocol> Protocol for Handler<P> {
     type Response = P::Response;
 }
 
-impl<P> Service for Handler<P>
+impl<P> Service<P> for Handler<P>
 where
     P: Protocol,
 {
     async fn rpc(
         &mut self,
-        req: Self::Request,
-    ) -> Result<Self::Response, jetstream_rpc::Error> {
+        req: P::Request,
+    ) -> Result<P::Response, jetstream_rpc::Error> {
         let (reply, result) = tokio::sync::oneshot::channel::<P::Response>();
         self.tx
             .send(Handle {
