@@ -31,7 +31,7 @@ JetStream is not ready for production use. It's still in the early stages of dev
 
 ## Docs
 
-- [API Documentation](https://docs.rs/jetstream)
+- [API Documentation](https://sevki.github.com/jetstream/)
 
 ## Examples
 

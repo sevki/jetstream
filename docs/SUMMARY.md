@@ -1,4 +1,6 @@
 - [ JetStream](0intro.md)
+- [ Jetstream Cluster](cluster/0intro.md)
+- [ 🦀 Crates](crates.md)
 	- [&#xeb29; Crate jetstream](crates/jetstream/index.md)
 		- [&#xea8b; prelude](crates/jetstream/prelude/index.md)
 			- [ service](crates/jetstream/prelude/attr.service.md)
