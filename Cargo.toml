@@ -5,12 +5,14 @@ edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
+documentation = "https://sevki.github.io/jetstream/"
 
 [workspace.package]
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
+documentation = "https://sevki.github.io/jetstream/"
 
 [dependencies]
 jetstream_client = { version = "6.4.1", path = "components/jetstream_client", optional = true }
