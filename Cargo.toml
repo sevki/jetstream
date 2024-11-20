@@ -1,6 +1,6 @@
 [package]
 name = "jetstream"
-version = "6.5.0"
+version = "6.6.0"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "BSD-3-Clause"
@@ -15,15 +15,15 @@ repository = "https://github.com/sevki/jetstream"
 documentation = "https://sevki.github.io/jetstream/"
 
 [dependencies]
-jetstream_client = { version = "6.5.0", path = "components/jetstream_client", optional = true }
-jetstream_macros = { version = "6.5.0", path = "components/jetstream_macros" }
-jetstream_server = { version = "6.5.0", path = "components/jetstream_server", optional = true }
-jetstream_ufs = { version = "6.5.0", path = "components/jetstream_ufs", optional = true }
-jetstream_wireformat = { version = "6.5.0", path = "components/jetstream_wireformat" }
-jetstream_rpc = { version = "6.5.0", path = "components/jetstream_rpc" }
-jetstream_9p = { version = "6.5.0", path = "components/jetstream_9p", optional = true }
+jetstream_client = { version = "6.6.0", path = "components/jetstream_client", optional = true }
+jetstream_macros = { version = "6.6.0", path = "components/jetstream_macros" }
+jetstream_server = { version = "6.6.0", path = "components/jetstream_server", optional = true }
+jetstream_ufs = { version = "6.6.0", path = "components/jetstream_ufs", optional = true }
+jetstream_wireformat = { version = "6.6.0", path = "components/jetstream_wireformat" }
+jetstream_rpc = { version = "6.6.0", path = "components/jetstream_rpc" }
+jetstream_9p = { version = "6.6.0", path = "components/jetstream_9p", optional = true }
 trait-variant = "0.1.2"
-jetstream_distributed = { version = "6.4.1", path = "components/jetstream_distributed", optional = true }
+jetstream_distributed = { version = "6.6.0", path = "components/jetstream_distributed", optional = true }
 
 
 [dev-dependencies]
@@ -31,12 +31,12 @@ arbitrary = "1.4.1"
 criterion = { version = "0.5.1", features = ["async_tokio"] }
 futures-util = "0.3.30"
 
-jetstream_9p = { version = "6.5.0", path = "components/jetstream_9p" }
-jetstream_client = { version = "6.5.0", path = "components/jetstream_client" }
-jetstream_macros = { version = "6.5.0", path = "components/jetstream_macros" }
-jetstream_rpc = { version = "6.5.0", path = "components/jetstream_rpc" }
-jetstream_server = { version = "6.5.0", path = "components/jetstream_server" }
-jetstream_wireformat = { version = "6.5.0", path = "components/jetstream_wireformat" }
+jetstream_9p = { version = "6.6.0", path = "components/jetstream_9p" }
+jetstream_client = { version = "6.6.0", path = "components/jetstream_client" }
+jetstream_macros = { version = "6.6.0", path = "components/jetstream_macros" }
+jetstream_rpc = { version = "6.6.0", path = "components/jetstream_rpc" }
+jetstream_server = { version = "6.6.0", path = "components/jetstream_server" }
+jetstream_wireformat = { version = "6.6.0", path = "components/jetstream_wireformat" }
 okstd = { version = "0.1.10", features = ["macros"] }
 prost = "0.13.3"
 s2n-quic = "1.47.0"
