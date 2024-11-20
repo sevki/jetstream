@@ -1,10 +1,9 @@
 use comrak::{nodes::NodeValue, parse_document, Arena, Options};
 use std::{
-    fs::{self, create_dir_all, read_dir, File},
-    io::{BufRead, BufReader, Read, Write},
+    fs::{create_dir_all, read_dir, File},
+    io::{BufReader, Read, Write},
     path::PathBuf,
 };
-const SOURCE: &str = "docs/SUMMARY.md";
 
 fn main() -> anyhow::Result<()> {
     try_make_books()
@@ -17,7 +16,9 @@ fn try_make_books() -> anyhow::Result<()> {
     let current_dir = std::env::current_dir()?;
     let docs_path = current_dir.clone().join(target_dir).join("doc");
 
-    let org_docs = ["0intro.md"].map(PathBuf::from).to_vec();
+    let org_docs = ["0intro.md", "cluster/0intro.md", "crates.md"]
+        .map(PathBuf::from)
+        .to_vec();
 
     let mut docs: Vec<_> = glob::glob(
         format!("{}/**/*.html", docs_path.as_path().to_string_lossy()).as_str(),
@@ -193,25 +194,9 @@ fn try_make_books() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-struct ItemPath {
-    components: Vec<String>,
-}
-fn parsed_title(path: &str) -> Option<ItemPath> {
-    let title = get_title(path);
-    let title = title.split(" ").last().unwrap().split("::");
-    let components: Vec<_> = title.map(|c| c.to_string()).collect();
-    // filter out empty strings
-    let components: Vec<_> =
-        components.into_iter().filter(|c| !c.is_empty()).collect();
-    if components.is_empty() {
-        return None;
-    }
-    Some(ItemPath { components })
-}
 fn parse_title(contents: &str) -> String {
     let arena = Arena::new();
-    let root = parse_document(&arena, &contents, &Options::default());
+    let root = parse_document(&arena, contents, &Options::default());
     let mut title = String::new();
     for node in root.descendants() {
         if let NodeValue::Heading(_) = node.data.borrow().value {
@@ -229,8 +214,8 @@ fn parse_title(contents: &str) -> String {
     title
 }
 fn get_title(path: &str) -> String {
-    let file =
-        File::open(path).expect(format!("file not found: {:?}", path).as_str());
+    let file = File::open(path)
+        .unwrap_or_else(|_| panic!("file not found: {:?}", path));
     // read all the file
     let mut reader = BufReader::new(file);
     let mut contents = String::new();
