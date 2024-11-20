@@ -20,5 +20,5 @@ pub enum Error {
     #[error("Failed to join node")]
     JoinFailed,
 }
-/// Result type for JetStream Cluster operatons
+/// Result type for JetStream Cluster operations
 pub type Result<T> = std::result::Result<T, Error>;
