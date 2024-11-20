@@ -1591,9 +1591,9 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.2.8"
+version = "0.2.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "edb49164822f3ee45b17acd4a208cfc1251410cf0cad9a833234c9890774dd9f"
+checksum = "32a2785755761f3ddc1492979ce1e48d2c00d09311c39e4466429188f3dd6501"
 dependencies = [
  "quote",
  "syn 2.0.87",
@@ -3182,9 +3182,9 @@ dependencies = [
 
 [[package]]
 name = "itoa"
-version = "1.0.12"
+version = "1.0.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a73e9fe3c49d7afb2ace819fa181a287ce54a0983eda4e0eb05c22f82ffe534"
+checksum = "540654e97a3f4470a492cd30ff187bc95d89557a903a2bbf112e2fae98104ef2"
 
 [[package]]
 name = "jetstream"
@@ -3196,11 +3196,11 @@ dependencies = [
  "jetstream_9p",
  "jetstream_client",
  "jetstream_distributed",
- "jetstream_macros 6.5.0",
+ "jetstream_macros 6.6.0",
  "jetstream_rpc",
  "jetstream_server",
  "jetstream_ufs",
- "jetstream_wireformat 6.5.0",
+ "jetstream_wireformat 6.6.0",
  "okstd",
  "prost",
  "s2n-quic",
@@ -3214,9 +3214,9 @@ name = "jetstream_9p"
 version = "6.6.0"
 dependencies = [
  "async-trait",
- "jetstream_macros 6.5.0",
+ "jetstream_macros 6.6.0",
  "jetstream_rpc",
- "jetstream_wireformat 6.5.0",
+ "jetstream_wireformat 6.6.0",
  "libc",
  "trait-variant",
 ]
@@ -3229,7 +3229,7 @@ dependencies = [
  "futures",
  "jetstream_9p",
  "jetstream_rpc",
- "jetstream_wireformat 6.5.0",
+ "jetstream_wireformat 6.6.0",
  "okstd",
  "s2n-quic",
 ]
@@ -3244,7 +3244,7 @@ dependencies = [
  "insta",
  "interned",
  "jetstream_rpc",
- "jetstream_wireformat 6.5.0",
+ "jetstream_wireformat 6.6.0",
  "okid",
  "okstd",
  "rand 0.8.5",
@@ -3283,7 +3283,7 @@ dependencies = [
 name = "jetstream_macros"
 version = "6.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d6b061b4c9e35b1a097b6a16c7815dc4354efb22545ddcba3a299fc4ba459929"
+checksum = "6ebacad821916729f04f0caa86aeb719711e7ce45b4c5ce3f5bb08c3f2c03b92"
 dependencies = [
  "convert_case 0.6.0",
  "paste",
@@ -3299,7 +3299,7 @@ version = "6.6.0"
 dependencies = [
  "anyhow",
  "bytes",
- "jetstream_wireformat 6.5.0",
+ "jetstream_wireformat 6.6.0",
  "okstd",
  "s2n-quic",
  "tokio",
@@ -3315,7 +3315,7 @@ dependencies = [
  "jetstream_9p",
  "jetstream_client",
  "jetstream_rpc",
- "jetstream_wireformat 6.5.0",
+ "jetstream_wireformat 6.6.0",
  "okstd",
  "s2n-quic",
  "tokio",
@@ -3331,7 +3331,7 @@ dependencies = [
  "jetstream_9p",
  "jetstream_rpc",
  "jetstream_server",
- "jetstream_wireformat 6.5.0",
+ "jetstream_wireformat 6.6.0",
  "libc",
  "okstd",
  "serde",
@@ -3344,7 +3344,7 @@ version = "6.6.0"
 dependencies = [
  "bytes",
  "futures",
- "jetstream_macros 6.5.0",
+ "jetstream_macros 6.6.0",
  "libc",
  "okstd",
  "paste",
@@ -3358,11 +3358,11 @@ dependencies = [
 name = "jetstream_wireformat"
 version = "6.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "531711eff697efad80629336100ba1c489671298ea4d6f11b7576429c83b2a01"
+checksum = "99d6afdc253f24bb9e5fdd99411de978d52a0441e7affe3076e71cec01124b8c"
 dependencies = [
  "bytes",
  "futures",
- "jetstream_macros 6.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jetstream_macros 6.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "libc",
  "okstd",
  "paste",
@@ -4060,19 +4060,18 @@ dependencies = [
 
 [[package]]
 name = "okid"
-version = "0.4.2"
+version = "0.5.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "efaefc834a380a2abf02ca938ccb4888a5d41da99457e1e6b0815f9418e1d1d3"
+checksum = "54d393d1bd6b0422b61a44a8991c997d0fb308d97efb8160a84976985ec3b191"
 dependencies = [
  "blake3",
  "bytes",
  "digest 0.10.7",
  "enumflags2",
  "hex",
- "jetstream_wireformat 6.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "jetstream_wireformat 6.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "serde",
  "serde_json",
- "sha1",
  "sha2",
  "sha3",
  "ulid",

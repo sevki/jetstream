@@ -21,7 +21,7 @@ s2n-quic = "1.47.0"
 thiserror = "2.0.3"
 rand = "0.8.5"
 serde = { version = "1.0.215", features = ["derive"], optional = true }
-okid = "0.4.2"
+okid = "0.5.1"
 cel-interpreter = { version = "0.9.0", git = "https://github.com/sevki/cel-rust.git" }
 interned = "0.1.6"
 jetstream_rpc = { version = "6.6.0", path = "../jetstream_rpc", registry = "oksoftware" }
