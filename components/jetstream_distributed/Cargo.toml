@@ -1,6 +1,6 @@
 [package]
-name = "jetstream_cluster"
-version = "6.5.0"
+name = "jetstream_distributed"
+version = "6.4.1"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -20,3 +20,14 @@ anyhow = "1.0.93"
 s2n-quic = "1.47.0"
 thiserror = "2.0.3"
 rand = "0.8.5"
+serde = { version = "1.0.215", features = ["derive"], optional = true }
+okid = "0.4.2"
+cel-interpreter = "0.9.0"
+
+
+[features]
+serde = ["dep:serde"]
+
+[dev-dependencies]
+insta = { version = "1.41.1", features = ["json", "yaml"] }
+serde_json = "1.0.133"

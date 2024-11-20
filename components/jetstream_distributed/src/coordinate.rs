@@ -2,6 +2,30 @@
 //! [Vivaldi: A Decentralized Network Coordinate System](https://pdos.csail.mit.edu/papers/vivaldi:sigcomm/paper.pdf)
 //! by Frank Dabek, Russ Cox, Frans Kaashoek, Robert Morris
 //! This implementation is based on the Go implementation by Hashicorp's [Serf](https://github.com/hashicorp/serf/)
+//! ```mermaid
+//! graph TB
+//!    subgraph "Vivaldi Coordinate System"
+//!        Node1[Node A] --> Vec1[Vector Components]
+//!        Node1 --> H1[Height]
+//!        Node1 --> Adj1[Adjustment]
+//!
+//!        Node2[Node B] --> Vec2[Vector Components]
+//!        Node2 --> H2[Height]
+//!        Node2 --> Adj2[Adjustment]
+//!
+//!        Vec1 & Vec2 --> ED[Euclidean Distance]
+//!        H1 & H2 --> HD[Height Distance]
+//!        Adj1 & Adj2 --> ADJ[Adjustment Factor]
+//!
+//!        ED & HD & ADJ --> TD[Total Distance]
+//!    end
+//!
+//!    classDef component fill:#f9f,stroke:#333
+//!    classDef calculation fill:#bbf,stroke:#333
+//!
+//!    class Vec1,Vec2,H1,H2,Adj1,Adj2 component
+//!    class ED,HD,ADJ,TD calculation
+//!
 use jetstream_wireformat::JetStreamWireFormat;
 use rand::Rng;
 use std::time::Duration;
@@ -12,6 +36,7 @@ const ZERO_THRESHOLD: f64 = 1.0e-6;
 
 /// Configuration for the Vivaldi coordinate system
 #[derive(Debug, Clone, PartialEq, JetStreamWireFormat)]
+
 pub struct Config {
     /// The dimensionality of the coordinate system
     pub dimensionality: usize,
@@ -48,6 +73,7 @@ impl Default for Config {
 
 /// A Vivaldi coordinate
 #[derive(Debug, Clone, JetStreamWireFormat)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Coordinate {
     /// Euclidean portion of the coordinate (in seconds)
     vec: Vec<f64>,
@@ -207,6 +233,10 @@ impl Coordinate {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
+    use rand::seq::SliceRandom;
+
     use super::*;
 
     fn _verify_equal_vectors(v1: &[f64], v2: &[f64], epsilon: f64) {
@@ -350,5 +380,36 @@ mod tests {
             dist.as_secs_f64(),
             expected_dist
         );
+    }
+
+    // Generate a random map of coordinates with 20 different nodes.
+    // This is a simple test to verify that the map is generated correctly.
+    #[test]
+    fn test_map_generation() {
+        let config = Config::default();
+        let mut coordinates = vec![Coordinate::new(&config); 20];
+        let mut node_map: HashMap<String, Coordinate> = HashMap::new();
+
+        // crates a rand that's deterministic with a seed
+        let mut rng = rand::rngs::mock::StepRng::new(2, 10);
+
+        // apply force to each coordinate in relation to another random coordinate
+        Iterator::for_each(0..coordinates.len(), |i| {
+            let other = coordinates.choose(&mut rng).unwrap();
+
+            let force: f64 = rng.gen_range(0.0..2.0);
+            coordinates[i] =
+                coordinates[i].apply_force(&config, force, other).unwrap();
+
+            // Insert into the map with "node_{i}" as the key
+            node_map.insert(format!("node_{}", i), coordinates[i].clone());
+        });
+        // sort the map so test doesn't fail due to different ordering
+        let mut node_map: Vec<_> = node_map.into_iter().collect();
+        node_map.sort_by(|a, b| a.0.cmp(&b.0));
+        #[cfg(feature = "serde")]
+        {
+            insta::assert_json_snapshot!(node_map);
+        }
     }
 }

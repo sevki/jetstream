@@ -10,3 +10,9 @@ additional-css = ["ok.css"]
 preferred-dark-theme = "rust"
 no-section-label = false
 create-missing = false
+additional-js = ["mermaid.min.js", "mermaid-init.js"]
+
+[preprocessor]
+
+[preprocessor.mermaid]
+command = "mdbook-mermaid"
