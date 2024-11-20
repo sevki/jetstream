@@ -3188,7 +3188,7 @@ checksum = "7a73e9fe3c49d7afb2ace819fa181a287ce54a0983eda4e0eb05c22f82ffe534"
 
 [[package]]
 name = "jetstream"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "arbitrary",
  "criterion",
@@ -3211,7 +3211,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "async-trait",
  "jetstream_macros 6.5.0",
@@ -3223,7 +3223,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_client"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "anyhow",
  "futures",
@@ -3236,7 +3236,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_distributed"
-version = "6.4.1"
+version = "6.6.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3258,7 +3258,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_fuzz"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -3266,7 +3266,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "convert_case 0.6.0",
  "insta",
@@ -3281,7 +3281,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "6.5.0"
+version = "6.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d6b061b4c9e35b1a097b6a16c7815dc4354efb22545ddcba3a299fc4ba459929"
 dependencies = [
@@ -3295,7 +3295,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3308,7 +3308,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_server"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3324,7 +3324,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "anyhow",
  "argh",
@@ -3340,7 +3340,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "bytes",
  "futures",
@@ -3356,7 +3356,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "6.5.0"
+version = "6.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "531711eff697efad80629336100ba1c489671298ea4d6f11b7576429c83b2a01"
 dependencies = [
@@ -4990,7 +4990,7 @@ dependencies = [
 
 [[package]]
 name = "rustdoc_to_mdbook"
-version = "6.5.0"
+version = "6.6.0"
 dependencies = [
  "anyhow",
  "comrak",
