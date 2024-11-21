@@ -2,7 +2,7 @@
 name = "jetstream_macros"
 
 authors = ["Sevki <s@sevki.io>", "The ChromiumOS Authors"]
-version = "7.0.1"
+version = "7.0.2"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
