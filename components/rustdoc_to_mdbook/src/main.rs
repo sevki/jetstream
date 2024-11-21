@@ -18,7 +18,7 @@ fn try_make_books() -> anyhow::Result<()> {
 
     let org_docs = [
         "0intro.md",
-        "cluster/0intro.md",
+        "distributed/0intro.md",
         "CHANGELOG.md",
         "crates.md",
     ]
@@ -140,12 +140,12 @@ fn try_make_books() -> anyhow::Result<()> {
             let full_path = current_dir.join("docs").join(doc.clone());
 
             let mut title = get_title(full_path.as_path().to_str().unwrap());
-            if !full_path.ends_with("playground/index.md") && title.is_empty() {
+            if !full_path.ends_with("CHANGELOG.md") && title.is_empty() {
                 println!("title is empty for: {:?}", full_path);
                 continue;
             }
-            if full_path.ends_with("playground/index.md") {
-                title = "&#xec2b; srclang ide".to_string();
+            if full_path.ends_with("CHANGELOG.md") {
+                title = "🆕 Changelog".to_string();
             }
 
             for c in name.iter().enumerate() {

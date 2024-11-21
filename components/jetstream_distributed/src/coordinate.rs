@@ -1,7 +1,5 @@
-//! Vivaldi coordinate system implementation, based on the paper:
-//! [Vivaldi: A Decentralized Network Coordinate System](https://pdos.csail.mit.edu/papers/vivaldi:sigcomm/paper.pdf)
-//! by Frank Dabek, Russ Cox, Frans Kaashoek, Robert Morris
-//! This implementation is based on the Go implementation by Hashicorp's [Serf](https://github.com/hashicorp/serf/)
+//! Vivaldi coordinate system implementation
+//!
 //! ```mermaid
 //! graph TB
 //!    subgraph "Vivaldi Coordinate System"
