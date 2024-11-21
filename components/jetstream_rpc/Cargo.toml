@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_rpc"
-version = "6.6.1"
+version = "6.6.2"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -12,7 +12,7 @@ bench = false
 
 [dependencies]
 trait-variant = "0.1.2"
-jetstream_wireformat = { version = "6.6.1", path = "../jetstream_wireformat" }
+jetstream_wireformat = { version = "6.6.2", path = "../jetstream_wireformat" }
 okstd = { version = "0.1.10", features = ["macros"] }
 tokio = { version = "1.40.0", features = ["full"] }
 bytes = "1.8.0"
