@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_client"
-version = "6.6.2"
+version = "7.0.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -13,9 +13,9 @@ bench = false
 [dependencies]
 anyhow = "1.0.89"
 futures = "0.3.31"
-jetstream_9p = { version = "6.6.2", path = "../jetstream_9p" }
-jetstream_rpc = { version = "6.6.2", path = "../jetstream_rpc" }
-jetstream_wireformat = { version = "6.6.2", path = "../jetstream_wireformat", features = [
+jetstream_9p = { version = "7.0.0", path = "../jetstream_9p" }
+jetstream_rpc = { version = "7.0.0", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "7.0.0", path = "../jetstream_wireformat", features = [
     "async",
 ] }
 okstd = { version = "0.1.10" }

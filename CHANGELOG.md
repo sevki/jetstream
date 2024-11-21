@@ -1,5 +1,16 @@
 # Changelog
 
+## [7.0.0](https://github.com/sevki/jetstream/compare/v6.6.2...v7.0.0) (2024-11-21)
+
+
+### ⚠ BREAKING CHANGES
+
+* fix proken publish
+
+### Features
+
+* fix proken publish ([a7272c0](https://github.com/sevki/jetstream/commit/a7272c0f3dc25aa10e89c8b7e9ad070d919a369d))
+
 ## [6.6.2](https://github.com/sevki/jetstream/compare/v6.6.1...v6.6.2) (2024-11-21)
 
 
