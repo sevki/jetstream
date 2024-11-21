@@ -8,7 +8,7 @@ description = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
 readme = { workspace = true }
-documentation.workspace = true
+documentation = { workspace = true }
 [dependencies]
 # rust analyzer doesn't understand the `quote` macro from `proc-macro2` so we
 # need to use `syn` to parse the input and then use `quote` to generate the
