@@ -1,8 +1,4 @@
 [registry]
 
-[registries.oksoftware]
-index = "sparse+https://ok.software/api/packages/ok/cargo/" # Sparse index
-# index = "https://ok.software/ok/_cargo-index.git" # Git
-
 [net]
 git-fetch-with-cli = true
