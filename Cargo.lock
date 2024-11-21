@@ -789,19 +789,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "blake3"
-version = "1.5.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d82033247fd8e890df8f740e407ad4d038debb9eb1f40533fffb32e7d17dc6f7"
-dependencies = [
- "arrayref",
- "arrayvec",
- "cc",
- "cfg-if",
- "constant_time_eq",
-]
-
-[[package]]
 name = "block"
 version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1339,12 +1326,6 @@ dependencies = [
  "libc",
  "windows-sys 0.52.0",
 ]
-
-[[package]]
-name = "constant_time_eq"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c74b8349d32d297c9134b8c88677813a227df8f779daa29bfc29c183fe3dca6"
 
 [[package]]
 name = "convert_case"
@@ -2677,9 +2658,6 @@ name = "hex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
-dependencies = [
- "serde",
-]
 
 [[package]]
 name = "hex-literal"
@@ -3040,7 +3018,6 @@ checksum = "707907fe3c25f5424cce2cb7e1cbcafee6bdbe735ca90ef77c29e84591e5b9da"
 dependencies = [
  "equivalent",
  "hashbrown 0.15.1",
- "serde",
 ]
 
 [[package]]
@@ -3196,11 +3173,11 @@ dependencies = [
  "jetstream_9p",
  "jetstream_client",
  "jetstream_distributed",
- "jetstream_macros 6.6.1",
+ "jetstream_macros",
  "jetstream_rpc",
  "jetstream_server",
  "jetstream_ufs",
- "jetstream_wireformat 6.6.1",
+ "jetstream_wireformat",
  "okstd",
  "prost",
  "s2n-quic",
@@ -3214,9 +3191,9 @@ name = "jetstream_9p"
 version = "6.6.2"
 dependencies = [
  "async-trait",
- "jetstream_macros 6.6.1",
+ "jetstream_macros",
  "jetstream_rpc",
- "jetstream_wireformat 6.6.1",
+ "jetstream_wireformat",
  "libc",
  "trait-variant",
 ]
@@ -3229,7 +3206,7 @@ dependencies = [
  "futures",
  "jetstream_9p",
  "jetstream_rpc",
- "jetstream_wireformat 6.6.1",
+ "jetstream_wireformat",
  "okstd",
  "s2n-quic",
 ]
@@ -3244,13 +3221,14 @@ dependencies = [
  "insta",
  "interned",
  "jetstream_rpc",
- "jetstream_wireformat 6.6.1",
- "okid",
+ "jetstream_wireformat",
+ "mac_address",
  "okstd",
  "rand 0.8.5",
  "s2n-quic",
  "serde",
  "serde_json",
+ "sha2",
  "thiserror 2.0.3",
  "tokio",
  "trait-variant",
@@ -3280,26 +3258,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "jetstream_macros"
-version = "6.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e7480550d22db8ed8764e3bba4836a918555af1ec2442aed685dbe82465dbb3f"
-dependencies = [
- "convert_case 0.6.0",
- "paste",
- "proc-macro2",
- "quote",
- "sha256",
- "syn 2.0.89",
-]
-
-[[package]]
 name = "jetstream_rpc"
 version = "6.6.2"
 dependencies = [
  "anyhow",
  "bytes",
- "jetstream_wireformat 6.6.1",
+ "jetstream_wireformat",
  "okstd",
  "s2n-quic",
  "tokio",
@@ -3315,7 +3279,7 @@ dependencies = [
  "jetstream_9p",
  "jetstream_client",
  "jetstream_rpc",
- "jetstream_wireformat 6.6.1",
+ "jetstream_wireformat",
  "okstd",
  "s2n-quic",
  "tokio",
@@ -3331,7 +3295,7 @@ dependencies = [
  "jetstream_9p",
  "jetstream_rpc",
  "jetstream_server",
- "jetstream_wireformat 6.6.1",
+ "jetstream_wireformat",
  "libc",
  "okstd",
  "serde",
@@ -3341,28 +3305,10 @@ dependencies = [
 [[package]]
 name = "jetstream_wireformat"
 version = "6.6.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "99d6afdc253f24bb9e5fdd99411de978d52a0441e7affe3076e71cec01124b8c"
 dependencies = [
  "bytes",
  "futures",
- "jetstream_macros 6.6.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "libc",
- "okstd",
- "paste",
- "time",
- "tokio",
- "tokio-util",
- "zerocopy 0.8.10",
-]
-
-[[package]]
-name = "jetstream_wireformat"
-version = "6.6.2"
-dependencies = [
- "bytes",
- "futures",
- "jetstream_macros 6.6.1",
+ "jetstream_macros",
  "libc",
  "okstd",
  "paste",
@@ -4079,28 +4025,6 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn 2.0.89",
-]
-
-[[package]]
-name = "okid"
-version = "0.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "550d3e8cc7d1f6f5e7da026392b38f0c5d0b1d8b2368f2bfeec4310314d4bf1c"
-dependencies = [
- "blake3",
- "bytes",
- "digest 0.10.7",
- "enumflags2",
- "hex",
- "jetstream_wireformat 6.6.0",
- "mac_address",
- "serde",
- "serde_json",
- "sha2",
- "sha3",
- "ulid",
- "utoipa",
- "uuid",
 ]
 
 [[package]]
@@ -6294,18 +6218,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "ulid"
-version = "1.1.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "04f903f293d11f31c0c29e4148f6dc0d033a7f80cebc0282bea147611667d289"
-dependencies = [
- "getrandom 0.2.15",
- "rand 0.8.5",
- "uuid",
- "web-time",
-]
-
-[[package]]
 name = "unicase"
 version = "2.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6443,29 +6355,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "utoipa"
-version = "5.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "514a48569e4e21c86d0b84b5612b5e73c0b2cf09db63260134ba426d4e8ea714"
-dependencies = [
- "indexmap 2.6.0",
- "serde",
- "serde_json",
- "utoipa-gen",
-]
-
-[[package]]
-name = "utoipa-gen"
-version = "5.2.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5629efe65599d0ccd5d493688cbf6e03aa7c1da07fe59ff97cf5977ed0637f66"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn 2.0.89",
-]
-
-[[package]]
 name = "uuid"
 version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6474,7 +6363,6 @@ dependencies = [
  "getrandom 0.2.15",
  "serde",
  "sha1_smol",
- "wasm-bindgen",
 ]
 
 [[package]]
@@ -6672,16 +6560,6 @@ name = "web-sys"
 version = "0.3.72"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f6488b90108c040df0fe62fa815cbdee25124641df01814dd7282749234c6112"
-dependencies = [
- "js-sys",
- "wasm-bindgen",
-]
-
-[[package]]
-name = "web-time"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a6580f308b1fad9207618087a65c04e7a10bc77e02c8e84e9b00dd4b12fa0bb"
 dependencies = [
  "js-sys",
  "wasm-bindgen",
