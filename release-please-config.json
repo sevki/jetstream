@@ -34,7 +34,7 @@
       "draft": true,
       "prerelease": true
     },
-    "components/jetstream_derive": {
+    "components/jetstream_macros": {
       "release-type": "rust",
       "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
@@ -51,6 +51,14 @@
       "prerelease": true
     },
     "components/jetstream_ufs": {
+      "release-type": "rust",
+      "changelog-path": "docs/CHANGELOG.md",
+      "bump-minor-pre-major": false,
+      "bump-patch-for-minor-pre-major": true,
+      "draft": true,
+      "prerelease": true
+    },
+    "components/jetstream_distributed": {
       "release-type": "rust",
       "changelog-path": "docs/CHANGELOG.md",
       "bump-minor-pre-major": false,
