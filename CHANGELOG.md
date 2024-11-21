@@ -1,5 +1,12 @@
 # Changelog
 
+## [6.6.2](https://github.com/sevki/jetstream/compare/v6.6.1...v6.6.2) (2024-11-21)
+
+
+### Bug Fixes
+
+* bump okid ([7ed2940](https://github.com/sevki/jetstream/commit/7ed29402ed7a2c41d2f88696cefec4a42c09ec38))
+
 ## [6.6.1](https://github.com/sevki/jetstream/compare/v6.6.0...v6.6.1) (2024-11-20)
 
 

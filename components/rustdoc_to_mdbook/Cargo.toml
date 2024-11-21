@@ -1,6 +1,6 @@
 [package]
 name = "rustdoc_to_mdbook"
-version = "6.6.1"
+version = "6.6.2"
 edition.workspace = true
 description.workspace = true
 license.workspace = true
