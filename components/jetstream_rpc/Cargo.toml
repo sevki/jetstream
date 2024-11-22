@@ -17,4 +17,4 @@ okstd = { version = "0.1.10", features = ["macros"] }
 tokio = { version = "1.40.0", features = ["full"] }
 bytes = "1.8.0"
 anyhow = "1.0.93"
-s2n-quic = "1.47.0"
+s2n-quic = "1.51.0"
