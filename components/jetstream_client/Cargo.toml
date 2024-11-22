@@ -19,4 +19,4 @@ jetstream_wireformat = { version = "7.0.3", path = "../jetstream_wireformat", fe
     "async",
 ] }
 okstd = { version = "0.1.10" }
-s2n-quic = "1.47.0"
+s2n-quic = "1.51.0"
