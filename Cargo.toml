@@ -13,6 +13,7 @@ description = "Jetstream is a RPC framework for Rust, based on the 9P protocol a
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
 documentation = "https://sevki.github.io/jetstream/"
+readme = "README.md"
 
 [dependencies]
 jetstream_client = { version = "7.0.3", path = "components/jetstream_client", optional = true }
