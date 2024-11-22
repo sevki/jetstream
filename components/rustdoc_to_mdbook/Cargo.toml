@@ -15,4 +15,4 @@ pkg-config = "0.3"
 which = "7.0.0"
 indexed_docs = { git = "https://github.com/zed-industries/zed.git", version = "0.1.0", rev = "d664f56fac161cec8b14d9093dc553c07936fe34" }
 html_to_markdown = { git = "https://github.com/zed-industries/zed.git", version = "0.1.0", rev = "d664f56fac161cec8b14d9093dc553c07936fe34" }
-comrak = { version = "0.29.0" }
+comrak = { version = "0.30.0" }
