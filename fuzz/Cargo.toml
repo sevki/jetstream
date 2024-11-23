@@ -1,5 +1,5 @@
 [package]
-name = "jetstream_fuzz"
+name = "fuzz"
 version = "7.0.3"
 publish = false
 edition = "2021"
@@ -12,6 +12,7 @@ libfuzzer-sys = "0.4"
 
 [dependencies.jetstream]
 path = ".."
+features = ["9p"]
 
 [[bin]]
 name = "wireformat"
