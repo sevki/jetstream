@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.0.4](https://github.com/sevki/jetstream/compare/v7.0.3...v7.0.4) (2024-11-23)
+
+
+### Bug Fixes
+
+* fuzz target ([a494e15](https://github.com/sevki/jetstream/commit/a494e15fca5b0ee1e66399d2b50cf0e1158b070c))
+
 ## [7.0.3](https://github.com/sevki/jetstream/compare/v7.0.2...v7.0.3) (2024-11-21)
 
 
