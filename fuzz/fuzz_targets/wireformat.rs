@@ -3,6 +3,7 @@
 use libfuzzer_sys::fuzz_target;
 
 use jetstream::prelude::*;
+use p9::Tframe;
 use std::io::Cursor;
 
 fuzz_target!(|data: &[u8]| {

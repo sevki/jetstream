@@ -25,6 +25,7 @@ jetstream_rpc = { version = "7.0.3", path = "components/jetstream_rpc" }
 jetstream_9p = { version = "7.0.3", path = "components/jetstream_9p", optional = true }
 trait-variant = "0.1.2"
 jetstream_distributed = { version = "7.0.3", path = "components/jetstream_distributed", optional = true }
+s2n-quic = "1.51.0"
 
 
 [dev-dependencies]
@@ -57,7 +58,7 @@ members = [
     "components/jetstream_ufs",
     "components/jetstream_wireformat",
     "components/rustdoc_to_mdbook",
-    "jetstream_fuzz",
+    "fuzz",
 ]
 [lib]
 bench = false
