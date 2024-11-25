@@ -17,7 +17,7 @@ pub mod prelude {
 
     pub use jetstream_wireformat::{Data, WireFormat};
 
-    pub use async_trait;
+    pub use async_trait::async_trait;
     pub use trait_variant;
 
     #[cfg(feature = "9p")]
