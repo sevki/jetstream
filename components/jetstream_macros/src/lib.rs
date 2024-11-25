@@ -30,7 +30,9 @@ pub fn jetstream_wire_format(input: TokenStream) -> TokenStream {
 
 /// Service attribute macro for creating RPC services
 #[proc_macro_attribute]
-pub fn service(_: TokenStream, item: TokenStream) -> TokenStream {
+pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {
+    let is_async_trait =
+        !attr.is_empty() && attr.to_string().contains("async_trait");
     let item = parse_macro_input!(item as syn::ItemTrait);
-    service::service_impl(item).into()
+    service::service_impl(item, is_async_trait).into()
 }

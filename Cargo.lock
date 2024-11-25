@@ -2282,6 +2282,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "fuzz"
+version = "7.0.4"
+dependencies = [
+ "jetstream",
+ "libfuzzer-sys",
+]
+
+[[package]]
 name = "fuzzy"
 version = "0.1.0"
 source = "git+https://github.com/zed-industries/zed.git?rev=d664f56fac161cec8b14d9093dc553c07936fe34#d664f56fac161cec8b14d9093dc553c07936fe34"
@@ -3162,6 +3170,7 @@ name = "jetstream"
 version = "7.0.4"
 dependencies = [
  "arbitrary",
+ "async-trait",
  "criterion",
  "futures-util",
  "jetstream_9p",
@@ -3226,14 +3235,6 @@ dependencies = [
  "thiserror 2.0.3",
  "tokio",
  "trait-variant",
-]
-
-[[package]]
-name = "jetstream_fuzz"
-version = "7.0.3"
-dependencies = [
- "jetstream",
- "libfuzzer-sys",
 ]
 
 [[package]]
