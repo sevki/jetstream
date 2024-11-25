@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.0](https://github.com/sevki/jetstream/compare/v7.0.4...v7.1.0) (2024-11-25)
+
+
+### Features
+
+* added async_trait support service macro ([9a86185](https://github.com/sevki/jetstream/commit/9a86185b07eb02cd05933920f9ad02792992c71c))
+
 ## [7.0.4](https://github.com/sevki/jetstream/compare/v7.0.3...v7.0.4) (2024-11-23)
 
 
