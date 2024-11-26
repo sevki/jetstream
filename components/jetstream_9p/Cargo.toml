@@ -14,6 +14,6 @@ bench = false
 jetstream_macros = { version = "7.1.1", path = "../jetstream_macros" }
 jetstream_wireformat = { version = "7.1.1", path = "../jetstream_wireformat" }
 jetstream_rpc = { version = "7.1.1", path = "../jetstream_rpc" }
-libc = "0.2.159"
+libc = "0.2.165"
 async-trait = "0.1.83"
 trait-variant = "0.1.2"
