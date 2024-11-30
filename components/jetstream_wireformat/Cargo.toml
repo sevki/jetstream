@@ -15,7 +15,7 @@ default = ["async"]
 async = ["dep:tokio", "dep:futures"]
 
 [dependencies]
-bytes = { version = "1.7.2", features = ["serde"] }
+bytes = { version = "1.9.0", features = ["serde"] }
 jetstream_macros = { version = "7.1.1", path = "../jetstream_macros" }
 
 libc = "0.2.165"
