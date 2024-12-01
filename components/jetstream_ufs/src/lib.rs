@@ -112,7 +112,7 @@ fn statat(
 
 fn stat(f: &File) -> io::Result<libc::stat64> {
     // Safe because this is a constant value and a valid C string.
-    let pathname = unsafe { CStr::from_bytes_with_nul_unchecked(b"\0") };
+    let pathname = c"";
 
     statat(f, pathname, libc::AT_EMPTY_PATH)
 }
@@ -160,7 +160,7 @@ enum MaybeOwned<'b, T> {
     Owned(T),
 }
 
-impl<'a, T> Deref for MaybeOwned<'a, T> {
+impl<T> Deref for MaybeOwned<'_, T> {
     type Target = T;
     fn deref(&self) -> &Self::Target {
         use MaybeOwned::*;
@@ -171,7 +171,7 @@ impl<'a, T> Deref for MaybeOwned<'a, T> {
     }
 }
 
-impl<'a, T> AsRef<T> for MaybeOwned<'a, T> {
+impl<T> AsRef<T> for MaybeOwned<'_, T> {
     fn as_ref(&self) -> &T {
         use MaybeOwned::*;
         match self {
@@ -363,8 +363,7 @@ impl Server {
 
     pub fn with_config(cfg: Config) -> io::Result<Server> {
         // Safe because this is a valid c-string.
-        let proc_cstr =
-            unsafe { CStr::from_bytes_with_nul_unchecked(b"/proc\0") };
+        let proc_cstr = c"/proc";
 
         // Safe because this doesn't modify any memory and we check the return value.
         let fd = syscall!(unsafe {
@@ -388,10 +387,7 @@ impl Server {
         vec![self.proc.as_raw_fd()]
     }
 
-    pub async fn handle<'life0>(
-        &mut self,
-        tx: &'life0 Tframe,
-    ) -> std::io::Result<Rframe> {
+    pub async fn handle(&mut self, tx: &Tframe) -> std::io::Result<Rframe> {
         let Tframe { tag, msg } = tx;
         let rmsg = match msg {
             Ok(Tmessage::Version(ref version)) => {
