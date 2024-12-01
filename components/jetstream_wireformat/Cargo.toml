@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_wireformat"
-version = "7.1.0"
+version = "7.1.1"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -15,12 +15,12 @@ default = ["async"]
 async = ["dep:tokio", "dep:futures"]
 
 [dependencies]
-bytes = { version = "1.7.2", features = ["serde"] }
-jetstream_macros = { version = "7.1.0", path = "../jetstream_macros" }
+bytes = { version = "1.9.0", features = ["serde"] }
+jetstream_macros = { version = "7.1.1", path = "../jetstream_macros" }
 
-libc = "0.2.159"
+libc = "0.2.167"
 paste = "1.0.15"
-zerocopy = "0.8.3"
+zerocopy = "0.8.11"
 tokio = { version = "1.40.0", features = ["full"], optional = true }
 okstd = { version = "0.1.10" }
 futures = { version = "0.3.31", optional = true }

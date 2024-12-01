@@ -631,7 +631,7 @@ dependencies = [
  "bitflags 2.6.0",
  "cexpr",
  "clang-sys",
- "itertools 0.10.5",
+ "itertools 0.12.1",
  "lazy_static",
  "lazycell",
  "log",
@@ -906,9 +906,9 @@ checksum = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495"
 
 [[package]]
 name = "bytes"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ac0150caa2ae65ca5bd83f25c7de183dea78d4d366469f148435e2acfbad0da"
+checksum = "325918d6fe32f23b19878fe4b34794ae41fc19ddbe53b10571a4874d44ffd39b"
 dependencies = [
  "serde",
 ]
@@ -1312,9 +1312,9 @@ dependencies = [
 
 [[package]]
 name = "comrak"
-version = "0.30.0"
+version = "0.31.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "949f8e6b02ebac005a8be2df9ec0876cafc83fdb9c510796c37f0fadf92dcd0e"
+checksum = "453dcb42e33f7b474d7e0db12e0b8d82802c88f35cf5a1d8c297d0dfcecb154f"
 dependencies = [
  "bon",
  "caseless",
@@ -2283,7 +2283,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -3167,7 +3167,7 @@ checksum = "540654e97a3f4470a492cd30ff187bc95d89557a903a2bbf112e2fae98104ef2"
 
 [[package]]
 name = "jetstream"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "arbitrary",
  "async-trait",
@@ -3191,7 +3191,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "async-trait",
  "jetstream_macros",
@@ -3203,7 +3203,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_client"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "anyhow",
  "futures",
@@ -3216,7 +3216,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_distributed"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3239,7 +3239,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "convert_case 0.6.0",
  "insta",
@@ -3254,7 +3254,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3267,7 +3267,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_server"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3283,7 +3283,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "anyhow",
  "argh",
@@ -3299,7 +3299,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "bytes",
  "futures",
@@ -3310,7 +3310,7 @@ dependencies = [
  "time",
  "tokio",
  "tokio-util",
- "zerocopy 0.8.10",
+ "zerocopy 0.8.11",
 ]
 
 [[package]]
@@ -3450,9 +3450,9 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 
 [[package]]
 name = "libc"
-version = "0.2.164"
+version = "0.2.167"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "433bfe06b8c75da9b2e3fbea6e5329ff87748f0b144ef75306e674c3f6f7c13f"
+checksum = "09d6582e104315a817dff97f75133544b2e094ee22447d2acf4a74e189ba06fc"
 
 [[package]]
 name = "libfuzzer-sys"
@@ -3483,7 +3483,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4979f22fdb869068da03c9f7528f8297c6fd2606bc3a4affe42e6a823fdb8da4"
 dependencies = [
  "cfg-if",
- "windows-targets 0.48.5",
+ "windows-targets 0.52.6",
 ]
 
 [[package]]
@@ -4920,7 +4920,7 @@ dependencies = [
 
 [[package]]
 name = "rustdoc_to_mdbook"
-version = "7.1.0"
+version = "7.1.1"
 dependencies = [
  "anyhow",
  "comrak",
@@ -7022,11 +7022,11 @@ dependencies = [
 
 [[package]]
 name = "zerocopy"
-version = "0.8.10"
+version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a13a42ed30c63171d820889b2981318736915150575b8d2d6dbee7edd68336ca"
+checksum = "cce3b5629d87654b53a49002acc2ce64aa5aa7255f5c718374a37ac7fd98c218"
 dependencies = [
- "zerocopy-derive 0.8.10",
+ "zerocopy-derive 0.8.11",
 ]
 
 [[package]]
@@ -7042,9 +7042,9 @@ dependencies = [
 
 [[package]]
 name = "zerocopy-derive"
-version = "0.8.10"
+version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "593e7c96176495043fcb9e87cf7659f4d18679b5bab6b92bdef359c76a7795dd"
+checksum = "74a82c26c3986af2623ec9eb890ff4aa19c006e30a1133dc9bd1830ec1612e20"
 dependencies = [
  "proc-macro2",
  "quote",

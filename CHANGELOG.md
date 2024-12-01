@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.1](https://github.com/sevki/jetstream/compare/v7.1.0...v7.1.1) (2024-11-25)
+
+
+### Bug Fixes
+
+* broken use statement for async_trait ([cce4df6](https://github.com/sevki/jetstream/commit/cce4df6a5a594f25fcf71eb63e51534bf8b85c3b))
+
 ## [7.1.0](https://github.com/sevki/jetstream/compare/v7.0.4...v7.1.0) (2024-11-25)
 
 
