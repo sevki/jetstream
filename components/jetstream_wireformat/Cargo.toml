@@ -25,4 +25,4 @@ tokio = { version = "1.40.0", features = ["full"], optional = true }
 okstd = { version = "0.1.10" }
 futures = { version = "0.3.31", optional = true }
 tokio-util = { version = "0.7.12", features = ["full", "io", "time"] }
-time = "0.3.36"
+time = "0.3.37"
