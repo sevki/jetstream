@@ -20,7 +20,7 @@ jetstream_macros = { version = "7.1.1", path = "../jetstream_macros" }
 
 libc = "0.2.167"
 paste = "1.0.15"
-zerocopy = "0.8.12"
+zerocopy = "0.8.13"
 tokio = { version = "1.42.0", features = ["full"], optional = true }
 okstd = { version = "0.1.10" }
 futures = { version = "0.3.31", optional = true }
