@@ -53,7 +53,7 @@ pub struct ReadDir<'d, D> {
     end: usize,
 }
 
-impl<'d, D: AsRawFd> ReadDir<'d, D> {
+impl<D: AsRawFd> ReadDir<'_, D> {
     /// Return the next directory entry. This is implemented as a separate method rather than via
     /// the `Iterator` trait because rust doesn't currently support generic associated types.
     #[allow(clippy::should_implement_trait)]
