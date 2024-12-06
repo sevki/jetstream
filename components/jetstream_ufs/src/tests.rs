@@ -129,7 +129,7 @@ enum DirEntry<'a> {
     },
 }
 
-impl<'a> DirEntry<'a> {
+impl DirEntry<'_> {
     // Creates `self` in the path given by `dir`.
     // TODO(b/228627457): clippy is warning about the `Cow` below, but it is necessary
     #[allow(clippy::ptr_arg)]
@@ -372,7 +372,7 @@ struct Readdir<'a> {
     cursor: Cursor<Vec<u8>>,
 }
 
-impl<'a> Iterator for Readdir<'a> {
+impl Iterator for Readdir<'_> {
     type Item = Dirent;
 
     fn next(&mut self) -> Option<Self::Item> {
