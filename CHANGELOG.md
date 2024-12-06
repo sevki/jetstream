@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.1.2](https://github.com/sevki/jetstream/compare/v7.1.1...v7.1.2) (2024-12-06)
+
+
+### Bug Fixes
+
+* elide lifetimes in ufs ([b778ff9](https://github.com/sevki/jetstream/commit/b778ff9481bf9c9d1cf35fc691903b80483e8cdb))
+
 ## [7.1.1](https://github.com/sevki/jetstream/compare/v7.1.0...v7.1.1) (2024-11-25)
 
 

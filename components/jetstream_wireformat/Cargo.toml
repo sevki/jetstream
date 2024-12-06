@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_wireformat"
-version = "7.1.1"
+version = "7.1.2"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -16,7 +16,7 @@ async = ["dep:tokio", "dep:futures"]
 
 [dependencies]
 bytes = { version = "1.9.0", features = ["serde"] }
-jetstream_macros = { version = "7.1.1", path = "../jetstream_macros" }
+jetstream_macros = { version = "7.1.2", path = "../jetstream_macros" }
 
 libc = "0.2.167"
 paste = "1.0.15"
