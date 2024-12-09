@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.2.0](https://github.com/sevki/jetstream/compare/v7.1.2...v7.2.0) (2024-12-09)
+
+
+### Features
+
+* Ip primitives ([1c263b5](https://github.com/sevki/jetstream/commit/1c263b59494e2699ec2347727f6cbf77bdac3b67))
+
 ## [7.1.2](https://github.com/sevki/jetstream/compare/v7.1.1...v7.1.2) (2024-12-06)
 
 
