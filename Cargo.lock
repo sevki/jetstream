@@ -2283,7 +2283,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -3167,7 +3167,7 @@ checksum = "540654e97a3f4470a492cd30ff187bc95d89557a903a2bbf112e2fae98104ef2"
 
 [[package]]
 name = "jetstream"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "arbitrary",
  "async-trait",
@@ -3191,7 +3191,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "async-trait",
  "jetstream_macros",
@@ -3203,7 +3203,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_client"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "anyhow",
  "futures",
@@ -3216,7 +3216,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_distributed"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3239,7 +3239,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "convert_case 0.6.0",
  "insta",
@@ -3254,7 +3254,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3267,7 +3267,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_server"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3283,7 +3283,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "anyhow",
  "argh",
@@ -3299,7 +3299,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "bytes",
  "futures",
@@ -4920,7 +4920,7 @@ dependencies = [
 
 [[package]]
 name = "rustdoc_to_mdbook"
-version = "7.1.2"
+version = "7.2.0"
 dependencies = [
  "anyhow",
  "comrak",
