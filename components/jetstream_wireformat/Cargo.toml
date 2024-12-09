@@ -11,7 +11,8 @@ documentation.workspace = true
 bench = false
 
 [features]
-default = ["async"]
+default = ["async", "std"]
+std = []
 async = ["dep:tokio", "dep:futures"]
 
 [dependencies]
