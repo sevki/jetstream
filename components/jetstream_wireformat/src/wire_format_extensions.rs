@@ -4,6 +4,7 @@
 use std::{
     future::Future,
     io::{self},
+    net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6},
 };
 
 use bytes::Bytes;
@@ -124,5 +125,75 @@ where
     fn from_bytes(buf: &Bytes) -> Result<Self, std::io::Error> {
         let buf = buf.to_vec();
         T::decode(&mut buf.as_slice())
+    }
+}
+
+#[cfg(feature = "std")]
+impl WireFormat for Ipv4Addr {
+    fn byte_size(&self) -> u32 {
+        self.octets().len() as u32
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(&self.octets())
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
+        let mut buf = [0u8; 4];
+        reader.read_exact(&mut buf)?;
+        Ok(Ipv4Addr::from(buf))
+    }
+}
+
+#[cfg(feature = "std")]
+impl WireFormat for Ipv6Addr {
+    fn byte_size(&self) -> u32 {
+        self.octets().len() as u32
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(&self.octets())
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
+        let mut buf = [0u8; 16];
+        reader.read_exact(&mut buf)?;
+        Ok(Ipv6Addr::from(buf))
+    }
+}
+
+#[cfg(feature = "std")]
+impl WireFormat for SocketAddrV4 {
+    fn byte_size(&self) -> u32 {
+        self.ip().byte_size() + 2
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()> {
+        self.ip().encode(writer)?;
+        self.port().encode(writer)
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
+        self::Ipv4Addr::decode(reader).and_then(|ip| {
+            u16::decode(reader).map(|port| SocketAddrV4::new(ip, port))
+        })
+    }
+}
+
+#[cfg(feature = "std")]
+impl WireFormat for SocketAddrV6 {
+    fn byte_size(&self) -> u32 {
+        self.ip().byte_size() + 2
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()> {
+        self.ip().encode(writer)?;
+        self.port().encode(writer)
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
+        self::Ipv6Addr::decode(reader).and_then(|ip| {
+            u16::decode(reader).map(|port| SocketAddrV6::new(ip, port, 0, 0))
+        })
     }
 }

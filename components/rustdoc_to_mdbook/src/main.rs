@@ -20,6 +20,7 @@ fn try_make_books() -> anyhow::Result<()> {
         "0intro.md",
         "distributed/0intro.md",
         "CHANGELOG.md",
+        "coverage.md",
         "crates.md",
     ]
     .map(PathBuf::from)
