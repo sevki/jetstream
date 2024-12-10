@@ -64,14 +64,14 @@ impl Display for Error {
 }
 
 /// An asynchronous JetStream service that can handle RPC calls and messages.
-#[trait_variant::make(Send+Sync)]
+#[trait_variant::make(Send + Sync + Sized)]
 pub trait Service<P: Protocol> {
     /// Handles an RPC call asynchronously.
-    async fn rpc(&mut self, req: P::Request) -> Result<P::Response, Error>;
+    async fn rpc(self, req: P::Request) -> Result<P::Response, Error>;
 
     /// Handles a message by reading from the reader, processing it, and writing the response.
     async fn handle_message<R, W>(
-        &mut self,
+        self,
         reader: &mut R,
         writer: &mut W,
     ) -> Result<(), Error>
@@ -114,10 +114,12 @@ impl<P: Protocol + Clone, S: Service<P>> Protocol
 
 impl<P: Protocol + Clone, S: Service<P>> Service<P>
     for SharedJetStreamService<P, S>
+where
+    S: Clone,
 {
-    async fn rpc(&mut self, req: P::Request) -> Result<P::Response, Error> {
-        let mut service = self.inner.lock().await;
-        service.rpc(req).await
+    async fn rpc(self, req: P::Request) -> Result<P::Response, Error> {
+        let mo = self.inner.lock_owned().await;
+        mo.clone().rpc(req).await
     }
 }
 
@@ -147,7 +149,7 @@ mod tests {
     impl Service<TestService> for TestService {
         #[doc = " Handles an RPC call asynchronously."]
         async fn rpc(
-            &mut self,
+            self,
             req: <tests::TestService as Protocol>::Request,
         ) -> Result<<tests::TestService as Protocol>::Response, Error> {
             Ok(TestMessage {

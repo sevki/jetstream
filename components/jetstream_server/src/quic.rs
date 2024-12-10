@@ -96,7 +96,7 @@ where
                                 {
                                     debug!("Sending to up_stream");
                                     let rframe =
-                                        Service::rpc(&mut svc.clone(), tframe)
+                                        Service::rpc(svc.clone(), tframe)
                                             .await
                                             .unwrap();
                                     // debug!("got rframe: {:?}", rframe);

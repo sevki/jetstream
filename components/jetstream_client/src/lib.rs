@@ -82,7 +82,7 @@ impl<P: Protocol + Send + Sync> SplittableStream for Handle<P> {
 impl<P: Protocol + Send + Sync> Service<P> for Handle<P> {
     #[doc = " Handles an RPC call asynchronously."]
     fn rpc(
-        &mut self,
+        self,
         req: P::Request,
     ) -> impl ::core::future::Future<Output = Result<P::Response>> + Send + Sync
     {
@@ -90,8 +90,9 @@ impl<P: Protocol + Send + Sync> Service<P> for Handle<P> {
             let rt = self.rt.clone();
             let rt = rt.lock().unwrap();
             rt.block_on(async {
-                let _ = req.encode_async(&mut self.stream).await;
-                let resp = P::Response::decode_async(&mut self.stream).await;
+                let (read, write) = self.stream.split();
+                let _ = req.encode_async(write).await;
+                let resp = P::Response::decode_async(read).await;
                 resp.map_err(|e| e.into())
             })
         })

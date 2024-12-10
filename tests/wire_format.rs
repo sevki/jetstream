@@ -101,7 +101,7 @@ fn string_encode() {
     ];
 
     let expected = values.iter().map(|v| {
-        let len = v.as_bytes().len();
+        let len = v.len();
         let mut buf = Vec::with_capacity(len + mem::size_of::<u16>());
 
         buf.push(len as u8);
