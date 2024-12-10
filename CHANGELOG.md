@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.2.1](https://github.com/sevki/jetstream/compare/v7.2.0...v7.2.1) (2024-12-10)
+
+
+### Bug Fixes
+
+* keep reciver types as is in generated code ([7d95671](https://github.com/sevki/jetstream/commit/7d956718c4e4c1564b1aeeb2d6af635eb44ae220))
+
 ## [7.2.0](https://github.com/sevki/jetstream/compare/v7.1.2...v7.2.0) (2024-12-09)
 
 
