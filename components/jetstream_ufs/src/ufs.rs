@@ -86,7 +86,7 @@ where
     P: Protocol,
 {
     async fn rpc(
-        &mut self,
+        self,
         req: P::Request,
     ) -> Result<P::Response, jetstream_rpc::Error> {
         let (reply, result) = tokio::sync::oneshot::channel::<P::Response>();
