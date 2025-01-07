@@ -19,7 +19,7 @@ async = ["dep:tokio", "dep:futures"]
 bytes = { version = "1.9.0", features = ["serde"] }
 jetstream_macros = { version = "7.2.1", path = "../jetstream_macros" }
 
-libc = "0.2.168"
+libc = "0.2.169"
 paste = "1.0.15"
 zerocopy = "0.8.13"
 tokio = { version = "1.42.0", features = ["full"], optional = true }
