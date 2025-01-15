@@ -26,7 +26,7 @@ jetstream_9p = { version = "7.2.1", path = "components/jetstream_9p", optional =
 trait-variant = "0.1.2"
 jetstream_distributed = { version = "7.2.1", path = "components/jetstream_distributed", optional = true }
 s2n-quic = { version = "1.52.0", optional = true }
-async-trait = "0.1.83"
+async-trait = "0.1.85"
 
 
 [dev-dependencies]
