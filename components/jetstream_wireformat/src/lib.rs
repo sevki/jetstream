@@ -77,6 +77,10 @@ impl P9String {
         self.cstr.as_bytes().len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.cstr.as_bytes().is_empty()
+    }
+
     pub fn as_c_str(&self) -> &CStr {
         self.cstr.as_c_str()
     }
