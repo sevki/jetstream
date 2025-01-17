@@ -7,23 +7,39 @@ license = { workspace = true }
 repository = { workspace = true }
 readme = { workspace = true }
 documentation.workspace = true
+
+
+crate-type = ["rlib", "staticlib", "cdylib"]
+
 [lib]
 bench = false
 
 [features]
 default = ["async", "std"]
 std = []
-async = ["dep:tokio", "dep:futures"]
+async = ["dep:tokio", "dep:futures", "dep:tokio-util"]
+testing = ["serde"]
+serde = ["dep:serde"]
+
 
 [dependencies]
+zerocopy = "0.8.13"
+paste = "1.0.15"
 bytes = { version = "1.9.0", features = ["serde"] }
 jetstream_macros = { version = "7.2.1", path = "../jetstream_macros" }
 
-libc = "0.2.169"
-paste = "1.0.15"
-zerocopy = "0.8.13"
-tokio = { version = "1.43.0", features = ["full"], optional = true }
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+libc = "0.2.167"
+
+tokio = { version = "1.42.0", features = ["full"], optional = true }
 okstd = { version = "0.1.10" }
 futures = { version = "0.3.31", optional = true }
-tokio-util = { version = "0.7.13", features = ["full", "io", "time"] }
+tokio-util = { version = "0.7.13", features = [
+    "full",
+    "io",
+    "time",
+], optional = true }
 time = "0.3.37"
+serde = { version = "1.0.215", features = ["derive"], optional = true }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]

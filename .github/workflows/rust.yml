@@ -60,5 +60,7 @@ jobs:
         run: cargo test --verbose --all-features -p jetstream_ufs
       - name: Run tests jetstream_wireformat
         run: cargo test --verbose --all-features -p jetstream_wireformat
-      - name: Run example echo
+      - name: Run tests jetstream_wireformat
+        run: cargo test --verbose --target wasm32-unknown-unknown -p jetstream_wireformat
+      - name: Run example echo 
         run: cargo run --example echo

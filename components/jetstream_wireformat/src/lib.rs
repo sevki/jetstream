@@ -12,6 +12,9 @@
 pub use jetstream_macros::JetStreamWireFormat;
 
 use bytes::Buf;
+use std::ffi::CStr;
+use std::ffi::CString;
+use std::ffi::OsStr;
 use std::fmt;
 use std::io;
 use std::io::ErrorKind;
@@ -22,7 +25,8 @@ use std::ops::Deref;
 use std::ops::DerefMut;
 use std::string::String;
 use std::vec::Vec;
-use zerocopy::{IntoBytes, LittleEndian};
+use zerocopy::LittleEndian;
+#[cfg(not(target_arch = "wasm32"))]
 pub mod wire_format_extensions;
 
 /// A type that can be encoded on the wire using the 9P protocol.
@@ -35,6 +39,94 @@ pub trait WireFormat: std::marker::Sized + Send {
 
     /// Decodes `Self` from `reader`.
     fn decode<R: Read>(reader: &mut R) -> io::Result<Self>;
+}
+
+/// A 9P protocol string.
+///
+/// The string is always valid UTF-8 and 65535 bytes or less (enforced by `P9String::new()`).
+///
+/// It is represented as a C string with a terminating 0 (NUL) character to allow it to be passed
+/// directly to libc functions.
+#[derive(Clone, Debug, PartialEq, Eq, Hash)]
+pub struct P9String {
+    cstr: CString,
+}
+
+impl P9String {
+    pub fn new(string_bytes: impl Into<Vec<u8>>) -> io::Result<Self> {
+        let string_bytes: Vec<u8> = string_bytes.into();
+
+        if string_bytes.len() > u16::MAX as usize {
+            return Err(io::Error::new(
+                ErrorKind::InvalidInput,
+                "string is too long",
+            ));
+        }
+
+        // 9p strings must be valid UTF-8.
+        let _check_utf8 = std::str::from_utf8(&string_bytes)
+            .map_err(|e| io::Error::new(ErrorKind::InvalidInput, e))?;
+
+        let cstr = CString::new(string_bytes)
+            .map_err(|e| io::Error::new(ErrorKind::InvalidInput, e))?;
+
+        Ok(P9String { cstr })
+    }
+
+    pub fn len(&self) -> usize {
+        self.cstr.as_bytes().len()
+    }
+
+    pub fn as_c_str(&self) -> &CStr {
+        self.cstr.as_c_str()
+    }
+
+    pub fn as_bytes(&self) -> &[u8] {
+        self.cstr.as_bytes()
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    /// Returns a raw pointer to the string's storage.
+    ///
+    /// The string bytes are always followed by a NUL terminator ('\0'), so the pointer can be
+    /// passed directly to libc functions that expect a C string.
+    pub fn as_ptr(&self) -> *const libc::c_char {
+        self.cstr.as_ptr()
+    }
+}
+
+impl PartialEq<&str> for P9String {
+    fn eq(&self, other: &&str) -> bool {
+        self.cstr.as_bytes() == other.as_bytes()
+    }
+}
+
+impl TryFrom<&OsStr> for P9String {
+    type Error = io::Error;
+
+    fn try_from(value: &OsStr) -> io::Result<Self> {
+        let string_bytes = value.as_encoded_bytes();
+        Self::new(string_bytes)
+    }
+}
+
+// The 9P protocol requires that strings are UTF-8 encoded.  The wire format is a u16
+// count |N|, encoded in little endian, followed by |N| bytes of UTF-8 data.
+impl WireFormat for P9String {
+    fn byte_size(&self) -> u32 {
+        (mem::size_of::<u16>() + self.len()) as u32
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        (self.len() as u16).encode(writer)?;
+        writer.write_all(self.cstr.as_bytes())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut string_bytes = vec![0u8; usize::from(len)];
+        reader.read_exact(&mut string_bytes)?;
+        Self::new(string_bytes)
+    }
 }
 
 // This doesn't really _need_ to be a macro but unfortunately there is no trait bound to
@@ -50,7 +142,7 @@ macro_rules! uint_wire_format_impl {
             }
 
             fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                writer.write_all(&self.as_bytes())
+                writer.write_all(&self.to_le_bytes())
             }
 
             fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
@@ -83,7 +175,9 @@ macro_rules! float_wire_format_impl {
             }
 
             fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                writer.write_all(&self.as_bytes())
+                paste::expr! {
+                    writer.write_all(&self.to_le_bytes())
+                }
             }
 
             fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
@@ -217,6 +311,7 @@ impl<T: WireFormat> WireFormat for Vec<T> {
 /// using a `u32` instead of a `u16`.
 #[derive(PartialEq, Eq, Clone)]
 #[repr(transparent)]
+#[cfg_attr(feature = "testing", derive(serde::Serialize, serde::Deserialize))]
 pub struct Data(pub Vec<u8>);
 
 // The maximum length of a data buffer that we support.  In practice the server's max message
@@ -242,40 +337,6 @@ impl Deref for Data {
 impl DerefMut for Data {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
-    }
-}
-
-impl<T> WireFormat for Option<T>
-where
-    T: WireFormat,
-{
-    fn byte_size(&self) -> u32 {
-        1 + match self {
-            None => 0,
-            Some(value) => value.byte_size(),
-        }
-    }
-
-    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        match self {
-            None => WireFormat::encode(&0u8, writer),
-            Some(value) => {
-                WireFormat::encode(&1u8, writer)?;
-                WireFormat::encode(value, writer)
-            }
-        }
-    }
-
-    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-        let tag: u8 = WireFormat::decode(reader)?;
-        match tag {
-            0 => Ok(None),
-            1 => Ok(Some(WireFormat::decode(reader)?)),
-            _ => Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("Invalid Option tag: {}", tag),
-            )),
-        }
     }
 }
 
@@ -320,6 +381,40 @@ impl WireFormat for Data {
                     buf.len()
                 ),
             ))
+        }
+    }
+}
+
+impl<T> WireFormat for Option<T>
+where
+    T: WireFormat,
+{
+    fn byte_size(&self) -> u32 {
+        1 + match self {
+            None => 0,
+            Some(value) => value.byte_size(),
+        }
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        match self {
+            None => WireFormat::encode(&0u8, writer),
+            Some(value) => {
+                WireFormat::encode(&1u8, writer)?;
+                WireFormat::encode(value, writer)
+            }
+        }
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let tag: u8 = WireFormat::decode(reader)?;
+        match tag {
+            0 => Ok(None),
+            1 => Ok(Some(WireFormat::decode(reader)?)),
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Invalid Option tag: {}", tag),
+            )),
         }
     }
 }
