@@ -3311,6 +3311,7 @@ dependencies = [
  "libc",
  "okstd",
  "paste",
+ "serde",
  "time",
  "tokio",
  "tokio-util",
