@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_distributed"
-version = "7.2.1"
+version = "7.3.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -22,8 +22,8 @@ rand = "0.8.5"
 serde = { version = "1.0.217", features = ["derive"], optional = true }
 cel-interpreter = { version = "0.9.0", git = "https://github.com/sevki/cel-rust.git" }
 interned = "0.1.6"
-jetstream_rpc = { version = "7.2.1", path = "../jetstream_rpc" }
-jetstream_wireformat = { version = "7.2.1", path = "../jetstream_wireformat" }
+jetstream_rpc = { version = "7.3.0", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "7.3.0", path = "../jetstream_wireformat" }
 mac_address = "1.1.7"
 sha2 = "0.10.8"
 
