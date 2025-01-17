@@ -12,7 +12,8 @@ env:
   RUSTC_WRAPPER: "sccache"
 
 jobs:
-  build:
+  # Level 1: Base libraries with no internal dependencies
+  build-base:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -28,53 +29,163 @@ jobs:
           - "1.80.0"
           - "1.81.0"
           - "1.82.0"
-        package:
-          - jetstream
-          - jetstream_9p
-          - jetstream_client
-          - jetstream_distributed
-          - jetstream_macros
-          - jetstream_server
-          - jetstream_ufs
-          - jetstream_wireformat
-        target:
-          - x86_64-unknown-linux-gnu
-        testing: [false] # Default to build-only
         include:
-          # Add WASM target for wireformat package
-          - package: jetstream_wireformat
-            target: wasm32-unknown-unknown
-            testing: false
-          # Enable testing for all packages on rolling releases
           - rust: stable
             testing: true
           - rust: beta
             testing: true
           - rust: nightly
             testing: true
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
+      - uses: actions/checkout@v4
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          targets: ${{ matrix.target }}
-          
-      - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.6
-        
-      - name: Build package
-        run: cargo build --verbose --package ${{ matrix.package }} --target ${{ matrix.target }}
+      - uses: mozilla-actions/sccache-action@v0.0.8
 
-      - name: Run tests
-        if: matrix.testing && matrix.target != 'wasm32-unknown-unknown'
+      # These have no internal dependencies
+      - name: Build & Test macros
         run: |
-          cargo test --verbose --all-features --package ${{ matrix.package }} --target ${{ matrix.target }}
-          
-          # Run examples only for main package
-          if [ "${{ matrix.package }}" = "jetstream" ]; then
-            cargo run --example echo
+          cargo build -p jetstream_macros
+          if [ "${{ matrix.testing }}" = "true" ]; then
+            cargo test --all-features -p jetstream_macros
           fi
+
+      - name: Build & Test wireformat
+        run: |
+          cargo build -p jetstream_wireformat
+          if [ "${{ matrix.testing }}" = "true" ]; then
+            cargo test --all-features -p jetstream_wireformat
+          fi
+
+      - name: Build & Test rpc
+        run: |
+          cargo build -p jetstream_rpc
+          if [ "${{ matrix.testing }}" = "true" ]; then
+            cargo test --all-features -p jetstream_rpc
+          fi
+
+  # Level 2: Components depending on base libraries
+  build-components:
+    needs: build-base
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+        include:
+          - rust: stable
+            testing: true
+          - rust: beta
+            testing: true
+          - rust: nightly
+            testing: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - uses: mozilla-actions/sccache-action@v0.0.8
+
+      # Depends on macros, rpc, wireformat
+      - name: Build & Test 9p
+        run: |
+          cargo build -p jetstream_9p
+          if [ "${{ matrix.testing }}" = "true" ]; then
+            cargo test --all-features -p jetstream_9p
+          fi
+
+      # Depends on 9p, rpc, wireformat
+      - name: Build & Test client
+        run: |
+          cargo build -p jetstream_client
+          if [ "${{ matrix.testing }}" = "true" ]; then
+            cargo test --all-features -p jetstream_client
+          fi
+
+  # Level 3: Server (depends on everything)
+  build-server:
+    needs: [build-base, build-components]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust:
+          - stable
+          - beta
+          - nightly
+          - "1.76.0"
+          - "1.77.0"
+          - "1.78.0"
+          - "1.79.0"
+          - "1.80.0"
+          - "1.81.0"
+          - "1.82.0"
+        include:
+          - rust: stable
+            testing: true
+          - rust: beta
+            testing: true
+          - rust: nightly
+            testing: true
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+      - uses: mozilla-actions/sccache-action@v0.0.8
+
+      # Depends on 9p, client, rpc, wireformat
+      - name: Build & Test server
+        run: |
+          cargo build -p jetstream_server
+          if [ "${{ matrix.testing }}" = "true" ]; then
+            cargo test --all-features -p jetstream_server
+          fi
+
+  # WASM builds
+  build-wasm:
+    needs: build-base
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        rust: [stable, beta, nightly]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.rust }}
+          targets: wasm32-unknown-unknown
+      - uses: mozilla-actions/sccache-action@v0.0.8
+      
+      - name: Build WASM
+        run: cargo build --target wasm32-unknown-unknown -p jetstream_wireformat
+
+  # Examples
+  examples:
+    needs: [build-base, build-components, build-server]
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: stable
+      - uses: mozilla-actions/sccache-action@v0.0.8
+      - name: Run examples
+        run: cargo run --example echo
