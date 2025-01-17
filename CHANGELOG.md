@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.3.0](https://github.com/sevki/jetstream/compare/v7.2.1...v7.3.0) (2025-01-17)
+
+
+### Features
+
+* wasm-support ([#260](https://github.com/sevki/jetstream/issues/260)) ([5cbff0d](https://github.com/sevki/jetstream/commit/5cbff0daf95c780cd5962252aaa975d6248b524b))
+
 ## [7.2.1](https://github.com/sevki/jetstream/compare/v7.2.0...v7.2.1) (2024-12-10)
 
 
