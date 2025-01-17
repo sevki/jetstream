@@ -3,19 +3,24 @@ name: Build and Test
 on:
   pull_request:
     branches: ["main"]
+  push:
+    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: "sccache"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
-          - "stable" #1.83
-          - "beta" # 1.84
-          - "nightly" # 1.85
+          - stable
+          - beta
+          - nightly
           - "1.76.0"
           - "1.77.0"
           - "1.78.0"
@@ -23,44 +28,65 @@ jobs:
           - "1.80.0"
           - "1.81.0"
           - "1.82.0"
-    env:
-      SCCACHE_GHA_ENABLED: on
+        package:
+          - jetstream
+          - jetstream_9p
+          - jetstream_client
+          - jetstream_distributed
+          - jetstream_macros
+          - jetstream_server
+          - jetstream_ufs
+          - jetstream_wireformat
+        target:
+          - x86_64-unknown-linux-gnu
+        testing: [false] # Default to build-only
+        include:
+          # Add WASM target for wireformat package
+          - package: jetstream_wireformat
+            target: wasm32-unknown-unknown
+            testing: false
+          # Enable testing for all packages on rolling releases
+          - rust: stable
+            testing: true
+          - rust: beta
+            testing: true
+          - rust: nightly
+            testing: true
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-          override: true
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.6
-      - name: Run sccache-cache only on non-release runs
-        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.6
-      - name: Set Rust caching env vars only on non-release runs
-        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+          targets: ${{ matrix.target }}
+          
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.8
+        
+      - name: Build package
+        run: cargo build --verbose --package ${{ matrix.package }} --target ${{ matrix.target }}
+
+      - name: Run tests
+        if: matrix.testing && matrix.target != 'wasm32-unknown-unknown'
         run: |
-          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
-          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-      - name: Build ${{ matrix.rust }}
-        run: cargo build --verbose
-      - name: Run build jetstream_wireformat for wasm32-unknown-unknown
-        run: cargo build --verbose --target wasm32-unknown-unknown -p jetstream_wireformat
-      - name: Run tests jetstream
-        run: cargo test --verbose --all-features -p jetstream
-      - name: Run tests jetstream_9p
-        run: cargo test --verbose --all-features -p jetstream_9p
-      - name: Run tests jetstream_client
-        run: cargo test --verbose --all-features -p jetstream_client
-      - name: Run tests jetstream_cluster
-        run: cargo test --verbose --all-features -p jetstream_distributed
-      - name: Run tests jetstream_derive
-        run: cargo test --verbose --all-features -p jetstream_macros
-      - name: Run tests jetstream_server
-        run: cargo test --verbose --all-features -p jetstream_server
-      - name: Run tests jetstream_ufs
-        run: cargo test --verbose --all-features -p jetstream_ufs
-      - name: Run tests jetstream_wireformat
-        run: cargo test --verbose --all-features -p jetstream_wireformat
-      - name: Run example echo 
-        run: cargo run --example echo
+          cargo test --verbose --all-features --package ${{ matrix.package }} --target ${{ matrix.target }}
+          
+          # Run examples only for main package
+          if [ "${{ matrix.package }}" = "jetstream" ]; then
+            cargo run --example echo
+          fi
+
+      - name: Generate coverage report
+        if: matrix.rust == 'stable' && matrix.target == 'x86_64-unknown-linux-gnu' && matrix.package == 'jetstream'
+        run: |
+          cargo install cargo-tarpaulin
+          cargo tarpaulin --verbose --all-features --package ${{ matrix.package }} --out Xml
+
+      - name: Upload coverage to Codecov
+        if: matrix.rust == 'stable' && matrix.target == 'x86_64-unknown-linux-gnu' && matrix.package == 'jetstream'
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
