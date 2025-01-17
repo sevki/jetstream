@@ -11,31 +11,26 @@ env:
   SCCACHE_GHA_ENABLED: "true"
   RUSTC_WRAPPER: "sccache"
 
+matrix:  
+ rust:
+  - stable
+  - beta
+  - nightly
+  - "1.76.0"
+  - "1.77.0"
+  - "1.78.0"
+  - "1.79.0"
+  - "1.80.0"
+  - "1.81.0"
+  - "1.82.0"
+       
 jobs:
   # Level 1: Base libraries with no internal dependencies
-  build-base:
+  build-base-${{ matrix.rust }}:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix:
-        rust:
-          - stable
-          - beta
-          - nightly
-          - "1.76.0"
-          - "1.77.0"
-          - "1.78.0"
-          - "1.79.0"
-          - "1.80.0"
-          - "1.81.0"
-          - "1.82.0"
-        include:
-          - rust: stable
-            testing: true
-          - rust: beta
-            testing: true
-          - rust: nightly
-            testing: true
+
     steps:
       - uses: actions/checkout@v4
       - name: Install Rust toolchain
@@ -67,8 +62,8 @@ jobs:
           fi
 
   # Level 2: Components depending on base libraries
-  build-components:
-    needs: build-base
+  build-components-${{ matrix.rust }}:
+    needs: build-base-${{ matrix.rust }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -116,8 +111,10 @@ jobs:
           fi
 
   # Level 3: Server (depends on everything)
-  build-server:
-    needs: [build-base, build-components]
+  build-server-${{ matrix.rust }}:
+    needs: 
+    - build-base-${{ matrix.rust }}
+    - build-components-${{ matrix.rust }}]
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -158,7 +155,7 @@ jobs:
 
   # WASM builds
   build-wasm:
-    needs: build-base
+    needs: build-base-${{ matrix.rust }}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -173,12 +170,17 @@ jobs:
           targets: wasm32-unknown-unknown
       - uses: mozilla-actions/sccache-action@v0.0.6
       
+      - name: install wasm32 via rustup
+        run: rustup target add wasm32-unknown-unknown
       - name: Build WASM
         run: cargo build --target wasm32-unknown-unknown -p jetstream_wireformat
 
   # Examples
   examples:
-    needs: [build-base, build-components, build-server]
+    needs: 
+    - build-base-${{ matrix.rust }}
+    - build-components-${{ matrix.rust }}
+    - build-server-${{ matrix.rust }}
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
