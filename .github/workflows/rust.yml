@@ -64,7 +64,7 @@ jobs:
           targets: ${{ matrix.target }}
           
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.8
+        uses: mozilla-actions/sccache-action@v0.0.6
         
       - name: Build package
         run: cargo build --verbose --package ${{ matrix.package }} --target ${{ matrix.target }}
@@ -78,15 +78,3 @@ jobs:
           if [ "${{ matrix.package }}" = "jetstream" ]; then
             cargo run --example echo
           fi
-
-      - name: Generate coverage report
-        if: matrix.rust == 'stable' && matrix.target == 'x86_64-unknown-linux-gnu' && matrix.package == 'jetstream'
-        run: |
-          cargo install cargo-tarpaulin
-          cargo tarpaulin --verbose --all-features --package ${{ matrix.package }} --out Xml
-
-      - name: Upload coverage to Codecov
-        if: matrix.rust == 'stable' && matrix.target == 'x86_64-unknown-linux-gnu' && matrix.package == 'jetstream'
-        uses: codecov/codecov-action@v4
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
