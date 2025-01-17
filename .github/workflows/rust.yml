@@ -1,193 +1,230 @@
-name: Build and Test
-
+name: "Rust Matrix Build & Test"
 on:
   pull_request:
-    branches: ["main"]
-  push:
     branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
-  SCCACHE_GHA_ENABLED: "true"
-  RUSTC_WRAPPER: "sccache"
+  SCCACHE_GHA_ENABLED: "on"
 
-matrix:  
- rust:
-  - stable
-  - beta
-  - nightly
-  - "1.76.0"
-  - "1.77.0"
-  - "1.78.0"
-  - "1.79.0"
-  - "1.80.0"
-  - "1.81.0"
-  - "1.82.0"
-       
 jobs:
-  # Level 1: Base libraries with no internal dependencies
-  build-base-${{ matrix.rust }}:
+  # Base package - no internal dependencies
+  jetstream_macros:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
-        with:
-          toolchain: ${{ matrix.rust }}
-      - uses: mozilla-actions/sccache-action@v0.0.6
-
-      # These have no internal dependencies
-      - name: Build & Test macros
-        run: |
-          cargo build -p jetstream_macros
-          if [ "${{ matrix.testing }}" = "true" ]; then
-            cargo test --all-features -p jetstream_macros
-          fi
-
-      - name: Build & Test wireformat
-        run: |
-          cargo build -p jetstream_wireformat
-          if [ "${{ matrix.testing }}" = "true" ]; then
-            cargo test --all-features -p jetstream_wireformat
-          fi
-
-      - name: Build & Test rpc
-        run: |
-          cargo build -p jetstream_rpc
-          if [ "${{ matrix.testing }}" = "true" ]; then
-            cargo test --all-features -p jetstream_rpc
-          fi
-
-  # Level 2: Components depending on base libraries
-  build-components-${{ matrix.rust }}:
-    needs: build-base-${{ matrix.rust }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
       matrix:
-        rust:
-          - stable
-          - beta
-          - nightly
-          - "1.76.0"
-          - "1.77.0"
-          - "1.78.0"
-          - "1.79.0"
-          - "1.80.0"
-          - "1.81.0"
-          - "1.82.0"
-        include:
-          - rust: stable
-            testing: true
-          - rust: beta
-            testing: true
-          - rust: nightly
-            testing: true
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-      - uses: mozilla-actions/sccache-action@v0.0.6
-
-      # Depends on macros, rpc, wireformat
-      - name: Build & Test 9p
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
         run: |
-          cargo build -p jetstream_9p
-          if [ "${{ matrix.testing }}" = "true" ]; then
-            cargo test --all-features -p jetstream_9p
-          fi
+          cargo build -p jetstream_macros --verbose
+          cargo test -p jetstream_macros --verbose --all-features
 
-      # Depends on 9p, rpc, wireformat
-      - name: Build & Test client
-        run: |
-          cargo build -p jetstream_client
-          if [ "${{ matrix.testing }}" = "true" ]; then
-            cargo test --all-features -p jetstream_client
-          fi
-
-  # Level 3: Server (depends on everything)
-  build-server-${{ matrix.rust }}:
-    needs: 
-    - build-base-${{ matrix.rust }}
-    - build-components-${{ matrix.rust }}]
+  # Depends on macros
+  jetstream_wireformat:
+    needs: [jetstream_macros]
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        rust:
-          - stable
-          - beta
-          - nightly
-          - "1.76.0"
-          - "1.77.0"
-          - "1.78.0"
-          - "1.79.0"
-          - "1.80.0"
-          - "1.81.0"
-          - "1.82.0"
-        include:
-          - rust: stable
-            testing: true
-          - rust: beta
-            testing: true
-          - rust: nightly
-            testing: true
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-      - uses: mozilla-actions/sccache-action@v0.0.6
-
-      # Depends on 9p, client, rpc, wireformat
-      - name: Build & Test server
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
         run: |
-          cargo build -p jetstream_server
-          if [ "${{ matrix.testing }}" = "true" ]; then
-            cargo test --all-features -p jetstream_server
-          fi
+          cargo build -p jetstream_wireformat --verbose
+          cargo test -p jetstream_wireformat --verbose --all-features
 
-  # WASM builds
-  build-wasm:
-    needs: build-base-${{ matrix.rust }}
+  jetstream_wireformat_wasm:
+    needs: [jetstream_macros]
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
       matrix:
-        rust: [stable, beta, nightly]
+        rust: [stable]
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v3
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: ${{ matrix.rust }}
-          targets: wasm32-unknown-unknown
-      - uses: mozilla-actions/sccache-action@v0.0.6
-      
-      - name: install wasm32 via rustup
-        run: rustup target add wasm32-unknown-unknown
-      - name: Build WASM
-        run: cargo build --target wasm32-unknown-unknown -p jetstream_wireformat
+          target: wasm32-unknown-unknown
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build for wasm32
+        run: cargo build -p jetstream_wireformat --target wasm32-unknown-unknown --verbose
 
-  # Examples
+  # Depends on wireformat
+  jetstream_rpc:
+    needs: [jetstream_wireformat]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream_rpc --verbose
+          cargo test -p jetstream_rpc --verbose --all-features
+
+  # Depends on rpc
+  jetstream_9p:
+    needs: [jetstream_rpc]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream_9p --verbose
+          cargo test -p jetstream_9p --verbose --all-features
+
+  # Depends on 9p
+  jetstream_client:
+    needs: [jetstream_9p]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream_client --verbose
+          cargo test -p jetstream_client --verbose --all-features
+
+  # Depends on client
+  jetstream_server:
+    needs: [jetstream_client]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream_server --verbose
+          cargo test -p jetstream_server --verbose --all-features
+
+  # Depends on server
+  jetstream_ufs:
+    needs: [jetstream_server]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream_ufs --verbose
+          cargo test -p jetstream_ufs --verbose --all-features
+
+  # Depends on rpc
+  jetstream_distributed:
+    needs: [jetstream_rpc]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream_distributed --verbose
+          cargo test -p jetstream_distributed --verbose --all-features
+
+  # Main package
+  jetstream:
+    needs: [jetstream_client]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream --verbose
+          cargo test -p jetstream --verbose --all-features
+
+  # Examples on stable only
   examples:
-    needs: 
-    - build-base-${{ matrix.rust }}
-    - build-components-${{ matrix.rust }}
-    - build-server-${{ matrix.rust }}
-    if: github.event_name == 'pull_request'
+    needs: [jetstream]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: dtolnay/rust-toolchain@master
+      - uses: actions/checkout@v3
+      - name: Setup Rust stable
+        uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
-      - uses: mozilla-actions/sccache-action@v0.0.6
-      - name: Run examples
+          override: true
+      - name: Run example echo
         run: cargo run --example echo
