@@ -42,7 +42,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - uses: mozilla-actions/sccache-action@v0.0.8
+      - uses: mozilla-actions/sccache-action@v0.0.6
 
       # These have no internal dependencies
       - name: Build & Test macros
@@ -97,7 +97,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - uses: mozilla-actions/sccache-action@v0.0.8
+      - uses: mozilla-actions/sccache-action@v0.0.6
 
       # Depends on macros, rpc, wireformat
       - name: Build & Test 9p
@@ -146,7 +146,7 @@ jobs:
         uses: dtolnay/rust-toolchain@master
         with:
           toolchain: ${{ matrix.rust }}
-      - uses: mozilla-actions/sccache-action@v0.0.8
+      - uses: mozilla-actions/sccache-action@v0.0.6
 
       # Depends on 9p, client, rpc, wireformat
       - name: Build & Test server
@@ -171,7 +171,7 @@ jobs:
         with:
           toolchain: ${{ matrix.rust }}
           targets: wasm32-unknown-unknown
-      - uses: mozilla-actions/sccache-action@v0.0.8
+      - uses: mozilla-actions/sccache-action@v0.0.6
       
       - name: Build WASM
         run: cargo build --target wasm32-unknown-unknown -p jetstream_wireformat
@@ -186,6 +186,6 @@ jobs:
       - uses: dtolnay/rust-toolchain@master
         with:
           toolchain: stable
-      - uses: mozilla-actions/sccache-action@v0.0.8
+      - uses: mozilla-actions/sccache-action@v0.0.6
       - name: Run examples
         run: cargo run --example echo
