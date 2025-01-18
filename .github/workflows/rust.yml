@@ -13,7 +13,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -34,7 +46,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -74,7 +98,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -89,13 +125,46 @@ jobs:
           cargo build -p jetstream_rpc --verbose
           cargo test -p jetstream_rpc --verbose --all-features
 
+  # Depends on wireformat
+  jetstream_rpc-wasm:
+    needs: [jetstream_wireformat_wasm]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust: [stable]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust ${{ matrix.rust }}
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ matrix.rust }}
+          target: wasm32-unknown-unknown
+          override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Build and test
+        run: |
+          cargo build -p jetstream_rpc --verbose --target wasm32-unknown-unknown
+
   # Depends on rpc
   jetstream_9p:
     needs: [jetstream_rpc]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -116,7 +185,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -137,7 +218,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -158,7 +251,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -179,7 +284,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -200,7 +317,19 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust: [stable, beta, nightly, "1.76.0", "1.77.0", "1.78.0", "1.79.0", "1.80.0", "1.81.0", "1.82.0"]
+        rust:
+          [
+            stable,
+            beta,
+            nightly,
+            "1.76.0",
+            "1.77.0",
+            "1.78.0",
+            "1.79.0",
+            "1.80.0",
+            "1.81.0",
+            "1.82.0",
+          ]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}

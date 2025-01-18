@@ -9,7 +9,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 use jetstream_rpc::{Protocol, Service};
-use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
+use jetstream_wireformat::wire_format_extensions::tokio::AsyncWireFormatExt;
 use okstd::okasync::{Runtime, Runtimes};
 use s2n_quic::client::Connect;
 use s2n_quic::provider::tls;

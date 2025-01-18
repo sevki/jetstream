@@ -1,9 +1,9 @@
-use jetstream_rpc::SharedJetStreamService;
+use jetstream_rpc::service::SharedJetStreamService;
 use jetstream_server::{proxy::Proxy, quic::QuicServer};
 
 use jetstream_client::DialQuic;
 
-use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
+use jetstream_wireformat::wire_format_extensions::tokio::AsyncWireFormatExt;
 use okstd::prelude::*;
 use s2n_quic::{provider::tls, Server};
 use std::{

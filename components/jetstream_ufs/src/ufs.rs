@@ -97,8 +97,6 @@ where
             })
             .unwrap();
 
-        result
-            .await
-            .map_err(|e| jetstream_rpc::Error::Anyhow(e.into()))
+        result.await.map_err(jetstream_rpc::Error::from)
     }
 }

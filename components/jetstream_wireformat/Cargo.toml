@@ -17,28 +17,23 @@ bench = false
 [features]
 default = ["async", "std"]
 std = []
-async = ["dep:tokio", "dep:futures", "dep:tokio-util"]
+async = ["dep:futures", "futures"]
 testing = ["serde"]
 serde = ["dep:serde"]
-
+futures = ["dep:futures-util"]
 
 [dependencies]
 zerocopy = "0.8.13"
 paste = "1.0.15"
 bytes = { version = "1.9.0", features = ["serde"] }
 jetstream_macros = { version = "7.3.0", path = "../jetstream_macros" }
-
+futures-util = { version = "0.3.31", optional = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 libc = "0.2.167"
-
-tokio = { version = "1.42.0", features = ["full"], optional = true }
+tokio = { version = "1.42.0", features = ["full"] }
 okstd = { version = "0.1.10" }
 futures = { version = "0.3.31", optional = true }
-tokio-util = { version = "0.7.13", features = [
-    "full",
-    "io",
-    "time",
-], optional = true }
+tokio-util = { version = "0.7.13", features = ["full", "io", "time"] }
 time = "0.3.37"
 serde = { version = "1.0.215", features = ["derive"], optional = true }
 

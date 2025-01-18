@@ -11,67 +11,76 @@ use bytes::Bytes;
 
 use super::WireFormat;
 
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
-
 pub trait AsyncWireFormat: std::marker::Sized {
-    fn encode_async<W: AsyncWriteExt + Unpin + Send>(
+    fn encode_async<W: AsyncWireFormat + Unpin + Send>(
         self,
         writer: &mut W,
     ) -> impl std::future::Future<Output = io::Result<()>> + Send;
-    fn decode_async<R: AsyncReadExt + Unpin + Send>(
+    fn decode_async<R: AsyncWireFormat + Unpin + Send>(
         reader: &mut R,
     ) -> impl std::future::Future<Output = io::Result<Self>> + Send;
 }
 
-/// Extension trait for asynchronous wire format encoding and decoding.
-pub trait AsyncWireFormatExt
-where
-    Self: WireFormat + Send,
-{
-    /// Encodes the object asynchronously into the provided writer.
-    ///
-    /// # Arguments
-    ///
-    /// * `writer` - The writer to encode the object into.n
-    ///
-    /// # Returns
-    ///
-    /// A future that resolves to an `io::Result<()>` indicating the success or failure of the encoding operation.
-    fn encode_async<W>(
-        self,
-        writer: W,
-    ) -> impl Future<Output = io::Result<()>> + Send
-    where
-        Self: Sync,
-        W: AsyncWrite + Unpin + Send,
-    {
-        let mut writer = tokio_util::io::SyncIoBridge::new(writer);
-        async { tokio::task::block_in_place(move || self.encode(&mut writer)) }
-    }
+#[cfg(not(target_arch = "wasm32"))]
+pub mod tokio {
+    use std::{future::Future, io};
 
-    /// Decodes an object asynchronously from the provided reader.
-    ///
-    /// # Arguments
-    ///
-    /// * `reader` - The reader to decode the object from.
-    ///
-    /// # Returns
-    ///
-    /// A future that resolves to an `io::Result<Self>` indicating the success or failure of the decoding operation.
-    fn decode_async<R>(
-        reader: R,
-    ) -> impl Future<Output = io::Result<Self>> + Send
+    use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+
+    use crate::WireFormat;
+    /// Extension trait for asynchronous wire format encoding and decoding.
+    pub trait AsyncWireFormatExt
     where
-        Self: Sync,
-        R: AsyncRead + Unpin + Send,
+        Self: WireFormat + Send,
     {
-        let mut reader = tokio_util::io::SyncIoBridge::new(reader);
-        async { tokio::task::block_in_place(move || Self::decode(&mut reader)) }
+        /// Encodes the object asynchronously into the provided writer.
+        ///
+        /// # Arguments
+        ///
+        /// * `writer` - The writer to encode the object into.n
+        ///
+        /// # Returns
+        ///
+        /// A future that resolves to an `io::Result<()>` indicating the success or failure of the encoding operation.
+        fn encode_async<W>(
+            self,
+            writer: W,
+        ) -> impl Future<Output = io::Result<()>>
+        where
+            Self: Sync,
+            W: AsyncWrite + Unpin + Send,
+        {
+            let mut writer = tokio_util::io::SyncIoBridge::new(writer);
+            async {
+                tokio::task::block_in_place(move || self.encode(&mut writer))
+            }
+        }
+
+        /// Decodes an object asynchronously from the provided reader.
+        ///
+        /// # Arguments
+        ///
+        /// * `reader` - The reader to decode the object from.
+        ///
+        /// # Returns
+        ///
+        /// A future that resolves to an `io::Result<Self>` indicating the success or failure of the decoding operation.
+        fn decode_async<R>(
+            reader: R,
+        ) -> impl Future<Output = io::Result<Self>> + Send
+        where
+            Self: Sync,
+            R: AsyncRead + Unpin + Send,
+        {
+            let mut reader = tokio_util::io::SyncIoBridge::new(reader);
+            async {
+                tokio::task::block_in_place(move || Self::decode(&mut reader))
+            }
+        }
     }
+    /// Implements the `AsyncWireFormatExt` trait for types that implement the `WireFormat` trait and can be sent across threads.
+    impl<T: WireFormat + Send> AsyncWireFormatExt for T {}
 }
-
-/// Implements the `AsyncWireFormatExt` trait for types that implement the `WireFormat` trait and can be sent across threads.
-impl<T: WireFormat + Send> AsyncWireFormatExt for T {}
 
 /// A trait for converting types to and from a wire format.
 pub trait ConvertWireFormat: WireFormat {

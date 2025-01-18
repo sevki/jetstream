@@ -7,14 +7,29 @@ license = { workspace = true }
 repository = { workspace = true }
 readme = { workspace = true }
 documentation.workspace = true
+
+
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+
 [lib]
 bench = false
 
 [dependencies]
 trait-variant = "0.1.2"
-jetstream_wireformat = { version = "7.3.0", path = "../jetstream_wireformat" }
 okstd = { version = "0.1.10", features = ["macros"] }
+futures = "0.3.31"
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+jetstream_wireformat = { version = "7.3.0", path = "../jetstream_wireformat", no-default-features = true, features = [
+    "std",
+] }
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+jetstream_wireformat = { version = "7.3.0", path = "../jetstream_wireformat" }
 tokio = { version = "1.43.0", features = ["full"] }
+
+[dev-dependencies]
 bytes = "1.9.0"
 anyhow = "1.0.94"
 s2n-quic = "1.52.0"
