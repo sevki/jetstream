@@ -1,5 +1,12 @@
 # Changelog
 
+## [7.4.0](https://github.com/sevki/jetstream/compare/v7.3.0...v7.4.0) (2025-01-18)
+
+
+### Features
+
+* jetstream_rpc supports wasm ([e97e6ca](https://github.com/sevki/jetstream/commit/e97e6ca6a94067551fb7a98c4e34fa2a774ebdfd))
+
 ## [7.3.0](https://github.com/sevki/jetstream/compare/v7.2.1...v7.3.0) (2025-01-17)
 
 
