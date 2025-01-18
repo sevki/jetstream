@@ -3262,6 +3262,7 @@ version = "7.3.0"
 dependencies = [
  "anyhow",
  "bytes",
+ "futures",
  "jetstream_wireformat",
  "okstd",
  "s2n-quic",
@@ -3307,6 +3308,7 @@ version = "7.3.0"
 dependencies = [
  "bytes",
  "futures",
+ "futures-util",
  "jetstream_macros",
  "libc",
  "okstd",

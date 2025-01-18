@@ -8,7 +8,9 @@ use std::{pin::Pin, time::Duration};
 use tokio::io::{AsyncRead, AsyncWrite};
 #[allow(unused_imports)]
 use tokio::time::sleep;
-use wire_format_extensions::{AsyncWireFormatExt, ConvertWireFormat};
+use wire_format_extensions::tokio::AsyncWireFormatExt;
+
+use wire_format_extensions::ConvertWireFormat;
 
 #[test]
 fn integer_byte_size() {

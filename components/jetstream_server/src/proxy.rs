@@ -5,7 +5,7 @@ use jetstream_client::{self, DialQuic};
 
 use okstd::prelude::*;
 
-use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
+use jetstream_wireformat::wire_format_extensions::tokio::AsyncWireFormatExt;
 
 use crate::ListenerStream;
 

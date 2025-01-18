@@ -26,7 +26,6 @@ use std::ops::DerefMut;
 use std::string::String;
 use std::vec::Vec;
 use zerocopy::LittleEndian;
-#[cfg(not(target_arch = "wasm32"))]
 pub mod wire_format_extensions;
 
 /// A type that can be encoded on the wire using the 9P protocol.

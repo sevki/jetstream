@@ -5,11 +5,13 @@ use std::path::Path;
 // found in the LICENSE file.
 use s2n_quic::{provider::tls, Server};
 
-use jetstream_wireformat::wire_format_extensions::AsyncWireFormatExt;
-
+use jetstream_wireformat::wire_format_extensions::tokio::AsyncWireFormatExt;
 use okstd::prelude::*;
 
-use jetstream_rpc::{Protocol, Service, SharedJetStreamService};
+use jetstream_rpc::{
+    service::{ServiceExt, SharedJetStreamService},
+    Protocol, Service,
+};
 
 pub struct QuicServer<P: Protocol, S: Service<P>> {
     svc: S,
