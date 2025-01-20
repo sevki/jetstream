@@ -4019,9 +4019,9 @@ dependencies = [
 
 [[package]]
 name = "okstd"
-version = "0.1.10"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c231f36ebc6a40bde3d38bfd85f5174c21179c4bc9ee45b3e1666a8ce1af117"
+checksum = "85c2546c0c47beed096d7935c8090f1e3739803b67372224a7548889ec154f1f"
 dependencies = [
  "anyhow",
  "argh",

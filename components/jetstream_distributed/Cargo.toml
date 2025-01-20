@@ -12,7 +12,7 @@ bench = false
 
 [dependencies]
 trait-variant = "0.1.2"
-okstd = { version = "0.1.10", features = ["macros"] }
+okstd = { version = "0.2.0", features = ["macros"] }
 tokio = { version = "1.43.0", features = ["full"] }
 bytes = "1.9.0"
 anyhow = "1.0.94"
