@@ -16,7 +16,7 @@ serde = { version = "1.0.217", features = ["derive"] }
 libc = "0.2.169"
 tokio = { version = "1.43.0", features = ["full"] }
 anyhow = "1.0.94"
-okstd = { version = "0.1.10", features = ["macros", "argh"] }
+okstd = { version = "0.2.0", features = ["macros", "argh"] }
 argh = "0.1.12"
 [lib]
 bench = false

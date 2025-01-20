@@ -18,5 +18,5 @@ jetstream_rpc = { version = "7.4.0", path = "../jetstream_rpc" }
 jetstream_wireformat = { version = "7.4.0", path = "../jetstream_wireformat", features = [
     "async",
 ] }
-okstd = { version = "0.1.10" }
+okstd = { version = "0.2.0" }
 s2n-quic = "1.52.0"
