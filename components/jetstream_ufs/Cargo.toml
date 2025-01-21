@@ -15,7 +15,7 @@ jetstream_server = { version = "7.4.0", path = "../jetstream_server" }
 serde = { version = "1.0.217", features = ["derive"] }
 libc = "0.2.169"
 tokio = { version = "1.43.0", features = ["full"] }
-anyhow = "1.0.94"
+anyhow = "1.0.95"
 okstd = { version = "0.2.0", features = ["macros", "argh"] }
 argh = "0.1.12"
 [lib]

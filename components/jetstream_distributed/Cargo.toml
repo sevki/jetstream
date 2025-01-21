@@ -15,7 +15,7 @@ trait-variant = "0.1.2"
 okstd = { version = "0.2.0", features = ["macros"] }
 tokio = { version = "1.43.0", features = ["full"] }
 bytes = "1.9.0"
-anyhow = "1.0.94"
+anyhow = "1.0.95"
 s2n-quic = "1.52.0"
 thiserror = "2.0.9"
 rand = "0.8.5"

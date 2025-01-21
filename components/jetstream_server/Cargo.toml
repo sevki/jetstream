@@ -11,7 +11,7 @@ documentation.workspace = true
 bench = false
 
 [dependencies]
-anyhow = "1.0.94"
+anyhow = "1.0.95"
 async-trait = "0.1.85"
 jetstream_9p = { version = "7.4.0", path = "../jetstream_9p" }
 jetstream_client = { version = "7.4.0", path = "../jetstream_client", optional = true }
