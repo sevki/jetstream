@@ -3,27 +3,23 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use std::borrow::Cow;
-use std::collections::HashSet;
-use std::collections::VecDeque;
-use std::env;
-use std::ffi::CString;
-use std::ffi::OsString;
-use std::fs;
-use std::fs::File;
-use std::io;
-use std::io::Cursor;
-use std::mem;
-use std::ops::Deref;
-use std::os::unix::ffi::OsStringExt;
-use std::os::unix::fs::symlink;
-use std::os::unix::fs::MetadataExt;
-use std::path::Component;
-use std::path::Path;
-use std::path::PathBuf;
+use std::{
+    borrow::Cow,
+    collections::{HashSet, VecDeque},
+    env,
+    ffi::{CString, OsString},
+    fs::{self, File},
+    io::{self, Cursor, Read, Write},
+    mem,
+    ops::Deref,
+    os::unix::{
+        ffi::OsStringExt,
+        fs::{symlink, MetadataExt},
+    },
+    path::{Component, Path, PathBuf},
+};
 
-use jetstream_wireformat::Data;
-use jetstream_wireformat::WireFormat;
+use jetstream_wireformat::{Data, WireFormat};
 
 use super::*;
 
@@ -64,17 +60,11 @@ fn join_path<P: AsRef<Path>, R: AsRef<Path>>(
     for component in path.components() {
         match component {
             // Prefix should only appear on windows systems.
-            Component::Prefix(_) => {
-                return Err(io::Error::from_raw_os_error(libc::EINVAL))
-            }
+            Component::Prefix(_) => return Err(io::Error::from_raw_os_error(libc::EINVAL)),
             // Absolute paths are not allowed.
-            Component::RootDir => {
-                return Err(io::Error::from_raw_os_error(libc::EINVAL))
-            }
+            Component::RootDir => return Err(io::Error::from_raw_os_error(libc::EINVAL)),
             // '.' elements are not allowed.
-            Component::CurDir => {
-                return Err(io::Error::from_raw_os_error(libc::EINVAL))
-            }
+            Component::CurDir => return Err(io::Error::from_raw_os_error(libc::EINVAL)),
             Component::ParentDir => {
                 // We only remove the parent path if we are not already at the root of the
                 // file system.
@@ -136,8 +126,7 @@ impl DirEntry<'_> {
     fn create(&self, dir: &mut Cow<Path>) {
         match *self {
             DirEntry::File { name, content } => {
-                let mut f = File::create(dir.join(name))
-                    .expect("failed to create file");
+                let mut f = File::create(dir.join(name)).expect("failed to create file");
                 f.write_all(content).expect("failed to write file content");
             }
             DirEntry::Directory { name, entries } => {
@@ -151,8 +140,7 @@ impl DirEntry<'_> {
                 assert!(dir.to_mut().pop());
             }
             DirEntry::Symlink { name, target } => {
-                symlink(target, dir.join(name))
-                    .expect("failed to create symlink");
+                symlink(target, dir.join(name)).expect("failed to create symlink");
             }
         }
     }
@@ -298,13 +286,7 @@ fn open<P: Into<PathBuf>>(
     server.lopen(&tlopen)
 }
 
-fn write<P: AsRef<Path>>(
-    server: &mut Server,
-    dir: P,
-    name: &str,
-    fid: u32,
-    flags: u32,
-) {
+fn write<P: AsRef<Path>>(server: &mut Server, dir: P, name: &str, fid: u32, flags: u32) {
     let file_path = dir.as_ref().join(name);
     let file_len = if file_path.exists() {
         fs::symlink_metadata(&file_path)
@@ -330,8 +312,7 @@ fn write<P: AsRef<Path>>(
     let tfsync = Tfsync { fid, datasync: 0 };
     server.fsync(&tfsync).expect("failed to sync file contents");
 
-    let actual_content =
-        fs::read(file_path).expect("failed to read back content from file");
+    let actual_content = fs::read(file_path).expect("failed to read back content from file");
 
     // If the file was opened append-only, then the content should have been
     // written to the end even though the offset was 0.
@@ -395,8 +376,7 @@ impl Iterator for Readdir<'_> {
             mem::drop(mem::replace(&mut self.cursor, Cursor::new(data.0)));
         }
 
-        let dirent: Dirent = WireFormat::decode(&mut self.cursor)
-            .expect("failed to decode dirent");
+        let dirent: Dirent = WireFormat::decode(&mut self.cursor).expect("failed to decode dirent");
         self.offset = dirent.offset;
 
         Some(dirent)
@@ -456,11 +436,10 @@ fn setup<P: AsRef<Path>>(name: P) -> (ScopedPath<OsString>, Server) {
                     entries: &[DirEntry::File {
                         name: "Огонь по готовности!",
                         content: &[
-                            0xe9u8, 0xbeu8, 0x8du8, 0xe3u8, 0x81u8, 0x8cu8,
-                            0xe6u8, 0x88u8, 0x91u8, 0xe3u8, 0x81u8, 0x8cu8,
-                            0xe6u8, 0x95u8, 0xb5u8, 0xe3u8, 0x82u8, 0x92u8,
-                            0xe5u8, 0x96u8, 0xb0u8, 0xe3u8, 0x82u8, 0x89u8,
-                            0xe3u8, 0x81u8, 0x86u8, 0x21u8,
+                            0xe9u8, 0xbeu8, 0x8du8, 0xe3u8, 0x81u8, 0x8cu8, 0xe6u8, 0x88u8, 0x91u8,
+                            0xe3u8, 0x81u8, 0x8cu8, 0xe6u8, 0x95u8, 0xb5u8, 0xe3u8, 0x82u8, 0x92u8,
+                            0xe5u8, 0x96u8, 0xb0u8, 0xe3u8, 0x82u8, 0x89u8, 0xe3u8, 0x81u8, 0x86u8,
+                            0x21u8,
                         ],
                     }],
                 },
@@ -469,8 +448,8 @@ fn setup<P: AsRef<Path>>(name: P) -> (ScopedPath<OsString>, Server) {
         DirEntry::File {
             name: "世界.txt",
             content: &[
-                0xe3u8, 0x81u8, 0x93u8, 0xe3u8, 0x82u8, 0x93u8, 0xe3u8, 0x81u8,
-                0xabu8, 0xe3u8, 0x81u8, 0xa1u8, 0xe3u8, 0x81u8, 0xafu8,
+                0xe3u8, 0x81u8, 0x93u8, 0xe3u8, 0x82u8, 0x93u8, 0xe3u8, 0x81u8, 0xabu8, 0xe3u8,
+                0x81u8, 0xa1u8, 0xe3u8, 0x81u8, 0xafu8,
             ],
         },
     ];
@@ -483,9 +462,8 @@ fn setup<P: AsRef<Path>>(name: P) -> (ScopedPath<OsString>, Server) {
         .symlink_metadata()
         .expect("failed to get metadata for root dir");
 
-    let mut server =
-        Server::new(&*test_dir, Default::default(), Default::default())
-            .expect("Failed to create server");
+    let mut server = Server::new(&*test_dir, Default::default(), Default::default())
+        .expect("Failed to create server");
 
     let tversion = Tversion {
         msize: DEFAULT_BUFFER_SIZE,
@@ -591,8 +569,7 @@ fn tree_walk() {
 
         let fid = next_fid;
         next_fid += 1;
-        open(&mut server, &dir, dfid, "", fid, P9_DIRECTORY)
-            .expect("Failed to open directory");
+        open(&mut server, &dir, dfid, "", fid, P9_DIRECTORY).expect("Failed to open directory");
         for dirent in readdir(&mut server, fid) {
             if dirent.name == "." || dirent.name == ".." {
                 continue;
@@ -604,8 +581,7 @@ fn tree_walk() {
                 "directory entry \"{}\" does not exist",
                 entry_path.display()
             );
-            let md = fs::symlink_metadata(&entry_path)
-                .expect("failed to get metadata for entry");
+            let md = fs::symlink_metadata(&entry_path).expect("failed to get metadata for entry");
 
             let ty = if md.is_dir() {
                 dirs.push_back(dir.join(dirent.name));
@@ -652,10 +628,7 @@ enum SetAttrKind {
     Directory,
 }
 
-fn set_attr_test<F>(
-    kind: SetAttrKind,
-    set_fields: F,
-) -> io::Result<fs::Metadata>
+fn set_attr_test<F>(kind: SetAttrKind, set_fields: F) -> io::Result<fs::Metadata>
 where
     F: FnOnce(&mut Tsetattr),
 {
@@ -674,8 +647,7 @@ where
                 gid: 0,
             };
 
-            let rmkdir =
-                server.mkdir(&tmkdir).expect("failed to create directory");
+            let rmkdir = server.mkdir(&tmkdir).expect("failed to create directory");
             let md = fs::symlink_metadata(test_dir.join(name))
                 .expect("failed to get metadata for directory");
 
@@ -830,13 +802,11 @@ fn huge_directory() {
     }
 
     let fid = dfid + 1;
-    open(&mut server, &newdir, dfid, "", fid, P9_DIRECTORY)
-        .expect("Failed to open directory");
+    open(&mut server, &newdir, dfid, "", fid, P9_DIRECTORY).expect("Failed to open directory");
     for f in readdir(&mut server, fid) {
         let path = newdir.join(&f.name);
 
-        let md = fs::symlink_metadata(path)
-            .expect("failed to get metadata for path");
+        let md = fs::symlink_metadata(path).expect("failed to get metadata for path");
         check_qid(&f.qid, &md);
 
         if f.name == "." || f.name == ".." {
@@ -863,8 +833,8 @@ fn mkdir() {
     };
 
     let rmkdir = server.mkdir(&tmkdir).expect("failed to create directory");
-    let md = fs::symlink_metadata(test_dir.join(name))
-        .expect("failed to get metadata for directory");
+    let md =
+        fs::symlink_metadata(test_dir.join(name)).expect("failed to get metadata for directory");
 
     assert!(md.is_dir());
     check_qid(&rmkdir.qid, &md);
@@ -1136,18 +1106,11 @@ macro_rules! open_test {
             let name = "test.txt";
             let content = create_local_file(&test_dir, name);
 
-            let rlopen = open(
-                &mut server,
-                &*test_dir,
-                ROOT_FID,
-                name,
-                fid,
-                $flags as u32,
-            )
-            .expect("failed to open file");
+            let rlopen = open(&mut server, &*test_dir, ROOT_FID, name, fid, $flags as u32)
+                .expect("failed to open file");
 
-            let md = fs::symlink_metadata(test_dir.join(name))
-                .expect("failed to get metadata for file");
+            let md =
+                fs::symlink_metadata(test_dir.join(name)).expect("failed to get metadata for file");
             check_qid(&rlopen.qid, &md);
             assert_eq!(rlopen.iounit, 0);
 
@@ -1177,15 +1140,8 @@ macro_rules! open_test {
             let name = "test.txt";
             create_local_file(&test_dir, name);
 
-            let err = open(
-                &mut server,
-                &*test_dir,
-                ROOT_FID,
-                name,
-                fid,
-                $flags as u32,
-            )
-            .expect_err("successfully opened file");
+            let err = open(&mut server, &*test_dir, ROOT_FID, name, fid, $flags as u32)
+                .expect_err("successfully opened file");
             assert_eq!(err.kind(), $expected_err);
 
             let tclunk = Tclunk { fid };
@@ -1286,19 +1242,11 @@ macro_rules! create_test {
 
             let name = "foo.txt";
             let fid = ROOT_FID + 1;
-            let rlcreate = create(
-                &mut server,
-                &*test_dir,
-                ROOT_FID,
-                fid,
-                name,
-                $flags,
-                $mode,
-            )
-            .expect("failed to create file");
+            let rlcreate = create(&mut server, &*test_dir, ROOT_FID, fid, name, $flags, $mode)
+                .expect("failed to create file");
 
-            let md = fs::symlink_metadata(test_dir.join(name))
-                .expect("failed to get metadata for file");
+            let md =
+                fs::symlink_metadata(test_dir.join(name)).expect("failed to get metadata for file");
             assert_eq!(rlcreate.iounit, 0);
             check_qid(&rlcreate.qid, &md);
             check_attr(&mut server, fid, &md);
@@ -1323,16 +1271,8 @@ macro_rules! create_test {
             // completes.  Duplicate the fid so that we don't end up consuming the
             // root fid.
             let fid = ROOT_FID + 1;
-            let err = create(
-                &mut server,
-                &*test_dir,
-                ROOT_FID,
-                fid,
-                name,
-                $flags,
-                $mode,
-            )
-            .expect_err("successfully created file");
+            let err = create(&mut server, &*test_dir, ROOT_FID, fid, name, $flags, $mode)
+                .expect_err("successfully created file");
             assert_eq!(err.kind(), $expected_err);
         }
     };

@@ -1,9 +1,8 @@
-use std::iter;
-
-use proc_macro2::Literal;
-use proc_macro2::TokenStream;
-use quote::{format_ident, quote, ToTokens};
-use syn::{Ident, ItemTrait, TraitItem};
+use {
+    proc_macro2::{Literal, TokenStream},
+    quote::{format_ident, quote, ToTokens},
+    syn::{Ident, ItemTrait, TraitItem},
+};
 
 struct IdentCased(Ident);
 
@@ -20,34 +19,29 @@ impl IdentCased {
     }
     #[allow(dead_code)]
     fn to_title_case(&self) -> Self {
-        let converter =
-            convert_case::Converter::new().to_case(convert_case::Case::Title);
+        let converter = convert_case::Converter::new().to_case(convert_case::Case::Title);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     #[allow(dead_code)]
     fn to_upper_case(&self) -> Self {
-        let converter =
-            convert_case::Converter::new().to_case(convert_case::Case::Upper);
+        let converter = convert_case::Converter::new().to_case(convert_case::Case::Upper);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     fn to_screaming_snake_case(&self) -> Self {
-        let converter = convert_case::Converter::new()
-            .to_case(convert_case::Case::ScreamingSnake);
+        let converter = convert_case::Converter::new().to_case(convert_case::Case::ScreamingSnake);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     fn to_pascale_case(&self) -> Self {
-        let converter =
-            convert_case::Converter::new().to_case(convert_case::Case::Pascal);
+        let converter = convert_case::Converter::new().to_case(convert_case::Case::Pascal);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     #[allow(dead_code)]
     fn to_upper_flat(&self) -> Self {
-        let converter = convert_case::Converter::new()
-            .to_case(convert_case::Case::UpperFlat);
+        let converter = convert_case::Converter::new().to_case(convert_case::Case::UpperFlat);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
@@ -77,16 +71,13 @@ fn generate_frame(
         Direction::Rx => quote! { Rmessage },
         Direction::Tx => quote! { Tmessage },
     };
-    let frame_name = match direction {
-        Direction::Rx => quote! { Rframe },
-        Direction::Tx => quote! { Tframe },
-    };
 
     let msg_variants = msgs.iter().map(|(ident, _p)| {
         let name: IdentCased = ident.into();
         let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
+        let constant_name: Ident = name.to_screaming_snake_case().into();
         quote! {
-            #variant_name(#ident),
+            #variant_name(#ident) = #constant_name,
         }
     });
     let cloned_byte_sizes = msgs.iter().map(|(ident, _)| {
@@ -105,34 +96,15 @@ fn generate_frame(
         }
     });
 
-    let encode_bodies = msgs.iter().map(|(ident, _)| {
-        let name: IdentCased = ident.into();
-        let variant_name: Ident = name.to_screaming_snake_case().into();
-
-        let new_ident = Ident::new(&format!("{}", variant_name), ident.span());
-        quote! {
-            #new_ident,
-        }
-    });
-
     let decode_bodies = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
         let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
 
         let const_name: Ident = name.to_screaming_snake_case().into();
-        quote!{
+        quote! {
                 #const_name => Ok(#enum_name::#variant_name(WireFormat::decode(reader)?)),
         }
     });
-
-    let type_match_arms =
-        std::iter::zip(match_arms.clone(), encode_bodies.clone()).map(
-            |(arm, body)| {
-                quote! {
-                    #arm => #body
-                }
-            },
-        );
 
     let encode_match_arms = match_arms.clone().map(|arm| {
         quote! {
@@ -142,42 +114,29 @@ fn generate_frame(
 
     quote! {
         #[derive(Debug)]
+        #[repr(u8)]
         pub enum #enum_name {
             #( #msg_variants )*
         }
-        #[derive(Debug)]
-        pub struct #frame_name {
-            pub tag: u16,
-            pub msg: #enum_name,
-        }
-        impl WireFormat for #frame_name {
+
+        impl Framer for #enum_name {
             fn byte_size(&self) -> u32 {
-                let msg = &self.msg;
-                let msg_size = match msg {
+                match &self {
                     #(
                         #cloned_byte_sizes,
                      )*
-                };
-                // size + type + tag + message size
-                (std::mem::size_of::<u32>() + std::mem::size_of::<u8>() + std::mem::size_of::<u16>())
-                    as u32
-                    + msg_size
+                }
+            }
+
+            fn message_type(&self) -> u8 {
+                // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
+                // between `repr(C)` structs, each of which has the `u8` discriminant as its first
+                // field, so we can read the discriminant without offsetting the pointer.
+                unsafe { *<*const _>::from(self).cast::<u8>() }
             }
 
             fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                self.byte_size().encode(writer)?;
-
-                let ty = match &self.msg {
-                    #(
-                        #type_match_arms
-                     )*
-                };
-
-                ty.encode(writer)?;
-
-                self.tag.encode(writer)?;
-
-                match &self.msg {
+                match &self {
                     #(
                         #encode_match_arms
                      )*
@@ -186,34 +145,7 @@ fn generate_frame(
                 Ok(())
             }
 
-            fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                let byte_size = u32::decode(reader)?;
-
-                // byte_size includes the size of byte_size so remove that from the
-                // expected length of the message.  Also make sure that byte_size is at least
-                // that long to begin with.
-                if byte_size < mem::size_of::<u32>() as u32 {
-                    return Err(std::io::Error::new(
-                        std::io::ErrorKind::InvalidData,
-                        format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                    ));
-                } else {
-                    let byte_size = byte_size -
-                    (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32;
-                }
-
-                let ty = u8::decode(reader)?;
-
-                let tag: u16 = u16::decode(reader)?;
-                let reader = &mut reader.take((byte_size) as u64);
-
-                let msg: #enum_name = Self::decode_message(reader, ty)?;
-
-                Ok(#frame_name { tag, msg })
-            }
-        }
-        impl #frame_name {
-            fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<#enum_name> {
+            fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<#enum_name> {
                 match ty {
                     #(
                         #decode_bodies
@@ -228,31 +160,18 @@ fn generate_frame(
     }
 }
 
-fn generate_tframe(
-    tmsgs: &[(Ident, proc_macro2::TokenStream)],
-) -> proc_macro2::TokenStream {
+fn generate_tframe(tmsgs: &[(Ident, proc_macro2::TokenStream)]) -> proc_macro2::TokenStream {
     generate_frame(Direction::Tx, tmsgs)
 }
 
-fn generate_rframe(
-    rmsgs: &[(Ident, proc_macro2::TokenStream)],
-) -> proc_macro2::TokenStream {
+fn generate_rframe(rmsgs: &[(Ident, proc_macro2::TokenStream)]) -> proc_macro2::TokenStream {
     generate_frame(Direction::Rx, rmsgs)
 }
 
-fn generate_msg_id(
-    index: usize,
-    method_name: &Ident,
-) -> proc_macro2::TokenStream {
+fn generate_msg_id(index: usize, method_name: &Ident) -> proc_macro2::TokenStream {
     let upper_cased_method_name = method_name.to_string().to_uppercase();
-    let tmsg_const_name = Ident::new(
-        &format!("T{}", upper_cased_method_name),
-        method_name.span(),
-    );
-    let rmsg_const_name = Ident::new(
-        &format!("R{}", upper_cased_method_name),
-        method_name.span(),
-    );
+    let tmsg_const_name = Ident::new(&format!("T{}", upper_cased_method_name), method_name.span());
+    let rmsg_const_name = Ident::new(&format!("R{}", upper_cased_method_name), method_name.span());
     let offset = 2 * index as u8;
 
     quote! {
@@ -265,15 +184,17 @@ fn generate_input_struct(
     request_struct_ident: &Ident,
     method_sig: &syn::Signature,
 ) -> proc_macro2::TokenStream {
-    let inputs = method_sig.inputs.iter().map(|arg| match arg {
-        syn::FnArg::Typed(pat) => {
-            let name = pat.pat.clone();
-            let ty = pat.ty.clone();
-            quote! {
-                pub #name: #ty,
+    let inputs = method_sig.inputs.iter().map(|arg| {
+        match arg {
+            syn::FnArg::Typed(pat) => {
+                let name = pat.pat.clone();
+                let ty = pat.ty.clone();
+                quote! {
+                    pub #name: #ty,
+                }
             }
+            syn::FnArg::Receiver(_) => quote! {},
         }
-        syn::FnArg::Receiver(_) => quote! {},
     });
 
     quote! {
@@ -296,12 +217,9 @@ fn generate_return_struct(
                     if let Some(segment) = type_path.path.segments.last() {
                         if segment.ident == "Result" {
                             // Extract the success type from Result<T, E>
-                            if let syn::PathArguments::AngleBracketed(args) =
-                                &segment.arguments
-                            {
-                                if let Some(syn::GenericArgument::Type(
-                                    success_type,
-                                )) = args.args.first()
+                            if let syn::PathArguments::AngleBracketed(args) = &segment.arguments {
+                                if let Some(syn::GenericArgument::Type(success_type)) =
+                                    args.args.first()
                                 {
                                     return quote! {
                                         #[allow(non_camel_case_types)]
@@ -320,18 +238,22 @@ fn generate_return_struct(
                     }
                 }
                 // Handle other return type variants if needed
-                _ => quote! {
-                    #[allow(non_camel_case_types)]
-                    #[derive(Debug, JetStreamWireFormat)]
-                    pub struct #return_struct_ident(pub #ty);
-                },
+                _ => {
+                    quote! {
+                        #[allow(non_camel_case_types)]
+                        #[derive(Debug, JetStreamWireFormat)]
+                        pub struct #return_struct_ident(pub #ty);
+                    }
+                }
             }
         }
-        syn::ReturnType::Default => quote! {
-           #[allow(non_camel_case_types)]
-           #[derive(Debug, JetStreamWireFormat)]
-           pub struct #return_struct_ident;
-        },
+        syn::ReturnType::Default => {
+            quote! {
+               #[allow(non_camel_case_types)]
+               #[derive(Debug, JetStreamWireFormat)]
+               pub struct #return_struct_ident;
+            }
+        }
     }
 }
 
@@ -356,10 +278,7 @@ fn handle_receiver(recv: &syn::Receiver) -> proc_macro2::TokenStream {
         (None, _) => quote! { self.inner, },
     }
 }
-pub(crate) fn service_impl(
-    item: ItemTrait,
-    is_async_trait: bool,
-) -> TokenStream {
+pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream {
     let trait_name = &item.ident;
     let trait_items = &item.items;
     let vis = &item.vis;
@@ -369,7 +288,8 @@ pub(crate) fn service_impl(
     let mut tmsgs = Vec::new();
     let mut rmsgs = Vec::new();
     let mut msg_ids = Vec::new();
-    let protocol_name = format_ident!("{}Protocol", trait_name);
+    let service_name = format_ident!("{}Service", trait_name);
+    let channel_name = format_ident!("{}Channel", trait_name);
     let digest = sha256::digest(item.to_token_stream().to_string());
 
     #[allow(clippy::to_string_in_format_args)]
@@ -383,25 +303,19 @@ pub(crate) fn service_impl(
     );
     let protocol_version = Literal::string(protocol_version.as_str());
     let mut calls = vec![];
-    let mut signatures = vec![];
+    let tag_name = format_ident!("{}_TAG", trait_name.to_string().to_uppercase());
+
     let mut server_calls = vec![];
+
     {
-        let with_calls = item
-        .items
-        .iter()
-        .enumerate()
-        .map(|(index, item)| match item {
-            TraitItem::Fn(method) => {
+        let with_calls = item.items.iter().enumerate().map(|(index, item)| {
+            if let TraitItem::Fn(method) = item {
                 let method_name = &method.sig.ident;
 
-                let request_struct_ident = Ident::new(
-                    &format!("T{}", method_name),
-                    method_name.span(),
-                );
-                let return_struct_ident = Ident::new(
-                    &format!("R{}", method_name),
-                    method_name.span(),
-                );
+                let request_struct_ident =
+                    Ident::new(&format!("T{}", method_name), method_name.span());
+                let return_struct_ident =
+                    Ident::new(&format!("R{}", method_name), method_name.span());
                 let _output_type = match &method.sig.output {
                     syn::ReturnType::Type(_, ty) => quote! { #ty },
                     syn::ReturnType::Default => quote! { () },
@@ -413,157 +327,106 @@ pub(crate) fn service_impl(
                 let return_struct =
                     generate_return_struct(&return_struct_ident.clone(), &method.sig);
 
-
-                tmsgs.push((request_struct_ident.clone(),request_struct.clone()));
-                rmsgs.push((return_struct_ident.clone(),return_struct.clone()));
-                let has_req = method.sig.inputs.iter().count() > 1;
-                let is_async = method.sig.asyncness.is_some();
-                let maybe_await = if is_async { quote! { .await } } else { quote! {} };
-                if has_req {
-                    let spread_req = method.sig.inputs.iter().map(|arg| match arg {
-                        syn::FnArg::Typed(pat) => {
-                            let name = pat.pat.clone();
-                            quote! { req.#name, }
-                        }
-                        syn::FnArg::Receiver(_) => quote! {},
-                    });
-                    quote! {
-                        #[inline]
-                        fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> impl ::core::future::Future<
-                            Output = Result<#return_struct_ident, Box<dyn Error + Send + Sync>>,
-                        > + Send + Sync {
-                            Box::pin(async move {
-                                #return_struct_ident(tag, #trait_name::#method_name(&mut self.inner,
-                                    #(#spread_req)*
-                                )#maybe_await)
-                            })
-                        }
-                    }
-                } else {
-                    quote! {
-                        #[inline]
-                        fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> impl ::core::future::Future<
-                            Output = Result<#return_struct_ident, Box<dyn Error + Send + Sync>>,
-                        > + Send + Sync {
-                            Box::pin(async move {
-                                #return_struct_ident(tag, #trait_name::#method_name(&mut self.inner)#maybe_await)
-                            })
-                        }
-                    }
-                }
-
+                tmsgs.insert(
+                    index,
+                    (request_struct_ident.clone(), request_struct.clone()),
+                );
+                rmsgs.insert(index, (return_struct_ident.clone(), return_struct.clone()));
             }
-            _ => quote! { #item },
         });
         calls.extend(with_calls);
-        let with_signatures = item.items.iter().enumerate().map(|(index, item)| match item {
-            TraitItem::Fn(method) => {
-                let method_name = &method.sig.ident;
-                let request_struct_ident = Ident::new(
-                    &format!("T{}", method_name),
-                    method_name.span(),
-                );
-                let return_struct_ident = Ident::new(
-                    &format!("R{}", method_name),
-                    method_name.span(),
-                );
-                let _output_type = match &method.sig.output {
-                    syn::ReturnType::Type(_, ty) => quote! { #ty },
-                    syn::ReturnType::Default => quote! { () },
-                };
-                let _msg_id = generate_msg_id(index, method_name);
-                // msg_ids.push(msg_id);
-                let _request_struct =
-                    generate_input_struct(&request_struct_ident.clone(), &method.sig);
-                let _return_struct =
-                    generate_return_struct(&return_struct_ident.clone(), &method.sig);
-                // tmsgs.push((request_struct_ident.clone(),request_struct.clone()));
-                //        rmsgs.push((return_struct_ident.clone(),return_struct.clone()));
-                let has_req = method.sig.inputs.iter().count() > 1;
-                let is_async = method.sig.asyncness.is_some();
-                let _maybe_await = if is_async { quote! { .await } } else { quote! {} };
-                if has_req {
-                    let _spread_req = method.sig.inputs.iter().map(|arg| match arg {
-                        syn::FnArg::Typed(pat) => {
-                            let name = pat.pat.clone();
-                            quote! { req.#name, }
-                        }
-                        syn::FnArg::Receiver(_) => quote! {},
-                    });
-                    quote! {
-                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> Result<#return_struct_ident,Box<dyn Error + Send + Sync>>;
-                    }
-                } else {
-                    quote! {
-                        async fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> Result<#return_struct_ident,Box<dyn Error + Send + Sync>>;
-                    }
-                }
-            }
-            _ => quote! { #item },
-        });
+    }
+    let mut client_calls = vec![];
+    {
+        item.items.iter().enumerate().for_each(|(index,item)|{
+            let TraitItem::Fn(method) = item else {return;};
+            let method_name = &method.sig.ident;
+            let has_req = method.sig.inputs.iter().count() > 1;
+            let is_async = method.sig.asyncness.is_some();
+            let maybe_await = if is_async { quote! { .await } } else { quote! {} };
 
-        signatures.extend(with_signatures);
-
-        let match_arms = generate_match_arms(tmsgs.clone().into_iter());
-        let match_arm_bodies: Vec<proc_macro2::TokenStream> = item
-            .items
-            .clone()
-            .iter()
-            .map(|item| match item {
-                TraitItem::Fn(method) => {
-                    let method_name = &method.sig.ident;
-                    let name: IdentCased = method_name.into();
-                    let variant_name: Ident = name.to_pascale_case().into();
-                    let return_struct_ident = Ident::new(
-                        &format!("R{}", method_name),
-                        method_name.span(),
-                    );
-                    let variables_spead =
-                        method.sig.inputs.iter().map(|arg| match arg {
-                            syn::FnArg::Typed(pat) => {
-                                let name = pat.pat.clone();
-                                quote! { msg.#name, }
-                            }
-                            syn::FnArg::Receiver(recv) => handle_receiver(recv),
-                        });
-                    quote! {
-                         {
-                            let msg = #trait_name::#method_name(
-                                #(
-                                    #variables_spead
-                                )*
-                            ).await?;
-                            let ret = #return_struct_ident(msg);
-                            Ok(Rframe{
-                                tag: req.tag,
-                                msg: Rmessage::#variant_name(ret)
-                            })
-                        }
+            let request_struct_ident = tmsgs.get(index).unwrap().0.clone();
+            let return_struct_ident = rmsgs.get(index).unwrap().0.clone();
+            let new = if has_req {
+                let spread_req = method.sig.inputs.iter().map(|arg| match arg {
+                    syn::FnArg::Typed(pat) => {
+                        let name = pat.pat.clone();
+                        quote! { req.#name, }
                     }
-                }
-                _ => quote! {},
-            })
-            .collect();
-        let matches = std::iter::zip(match_arms, match_arm_bodies.iter()).map(
-            |(arm, body)| {
+                    syn::FnArg::Receiver(_) => quote! {},
+                });
                 quote! {
-                    #arm => #body
+                    fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> impl ::core::future::Future<
+                        Output = Result<#return_struct_ident, Error,
+                    > + Send + Sync {
+                        Box::pin(async move {
+                            #return_struct_ident(tag, #trait_name::#method_name(&mut self.inner,
+                                #(#spread_req)*
+                            )#maybe_await)
+                        })
+                    }
                 }
-            },
-        );
-        server_calls.extend(iter::once(quote! {
-            #[inline]
-            fn rpc(self, req:<Self as Protocol>::Request) -> impl ::core::future::Future<
-                Output = Result<<Self as Protocol>::Response, Error>,
-            > + Send + Sync {
-                Box::pin(async move {match req.msg {
-                    #(
-                        #matches
-                     )*
-                }})
-            }
+            } else {
+                quote! {
+                    fn #method_name(&mut self, tag: u16, req: #request_struct_ident) -> impl ::core::future::Future<
+                        Output = Result<#return_struct_ident, Error,
+                    > + Send + Sync {
+                        Box::pin(async move {
+                            #return_struct_ident(tag, #trait_name::#method_name(&mut self.inner)#maybe_await)
+                        })
+                    }
+                    }
+                };
+            server_calls.extend(new);
+        });
+    }
+    {
+        item.items.iter().enumerate().for_each(|(index, item)| {
+            let TraitItem::Fn(method) = item else {
+                return;
+            };
+            let method_name = &method.sig.ident;
+            let variant_name: Ident = IdentCased(method_name.clone()).to_pascale_case().into();
+            let retn = &method.sig.output;
+            let is_async = method.sig.asyncness.is_some();
+            let maybe_async = if is_async {
+                quote! { async }
+            } else {
+                quote! {}
+            };
+            let request_struct_ident = tmsgs.get(index).unwrap().0.clone();
+            let inputs = method.sig.inputs.iter().map(|arg| {
+                match arg {
+                    syn::FnArg::Typed(pat) => {
+                        let name = pat.pat.clone();
+                        let ty = pat.ty.clone();
+                        quote! {
+                             #name: #ty,
+                        }
+                    }
+                    syn::FnArg::Receiver(_) => quote! {},
+                }
+            });
+            let inputs_clone = inputs.clone();
+            let new = quote! {
+                #maybe_async fn #method_name(&mut self, #(#inputs)*)  #retn {
+                    let tag =#tag_name.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    let req = Tmessage::#variant_name(#request_struct_ident {
+                        #(
+                            #inputs_clone
+                        )*
+                    });
+                    let tframe= Frame::from((tag, req));
+                    let rframe = self.rpc(tframe).await?;
+                    let rmsg = rframe.msg;
+                    match rmsg {
+                        Rmessage::#variant_name(msg) => Ok(msg.0),
+                    }
+                }
+            };
 
-        }));
+            client_calls.extend(new);
+        });
     }
 
     // make a const with the digest
@@ -581,8 +444,52 @@ pub(crate) fn service_impl(
     });
     let tmessage = generate_tframe(&tmsgs);
     let rmessage = generate_rframe(&rmsgs);
-    let proto_mod =
-        format_ident!("{}_protocol", trait_name.to_string().to_lowercase());
+    let proto_mod = format_ident!("{}_protocol", trait_name.to_string().to_lowercase());
+
+    let match_arms = generate_match_arms(tmsgs.clone().into_iter());
+    let match_arm_bodies: Vec<proc_macro2::TokenStream> = item
+        .items
+        .clone()
+        .iter()
+        .map(|item| {
+            match item {
+                TraitItem::Fn(method) => {
+                    let method_name = &method.sig.ident;
+                    let name: IdentCased = method_name.into();
+                    let variant_name: Ident = name.to_pascale_case().into();
+                    let return_struct_ident =
+                        Ident::new(&format!("R{}", method_name), method_name.span());
+                    let variables_spead = method.sig.inputs.iter().map(|arg| {
+                        match arg {
+                            syn::FnArg::Typed(pat) => {
+                                let name = pat.pat.clone();
+                                quote! { msg.#name, }
+                            }
+                            syn::FnArg::Receiver(recv) => handle_receiver(recv),
+                        }
+                    });
+                    quote! {
+                         {
+                            let msg = #trait_name::#method_name(
+                                #(
+                                    #variables_spead
+                                )*
+                            ).await?;
+                            let ret = #return_struct_ident(msg);
+                            Ok(Rmessage::#variant_name(ret))
+                        }
+                    }
+                }
+                _ => quote! {},
+            }
+        })
+        .collect();
+    let matches = std::iter::zip(match_arms, match_arm_bodies.iter()).map(|(arm, body)| {
+        quote! {
+            #arm => #body
+        }
+    });
+
     let trait_attribute = if is_async_trait {
         quote! { #[jetstream::prelude::async_trait] }
     } else {
@@ -606,39 +513,67 @@ pub(crate) fn service_impl(
 
             #tmessage
 
-            impl Message for Tframe{}
-
             #rmessage
 
-            impl Message for Rframe{}
             #[derive(Clone)]
-            pub struct #protocol_name<T: #trait_name>
-                where
-                    T: #trait_name+ Send + Sync + Sized
-            {
-                inner: T,
+            pub struct #service_name<T: #trait_name> {
+                pub inner: T,
             }
-            impl<T: #trait_name> #protocol_name<T>
-                where
-                    T: #trait_name+ Send + Sync + Sized
+
+            impl<T> Protocol for #service_name<T>
+            where
+                T: #trait_name+ Send + Sync + Sized
             {
-                pub fn new(inner: T) -> Self {
-                    Self { inner }
+                type Request = Tmessage;
+                type Response = Rmessage;
+                type Error = Error;
+                const VERSION: &'static str = PROTOCOL_VERSION;
+
+                fn rpc(&mut self, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
+                    Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+                > + Send + Sync {
+                    Box::pin(async move {
+                        let req: <Self as Protocol>::Request = frame.msg;
+                        let res: Result<<Self as Protocol>::Response, Self::Error> =match req {
+                                #(
+                                    #matches
+                                )*
+                        };
+                        let rframe: Frame<<Self as Protocol>::Response> = Frame::from((frame.tag, res?));
+                        Ok(rframe)
+                    })
                 }
             }
-            impl<T> Protocol for #protocol_name<T>
-            where
-                T: #trait_name+ Send + Sync + Sized
-            {
-                type Request = Tframe;
-                type Response = Rframe;
+            pub struct #channel_name<'a> {
+                pub inner: Box<&'a mut dyn ClientTransport<Self>>,
             }
-            impl<T> Service<#protocol_name<T>> for #protocol_name<T>
-            where
-                T: #trait_name+ Send + Sync + Sized
+            impl<'a> Protocol for #channel_name<'a>
             {
-                #(#server_calls)*
+                type Request = Tmessage;
+                type Response = Rmessage;
+                type Error = Error;
+                const VERSION: &'static str = PROTOCOL_VERSION;
+                fn rpc(&mut self, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
+                    Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+                > + Send + Sync {
+                    use futures::{SinkExt, StreamExt};
+                    Box::pin(async move {
+                        self.inner
+                            .send(frame)
+                            .await?;
+                        let frame = self.inner.next().await.unwrap()?;
+                        Ok(frame)
+                    })
+                }
             }
+            lazy_static::lazy_static! {
+                static ref #tag_name: std::sync::atomic::AtomicU16 = std::sync::atomic::AtomicU16::new(0);
+            }
+            impl<'a> #trait_name for #channel_name<'a>
+            {
+                #(#client_calls)*
+            }
+
         }
 
         #trait_attribute
@@ -652,8 +587,7 @@ pub(crate) fn service_impl(
 mod tests {
     use core::panic;
 
-    use super::*;
-    use syn::parse_quote;
+    use {super::*, syn::parse_quote};
 
     fn run_test_with_filters<F>(test_fn: F)
     where
@@ -705,58 +639,26 @@ mod tests {
                 #[derive(Debug, JetStreamWireFormat)]
                 pub struct Rping(pub ());
                 #[derive(Debug)]
+                #[repr(u8)]
                 pub enum Tmessage {
-                    Ping(Tping),
+                    Ping(Tping) = TPING,
                 }
-                #[derive(Debug)]
-                pub struct Tframe {
-                    pub tag: u16,
-                    pub msg: Tmessage,
-                }
-                impl WireFormat for Tframe {
+                impl Framer for Tmessage {
                     fn byte_size(&self) -> u32 {
-                        let msg = &self.msg;
-                        let msg_size = match msg {
+                        match &self {
                             Tmessage::Ping(msg) => msg.byte_size(),
-                        };
-                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                        }
+                    }
+                    fn message_type(&self) -> u8 {
+                        unsafe { *<*const _>::from(self).cast::<u8>() }
                     }
                     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                        self.byte_size().encode(writer)?;
-                        let ty = match &self.msg {
-                            Tmessage::Ping(msg) => TPING,
-                        };
-                        ty.encode(writer)?;
-                        self.tag.encode(writer)?;
-                        match &self.msg {
+                        match &self {
                             Tmessage::Ping(msg) => msg.encode(writer)?,
                         }
                         Ok(())
                     }
-                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                        let byte_size = u32::decode(reader)?;
-                        if byte_size < mem::size_of::<u32>() as u32 {
-                            return Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                                ),
-                            );
-                        } else {
-                            let byte_size = byte_size
-                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                    + mem::size_of::<u16>()) as u32;
-                        }
-                        let ty = u8::decode(reader)?;
-                        let tag: u16 = u16::decode(reader)?;
-                        let reader = &mut reader.take((byte_size) as u64);
-                        let msg: Tmessage = Self::decode_message(reader, ty)?;
-                        Ok(Tframe { tag, msg })
-                    }
-                }
-                impl Tframe {
-                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
+                    fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
                         match ty {
                             TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
                             _ => {
@@ -770,60 +672,27 @@ mod tests {
                         }
                     }
                 }
-                impl Message for Tframe {}
                 #[derive(Debug)]
+                #[repr(u8)]
                 pub enum Rmessage {
-                    Ping(Rping),
+                    Ping(Rping) = RPING,
                 }
-                #[derive(Debug)]
-                pub struct Rframe {
-                    pub tag: u16,
-                    pub msg: Rmessage,
-                }
-                impl WireFormat for Rframe {
+                impl Framer for Rmessage {
                     fn byte_size(&self) -> u32 {
-                        let msg = &self.msg;
-                        let msg_size = match msg {
+                        match &self {
                             Rmessage::Ping(msg) => msg.byte_size(),
-                        };
-                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                        }
+                    }
+                    fn message_type(&self) -> u8 {
+                        unsafe { *<*const _>::from(self).cast::<u8>() }
                     }
                     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                        self.byte_size().encode(writer)?;
-                        let ty = match &self.msg {
-                            Rmessage::Ping(msg) => RPING,
-                        };
-                        ty.encode(writer)?;
-                        self.tag.encode(writer)?;
-                        match &self.msg {
+                        match &self {
                             Rmessage::Ping(msg) => msg.encode(writer)?,
                         }
                         Ok(())
                     }
-                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                        let byte_size = u32::decode(reader)?;
-                        if byte_size < mem::size_of::<u32>() as u32 {
-                            return Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                                ),
-                            );
-                        } else {
-                            let byte_size = byte_size
-                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                    + mem::size_of::<u16>()) as u32;
-                        }
-                        let ty = u8::decode(reader)?;
-                        let tag: u16 = u16::decode(reader)?;
-                        let reader = &mut reader.take((byte_size) as u64);
-                        let msg: Rmessage = Self::decode_message(reader, ty)?;
-                        Ok(Rframe { tag, msg })
-                    }
-                }
-                impl Rframe {
-                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
+                    fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
                         match ty {
                             RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
                             _ => {
@@ -837,52 +706,77 @@ mod tests {
                         }
                     }
                 }
-                impl Message for Rframe {}
                 #[derive(Clone)]
-                pub struct EchoProtocol<T: Echo>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    inner: T,
+                pub struct EchoService<T: Echo> {
+                    pub inner: T,
                 }
-                impl<T: Echo> EchoProtocol<T>
+                impl<T> Protocol for EchoService<T>
                 where
                     T: Echo + Send + Sync + Sized,
                 {
-                    pub fn new(inner: T) -> Self {
-                        Self { inner }
-                    }
-                }
-                impl<T> Protocol for EchoProtocol<T>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    type Request = Tframe;
-                    type Response = Rframe;
-                }
-                impl<T> Service<EchoProtocol<T>> for EchoProtocol<T>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    #[inline]
+                    type Request = Tmessage;
+                    type Response = Rmessage;
+                    type Error = Error;
+                    const VERSION: &'static str = PROTOCOL_VERSION;
                     fn rpc(
-                        self,
-                        req: <Self as Protocol>::Request,
+                        &mut self,
+                        frame: Frame<<Self as Protocol>::Request>,
                     ) -> impl ::core::future::Future<
-                        Output = Result<<Self as Protocol>::Response, Error>,
+                        Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
                     > + Send + Sync {
                         Box::pin(async move {
-                            match req.msg {
+                            let req: <Self as Protocol>::Request = frame.msg;
+                            let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
                                 Tmessage::Ping(msg) => {
                                     let msg = Echo::ping(&self.inner).await?;
                                     let ret = Rping(msg);
-                                    Ok(Rframe {
-                                        tag: req.tag,
-                                        msg: Rmessage::Ping(ret),
-                                    })
+                                    Ok(Rmessage::Ping(ret))
                                 }
-                            }
+                            };
+                            let rframe: Frame<<Self as Protocol>::Response> = Frame::from((
+                                frame.tag,
+                                res?,
+                            ));
+                            Ok(rframe)
                         })
+                    }
+                }
+                pub struct EchoChannel<'a> {
+                    pub inner: Box<&'a mut dyn ClientTransport<Self>>,
+                }
+                impl<'a> Protocol for EchoChannel<'a> {
+                    type Request = Tmessage;
+                    type Response = Rmessage;
+                    type Error = Error;
+                    const VERSION: &'static str = PROTOCOL_VERSION;
+                    fn rpc(
+                        &mut self,
+                        frame: Frame<<Self as Protocol>::Request>,
+                    ) -> impl ::core::future::Future<
+                        Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+                    > + Send + Sync {
+                        use futures::{SinkExt, StreamExt};
+                        Box::pin(async move {
+                            self.inner.send(frame).await?;
+                            let frame = self.inner.next().await.unwrap()?;
+                            Ok(frame)
+                        })
+                    }
+                }
+                lazy_static::lazy_static! {
+                    static ref ECHO_TAG : std::sync::atomic::AtomicU16 =
+                    std::sync::atomic::AtomicU16::new(0);
+                }
+                impl<'a> Echo for EchoChannel<'a> {
+                    async fn ping(&mut self) -> Result<(), std::io::Error> {
+                        let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                        let req = Tmessage::Ping(Tping {});
+                        let tframe = Frame::from((tag, req));
+                        let rframe = self.rpc(tframe).await?;
+                        let rmsg = rframe.msg;
+                        match rmsg {
+                            Rmessage::Ping(msg) => Ok(msg.0),
+                        }
                     }
                 }
             }
@@ -925,58 +819,26 @@ mod tests {
                 #[derive(Debug, JetStreamWireFormat)]
                 pub struct Rping(pub String);
                 #[derive(Debug)]
+                #[repr(u8)]
                 pub enum Tmessage {
-                    Ping(Tping),
+                    Ping(Tping) = TPING,
                 }
-                #[derive(Debug)]
-                pub struct Tframe {
-                    pub tag: u16,
-                    pub msg: Tmessage,
-                }
-                impl WireFormat for Tframe {
+                impl Framer for Tmessage {
                     fn byte_size(&self) -> u32 {
-                        let msg = &self.msg;
-                        let msg_size = match msg {
+                        match &self {
                             Tmessage::Ping(msg) => msg.byte_size(),
-                        };
-                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                        }
+                    }
+                    fn message_type(&self) -> u8 {
+                        unsafe { *<*const _>::from(self).cast::<u8>() }
                     }
                     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                        self.byte_size().encode(writer)?;
-                        let ty = match &self.msg {
-                            Tmessage::Ping(msg) => TPING,
-                        };
-                        ty.encode(writer)?;
-                        self.tag.encode(writer)?;
-                        match &self.msg {
+                        match &self {
                             Tmessage::Ping(msg) => msg.encode(writer)?,
                         }
                         Ok(())
                     }
-                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                        let byte_size = u32::decode(reader)?;
-                        if byte_size < mem::size_of::<u32>() as u32 {
-                            return Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                                ),
-                            );
-                        } else {
-                            let byte_size = byte_size
-                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                    + mem::size_of::<u16>()) as u32;
-                        }
-                        let ty = u8::decode(reader)?;
-                        let tag: u16 = u16::decode(reader)?;
-                        let reader = &mut reader.take((byte_size) as u64);
-                        let msg: Tmessage = Self::decode_message(reader, ty)?;
-                        Ok(Tframe { tag, msg })
-                    }
-                }
-                impl Tframe {
-                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
+                    fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
                         match ty {
                             TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
                             _ => {
@@ -990,60 +852,27 @@ mod tests {
                         }
                     }
                 }
-                impl Message for Tframe {}
                 #[derive(Debug)]
+                #[repr(u8)]
                 pub enum Rmessage {
-                    Ping(Rping),
+                    Ping(Rping) = RPING,
                 }
-                #[derive(Debug)]
-                pub struct Rframe {
-                    pub tag: u16,
-                    pub msg: Rmessage,
-                }
-                impl WireFormat for Rframe {
+                impl Framer for Rmessage {
                     fn byte_size(&self) -> u32 {
-                        let msg = &self.msg;
-                        let msg_size = match msg {
+                        match &self {
                             Rmessage::Ping(msg) => msg.byte_size(),
-                        };
-                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                        }
+                    }
+                    fn message_type(&self) -> u8 {
+                        unsafe { *<*const _>::from(self).cast::<u8>() }
                     }
                     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                        self.byte_size().encode(writer)?;
-                        let ty = match &self.msg {
-                            Rmessage::Ping(msg) => RPING,
-                        };
-                        ty.encode(writer)?;
-                        self.tag.encode(writer)?;
-                        match &self.msg {
+                        match &self {
                             Rmessage::Ping(msg) => msg.encode(writer)?,
                         }
                         Ok(())
                     }
-                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                        let byte_size = u32::decode(reader)?;
-                        if byte_size < mem::size_of::<u32>() as u32 {
-                            return Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                                ),
-                            );
-                        } else {
-                            let byte_size = byte_size
-                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                    + mem::size_of::<u16>()) as u32;
-                        }
-                        let ty = u8::decode(reader)?;
-                        let tag: u16 = u16::decode(reader)?;
-                        let reader = &mut reader.take((byte_size) as u64);
-                        let msg: Rmessage = Self::decode_message(reader, ty)?;
-                        Ok(Rframe { tag, msg })
-                    }
-                }
-                impl Rframe {
-                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
+                    fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
                         match ty {
                             RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
                             _ => {
@@ -1057,52 +886,77 @@ mod tests {
                         }
                     }
                 }
-                impl Message for Rframe {}
                 #[derive(Clone)]
-                pub struct EchoProtocol<T: Echo>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    inner: T,
+                pub struct EchoService<T: Echo> {
+                    pub inner: T,
                 }
-                impl<T: Echo> EchoProtocol<T>
+                impl<T> Protocol for EchoService<T>
                 where
                     T: Echo + Send + Sync + Sized,
                 {
-                    pub fn new(inner: T) -> Self {
-                        Self { inner }
-                    }
-                }
-                impl<T> Protocol for EchoProtocol<T>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    type Request = Tframe;
-                    type Response = Rframe;
-                }
-                impl<T> Service<EchoProtocol<T>> for EchoProtocol<T>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    #[inline]
+                    type Request = Tmessage;
+                    type Response = Rmessage;
+                    type Error = Error;
+                    const VERSION: &'static str = PROTOCOL_VERSION;
                     fn rpc(
-                        self,
-                        req: <Self as Protocol>::Request,
+                        &mut self,
+                        frame: Frame<<Self as Protocol>::Request>,
                     ) -> impl ::core::future::Future<
-                        Output = Result<<Self as Protocol>::Response, Error>,
+                        Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
                     > + Send + Sync {
                         Box::pin(async move {
-                            match req.msg {
+                            let req: <Self as Protocol>::Request = frame.msg;
+                            let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
                                 Tmessage::Ping(msg) => {
                                     let msg = Echo::ping(&self.inner, msg.message).await?;
                                     let ret = Rping(msg);
-                                    Ok(Rframe {
-                                        tag: req.tag,
-                                        msg: Rmessage::Ping(ret),
-                                    })
+                                    Ok(Rmessage::Ping(ret))
                                 }
-                            }
+                            };
+                            let rframe: Frame<<Self as Protocol>::Response> = Frame::from((
+                                frame.tag,
+                                res?,
+                            ));
+                            Ok(rframe)
                         })
+                    }
+                }
+                pub struct EchoChannel<'a> {
+                    pub inner: Box<&'a mut dyn ClientTransport<Self>>,
+                }
+                impl<'a> Protocol for EchoChannel<'a> {
+                    type Request = Tmessage;
+                    type Response = Rmessage;
+                    type Error = Error;
+                    const VERSION: &'static str = PROTOCOL_VERSION;
+                    fn rpc(
+                        &mut self,
+                        frame: Frame<<Self as Protocol>::Request>,
+                    ) -> impl ::core::future::Future<
+                        Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+                    > + Send + Sync {
+                        use futures::{SinkExt, StreamExt};
+                        Box::pin(async move {
+                            self.inner.send(frame).await?;
+                            let frame = self.inner.next().await.unwrap()?;
+                            Ok(frame)
+                        })
+                    }
+                }
+                lazy_static::lazy_static! {
+                    static ref ECHO_TAG : std::sync::atomic::AtomicU16 =
+                    std::sync::atomic::AtomicU16::new(0);
+                }
+                impl<'a> Echo for EchoChannel<'a> {
+                    async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
+                        let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                        let req = Tmessage::Ping(Tping { message: String });
+                        let tframe = Frame::from((tag, req));
+                        let rframe = self.rpc(tframe).await?;
+                        let rmsg = rframe.msg;
+                        match rmsg {
+                            Rmessage::Ping(msg) => Ok(msg.0),
+                        }
                     }
                 }
             }
@@ -1145,58 +999,26 @@ mod tests {
                 #[derive(Debug, JetStreamWireFormat)]
                 pub struct Rping(pub String);
                 #[derive(Debug)]
+                #[repr(u8)]
                 pub enum Tmessage {
-                    Ping(Tping),
+                    Ping(Tping) = TPING,
                 }
-                #[derive(Debug)]
-                pub struct Tframe {
-                    pub tag: u16,
-                    pub msg: Tmessage,
-                }
-                impl WireFormat for Tframe {
+                impl Framer for Tmessage {
                     fn byte_size(&self) -> u32 {
-                        let msg = &self.msg;
-                        let msg_size = match msg {
+                        match &self {
                             Tmessage::Ping(msg) => msg.byte_size(),
-                        };
-                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                        }
+                    }
+                    fn message_type(&self) -> u8 {
+                        unsafe { *<*const _>::from(self).cast::<u8>() }
                     }
                     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                        self.byte_size().encode(writer)?;
-                        let ty = match &self.msg {
-                            Tmessage::Ping(msg) => TPING,
-                        };
-                        ty.encode(writer)?;
-                        self.tag.encode(writer)?;
-                        match &self.msg {
+                        match &self {
                             Tmessage::Ping(msg) => msg.encode(writer)?,
                         }
                         Ok(())
                     }
-                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                        let byte_size = u32::decode(reader)?;
-                        if byte_size < mem::size_of::<u32>() as u32 {
-                            return Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                                ),
-                            );
-                        } else {
-                            let byte_size = byte_size
-                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                    + mem::size_of::<u16>()) as u32;
-                        }
-                        let ty = u8::decode(reader)?;
-                        let tag: u16 = u16::decode(reader)?;
-                        let reader = &mut reader.take((byte_size) as u64);
-                        let msg: Tmessage = Self::decode_message(reader, ty)?;
-                        Ok(Tframe { tag, msg })
-                    }
-                }
-                impl Tframe {
-                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
+                    fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
                         match ty {
                             TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
                             _ => {
@@ -1210,60 +1032,27 @@ mod tests {
                         }
                     }
                 }
-                impl Message for Tframe {}
                 #[derive(Debug)]
+                #[repr(u8)]
                 pub enum Rmessage {
-                    Ping(Rping),
+                    Ping(Rping) = RPING,
                 }
-                #[derive(Debug)]
-                pub struct Rframe {
-                    pub tag: u16,
-                    pub msg: Rmessage,
-                }
-                impl WireFormat for Rframe {
+                impl Framer for Rmessage {
                     fn byte_size(&self) -> u32 {
-                        let msg = &self.msg;
-                        let msg_size = match msg {
+                        match &self {
                             Rmessage::Ping(msg) => msg.byte_size(),
-                        };
-                        (std::mem::size_of::<u32>() + std::mem::size_of::<u8>()
-                            + std::mem::size_of::<u16>()) as u32 + msg_size
+                        }
+                    }
+                    fn message_type(&self) -> u8 {
+                        unsafe { *<*const _>::from(self).cast::<u8>() }
                     }
                     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                        self.byte_size().encode(writer)?;
-                        let ty = match &self.msg {
-                            Rmessage::Ping(msg) => RPING,
-                        };
-                        ty.encode(writer)?;
-                        self.tag.encode(writer)?;
-                        match &self.msg {
+                        match &self {
                             Rmessage::Ping(msg) => msg.encode(writer)?,
                         }
                         Ok(())
                     }
-                    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
-                        let byte_size = u32::decode(reader)?;
-                        if byte_size < mem::size_of::<u32>() as u32 {
-                            return Err(
-                                std::io::Error::new(
-                                    std::io::ErrorKind::InvalidData,
-                                    format!("byte_size(= {}) is less than 4 bytes", byte_size),
-                                ),
-                            );
-                        } else {
-                            let byte_size = byte_size
-                                - (mem::size_of::<u32>() + mem::size_of::<u8>()
-                                    + mem::size_of::<u16>()) as u32;
-                        }
-                        let ty = u8::decode(reader)?;
-                        let tag: u16 = u16::decode(reader)?;
-                        let reader = &mut reader.take((byte_size) as u64);
-                        let msg: Rmessage = Self::decode_message(reader, ty)?;
-                        Ok(Rframe { tag, msg })
-                    }
-                }
-                impl Rframe {
-                    fn decode_message<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
+                    fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
                         match ty {
                             RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
                             _ => {
@@ -1277,52 +1066,77 @@ mod tests {
                         }
                     }
                 }
-                impl Message for Rframe {}
                 #[derive(Clone)]
-                pub struct EchoProtocol<T: Echo>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    inner: T,
+                pub struct EchoService<T: Echo> {
+                    pub inner: T,
                 }
-                impl<T: Echo> EchoProtocol<T>
+                impl<T> Protocol for EchoService<T>
                 where
                     T: Echo + Send + Sync + Sized,
                 {
-                    pub fn new(inner: T) -> Self {
-                        Self { inner }
-                    }
-                }
-                impl<T> Protocol for EchoProtocol<T>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    type Request = Tframe;
-                    type Response = Rframe;
-                }
-                impl<T> Service<EchoProtocol<T>> for EchoProtocol<T>
-                where
-                    T: Echo + Send + Sync + Sized,
-                {
-                    #[inline]
+                    type Request = Tmessage;
+                    type Response = Rmessage;
+                    type Error = Error;
+                    const VERSION: &'static str = PROTOCOL_VERSION;
                     fn rpc(
-                        self,
-                        req: <Self as Protocol>::Request,
+                        &mut self,
+                        frame: Frame<<Self as Protocol>::Request>,
                     ) -> impl ::core::future::Future<
-                        Output = Result<<Self as Protocol>::Response, Error>,
+                        Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
                     > + Send + Sync {
                         Box::pin(async move {
-                            match req.msg {
+                            let req: <Self as Protocol>::Request = frame.msg;
+                            let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
                                 Tmessage::Ping(msg) => {
                                     let msg = Echo::ping(&mut self.inner, msg.message).await?;
                                     let ret = Rping(msg);
-                                    Ok(Rframe {
-                                        tag: req.tag,
-                                        msg: Rmessage::Ping(ret),
-                                    })
+                                    Ok(Rmessage::Ping(ret))
                                 }
-                            }
+                            };
+                            let rframe: Frame<<Self as Protocol>::Response> = Frame::from((
+                                frame.tag,
+                                res?,
+                            ));
+                            Ok(rframe)
                         })
+                    }
+                }
+                pub struct EchoChannel<'a> {
+                    pub inner: Box<&'a mut dyn ClientTransport<Self>>,
+                }
+                impl<'a> Protocol for EchoChannel<'a> {
+                    type Request = Tmessage;
+                    type Response = Rmessage;
+                    type Error = Error;
+                    const VERSION: &'static str = PROTOCOL_VERSION;
+                    fn rpc(
+                        &mut self,
+                        frame: Frame<<Self as Protocol>::Request>,
+                    ) -> impl ::core::future::Future<
+                        Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+                    > + Send + Sync {
+                        use futures::{SinkExt, StreamExt};
+                        Box::pin(async move {
+                            self.inner.send(frame).await?;
+                            let frame = self.inner.next().await.unwrap()?;
+                            Ok(frame)
+                        })
+                    }
+                }
+                lazy_static::lazy_static! {
+                    static ref ECHO_TAG : std::sync::atomic::AtomicU16 =
+                    std::sync::atomic::AtomicU16::new(0);
+                }
+                impl<'a> Echo for EchoChannel<'a> {
+                    async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
+                        let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                        let req = Tmessage::Ping(Tping { message: String });
+                        let tframe = Frame::from((tag, req));
+                        let rframe = self.rpc(tframe).await?;
+                        let rmsg = rframe.msg;
+                        match rmsg {
+                            Rmessage::Ping(msg) => Ok(msg.0),
+                        }
                     }
                 }
             }

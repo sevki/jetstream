@@ -1,190 +1,56 @@
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
+// Copyright (c) 2024, Sevki <s@sevki.io>
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
-// Copyright (c) 2024, Sevki <s@sevki.io>
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-use jetstream_rpc::{Protocol, Service};
-use jetstream_wireformat::wire_format_extensions::tokio::AsyncWireFormatExt;
-use okstd::okasync::{Runtime, Runtimes};
-use s2n_quic::client::Connect;
-use s2n_quic::provider::tls;
-use std::net::SocketAddr;
-use std::path::Path;
-use std::sync::{Arc, Mutex};
 
-use s2n_quic::stream::SplittableStream;
-use s2n_quic::Client;
+use {
+    jetstream_rpc::{Frame, Protocol},
+    jetstream_wireformat::WireFormat,
+    tokio_util::{
+        bytes::{self, Buf, BufMut},
+        codec::{Decoder, Encoder},
+    },
+};
 
-type Result<T> = std::result::Result<T, jetstream_rpc::Error>;
-
-pub struct Connection<P: Protocol> {
-    inner: s2n_quic::Connection,
-    rt: Arc<Mutex<Runtimes>>,
-    _phantom: std::marker::PhantomData<P>,
+pub struct ClientCodec<P>
+where
+    P: Protocol,
+{
+    _p: std::marker::PhantomData<P>,
 }
+impl<P: jetstream_rpc::Protocol> Encoder<Frame<P::Request>> for ClientCodec<P> {
+    type Error = std::io::Error;
 
-impl<P: Protocol> Connection<P> {
-    pub fn new(inner: s2n_quic::Connection, rt: Runtimes) -> Self {
-        Connection {
-            inner,
-            rt: Arc::new(Mutex::new(rt)),
-            _phantom: std::marker::PhantomData,
-        }
+    fn encode(
+        &mut self,
+        item: Frame<P::Request>,
+        dst: &mut bytes::BytesMut,
+    ) -> Result<(), Self::Error> {
+        WireFormat::encode(&item, &mut dst.writer())
     }
 }
 
-impl<P: Protocol> Connection<P> {
-    pub async fn new_handle(&mut self) -> Result<Handle<P>> {
-        let stream = self.inner.open_bidirectional_stream().await?;
-        Ok(Handle::<P> {
-            stream,
-            rt: self.rt.clone(),
-            _phantom: std::marker::PhantomData,
-        })
+impl<P: jetstream_rpc::Protocol> Decoder for ClientCodec<P> {
+    type Error = std::io::Error;
+
+    fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+        Ok(Some(Frame::<P::Response>::decode(&mut src.reader())?))
     }
-    pub fn new_handle_sync(&mut self) -> Result<Handle<P>> {
-        self.rt
-            .clone()
-            .lock()
-            .unwrap()
-            .block_on(async { self.new_handle().await })
-    }
+
+    type Item = Frame<P::Response>;
 }
 
-pub struct Handle<P: Protocol> {
-    stream: s2n_quic::stream::BidirectionalStream,
-    rt: Arc<Mutex<Runtimes>>,
-    _phantom: std::marker::PhantomData<P>,
-}
-
-impl<P: Protocol> Protocol for Handle<P> {
-    type Request = P::Request;
-    type Response = P::Response;
-}
-
-impl<P: Protocol + Send + Sync> SplittableStream for Handle<P> {
-    fn split(
-        self,
-    ) -> (
-        Option<s2n_quic::stream::ReceiveStream>,
-        Option<s2n_quic::stream::SendStream>,
-    ) {
-        let (r, s) = self.stream.split();
-        (Some(r), Some(s))
-    }
-}
-
-impl<P: Protocol + Send + Sync> Service<P> for Handle<P> {
-    #[doc = " Handles an RPC call asynchronously."]
-    fn rpc(
-        self,
-        req: P::Request,
-    ) -> impl ::core::future::Future<Output = Result<P::Response>> + Send + Sync
-    {
-        Box::pin(async move {
-            let rt = self.rt.clone();
-            let rt = rt.lock().unwrap();
-            rt.block_on(async {
-                let (read, write) = self.stream.split();
-                let _ = req.encode_async(write).await;
-                let resp = P::Response::decode_async(read).await;
-                resp.map_err(|e| e.into())
-            })
-        })
-    }
-}
-
-#[derive(Debug, Clone)]
-/// Represents a DialQuic struct.
-pub struct DialQuic {
-    host: String,
-    port: u16,
-    client_cert: Box<Path>,
-    key: Box<Path>,
-    ca_cert: Box<Path>,
-    hostname: String,
-}
-
-impl DialQuic {
-    /// Creates a new instance of `DialQuic`.
-    ///
-    /// # Arguments
-    ///
-    /// * `host` - The host to connect to.
-    /// * `port` - The port to connect to.
-    /// * `cert` - The path to the client certificate file.
-    /// * `key` - The path to the client private key file.
-    /// * `ca_cert` - The path to the CA certificate file.
-    /// * `hostname` - The hostname for the TLS handshake.
-    ///
-    /// # Returns
-    ///
-    /// A new instance of `DialQuic`.
-    pub fn new(
-        host: String,
-        port: u16,
-        cert: Box<Path>,
-        key: Box<Path>,
-        ca_cert: Box<Path>,
-        hostname: String,
-    ) -> Self {
+impl<P> Default for ClientCodec<P>
+where
+    P: jetstream_rpc::Protocol,
+{
+    fn default() -> Self {
         Self {
-            host,
-            port,
-            client_cert: cert,
-            key,
-            ca_cert,
-            hostname,
+            _p: std::marker::PhantomData,
         }
-    }
-}
-
-/// Establishes a QUIC connection with the specified server.
-///
-/// This function dials a QUIC connection using the provided certificates and keys.
-/// It creates a TLS client with the given CA certificate, client certificate, and client key.
-/// The connection is established with the specified server address and hostname.
-/// The connection is configured to keep alive and not time out due to inactivity.
-///
-/// # Arguments
-///
-/// - `self`: The `DialQuic` instance.
-///
-/// # Returns
-///
-/// Returns a `Result` containing the established `s2n_quic::Connection` if successful,
-/// or an `anyhow::Error` if an error occurs during the connection establishment.
-impl DialQuic {
-    pub async fn dial(self) -> anyhow::Result<s2n_quic::Connection> {
-        let ca_cert = self.ca_cert.to_str().unwrap();
-        let client_cert = self.client_cert.to_str().unwrap();
-        let client_key = self.key.to_str().unwrap();
-        let tls = tls::default::Client::builder()
-            .with_certificate(Path::new(ca_cert))?
-            .with_client_identity(
-                Path::new(client_cert),
-                Path::new(client_key),
-            )?
-            .build()?;
-
-        let client = Client::builder()
-            .with_tls(tls)?
-            .with_io("0.0.0.0:0")?
-            .start()?;
-
-        let host_port = format!("{}:{}", self.host, self.port);
-
-        let addr: SocketAddr = host_port.parse()?;
-        let connect = Connect::new(addr).with_server_name(&*self.hostname);
-        let mut connection = client.connect(connect).await?;
-
-        // ensure the connection doesn't time out with inactivity
-        connection.keep_alive(true)?;
-        Ok(connection)
     }
 }

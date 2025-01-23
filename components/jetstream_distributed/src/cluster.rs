@@ -1,6 +1,5 @@
 //! Cluster provides memebership primitives for JetStream.
-use jetstream_rpc::{Protocol, Service};
-use mac_address::MacAddressIterator;
+use {jetstream_rpc::Protocol, mac_address::MacAddressIterator};
 
 use super::{coordinate::Coordinate, Result};
 
@@ -21,7 +20,7 @@ pub trait Node {
     /// Coordinate
     fn coordinate(&self) -> Result<Coordinate>;
     /// dial
-    async fn dial<P: Protocol>(&self) -> Result<impl Service<P>>;
+    async fn dial<P: Protocol>(&self) -> Result<impl Protocol>;
 }
 
 /// IntoNode trait

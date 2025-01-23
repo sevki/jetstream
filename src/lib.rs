@@ -13,7 +13,14 @@ pub mod prelude {
 
     pub use jetstream_macros::{service, JetStreamWireFormat};
 
-    pub use jetstream_rpc::{Error, Message, Protocol, Service};
+    pub use jetstream_rpc::{
+        ClientTransport, Error, Frame, Framer, Message, Protocol,
+        ServiceTransport, Tag,
+    };
+
+    pub use lazy_static::*;
+
+    pub use tokio_util::codec::{Decoder, Encoder, Framed};
 
     pub use jetstream_wireformat::{Data, WireFormat};
 

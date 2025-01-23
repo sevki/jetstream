@@ -142,9 +142,7 @@ impl AccessControl for Script {
 
 #[cfg(test)]
 mod test {
-    use cel_interpreter::objects::Map;
-    use okstd::prelude::*;
-    use std::collections::HashMap;
+    use {cel_interpreter::objects::Map, okstd::prelude::*, std::collections::HashMap};
 
     use super::*;
 
@@ -156,17 +154,14 @@ mod test {
     }
     enum SimpleVerb {
         Write,
-        Read,
     }
     impl Subject for SimpleSubject {
         fn id(&self) -> String {
             self.id.clone()
         }
         fn into_value(self) -> cel_interpreter::Value {
-            let mut map: HashMap<
-                cel_interpreter::objects::Key,
-                cel_interpreter::objects::Value,
-            > = HashMap::new();
+            let mut map: HashMap<cel_interpreter::objects::Key, cel_interpreter::objects::Value> =
+                HashMap::new();
             map.insert(
                 "id".to_string().into(),
                 cel_interpreter::Value::String(self.id.clone().into()),
@@ -188,12 +183,7 @@ mod test {
     impl Verb for SimpleVerb {
         fn into_value(self) -> cel_interpreter::Value {
             match self {
-                SimpleVerb::Write => {
-                    cel_interpreter::Value::String("write".to_string().into())
-                }
-                SimpleVerb::Read => {
-                    cel_interpreter::Value::String("read".to_string().into())
-                }
+                SimpleVerb::Write => cel_interpreter::Value::String("write".to_string().into()),
             }
         }
     }
@@ -201,7 +191,8 @@ mod test {
     #[okstd::test]
     async fn test_simple_acl() {
         let script = Script {
-            program: r#"subject.id == "alice" && action == "write" && resource == "file1""#.to_string(),
+            program: r#"subject.id == "alice" && action == "write" && resource == "file1""#
+                .to_string(),
         };
         let subject = SimpleSubject {
             id: "alice".to_string(),
