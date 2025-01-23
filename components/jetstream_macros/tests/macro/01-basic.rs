@@ -1,5 +1,6 @@
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
+use okstd::prelude::*;
 use server::service::run;
 use std::net::{IpAddr, Ipv4Addr};
 use turmoil::{
@@ -62,6 +63,11 @@ fn network_partitions_during_connect() -> turmoil::Result {
     });
 
     sim.run()
+}
+
+#[okstd::main]
+async fn main() {
+    network_partitions_during_connect().unwrap();
 }
 
 #[cfg(test)]

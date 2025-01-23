@@ -8,12 +8,16 @@ use std::{
     pin::Pin,
 };
 
-use crate::coding::{self, Rframe, Tframe, WireFormat};
-use futures_util::Future;
-use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+use {
+    crate::coding::{self, Rframe, Tframe, WireFormat},
+    futures_util::Future,
+    tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt},
+};
 
-use super::server::ninep_2000_l::NineP200L;
-use crate::wire_format_extensions::{AsyncWireFormat, AsyncWireFormatExt};
+use {
+    super::server::ninep_2000_l::NineP200L,
+    crate::wire_format_extensions::{AsyncWireFormat, AsyncWireFormatExt},
+};
 
 #[async_trait::async_trait]
 trait Stat {
@@ -23,15 +27,9 @@ trait Stat {
 #[async_trait::async_trait]
 trait File: AsyncRead + AsyncWrite + Stat {
     async fn read(&mut self, msg: &coding::Tread) -> io::Result<coding::Rread>;
-    async fn write(
-        &mut self,
-        msg: &coding::Twrite,
-    ) -> io::Result<coding::Rwrite>;
+    async fn write(&mut self, msg: &coding::Twrite) -> io::Result<coding::Rwrite>;
     async fn flush(&mut self, _msg: &coding::Tflush) -> io::Result<()>;
-    async fn stat(
-        &mut self,
-        msg: &coding::Tgetattr,
-    ) -> io::Result<coding::Rgetattr>;
+    async fn stat(&mut self, msg: &coding::Tgetattr) -> io::Result<coding::Rgetattr>;
 }
 
 #[async_trait::async_trait]
@@ -47,10 +45,7 @@ where
         })
     }
 
-    async fn write(
-        &mut self,
-        msg: &coding::Twrite,
-    ) -> io::Result<coding::Rwrite> {
+    async fn write(&mut self, msg: &coding::Twrite) -> io::Result<coding::Rwrite> {
         self.write_all(&msg.data.0).await?;
         Ok(coding::Rwrite {
             count: msg.data.0.len() as u32,
@@ -61,10 +56,7 @@ where
         AsyncWriteExt::flush(&mut self).await
     }
 
-    async fn stat(
-        &mut self,
-        _msg: &coding::Tgetattr,
-    ) -> io::Result<coding::Rgetattr> {
+    async fn stat(&mut self, _msg: &coding::Tgetattr) -> io::Result<coding::Rgetattr> {
         Ok(coding::Rgetattr {
             valid: 0,
             qid: coding::Qid {
@@ -96,19 +88,10 @@ where
 
 #[async_trait::async_trait]
 trait Dir {
-    async fn open(
-        &mut self,
-        msg: &coding::Tlopen,
-    ) -> io::Result<coding::Rlopen>;
-    async fn create(
-        &mut self,
-        msg: &coding::Tlcreate,
-    ) -> io::Result<coding::Rlcreate>;
+    async fn open(&mut self, msg: &coding::Tlopen) -> io::Result<coding::Rlopen>;
+    async fn create(&mut self, msg: &coding::Tlcreate) -> io::Result<coding::Rlcreate>;
     async fn remove(&mut self, msg: &coding::Tremove) -> io::Result<()>;
-    async fn stat(
-        &mut self,
-        msg: &coding::Tgetattr,
-    ) -> io::Result<coding::Rgetattr>;
+    async fn stat(&mut self, msg: &coding::Tgetattr) -> io::Result<coding::Rgetattr>;
 }
 
 #[async_trait::async_trait]
@@ -116,10 +99,7 @@ trait DirExt: Dir
 where
     Self: Sized + Send + Sync + Unpin,
 {
-    async fn open(
-        &mut self,
-        _msg: &coding::Tlopen,
-    ) -> io::Result<coding::Rlopen> {
+    async fn open(&mut self, _msg: &coding::Tlopen) -> io::Result<coding::Rlopen> {
         Ok(coding::Rlopen {
             qid: coding::Qid {
                 ty: 0,
@@ -130,10 +110,7 @@ where
         })
     }
 
-    async fn create(
-        &mut self,
-        _msg: &coding::Tlcreate,
-    ) -> io::Result<coding::Rlcreate> {
+    async fn create(&mut self, _msg: &coding::Tlcreate) -> io::Result<coding::Rlcreate> {
         Ok(coding::Rlcreate {
             qid: coding::Qid {
                 ty: 0,
@@ -148,10 +125,7 @@ where
         Ok(())
     }
 
-    async fn stat(
-        &mut self,
-        _msg: &coding::Tgetattr,
-    ) -> io::Result<coding::Rgetattr> {
+    async fn stat(&mut self, _msg: &coding::Tgetattr) -> io::Result<coding::Rgetattr> {
         Ok(coding::Rgetattr {
             valid: 0,
             qid: coding::Qid {
@@ -231,10 +205,7 @@ impl<F: File, D: Dir> FileSystem<F, D> {
 }
 
 impl<F: File, D: Dir> FileSystem<F, D> {
-    async fn attach(
-        &mut self,
-        msg: &coding::Tattach,
-    ) -> io::Result<coding::Rattach> {
+    async fn attach(&mut self, msg: &coding::Tattach) -> io::Result<coding::Rattach> {
         let fid = Fid {
             inner: msg.fid,
             _phantom: PhantomData,

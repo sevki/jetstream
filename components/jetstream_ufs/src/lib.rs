@@ -23,39 +23,33 @@ macro_rules! syscall {
 }
 
 mod read_dir;
-mod ufs;
+pub mod ufs;
 
-pub use ufs::Handler;
-pub use ufs::Ufs;
+use {
+    jetstream_9p::*,
+    jetstream_rpc::{Frame, Protocol},
+    jetstream_wireformat::{Data, WireFormat},
+    read_dir::read_dir,
+    serde::{Deserialize, Serialize},
+    std::{
+        cmp::min,
+        collections::{btree_map, BTreeMap},
+        ffi::{CStr, CString},
+        fs::File,
+        io::{self, Cursor},
+        mem::{self, MaybeUninit},
+        ops::Deref,
+        os::unix::{
+            ffi::OsStrExt,
+            fs::FileExt,
+            io::{AsRawFd, FromRawFd, RawFd},
+        },
+        path::Path,
+        str::FromStr,
+    },
+};
 
-use std::cmp::min;
-use std::collections::btree_map;
-use std::collections::BTreeMap;
-use std::ffi::CStr;
-use std::ffi::CString;
-use std::fs::File;
-use std::io;
-use std::io::Cursor;
-use std::io::Read;
-use std::io::Write;
-use std::mem;
-use std::mem::MaybeUninit;
-use std::ops::Deref;
-use std::os::unix::ffi::OsStrExt;
-use std::os::unix::fs::FileExt;
-use std::os::unix::io::AsRawFd;
-use std::os::unix::io::FromRawFd;
-use std::os::unix::io::RawFd;
-use std::path::Path;
-use std::str::FromStr;
-
-use jetstream_wireformat::Data;
-use jetstream_wireformat::WireFormat;
-use read_dir::read_dir;
-use serde::Deserialize;
-use serde::Serialize;
-
-use jetstream_9p::*;
+use crate::ufs::{Rmessage, Tmessage};
 
 #[derive(PartialEq, Eq)]
 enum FileType {
@@ -394,201 +388,6 @@ impl Server {
         vec![self.proc.as_raw_fd()]
     }
 
-    pub async fn handle(&mut self, tx: &Tframe) -> std::io::Result<Rframe> {
-        let Tframe { tag, msg } = tx;
-        let rmsg = match msg {
-            Ok(Tmessage::Version(ref version)) => {
-                self.version(version).map(Rmessage::Version)
-            }
-            Ok(Tmessage::Flush(ref flush)) => {
-                self.flush(flush).and(Ok(Rmessage::Flush))
-            }
-            Ok(Tmessage::Walk(walk)) => self.walk(walk).map(Rmessage::Walk),
-            Ok(Tmessage::Read(ref read)) => self.read(read).map(Rmessage::Read),
-            Ok(Tmessage::Write(ref write)) => {
-                self.write(write).map(Rmessage::Write)
-            }
-            Ok(Tmessage::Clunk(ref clunk)) => {
-                self.clunk(clunk).and(Ok(Rmessage::Clunk))
-            }
-            Ok(Tmessage::Remove(ref remove)) => {
-                self.remove(remove).and(Ok(Rmessage::Remove))
-            }
-            Ok(Tmessage::Attach(ref attach)) => {
-                self.attach(attach).map(Rmessage::Attach)
-            }
-            Ok(Tmessage::Auth(ref auth)) => self.auth(auth).map(Rmessage::Auth),
-            Ok(Tmessage::Statfs(ref statfs)) => {
-                self.statfs(statfs).map(Rmessage::Statfs)
-            }
-            Ok(Tmessage::Lopen(ref lopen)) => {
-                self.lopen(lopen).map(Rmessage::Lopen)
-            }
-            Ok(Tmessage::Lcreate(lcreate)) => {
-                self.lcreate(lcreate).map(Rmessage::Lcreate)
-            }
-            Ok(Tmessage::Symlink(ref symlink)) => {
-                self.symlink(symlink).map(Rmessage::Symlink)
-            }
-            Ok(Tmessage::Mknod(ref mknod)) => {
-                self.mknod(mknod).map(Rmessage::Mknod)
-            }
-            Ok(Tmessage::Rename(ref rename)) => {
-                self.rename(rename).and(Ok(Rmessage::Rename))
-            }
-            Ok(Tmessage::Readlink(ref readlink)) => {
-                self.readlink(readlink).map(Rmessage::Readlink)
-            }
-            Ok(Tmessage::GetAttr(ref get_attr)) => {
-                self.get_attr(get_attr).map(Rmessage::GetAttr)
-            }
-            Ok(Tmessage::SetAttr(ref set_attr)) => {
-                self.set_attr(set_attr).and(Ok(Rmessage::SetAttr))
-            }
-            Ok(Tmessage::XattrWalk(ref xattr_walk)) => {
-                self.xattr_walk(xattr_walk).map(Rmessage::XattrWalk)
-            }
-            Ok(Tmessage::XattrCreate(ref xattr_create)) => self
-                .xattr_create(xattr_create)
-                .and(Ok(Rmessage::XattrCreate)),
-            Ok(Tmessage::Readdir(ref readdir)) => {
-                self.readdir(readdir).map(Rmessage::Readdir)
-            }
-            Ok(Tmessage::Fsync(ref fsync)) => {
-                self.fsync(fsync).and(Ok(Rmessage::Fsync))
-            }
-            Ok(Tmessage::Lock(ref lock)) => self.lock(lock).map(Rmessage::Lock),
-            Ok(Tmessage::GetLock(ref get_lock)) => {
-                self.get_lock(get_lock).map(Rmessage::GetLock)
-            }
-            Ok(Tmessage::Link(link)) => self.link(link).and(Ok(Rmessage::Link)),
-            Ok(Tmessage::Mkdir(mkdir)) => {
-                self.mkdir(mkdir).map(Rmessage::Mkdir)
-            }
-            Ok(Tmessage::RenameAt(rename_at)) => {
-                self.rename_at(rename_at).and(Ok(Rmessage::RenameAt))
-            }
-            Ok(Tmessage::UnlinkAt(unlink_at)) => {
-                self.unlink_at(unlink_at).and(Ok(Rmessage::UnlinkAt))
-            }
-            Err(e) => {
-                // The header was successfully decoded, but the body failed to decode - send an
-                // error response for this tag.
-                let error = format!("Tframe message decode failed: {}", e);
-                Err(io::Error::new(io::ErrorKind::InvalidData, error))
-            }
-        };
-
-        // Errors while handling requests are never fatal.
-        Ok(Rframe {
-            tag: *tag,
-            msg: rmsg.unwrap_or_else(error_to_rmessage),
-        })
-    }
-
-    pub fn handle_message<R: Read, W: Write>(
-        &mut self,
-        reader: &mut R,
-        writer: &mut W,
-    ) -> io::Result<()> {
-        let Tframe { tag, msg } =
-            WireFormat::decode(&mut reader.take(self.cfg.msize as u64))?;
-
-        let rmsg = match msg {
-            Ok(Tmessage::Version(ref version)) => {
-                self.version(version).map(Rmessage::Version)
-            }
-            Ok(Tmessage::Flush(ref flush)) => {
-                self.flush(flush).and(Ok(Rmessage::Flush))
-            }
-            Ok(Tmessage::Walk(walk)) => self.walk(&walk).map(Rmessage::Walk),
-            Ok(Tmessage::Read(ref read)) => self.read(read).map(Rmessage::Read),
-            Ok(Tmessage::Write(ref write)) => {
-                self.write(write).map(Rmessage::Write)
-            }
-            Ok(Tmessage::Clunk(ref clunk)) => {
-                self.clunk(clunk).and(Ok(Rmessage::Clunk))
-            }
-            Ok(Tmessage::Remove(ref remove)) => {
-                self.remove(remove).and(Ok(Rmessage::Remove))
-            }
-            Ok(Tmessage::Attach(ref attach)) => {
-                self.attach(attach).map(Rmessage::Attach)
-            }
-            Ok(Tmessage::Auth(ref auth)) => self.auth(auth).map(Rmessage::Auth),
-            Ok(Tmessage::Statfs(ref statfs)) => {
-                self.statfs(statfs).map(Rmessage::Statfs)
-            }
-            Ok(Tmessage::Lopen(ref lopen)) => {
-                self.lopen(lopen).map(Rmessage::Lopen)
-            }
-            Ok(Tmessage::Lcreate(lcreate)) => {
-                self.lcreate(&lcreate).map(Rmessage::Lcreate)
-            }
-            Ok(Tmessage::Symlink(ref symlink)) => {
-                self.symlink(symlink).map(Rmessage::Symlink)
-            }
-            Ok(Tmessage::Mknod(ref mknod)) => {
-                self.mknod(mknod).map(Rmessage::Mknod)
-            }
-            Ok(Tmessage::Rename(ref rename)) => {
-                self.rename(rename).and(Ok(Rmessage::Rename))
-            }
-            Ok(Tmessage::Readlink(ref readlink)) => {
-                self.readlink(readlink).map(Rmessage::Readlink)
-            }
-            Ok(Tmessage::GetAttr(ref get_attr)) => {
-                self.get_attr(get_attr).map(Rmessage::GetAttr)
-            }
-            Ok(Tmessage::SetAttr(ref set_attr)) => {
-                self.set_attr(set_attr).and(Ok(Rmessage::SetAttr))
-            }
-            Ok(Tmessage::XattrWalk(ref xattr_walk)) => {
-                self.xattr_walk(xattr_walk).map(Rmessage::XattrWalk)
-            }
-            Ok(Tmessage::XattrCreate(ref xattr_create)) => self
-                .xattr_create(xattr_create)
-                .and(Ok(Rmessage::XattrCreate)),
-            Ok(Tmessage::Readdir(ref readdir)) => {
-                self.readdir(readdir).map(Rmessage::Readdir)
-            }
-            Ok(Tmessage::Fsync(ref fsync)) => {
-                self.fsync(fsync).and(Ok(Rmessage::Fsync))
-            }
-            Ok(Tmessage::Lock(ref lock)) => self.lock(lock).map(Rmessage::Lock),
-            Ok(Tmessage::GetLock(ref get_lock)) => {
-                self.get_lock(get_lock).map(Rmessage::GetLock)
-            }
-            Ok(Tmessage::Link(link)) => {
-                self.link(&link).and(Ok(Rmessage::Link))
-            }
-            Ok(Tmessage::Mkdir(mkdir)) => {
-                self.mkdir(&mkdir).map(Rmessage::Mkdir)
-            }
-            Ok(Tmessage::RenameAt(rename_at)) => {
-                self.rename_at(&rename_at).and(Ok(Rmessage::RenameAt))
-            }
-            Ok(Tmessage::UnlinkAt(unlink_at)) => {
-                self.unlink_at(&unlink_at).and(Ok(Rmessage::UnlinkAt))
-            }
-            Err(e) => {
-                // The header was successfully decoded, but the body failed to decode - send an
-                // error response for this tag.
-                let error = format!("Tframe message decode failed: {}", e);
-                Err(io::Error::new(io::ErrorKind::InvalidData, error))
-            }
-        };
-
-        // Errors while handling requests are never fatal.
-        let response = Rframe {
-            tag,
-            msg: rmsg.unwrap_or_else(error_to_rmessage),
-        };
-
-        response.encode(writer)?;
-        writer.flush()
-    }
-
     fn auth(&mut self, _auth: &Tauth) -> io::Result<Rauth> {
         // Returning an error for the auth message means that the server does not require
         // authentication.
@@ -718,7 +517,7 @@ impl Server {
             .ok_or_else(ebadf)?;
 
         // Use an empty Rread struct to figure out the overhead of the header.
-        let header_size = Rframe {
+        let header_size = Frame {
             tag: 0,
             msg: Rmessage::Read(Rread {
                 data: Data(Vec::new()),
@@ -1060,7 +859,7 @@ impl Server {
 
         // Use an empty Rreaddir struct to figure out the maximum number of bytes that
         // can be returned.
-        let header_size = Rframe {
+        let header_size = Frame {
             tag: 0,
             msg: Rmessage::Readdir(Rreaddir {
                 data: Data(Vec::new()),
@@ -1251,3 +1050,103 @@ impl Server {
 
 #[cfg(test)]
 mod tests;
+
+impl Protocol for Server {
+    type Request = crate::ufs::Tmessage;
+
+    type Response = crate::ufs::Rmessage;
+
+    type Error = jetstream::prelude::Error;
+
+    const VERSION: &'static str = "9P2000.L";
+
+    async fn rpc(
+        &mut self,
+        frame: Frame<Self::Request>,
+    ) -> Result<Frame<Self::Response>, Self::Error> {
+        let Frame { msg, tag } = frame;
+        let rmsg = match msg {
+            Tmessage::Version(ref version) => {
+                self.version(version).map(Rmessage::Version)
+            }
+            Tmessage::Flush(ref flush) => {
+                self.flush(flush).and(Ok(Rmessage::Flush))
+            }
+            Tmessage::Walk(ref walk) => self.walk(walk).map(Rmessage::Walk),
+            Tmessage::Read(ref read) => self.read(read).map(Rmessage::Read),
+            Tmessage::Write(ref write) => {
+                self.write(write).map(Rmessage::Write)
+            }
+            Tmessage::Clunk(ref clunk) => {
+                self.clunk(clunk).and(Ok(Rmessage::Clunk))
+            }
+            Tmessage::Remove(ref remove) => {
+                self.remove(remove).and(Ok(Rmessage::Remove))
+            }
+            Tmessage::Attach(ref attach) => {
+                self.attach(attach).map(Rmessage::Attach)
+            }
+            Tmessage::Auth(ref auth) => self.auth(auth).map(Rmessage::Auth),
+            Tmessage::Statfs(ref statfs) => {
+                self.statfs(statfs).map(Rmessage::Statfs)
+            }
+            Tmessage::Lopen(ref lopen) => {
+                self.lopen(lopen).map(Rmessage::Lopen)
+            }
+            Tmessage::Lcreate(ref lcreate) => {
+                self.lcreate(lcreate).map(Rmessage::Lcreate)
+            }
+            Tmessage::Symlink(ref symlink) => {
+                self.symlink(symlink).map(Rmessage::Symlink)
+            }
+            Tmessage::Mknod(ref mknod) => {
+                self.mknod(mknod).map(Rmessage::Mknod)
+            }
+            Tmessage::Rename(ref rename) => {
+                self.rename(rename).and(Ok(Rmessage::Rename))
+            }
+            Tmessage::Readlink(ref readlink) => {
+                self.readlink(readlink).map(Rmessage::Readlink)
+            }
+            Tmessage::GetAttr(ref get_attr) => {
+                self.get_attr(get_attr).map(Rmessage::GetAttr)
+            }
+            Tmessage::SetAttr(ref set_attr) => {
+                self.set_attr(set_attr).and(Ok(Rmessage::SetAttr))
+            }
+            Tmessage::XattrWalk(ref xattr_walk) => {
+                self.xattr_walk(xattr_walk).map(Rmessage::XattrWalk)
+            }
+            Tmessage::XattrCreate(ref xattr_create) => self
+                .xattr_create(xattr_create)
+                .and(Ok(Rmessage::XattrCreate)),
+            Tmessage::Readdir(ref readdir) => {
+                self.readdir(readdir).map(Rmessage::Readdir)
+            }
+            Tmessage::Fsync(ref fsync) => {
+                self.fsync(fsync).and(Ok(Rmessage::Fsync))
+            }
+            Tmessage::Lock(ref lock) => self.lock(lock).map(Rmessage::Lock),
+            Tmessage::GetLock(ref get_lock) => {
+                self.get_lock(get_lock).map(Rmessage::GetLock)
+            }
+            Tmessage::Link(ref link) => self.link(link).and(Ok(Rmessage::Link)),
+            Tmessage::Mkdir(ref mkdir) => {
+                self.mkdir(mkdir).map(Rmessage::Mkdir)
+            }
+            Tmessage::RenameAt(ref rename_at) => {
+                self.rename_at(rename_at).and(Ok(Rmessage::RenameAt))
+            }
+            Tmessage::UnlinkAt(ref unlink_at) => {
+                self.unlink_at(unlink_at).and(Ok(Rmessage::UnlinkAt))
+            }
+        };
+        match rmsg {
+            Ok(msg) => Ok(Frame { tag, msg }),
+            Err(e) => Ok(Frame {
+                tag,
+                msg: error_to_rmessage(e),
+            }),
+        }
+    }
+}

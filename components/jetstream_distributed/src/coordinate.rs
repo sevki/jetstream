@@ -24,9 +24,7 @@
 //!    class Vec1,Vec2,H1,H2,Adj1,Adj2 component
 //!    class ED,HD,ADJ,TD calculation
 //!
-use jetstream_wireformat::JetStreamWireFormat;
-use rand::Rng;
-use std::time::Duration;
+use {jetstream_wireformat::JetStreamWireFormat, rand::Rng, std::time::Duration};
 
 // Constants
 const SECONDS_TO_NANOSECONDS: f64 = 1.0e9;
@@ -126,10 +124,7 @@ impl Coordinate {
     }
 
     /// Returns the distance between this coordinate and another
-    pub fn distance_to(
-        &self,
-        other: &Coordinate,
-    ) -> Result<Duration, CoordinateError> {
+    pub fn distance_to(&self, other: &Coordinate) -> Result<Duration, CoordinateError> {
         if !self.is_compatible_with(other) {
             return Err(CoordinateError::DimensionalityConflict);
         }
@@ -181,8 +176,7 @@ impl Coordinate {
 
         // Update height if points aren't too close
         if mag > ZERO_THRESHOLD {
-            new_coord.height = (new_coord.height + other.height) * force / mag
-                + new_coord.height;
+            new_coord.height = (new_coord.height + other.height) * force / mag + new_coord.height;
             new_coord.height = new_coord.height.max(config.height_min);
         }
 
@@ -300,8 +294,7 @@ mod tests {
         let euclidean_distance = 4.104875150354758;
 
         // Expected total distance includes heights
-        let expected_distance =
-            euclidean_distance + coord1.height + coord2.height;
+        let expected_distance = euclidean_distance + coord1.height + coord2.height;
 
         let dist = coord1.distance_to(&coord2).unwrap();
         let got = dist.as_secs_f64();
@@ -328,8 +321,7 @@ mod tests {
         height_free_coord1.height = 0.0;
         height_free_coord2.height = 0.0;
 
-        let pure_euclidean =
-            height_free_coord1.distance_to(&height_free_coord2).unwrap();
+        let pure_euclidean = height_free_coord1.distance_to(&height_free_coord2).unwrap();
         assert!(
             (pure_euclidean.as_secs_f64() - euclidean_distance).abs() < 1e-6,
             "Pure Euclidean distance failed:\nGot {}\nWanted {}",
@@ -396,8 +388,7 @@ mod tests {
             let other = coordinates.choose(&mut rng).unwrap();
 
             let force: f64 = rng.gen_range(0.0..2.0);
-            coordinates[i] =
-                coordinates[i].apply_force(&config, force, other).unwrap();
+            coordinates[i] = coordinates[i].apply_force(&config, force, other).unwrap();
 
             // Insert into the map with "node_{i}" as the key
             node_map.insert(format!("node_{}", i), coordinates[i].clone());

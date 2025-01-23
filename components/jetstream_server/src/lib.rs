@@ -1,6 +1,4 @@
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -17,8 +15,12 @@ pub mod proxy;
 #[cfg(feature = "quic")]
 pub mod quic;
 
-use std::fmt::Debug;
-use tokio::io::{AsyncRead, AsyncWrite};
+pub mod service;
+
+use {
+    std::fmt::Debug,
+    tokio::io::{AsyncRead, AsyncWrite},
+};
 
 #[cfg(feature = "vsock")]
 use tokio_vsock::{VsockAddr, VsockListener};

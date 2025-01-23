@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 use std::{
-    future::Future,
     io::{self},
     net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6},
 };
@@ -25,7 +24,7 @@ pub trait AsyncWireFormat: std::marker::Sized {
 pub mod tokio {
     use std::{future::Future, io};
 
-    use tokio::io::{AsyncRead, AsyncReadExt, AsyncWrite, AsyncWriteExt};
+    use tokio::io::{AsyncRead, AsyncWrite};
 
     use crate::WireFormat;
     /// Extension trait for asynchronous wire format encoding and decoding.
@@ -42,18 +41,13 @@ pub mod tokio {
         /// # Returns
         ///
         /// A future that resolves to an `io::Result<()>` indicating the success or failure of the encoding operation.
-        fn encode_async<W>(
-            self,
-            writer: W,
-        ) -> impl Future<Output = io::Result<()>>
+        fn encode_async<W>(self, writer: W) -> impl Future<Output = io::Result<()>>
         where
             Self: Sync,
             W: AsyncWrite + Unpin + Send,
         {
             let mut writer = tokio_util::io::SyncIoBridge::new(writer);
-            async {
-                tokio::task::block_in_place(move || self.encode(&mut writer))
-            }
+            async { tokio::task::block_in_place(move || self.encode(&mut writer)) }
         }
 
         /// Decodes an object asynchronously from the provided reader.
@@ -65,17 +59,13 @@ pub mod tokio {
         /// # Returns
         ///
         /// A future that resolves to an `io::Result<Self>` indicating the success or failure of the decoding operation.
-        fn decode_async<R>(
-            reader: R,
-        ) -> impl Future<Output = io::Result<Self>> + Send
+        fn decode_async<R>(reader: R) -> impl Future<Output = io::Result<Self>> + Send
         where
             Self: Sync,
             R: AsyncRead + Unpin + Send,
         {
             let mut reader = tokio_util::io::SyncIoBridge::new(reader);
-            async {
-                tokio::task::block_in_place(move || Self::decode(&mut reader))
-            }
+            async { tokio::task::block_in_place(move || Self::decode(&mut reader)) }
         }
     }
     /// Implements the `AsyncWireFormatExt` trait for types that implement the `WireFormat` trait and can be sent across threads.
@@ -183,9 +173,8 @@ impl WireFormat for SocketAddrV4 {
     }
 
     fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
-        self::Ipv4Addr::decode(reader).and_then(|ip| {
-            u16::decode(reader).map(|port| SocketAddrV4::new(ip, port))
-        })
+        self::Ipv4Addr::decode(reader)
+            .and_then(|ip| u16::decode(reader).map(|port| SocketAddrV4::new(ip, port)))
     }
 }
 
@@ -201,8 +190,7 @@ impl WireFormat for SocketAddrV6 {
     }
 
     fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
-        self::Ipv6Addr::decode(reader).and_then(|ip| {
-            u16::decode(reader).map(|port| SocketAddrV6::new(ip, port, 0, 0))
-        })
+        self::Ipv6Addr::decode(reader)
+            .and_then(|ip| u16::decode(reader).map(|port| SocketAddrV6::new(ip, port, 0, 0)))
     }
 }

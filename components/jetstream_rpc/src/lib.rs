@@ -1,6 +1,4 @@
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -9,144 +7,175 @@
 //! Of note is the `Protocol` trait which is meant to be used with the `service` attribute macro.
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use jetstream_wireformat::WireFormat;
+use {
+    futures::{Sink, Stream},
+    jetstream_wireformat::WireFormat,
+    std::{
+        io::{self, ErrorKind, Read, Write},
+        mem,
+    },
+};
 
 /// A trait representing a message that can be encoded and decoded.
 pub trait Message: WireFormat + Send + Sync {}
 
+#[repr(transparent)]
+pub struct Tag(u16);
+
+impl From<u16> for Tag {
+    fn from(tag: u16) -> Self {
+        Self(tag)
+    }
+}
+
+pub struct Context<T: WireFormat> {
+    pub tag: Tag,
+    pub msg: T,
+}
+
+pub trait FromContext<T: WireFormat> {
+    fn from_context(ctx: Context<T>) -> Self;
+}
+
+impl<T: WireFormat> FromContext<T> for T {
+    fn from_context(ctx: Context<T>) -> Self {
+        ctx.msg
+    }
+}
+
+impl<T: WireFormat> FromContext<T> for Tag {
+    fn from_context(ctx: Context<T>) -> Self {
+        ctx.tag
+    }
+}
+
+pub trait Handler<T: WireFormat> {
+    fn call(self, context: Context<T>);
+}
+
 /// Defines the request and response types for the JetStream protocol.
-pub trait Protocol: Send + Sync {
-    type Request: Message;
-    type Response: Message;
-}
-
-pub type Error = Box<dyn std::error::Error + Send + Sync>;
-
-/// An asynchronous JetStream service that can handle RPC calls and messages.
 #[trait_variant::make(Send + Sync + Sized)]
-pub trait Service<P: Protocol> {
-    /// Handles an RPC call asynchronously.
-    async fn rpc(self, req: P::Request) -> Result<P::Response, Error>;
+pub trait Protocol: Send + Sync {
+    type Request: Framer;
+    type Response: Framer;
+    type Error: std::error::Error + Send + Sync + 'static;
+    const VERSION: &'static str;
+    async fn rpc(
+        &mut self,
+        frame: Frame<Self::Request>,
+    ) -> Result<Frame<Self::Response>, Self::Error>;
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-pub mod service {
-    use std::sync::Arc;
-
-    use crate::{Error, Protocol, Service};
-    use jetstream_wireformat::wire_format_extensions::tokio::AsyncWireFormatExt;
-    use tokio::io::{AsyncReadExt, AsyncWriteExt};
-
-    /// A shared, thread-safe JetStream service that can be cloned.
-    #[derive(Clone)]
-    pub struct SharedJetStreamService<P: Protocol + Clone, S: Service<P>> {
-        inner: Arc<tokio::sync::Mutex<S>>,
-        _protocol: std::marker::PhantomData<P>,
-    }
-
-    impl<P: Protocol + Clone, S: Service<P>> SharedJetStreamService<P, S> {
-        /// Creates a new shared JetStream service.
-        pub fn new(service: S) -> Self {
-            Self {
-                inner: Arc::new(tokio::sync::Mutex::new(service)),
-                _protocol: std::marker::PhantomData,
-            }
-        }
-    }
-
-    impl<P: Protocol + Clone, S: Service<P>> Protocol
-        for SharedJetStreamService<P, S>
-    {
-        type Request = P::Request;
-        type Response = P::Response;
-    }
-
-    impl<P: Protocol + Clone, S: Service<P>> Service<P>
-        for SharedJetStreamService<P, S>
-    where
-        S: Clone,
-    {
-        async fn rpc(self, req: P::Request) -> Result<P::Response, Error> {
-            let mo = self.inner.lock_owned().await;
-            mo.clone().rpc(req).await
-        }
-    }
-
-    pub trait ServiceExt<P: Protocol>
-    where
-        Self: Service<P>,
-    {
-        /// Handles a message by reading from the reader, processing it, and writing the response.
-        fn handle_message<R, W>(
-            self,
-            reader: &mut R,
-            writer: &mut W,
-        ) -> impl std::future::Future<Output = Result<(), Error>>
-        where
-            R: AsyncReadExt + Unpin + Send + Sync,
-            W: AsyncWriteExt + Unpin + Send + Sync,
-        {
-            Box::pin(async move {
-                let req = P::Request::decode_async(reader).await?;
-                let resp = self.rpc(req).await?;
-                resp.encode_async(writer).await?;
-                Ok(())
-            })
-        }
-    }
-    impl<P: Protocol, S: Service<P>> ServiceExt<P> for S {}
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("io error: {0}")]
+    Io(#[from] io::Error),
+    #[error("generic error: {0}")]
+    Generic(#[from] Box<dyn std::error::Error + Send + Sync>),
+    #[error("{0}")]
+    Custom(String),
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use jetstream_wireformat::{
-        wire_format_extensions::ConvertWireFormat, JetStreamWireFormat,
-    };
-    use okstd::prelude::*;
-    use service::SharedJetStreamService;
-    use std::io::Cursor;
-    #[derive(Debug, Clone)]
-    struct TestService;
+pub struct Frame<T: Framer> {
+    pub tag: u16,
+    pub msg: T,
+}
 
-    #[derive(Debug, PartialEq, Eq, Clone, JetStreamWireFormat)]
-    struct TestMessage {
-        value: u32,
+impl<T: Framer> From<(u16, T)> for Frame<T> {
+    fn from((tag, msg): (u16, T)) -> Self {
+        Self { tag, msg }
+    }
+}
+
+impl<T: Framer> WireFormat for Frame<T> {
+    fn byte_size(&self) -> u32 {
+        let msg_size = self.msg.byte_size();
+        // size + type + tag + message size
+        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32 + msg_size
     }
 
-    impl Message for TestMessage {}
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        self.byte_size().encode(writer)?;
 
-    impl Protocol for TestService {
-        type Request = TestMessage;
-        type Response = TestMessage;
+        let ty = self.msg.message_type();
+
+        ty.encode(writer)?;
+        self.tag.encode(writer)?;
+
+        self.msg.encode(writer)
     }
 
-    impl Service<TestService> for TestService {
-        #[doc = " Handles an RPC call asynchronously."]
-        async fn rpc(
-            self,
-            req: <tests::TestService as Protocol>::Request,
-        ) -> Result<<tests::TestService as Protocol>::Response, Error> {
-            Ok(TestMessage {
-                value: req.value + 1,
-            })
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let byte_size: u32 = WireFormat::decode(reader)?;
+
+        // byte_size includes the size of byte_size so remove that from the
+        // expected length of the message.  Also make sure that byte_size is at least
+        // that long to begin with.
+        if byte_size < mem::size_of::<u32>() as u32 {
+            return Err(io::Error::new(
+                ErrorKind::InvalidData,
+                format!("byte_size(= {}) is less than 4 bytes", byte_size),
+            ));
         }
+
+        let reader = &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
+
+        let mut ty = [0u8];
+        reader.read_exact(&mut ty)?;
+
+        let tag: u16 = WireFormat::decode(reader)?;
+        let msg = T::decode(reader, ty[0])?;
+
+        Ok(Frame { tag, msg })
     }
+}
 
-    #[okstd::test]
-    async fn test_shared_service() {
-        use service::ServiceExt;
-        let service = SharedJetStreamService::new(TestService);
-        let mut reader = Cursor::new(TestMessage { value: 42 }.to_bytes());
-        let mut writer = Cursor::new(vec![]);
+pub trait Framer: Sized + Send + Sync {
+    fn message_type(&self) -> u8;
+    /// Returns the number of bytes necessary to fully encode `self`.
+    fn byte_size(&self) -> u32;
 
-        ServiceExt::handle_message(service, &mut reader, &mut writer)
-            .await
-            .unwrap();
+    /// Encodes `self` into `writer`.
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()>;
 
-        let resp =
-            TestMessage::from_bytes(&bytes::Bytes::from(writer.into_inner()))
-                .unwrap();
-        assert_eq!(resp, TestMessage { value: 43 });
-    }
+    /// Decodes `Self` from `reader`.
+    fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Self>;
+}
+
+pub trait ServiceTransport<P: Protocol>:
+    Sink<Frame<P::Response>, Error = P::Error>
+    + Stream<Item = Result<Frame<P::Request>, P::Error>>
+    + Send
+    + Sync
+    + Unpin
+{
+}
+
+impl<P: Protocol, T> ServiceTransport<P> for T where
+    T: Sink<Frame<P::Response>, Error = P::Error>
+        + Stream<Item = Result<Frame<P::Request>, P::Error>>
+        + Send
+        + Sync
+        + Unpin
+{
+}
+
+pub trait ClientTransport<P: Protocol>:
+    Sink<Frame<P::Request>, Error = std::io::Error>
+    + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
+    + Send
+    + Sync
+    + Unpin
+{
+}
+
+impl<P: Protocol, T> ClientTransport<P> for T
+where
+    Self: Sized,
+    T: Sink<Frame<P::Request>, Error = std::io::Error>
+        + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
+        + Send
+        + Sync
+        + Unpin,
+{
 }

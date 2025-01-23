@@ -3,22 +3,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use jetstream_macros::JetStreamWireFormat;
-use jetstream_rpc::Message;
-use jetstream_rpc::Protocol;
-use jetstream_wireformat::Data;
-use jetstream_wireformat::WireFormat;
-use std::io;
-use std::io::ErrorKind;
-use std::io::Read;
-use std::io::Write;
-use std::mem;
-use std::string::String;
-use std::vec::Vec;
+use {
+    jetstream_macros::JetStreamWireFormat,
+    jetstream_rpc::Message,
+    jetstream_wireformat::{Data, WireFormat},
+    std::{
+        io,
+        io::{ErrorKind, Read, Write},
+        mem,
+        string::String,
+        vec::Vec,
+    },
+};
 
-use crate::P9_QTDIR;
-use crate::P9_QTFILE;
-use crate::P9_QTSYMLINK;
+use crate::{P9_QTDIR, P9_QTFILE, P9_QTSYMLINK};
 
 impl Message for Tframe {}
 impl Message for Rframe {}
@@ -97,35 +95,36 @@ const _RWSTAT: u8 = _TWSTAT + 1;
 
 /// A message sent from a 9P client to a 9P server.
 #[derive(Debug)]
+#[repr(u8)]
 pub enum Tmessage {
-    Version(Tversion),
-    Flush(Tflush),
-    Walk(Twalk),
-    Read(Tread),
-    Write(Twrite),
-    Clunk(Tclunk),
-    Remove(Tremove),
-    Attach(Tattach),
-    Auth(Tauth),
-    Statfs(Tstatfs),
-    Lopen(Tlopen),
-    Lcreate(Tlcreate),
-    Symlink(Tsymlink),
-    Mknod(Tmknod),
-    Rename(Trename),
-    Readlink(Treadlink),
-    GetAttr(Tgetattr),
-    SetAttr(Tsetattr),
-    XattrWalk(Txattrwalk),
-    XattrCreate(Txattrcreate),
-    Readdir(Treaddir),
-    Fsync(Tfsync),
-    Lock(Tlock),
-    GetLock(Tgetlock),
-    Link(Tlink),
-    Mkdir(Tmkdir),
-    RenameAt(Trenameat),
-    UnlinkAt(Tunlinkat),
+    Version(Tversion) = TVERSION,
+    Flush(Tflush) = TFLUSH,
+    Walk(Twalk) = TWALK,
+    Read(Tread) = TREAD,
+    Write(Twrite) = TWRITE,
+    Clunk(Tclunk) = TCLUNK,
+    Remove(Tremove) = TREMOVE,
+    Attach(Tattach) = TATTACH,
+    Auth(Tauth) = TAUTH,
+    Statfs(Tstatfs) = TSTATFS,
+    Lopen(Tlopen) = TLOPEN,
+    Lcreate(Tlcreate) = TLCREATE,
+    Symlink(Tsymlink) = TSYMLINK,
+    Mknod(Tmknod) = TMKNOD,
+    Rename(Trename) = TRENAME,
+    Readlink(Treadlink) = TREADLINK,
+    GetAttr(Tgetattr) = TGETATTR,
+    SetAttr(Tsetattr) = TSETATTR,
+    XattrWalk(Txattrwalk) = TXATTRWALK,
+    XattrCreate(Txattrcreate) = TXATTRCREATE,
+    Readdir(Treaddir) = TREADDIR,
+    Fsync(Tfsync) = TFSYNC,
+    Lock(Tlock) = TLOCK,
+    GetLock(Tgetlock) = TGETLOCK,
+    Link(Tlink) = TLINK,
+    Mkdir(Tmkdir) = TMKDIR,
+    RenameAt(Trenameat) = TRENAMEAT,
+    UnlinkAt(Tunlinkat) = TUNLINKAT,
 }
 
 #[derive(Debug)]
@@ -172,9 +171,7 @@ impl WireFormat for Tframe {
         };
 
         // size + type + tag + message size
-        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>())
-            as u32
-            + msg_size
+        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32 + msg_size
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
@@ -244,9 +241,7 @@ impl WireFormat for Tframe {
             Tmessage::GetAttr(ref getattr) => getattr.encode(writer),
             Tmessage::SetAttr(ref setattr) => setattr.encode(writer),
             Tmessage::XattrWalk(ref xattrwalk) => xattrwalk.encode(writer),
-            Tmessage::XattrCreate(ref xattrcreate) => {
-                xattrcreate.encode(writer)
-            }
+            Tmessage::XattrCreate(ref xattrcreate) => xattrcreate.encode(writer),
             Tmessage::Readdir(ref readdir) => readdir.encode(writer),
             Tmessage::Fsync(ref fsync) => fsync.encode(writer),
             Tmessage::Lock(ref lock) => lock.encode(writer),
@@ -271,8 +266,7 @@ impl WireFormat for Tframe {
             ));
         }
 
-        let reader =
-            &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
+        let reader = &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
 
         let mut ty = [0u8];
         reader.read_exact(&mut ty)?;
@@ -306,9 +300,7 @@ impl Tframe {
             TGETATTR => Ok(Tmessage::GetAttr(WireFormat::decode(reader)?)),
             TSETATTR => Ok(Tmessage::SetAttr(WireFormat::decode(reader)?)),
             TXATTRWALK => Ok(Tmessage::XattrWalk(WireFormat::decode(reader)?)),
-            TXATTRCREATE => {
-                Ok(Tmessage::XattrCreate(WireFormat::decode(reader)?))
-            }
+            TXATTRCREATE => Ok(Tmessage::XattrCreate(WireFormat::decode(reader)?)),
             TREADDIR => Ok(Tmessage::Readdir(WireFormat::decode(reader)?)),
             TFSYNC => Ok(Tmessage::Fsync(WireFormat::decode(reader)?)),
             TLOCK => Ok(Tmessage::Lock(WireFormat::decode(reader)?)),
@@ -317,10 +309,12 @@ impl Tframe {
             TMKDIR => Ok(Tmessage::Mkdir(WireFormat::decode(reader)?)),
             TRENAMEAT => Ok(Tmessage::RenameAt(WireFormat::decode(reader)?)),
             TUNLINKAT => Ok(Tmessage::UnlinkAt(WireFormat::decode(reader)?)),
-            err => Err(io::Error::new(
-                ErrorKind::InvalidData,
-                format!("unknown message type {}", err),
-            )),
+            err => {
+                Err(io::Error::new(
+                    ErrorKind::InvalidData,
+                    format!("unknown message type {}", err),
+                ))
+            }
         }
     }
 }
@@ -401,9 +395,7 @@ impl WireFormat for Rframe {
         };
 
         // size + type + tag + message size
-        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>())
-            as u32
-            + msg_size
+        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32 + msg_size
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
@@ -482,8 +474,7 @@ impl WireFormat for Rframe {
 
         // byte_size includes the size of byte_size so remove that from the
         // expected length of the message.
-        let reader =
-            &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
+        let reader = &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
 
         let mut ty = [0u8];
         reader.read_exact(&mut ty)?;
@@ -520,10 +511,12 @@ impl WireFormat for Rframe {
             RRENAMEAT => Ok(Rmessage::RenameAt),
             RUNLINKAT => Ok(Rmessage::UnlinkAt),
             RLERROR => Ok(Rmessage::Lerror(WireFormat::decode(reader)?)),
-            err => Err(io::Error::new(
-                ErrorKind::InvalidData,
-                format!("unknown message type {}", err),
-            )),
+            err => {
+                Err(io::Error::new(
+                    ErrorKind::InvalidData,
+                    format!("unknown message type {}", err),
+                ))
+            }
         }?;
 
         Ok(Rframe { tag, msg })
@@ -1165,11 +1158,4 @@ pub struct Rauth {
 #[derive(Debug, JetStreamWireFormat)]
 pub struct Rattach {
     pub qid: Qid,
-}
-
-pub struct NineP200LProtocol;
-
-impl Protocol for NineP200LProtocol {
-    type Request = Tframe;
-    type Response = Rframe;
 }

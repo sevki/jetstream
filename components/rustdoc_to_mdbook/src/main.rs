@@ -1,8 +1,10 @@
-use comrak::{nodes::NodeValue, parse_document, Arena, Options};
-use std::{
-    fs::{create_dir_all, read_dir, File},
-    io::{BufReader, Read, Write},
-    path::PathBuf,
+use {
+    comrak::{nodes::NodeValue, parse_document, Arena, Options},
+    std::{
+        fs::{create_dir_all, read_dir, File},
+        io::{BufReader, Read, Write},
+        path::PathBuf,
+    },
 };
 
 fn main() -> anyhow::Result<()> {
@@ -26,12 +28,11 @@ fn try_make_books() -> anyhow::Result<()> {
     .map(PathBuf::from)
     .to_vec();
 
-    let mut docs: Vec<_> = glob::glob(
-        format!("{}/**/*.html", docs_path.as_path().to_string_lossy()).as_str(),
-    )
-    .expect("Failed to read glob pattern")
-    .map(|entry| entry.unwrap())
-    .collect();
+    let mut docs: Vec<_> =
+        glob::glob(format!("{}/**/*.html", docs_path.as_path().to_string_lossy()).as_str())
+            .expect("Failed to read glob pattern")
+            .map(|entry| entry.unwrap())
+            .collect();
     docs.sort_unstable();
     let docs = docs.iter().flat_map(|entry| {
         let full_path = entry.as_path();
@@ -46,8 +47,7 @@ fn try_make_books() -> anyhow::Result<()> {
         // make it relative to docs_path
         let last = last.strip_prefix(docs_path.clone()).unwrap();
 
-        let base_name: Vec<_> =
-            last.components().map(|c| c.as_os_str()).collect();
+        let base_name: Vec<_> = last.components().map(|c| c.as_os_str()).collect();
         let base_name = base_name[..base_name.len() - 1]
             .iter()
             .flat_map(|c| c.to_str())
@@ -69,9 +69,8 @@ fn try_make_books() -> anyhow::Result<()> {
             create_dir_all(target_base_path.clone()).expect("mkdir -p");
         }
 
-        let html = File::open(full_path).unwrap_or_else(|_| {
-            panic!("index.html not found: {:?}", full_path)
-        });
+        let html = File::open(full_path)
+            .unwrap_or_else(|_| panic!("index.html not found: {:?}", full_path));
 
         let reso = match indexed_docs::convert_rustdoc_to_markdown(html) {
             Ok(md) => md,
@@ -123,10 +122,7 @@ fn try_make_books() -> anyhow::Result<()> {
     // docs.sort_unstable();
     let file = File::create("docs/SUMMARY.md")?;
 
-    let write_docs = |docs: Vec<PathBuf>,
-                      mut file: File,
-                      indent: usize|
-     -> Option<File> {
+    let write_docs = |docs: Vec<PathBuf>, mut file: File, indent: usize| -> Option<File> {
         let docs = docs.into_iter();
 
         for doc in docs {
@@ -190,8 +186,7 @@ fn try_make_books() -> anyhow::Result<()> {
                 "Crates" => "",
                 _ => "",
             };
-            writeln!(file, "- [{} {}]({})", icon, ti, doc.to_str().unwrap())
-                .unwrap_or(());
+            writeln!(file, "- [{} {}]({})", icon, ti, doc.to_str().unwrap()).unwrap_or(());
         }
         Some(file)
     };
@@ -208,8 +203,7 @@ fn parse_title(contents: &str) -> String {
         if let NodeValue::Heading(_) = node.data.borrow().value {
             let mut txt_buf = String::new();
             for text_node in node.descendants() {
-                if let NodeValue::Text(ref text) = text_node.data.borrow().value
-                {
+                if let NodeValue::Text(ref text) = text_node.data.borrow().value {
                     txt_buf.push_str(text);
                 }
             }
@@ -220,8 +214,7 @@ fn parse_title(contents: &str) -> String {
     title
 }
 fn get_title(path: &str) -> String {
-    let file = File::open(path)
-        .unwrap_or_else(|_| panic!("file not found: {:?}", path));
+    let file = File::open(path).unwrap_or_else(|_| panic!("file not found: {:?}", path));
     // read all the file
     let mut reader = BufReader::new(file);
     let mut contents = String::new();

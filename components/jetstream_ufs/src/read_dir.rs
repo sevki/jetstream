@@ -3,10 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use std::ffi::CStr;
-use std::io::Result;
-use std::mem::size_of;
-use std::os::unix::io::AsRawFd;
+use std::{ffi::CStr, io::Result, mem::size_of, os::unix::io::AsRawFd};
 
 use crate::syscall;
 
@@ -90,8 +87,8 @@ impl<D: AsRawFd> ReadDir<'_, D> {
 
         let (front, back) = rem.split_at(size_of::<LinuxDirent64>());
 
-        let dirent64 = LinuxDirent64::from_slice(front)
-            .expect("unable to get LinuxDirent64 from slice");
+        let dirent64 =
+            LinuxDirent64::from_slice(front).expect("unable to get LinuxDirent64 from slice");
 
         let namelen = dirent64.d_reclen as usize - size_of::<LinuxDirent64>();
         debug_assert!(namelen <= back.len(), "back is smaller than `namelen`");
@@ -115,14 +112,9 @@ impl<D: AsRawFd> ReadDir<'_, D> {
     }
 }
 
-pub fn read_dir<D: AsRawFd>(
-    dir: &mut D,
-    offset: libc::off64_t,
-) -> Result<ReadDir<D>> {
+pub fn read_dir<D: AsRawFd>(dir: &mut D, offset: libc::off64_t) -> Result<ReadDir<D>> {
     // Safe because this doesn't modify any memory and we check the return value.
-    syscall!(unsafe {
-        libc::lseek64(dir.as_raw_fd(), offset, libc::SEEK_SET)
-    })?;
+    syscall!(unsafe { libc::lseek64(dir.as_raw_fd(), offset, libc::SEEK_SET) })?;
 
     Ok(ReadDir {
         buf: [0u8; 256],
