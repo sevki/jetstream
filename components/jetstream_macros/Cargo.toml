@@ -25,7 +25,7 @@ proc-macro = true
 bench = false
 
 [dev-dependencies]
-insta = { version = "1.41.1", features = ["filters", "yaml"] }
+insta = { version = "1.42.1", features = ["filters", "yaml"] }
 pretty_assertions = "1.4.0"
 prettyplease = "0.2.27"
 sha256 = "1.5.0"
