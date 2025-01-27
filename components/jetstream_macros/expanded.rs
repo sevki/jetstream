@@ -3,18 +3,24 @@
 use std::prelude::rust_2021::*;
 #[macro_use]
 extern crate std;
-use echo_protocol::EchoChannel;
-use futures::{Sink, Stream};
-use jetstream::prelude::*;
-use jetstream_macros::service;
-use okstd::prelude::*;
-use server::service::run;
-use tokio_stream::wrappers::UnboundedReceiverStream;
+use {
+    echo_protocol::EchoChannel,
+    futures::{Sink, Stream},
+    jetstream::prelude::*,
+    jetstream_macros::service,
+    okstd::prelude::*,
+    server::service::run,
+    tokio_stream::wrappers::UnboundedReceiverStream,
+};
 pub mod echo_protocol {
-    use jetstream::prelude::*;
-    use std::io::{self, Read, Write};
-    use std::mem;
-    use super::Echo;
+    use {
+        super::Echo,
+        jetstream::prelude::*,
+        std::{
+            io::{self, Read, Write},
+            mem,
+        },
+    };
     const MESSAGE_ID_START: u8 = 101;
     pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/echo/7.3.0-077f7c69";
     const DIGEST: &str = "077f7c69306c1f61d5aafb9a12bc1a881a131bb22041f24ef58730179036c9cd";
@@ -32,10 +38,11 @@ pub mod echo_protocol {
     }
     mod wire_format_tping {
         extern crate std;
-        use self::std::io;
-        use self::std::result::Result::Ok;
-        use super::Tping;
-        use jetstream_wireformat::WireFormat;
+        use {
+            self::std::{io, result::Result::Ok},
+            super::Tping,
+            jetstream_wireformat::WireFormat,
+        };
         impl WireFormat for Tping {
             fn byte_size(&self) -> u32 {
                 0
@@ -60,10 +67,11 @@ pub mod echo_protocol {
     }
     mod wire_format_rping {
         extern crate std;
-        use self::std::io;
-        use self::std::result::Result::Ok;
-        use super::Rping;
-        use jetstream_wireformat::WireFormat;
+        use {
+            self::std::{io, result::Result::Ok},
+            super::Rping,
+            jetstream_wireformat::WireFormat,
+        };
         impl WireFormat for Rping {
             fn byte_size(&self) -> u32 {
                 0 + WireFormat::byte_size(&self.0)
@@ -88,11 +96,7 @@ pub mod echo_protocol {
         fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
             match self {
                 Tmessage::Ping(__self_0) => {
-                    ::core::fmt::Formatter::debug_tuple_field1_finish(
-                        f,
-                        "Ping",
-                        &__self_0,
-                    )
+                    ::core::fmt::Formatter::debug_tuple_field1_finish(f, "Ping", &__self_0)
                 }
             }
         }
@@ -116,17 +120,14 @@ pub mod echo_protocol {
             match ty {
                 TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
                 _ => {
-                    Err(
-                        std::io::Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            ::alloc::__export::must_use({
-                                let res = ::alloc::fmt::format(
-                                    format_args!("unknown message type: {0}", ty),
-                                );
-                                res
-                            }),
-                        ),
-                    )
+                    Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        ::alloc::__export::must_use({
+                            let res =
+                                ::alloc::fmt::format(format_args!("unknown message type: {0}", ty));
+                            res
+                        }),
+                    ))
                 }
             }
         }
@@ -141,11 +142,7 @@ pub mod echo_protocol {
         fn fmt(&self, f: &mut ::core::fmt::Formatter) -> ::core::fmt::Result {
             match self {
                 Rmessage::Ping(__self_0) => {
-                    ::core::fmt::Formatter::debug_tuple_field1_finish(
-                        f,
-                        "Ping",
-                        &__self_0,
-                    )
+                    ::core::fmt::Formatter::debug_tuple_field1_finish(f, "Ping", &__self_0)
                 }
             }
         }
@@ -169,17 +166,14 @@ pub mod echo_protocol {
             match ty {
                 RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
                 _ => {
-                    Err(
-                        std::io::Error::new(
-                            std::io::ErrorKind::InvalidData,
-                            ::alloc::__export::must_use({
-                                let res = ::alloc::fmt::format(
-                                    format_args!("unknown message type: {0}", ty),
-                                );
-                                res
-                            }),
-                        ),
-                    )
+                    Err(std::io::Error::new(
+                        std::io::ErrorKind::InvalidData,
+                        ::alloc::__export::must_use({
+                            let res =
+                                ::alloc::fmt::format(format_args!("unknown message type: {0}", ty));
+                            res
+                        }),
+                    ))
                 }
             }
         }
@@ -209,7 +203,8 @@ pub mod echo_protocol {
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
             Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
-        > + Send + Sync {
+        > + Send
+               + Sync {
             Box::pin(async move {
                 let req: <Self as Protocol>::Request = frame.msg;
                 let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
@@ -219,10 +214,7 @@ pub mod echo_protocol {
                         Ok(Rmessage::Ping(ret))
                     }
                 };
-                let rframe: Frame<<Self as Protocol>::Response> = Frame::from((
-                    frame.tag,
-                    res?,
-                ));
+                let rframe: Frame<<Self as Protocol>::Response> = Frame::from((frame.tag, res?));
                 Ok(rframe)
             })
         }
@@ -249,7 +241,8 @@ pub mod echo_protocol {
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
             Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
-        > + Send + Sync {
+        > + Send
+               + Sync {
             use futures::{SinkExt, StreamExt};
             Box::pin(async move {
                 self.inner.send(frame).await?;
@@ -266,7 +259,9 @@ pub mod echo_protocol {
     }
     #[doc(hidden)]
     #[allow(non_upper_case_globals)]
-    static ECHO_TAG: ECHO_TAG = ECHO_TAG { __private_field: () };
+    static ECHO_TAG: ECHO_TAG = ECHO_TAG {
+        __private_field: (),
+    };
     impl ::lazy_static::__Deref for ECHO_TAG {
         type Target = std::sync::atomic::AtomicU16;
         fn deref(&self) -> &std::sync::atomic::AtomicU16 {
@@ -276,7 +271,8 @@ pub mod echo_protocol {
             }
             #[inline(always)]
             fn __stability() -> &'static std::sync::atomic::AtomicU16 {
-                static LAZY: ::lazy_static::lazy::Lazy<std::sync::atomic::AtomicU16> = ::lazy_static::lazy::Lazy::INIT;
+                static LAZY: ::lazy_static::lazy::Lazy<std::sync::atomic::AtomicU16> =
+                    ::lazy_static::lazy::Lazy::INIT;
                 LAZY.get(__static_ref_initialize)
             }
             __stability()
@@ -301,9 +297,7 @@ pub mod echo_protocol {
     }
 }
 pub trait Echo: Send + Sync {
-    fn ping(
-        &mut self,
-    ) -> impl ::core::future::Future<Output = Result<(), Error>> + Send + Sync;
+    fn ping(&mut self) -> impl ::core::future::Future<Output = Result<(), Error>> + Send + Sync;
 }
 struct EchoImpl {}
 impl Echo for EchoImpl {
@@ -311,20 +305,27 @@ impl Echo for EchoImpl {
         Ok(())
     }
 }
-use std::{
-    assert_eq, assert_ne, io::{self, ErrorKind},
-    net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
-    rc::Rc, time::Duration,
-};
-use std::future;
-use tokio::{
-    io::{AsyncReadExt, AsyncWriteExt},
-    sync::{oneshot, Notify},
-    time::timeout,
-};
-use turmoil::{
-    lookup, net::{TcpListener, TcpStream},
-    Builder, IpVersion,
+use {
+    std::{
+        assert_eq,
+        assert_ne,
+        future,
+        io::{self, ErrorKind},
+        net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr},
+        rc::Rc,
+        time::Duration,
+    },
+    tokio::{
+        io::{AsyncReadExt, AsyncWriteExt},
+        sync::{oneshot, Notify},
+        time::timeout,
+    },
+    turmoil::{
+        lookup,
+        net::{TcpListener, TcpStream},
+        Builder,
+        IpVersion,
+    },
 };
 const PORT: u16 = 1738;
 fn assert_error_kind<T>(res: io::Result<T>, kind: io::ErrorKind) {
@@ -353,9 +354,8 @@ async fn bind() -> std::result::Result<TcpListener, std::io::Error> {
 }
 fn network_partitions_during_connect() -> turmoil::Result {
     let mut sim = Builder::new().build();
-    sim.host(
-        "server",
-        || async {
+    sim.host("server", || {
+        async {
             let listener = bind().await?;
             loop {
                 let (stream, _) = listener.accept().await?;
@@ -364,25 +364,20 @@ fn network_partitions_during_connect() -> turmoil::Result {
                     echo_protocol::EchoService<EchoImpl>,
                 > = Default::default();
                 let framed = Framed::new(stream, servercodec);
-                let mut serv = echo_protocol::EchoService {
-                    inner: echo,
-                };
+                let mut serv = echo_protocol::EchoService { inner: echo };
                 run(&mut serv, framed).await?;
             }
-        },
-    );
-    sim.client(
-        "client",
-        async {
-            let mut stream = TcpStream::connect(("server", PORT)).await?;
-            let client_codec: jetstream_client::ClientCodec<EchoChannel> = Default::default();
-            let mut framed = Framed::new(stream, client_codec);
-            let chan = EchoChannel {
-                inner: Box::new(&mut framed),
-            };
-            Ok(())
-        },
-    );
+        }
+    });
+    sim.client("client", async {
+        let mut stream = TcpStream::connect(("server", PORT)).await?;
+        let client_codec: jetstream_client::ClientCodec<EchoChannel> = Default::default();
+        let mut framed = Framed::new(stream, client_codec);
+        let chan = EchoChannel {
+            inner: Box::new(&mut framed),
+        };
+        Ok(())
+    });
     sim.run()
 }
 async fn old_main() {

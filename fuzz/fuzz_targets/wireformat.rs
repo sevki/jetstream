@@ -2,9 +2,7 @@
 
 use libfuzzer_sys::fuzz_target;
 
-use jetstream::prelude::*;
-use p9::Tframe;
-use std::io::Cursor;
+use {jetstream::prelude::*, p9::Tframe, std::io::Cursor};
 
 fuzz_target!(|data: &[u8]| {
     // Fuzz test for jetstream_9p module
@@ -19,10 +17,7 @@ fuzz_target!(|data: &[u8]| {
         fn byte_size(&self) -> u32 {
             0
         }
-        fn encode<W: std::io::Write>(
-            &self,
-            _writer: &mut W,
-        ) -> std::io::Result<()> {
+        fn encode<W: std::io::Write>(&self, _writer: &mut W) -> std::io::Result<()> {
             Ok(())
         }
         fn decode<R: std::io::Read>(_reader: &mut R) -> std::io::Result<Self> {

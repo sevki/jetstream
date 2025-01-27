@@ -152,19 +152,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -185,19 +173,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -218,19 +194,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -251,19 +215,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -284,19 +236,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}

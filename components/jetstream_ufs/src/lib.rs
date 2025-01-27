@@ -1,6 +1,4 @@
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -79,11 +77,7 @@ struct Fid {
     filetype: FileType,
 }
 
-fn statat(
-    d: &File,
-    name: &CStr,
-    flags: libc::c_int,
-) -> io::Result<libc::stat64> {
+fn statat(d: &File, name: &CStr, flags: libc::c_int) -> io::Result<libc::stat64> {
     let mut st = MaybeUninit::<libc::stat64>::zeroed();
 
     // Safe because the kernel will only write data in `st` and we check the return
@@ -190,11 +184,7 @@ fn map_id_from_host<T: Clone + Ord>(map: &ServerIdMap<T>, id: T) -> T {
 }
 
 // Performs an ascii case insensitive lookup and returns an O_PATH fd for the entry, if found.
-fn ascii_casefold_lookup(
-    proc: &File,
-    parent: &File,
-    name: &[u8],
-) -> io::Result<File> {
+fn ascii_casefold_lookup(proc: &File, parent: &File, name: &[u8]) -> io::Result<File> {
     let mut dir = open_fid(proc, parent, P9_DIRECTORY)?;
     let mut dirents = read_dir(&mut dir, 0)?;
 
@@ -232,21 +222,15 @@ fn do_walk(
 
     for wname in wnames {
         let name = string_to_cstring(wname)?;
-        current = MaybeOwned::Owned(lookup(current.as_ref(), &name).or_else(
-            |e| {
-                if ascii_casefold {
-                    if let Some(libc::ENOENT) = e.raw_os_error() {
-                        return ascii_casefold_lookup(
-                            proc,
-                            current.as_ref(),
-                            name.to_bytes(),
-                        );
-                    }
+        current = MaybeOwned::Owned(lookup(current.as_ref(), &name).or_else(|e| {
+            if ascii_casefold {
+                if let Some(libc::ENOENT) = e.raw_os_error() {
+                    return ascii_casefold_lookup(proc, current.as_ref(), name.to_bytes());
                 }
+            }
 
-                Err(e)
-            },
-        )?);
+            Err(e)
+        })?);
         mds.push(stat(&current)?);
     }
 
@@ -399,9 +383,7 @@ impl Server {
         match self.fids.entry(attach.fid) {
             btree_map::Entry::Vacant(entry) => {
                 let root = CString::new(self.cfg.root.as_os_str().as_bytes())
-                    .map_err(|e| {
-                    io::Error::new(io::ErrorKind::InvalidData, e)
-                })?;
+                    .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
 
                 // Safe because this doesn't modify any memory and we check the return value.
                 let fd = syscall!(unsafe {
@@ -425,9 +407,7 @@ impl Server {
                 entry.insert(fid);
                 Ok(response)
             }
-            btree_map::Entry::Occupied(_) => {
-                Err(io::Error::from_raw_os_error(libc::EBADF))
-            }
+            btree_map::Entry::Occupied(_) => Err(io::Error::from_raw_os_error(libc::EBADF)),
         }
     }
 
@@ -470,21 +450,11 @@ impl Server {
         let mut mds = Vec::with_capacity(expected_len);
         let names: Vec<String> = walk.wnames.to_vec();
 
-        match do_walk(
-            &self.proc,
-            names,
-            start,
-            self.cfg.ascii_casefold,
-            &mut mds,
-        ) {
+        match do_walk(&self.proc, names, start, self.cfg.ascii_casefold, &mut mds) {
             Ok(end) => {
                 // Store the new fid if the full walk succeeded.
                 if mds.len() == expected_len {
-                    let st = mds
-                        .last()
-                        .copied()
-                        .map(Ok)
-                        .unwrap_or_else(|| stat(&end))?;
+                    let st = mds.last().copied().map(Ok).unwrap_or_else(|| stat(&end))?;
                     self.fids.insert(
                         walk.newfid,
                         Fid {
@@ -549,9 +519,7 @@ impl Server {
 
     fn clunk(&mut self, clunk: &Tclunk) -> io::Result<()> {
         match self.fids.entry(clunk.fid) {
-            btree_map::Entry::Vacant(_) => {
-                Err(io::Error::from_raw_os_error(libc::EBADF))
-            }
+            btree_map::Entry::Vacant(_) => Err(io::Error::from_raw_os_error(libc::EBADF)),
             btree_map::Entry::Occupied(entry) => {
                 entry.remove();
                 Ok(())
@@ -571,9 +539,7 @@ impl Server {
         let mut buf = MaybeUninit::zeroed();
 
         // Safe because this will only modify `out` and we check the return value.
-        syscall!(unsafe {
-            libc::fstatfs64(fid.path.as_raw_fd(), buf.as_mut_ptr())
-        })?;
+        syscall!(unsafe { libc::fstatfs64(fid.path.as_raw_fd(), buf.as_mut_ptr()) })?;
 
         // Safe because this only has integer types and any value is valid.
         let out = unsafe { buf.assume_init() };
@@ -628,12 +594,7 @@ impl Server {
 
         // Safe because this doesn't modify any memory and we check the return value.
         let fd = syscall!(unsafe {
-            libc::openat64(
-                fid.path.as_raw_fd(),
-                name.as_ptr(),
-                flags,
-                lcreate.mode,
-            )
+            libc::openat64(fid.path.as_raw_fd(), name.as_ptr(), flags, lcreate.mode)
         })?;
 
         // Safe because we just opened this fd and we know it is valid.
@@ -722,18 +683,12 @@ impl Server {
 
     fn set_attr(&mut self, set_attr: &Tsetattr) -> io::Result<()> {
         let fid = self.fids.get(&set_attr.fid).ok_or_else(ebadf)?;
-        let path =
-            string_to_cstring(format!("self/fd/{}", fid.path.as_raw_fd()))?;
+        let path = string_to_cstring(format!("self/fd/{}", fid.path.as_raw_fd()))?;
 
         if set_attr.valid & P9_SETATTR_MODE != 0 {
             // Safe because this doesn't modify any memory and we check the return value.
             syscall!(unsafe {
-                libc::fchmodat(
-                    self.proc.as_raw_fd(),
-                    path.as_ptr(),
-                    set_attr.mode,
-                    0,
-                )
+                libc::fchmodat(self.proc.as_raw_fd(), path.as_ptr(), set_attr.mode, 0)
             })?;
         }
 
@@ -750,15 +705,7 @@ impl Server {
             };
 
             // Safe because this doesn't modify any memory and we check the return value.
-            syscall!(unsafe {
-                libc::fchownat(
-                    self.proc.as_raw_fd(),
-                    path.as_ptr(),
-                    uid,
-                    gid,
-                    0,
-                )
-            })?;
+            syscall!(unsafe { libc::fchownat(self.proc.as_raw_fd(), path.as_ptr(), uid, gid, 0) })?;
         }
 
         if set_attr.valid & P9_SETATTR_SIZE != 0 {
@@ -767,11 +714,7 @@ impl Server {
             } else if let Some(ref file) = fid.file {
                 MaybeOwned::Borrowed(file)
             } else {
-                MaybeOwned::Owned(open_fid(
-                    &self.proc,
-                    &fid.path,
-                    P9_NONBLOCK | P9_RDWR,
-                )?)
+                MaybeOwned::Owned(open_fid(&self.proc, &fid.path, P9_NONBLOCK | P9_RDWR)?)
             };
 
             file.set_len(set_attr.size)?;
@@ -817,9 +760,7 @@ impl Server {
 
         // The ctime would have been updated by any of the above operations so we only
         // need to change it if it was the only option given.
-        if set_attr.valid & P9_SETATTR_CTIME != 0
-            && set_attr.valid & (!P9_SETATTR_CTIME) == 0
-        {
+        if set_attr.valid & P9_SETATTR_CTIME != 0 && set_attr.valid & (!P9_SETATTR_CTIME) == 0 {
             // Setting -1 as the uid and gid will not actually change anything but will
             // still update the ctime.
             let ret = unsafe {
@@ -839,10 +780,7 @@ impl Server {
         Ok(())
     }
 
-    fn xattr_walk(
-        &mut self,
-        _xattr_walk: &Txattrwalk,
-    ) -> io::Result<Rxattrwalk> {
+    fn xattr_walk(&mut self, _xattr_walk: &Txattrwalk) -> io::Result<Rxattrwalk> {
         Err(io::Error::from_raw_os_error(libc::EOPNOTSUPP))
     }
 
@@ -874,10 +812,11 @@ impl Server {
         while let Some(dirent) = dirents.next().transpose()? {
             let st = statat(&fid.path, dirent.name, 0)?;
 
-            let name =
-                dirent.name.to_str().map(String::from).map_err(|err| {
-                    io::Error::new(io::ErrorKind::InvalidData, err)
-                })?;
+            let name = dirent
+                .name
+                .to_str()
+                .map(String::from)
+                .map_err(|err| io::Error::new(io::ErrorKind::InvalidData, err))?;
 
             let entry = Dirent {
                 qid: st.into(),
@@ -888,8 +827,7 @@ impl Server {
 
             let byte_size = entry.byte_size() as usize;
 
-            if cursor.get_ref().capacity() - cursor.get_ref().len() < byte_size
-            {
+            if cursor.get_ref().capacity() - cursor.get_ref().len() < byte_size {
                 // No more room in the buffer.
                 break;
             }
@@ -980,8 +918,7 @@ impl Server {
 
     fn link(&mut self, link: &Tlink) -> io::Result<()> {
         let target = self.fids.get(&link.fid).ok_or_else(ebadf)?;
-        let path =
-            string_to_cstring(format!("self/fd/{}", target.path.as_raw_fd()))?;
+        let path = string_to_cstring(format!("self/fd/{}", target.path.as_raw_fd()))?;
 
         let dir = self.fids.get(&link.dfid).ok_or_else(ebadf)?;
         let name = string_to_cstring(link.name.clone())?;
@@ -1004,9 +941,7 @@ impl Server {
         let name = string_to_cstring(mkdir.name.clone())?;
 
         // Safe because this doesn't modify any memory and we check the return value.
-        syscall!(unsafe {
-            libc::mkdirat(fid.path.as_raw_fd(), name.as_ptr(), mkdir.mode)
-        })?;
+        syscall!(unsafe { libc::mkdirat(fid.path.as_raw_fd(), name.as_ptr(), mkdir.mode) })?;
         Ok(Rmkdir {
             qid: statat(&fid.path, &name, 0).map(Qid::from)?,
         })
@@ -1066,74 +1001,37 @@ impl Protocol for Server {
     ) -> Result<Frame<Self::Response>, Self::Error> {
         let Frame { msg, tag } = frame;
         let rmsg = match msg {
-            Tmessage::Version(ref version) => {
-                self.version(version).map(Rmessage::Version)
-            }
-            Tmessage::Flush(ref flush) => {
-                self.flush(flush).and(Ok(Rmessage::Flush))
-            }
+            Tmessage::Version(ref version) => self.version(version).map(Rmessage::Version),
+            Tmessage::Flush(ref flush) => self.flush(flush).and(Ok(Rmessage::Flush)),
             Tmessage::Walk(ref walk) => self.walk(walk).map(Rmessage::Walk),
             Tmessage::Read(ref read) => self.read(read).map(Rmessage::Read),
-            Tmessage::Write(ref write) => {
-                self.write(write).map(Rmessage::Write)
-            }
-            Tmessage::Clunk(ref clunk) => {
-                self.clunk(clunk).and(Ok(Rmessage::Clunk))
-            }
-            Tmessage::Remove(ref remove) => {
-                self.remove(remove).and(Ok(Rmessage::Remove))
-            }
-            Tmessage::Attach(ref attach) => {
-                self.attach(attach).map(Rmessage::Attach)
-            }
+            Tmessage::Write(ref write) => self.write(write).map(Rmessage::Write),
+            Tmessage::Clunk(ref clunk) => self.clunk(clunk).and(Ok(Rmessage::Clunk)),
+            Tmessage::Remove(ref remove) => self.remove(remove).and(Ok(Rmessage::Remove)),
+            Tmessage::Attach(ref attach) => self.attach(attach).map(Rmessage::Attach),
             Tmessage::Auth(ref auth) => self.auth(auth).map(Rmessage::Auth),
-            Tmessage::Statfs(ref statfs) => {
-                self.statfs(statfs).map(Rmessage::Statfs)
-            }
-            Tmessage::Lopen(ref lopen) => {
-                self.lopen(lopen).map(Rmessage::Lopen)
-            }
-            Tmessage::Lcreate(ref lcreate) => {
-                self.lcreate(lcreate).map(Rmessage::Lcreate)
-            }
-            Tmessage::Symlink(ref symlink) => {
-                self.symlink(symlink).map(Rmessage::Symlink)
-            }
-            Tmessage::Mknod(ref mknod) => {
-                self.mknod(mknod).map(Rmessage::Mknod)
-            }
-            Tmessage::Rename(ref rename) => {
-                self.rename(rename).and(Ok(Rmessage::Rename))
-            }
-            Tmessage::Readlink(ref readlink) => {
-                self.readlink(readlink).map(Rmessage::Readlink)
-            }
-            Tmessage::GetAttr(ref get_attr) => {
-                self.get_attr(get_attr).map(Rmessage::GetAttr)
-            }
-            Tmessage::SetAttr(ref set_attr) => {
-                self.set_attr(set_attr).and(Ok(Rmessage::SetAttr))
-            }
+            Tmessage::Statfs(ref statfs) => self.statfs(statfs).map(Rmessage::Statfs),
+            Tmessage::Lopen(ref lopen) => self.lopen(lopen).map(Rmessage::Lopen),
+            Tmessage::Lcreate(ref lcreate) => self.lcreate(lcreate).map(Rmessage::Lcreate),
+            Tmessage::Symlink(ref symlink) => self.symlink(symlink).map(Rmessage::Symlink),
+            Tmessage::Mknod(ref mknod) => self.mknod(mknod).map(Rmessage::Mknod),
+            Tmessage::Rename(ref rename) => self.rename(rename).and(Ok(Rmessage::Rename)),
+            Tmessage::Readlink(ref readlink) => self.readlink(readlink).map(Rmessage::Readlink),
+            Tmessage::GetAttr(ref get_attr) => self.get_attr(get_attr).map(Rmessage::GetAttr),
+            Tmessage::SetAttr(ref set_attr) => self.set_attr(set_attr).and(Ok(Rmessage::SetAttr)),
             Tmessage::XattrWalk(ref xattr_walk) => {
                 self.xattr_walk(xattr_walk).map(Rmessage::XattrWalk)
             }
-            Tmessage::XattrCreate(ref xattr_create) => self
-                .xattr_create(xattr_create)
-                .and(Ok(Rmessage::XattrCreate)),
-            Tmessage::Readdir(ref readdir) => {
-                self.readdir(readdir).map(Rmessage::Readdir)
+            Tmessage::XattrCreate(ref xattr_create) => {
+                self.xattr_create(xattr_create)
+                    .and(Ok(Rmessage::XattrCreate))
             }
-            Tmessage::Fsync(ref fsync) => {
-                self.fsync(fsync).and(Ok(Rmessage::Fsync))
-            }
+            Tmessage::Readdir(ref readdir) => self.readdir(readdir).map(Rmessage::Readdir),
+            Tmessage::Fsync(ref fsync) => self.fsync(fsync).and(Ok(Rmessage::Fsync)),
             Tmessage::Lock(ref lock) => self.lock(lock).map(Rmessage::Lock),
-            Tmessage::GetLock(ref get_lock) => {
-                self.get_lock(get_lock).map(Rmessage::GetLock)
-            }
+            Tmessage::GetLock(ref get_lock) => self.get_lock(get_lock).map(Rmessage::GetLock),
             Tmessage::Link(ref link) => self.link(link).and(Ok(Rmessage::Link)),
-            Tmessage::Mkdir(ref mkdir) => {
-                self.mkdir(mkdir).map(Rmessage::Mkdir)
-            }
+            Tmessage::Mkdir(ref mkdir) => self.mkdir(mkdir).map(Rmessage::Mkdir),
             Tmessage::RenameAt(ref rename_at) => {
                 self.rename_at(rename_at).and(Ok(Rmessage::RenameAt))
             }
@@ -1143,10 +1041,12 @@ impl Protocol for Server {
         };
         match rmsg {
             Ok(msg) => Ok(Frame { tag, msg }),
-            Err(e) => Ok(Frame {
-                tag,
-                msg: error_to_rmessage(e),
-            }),
+            Err(e) => {
+                Ok(Frame {
+                    tag,
+                    msg: error_to_rmessage(e),
+                })
+            }
         }
     }
 }
