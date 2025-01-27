@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_rpc"
-version = "7.4.0"
+version = "8.0.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -25,12 +25,12 @@ thiserror = "2.0.11"
 lazy_static = "1.5.0"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-jetstream_wireformat = { version = "7.4.0", path = "../jetstream_wireformat", no-default-features = true, features = [
+jetstream_wireformat = { version = "8.0.0", path = "../jetstream_wireformat", no-default-features = true, features = [
     "std",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-jetstream_wireformat = { version = "7.4.0", path = "../jetstream_wireformat" }
+jetstream_wireformat = { version = "8.0.0", path = "../jetstream_wireformat" }
 tokio = { version = "1.43.0", features = ["full"] }
 
 [dev-dependencies]

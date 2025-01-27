@@ -1,5 +1,21 @@
 # Changelog
 
+## [8.0.0](https://github.com/sevki/jetstream/compare/v7.4.0...v8.0.0) (2025-01-27)
+
+
+### ⚠ BREAKING CHANGES
+
+* use more futures
+
+### Features
+
+* use more futures ([467b6f5](https://github.com/sevki/jetstream/commit/467b6f56d0808e89f078c656f1e7c447738244ed))
+
+
+### Bug Fixes
+
+* formatting ([04aace4](https://github.com/sevki/jetstream/commit/04aace42d2d1338e614081954e32448ac3e5ec30))
+
 ## [7.4.0](https://github.com/sevki/jetstream/compare/v7.3.0...v7.4.0) (2025-01-18)
 
 
