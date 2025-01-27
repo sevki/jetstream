@@ -1,6 +1,4 @@
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
+#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -14,8 +12,14 @@ pub mod prelude {
     pub use jetstream_macros::{service, JetStreamWireFormat};
 
     pub use jetstream_rpc::{
-        ClientTransport, Error, Frame, Framer, Message, Protocol,
-        ServiceTransport, Tag,
+        ClientTransport,
+        Error,
+        Frame,
+        Framer,
+        Message,
+        Protocol,
+        ServiceTransport,
+        Tag,
     };
 
     pub use lazy_static::*;
@@ -24,8 +28,7 @@ pub mod prelude {
 
     pub use jetstream_wireformat::{Data, WireFormat};
 
-    pub use async_trait::async_trait;
-    pub use trait_variant;
+    pub use {async_trait::async_trait, trait_variant};
 
     #[cfg(feature = "9p")]
     pub mod p9 {
