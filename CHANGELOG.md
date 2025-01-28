@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.1](https://github.com/sevki/jetstream/compare/v8.0.0...v8.0.1) (2025-01-28)
+
+
+### Bug Fixes
+
+* remove distributed ([3aba1f6](https://github.com/sevki/jetstream/commit/3aba1f6543493e107b079d35fa441d46611e637e))
+
 ## [8.0.0](https://github.com/sevki/jetstream/compare/v7.4.0...v8.0.0) (2025-01-27)
 
 
