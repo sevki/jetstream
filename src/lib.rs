@@ -44,9 +44,4 @@ pub mod prelude {
     pub mod server {
         pub use jetstream_server::*;
     }
-
-    #[cfg(feature = "distributed")]
-    pub mod distributed {
-        pub use jetstream_distributed::*;
-    }
 }
