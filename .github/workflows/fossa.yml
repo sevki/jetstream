@@ -8,5 +8,4 @@ jobs:
       - uses: fossas/fossa-action@main # Use a specific version if locking is preferred
         with:
           api-key: ${{secrets.FOSSA_API_KEY}}
-      - name: Run dependency scan
-        run: fossa analyze --only-target cargo
+  
