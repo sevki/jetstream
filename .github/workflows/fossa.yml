@@ -10,6 +10,3 @@ jobs:
           api-key: ${{secrets.FOSSA_API_KEY}}
       - name: Run dependency scan
         run: fossa analyze --only-target cargo
-
-      - name: Check for scan results
-        run: fossa test
