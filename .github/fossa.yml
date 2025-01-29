@@ -1,0 +1,15 @@
+name: Dependency scan
+on: [push]
+jobs:
+  fossa-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: fossas/fossa-action@main # Use a specific version if locking is preferred
+        with:
+          api-key: ${{secrets.FOSSA_API_KEY}}
+      - name: Run dependency scan
+        run: fossa analyze --only-target cargo
+
+      - name: Check for scan results
+        run: fossa test
