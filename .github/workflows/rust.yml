@@ -13,19 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly, "1.76.0"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -35,6 +23,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_macros --verbose
@@ -46,19 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly, "1.76.0"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -68,6 +52,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_wireformat --verbose
@@ -89,6 +81,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build for wasm32
         run: cargo build -p jetstream_wireformat --target wasm32-unknown-unknown --verbose
 
@@ -98,19 +98,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
-            stable,
-            beta,
-            nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
-          ]
+        rust: [stable, beta, nightly, "1.76.0"]
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust ${{ matrix.rust }}
@@ -120,6 +108,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_rpc --verbose
@@ -142,6 +138,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_rpc --verbose --target wasm32-unknown-unknown
@@ -162,6 +166,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_9p --verbose
@@ -183,6 +195,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_client --verbose
@@ -204,6 +224,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_server --verbose
@@ -225,6 +253,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_ufs --verbose
@@ -232,7 +268,7 @@ jobs:
 
   # Depends on rpc
   jetstream_distributed:
-    needs: [jetstream_rpc]
+    needs: [jetstream_server]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -246,6 +282,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream_distributed --verbose
@@ -257,18 +301,11 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        rust:
-          [
+        rust: [
             stable,
             beta,
             nightly,
-            "1.76.0",
-            "1.77.0",
-            "1.78.0",
-            "1.79.0",
-            "1.80.0",
-            "1.81.0",
-            "1.82.0",
+            "1.76.0", # minimum required
           ]
     steps:
       - uses: actions/checkout@v3
@@ -279,6 +316,14 @@ jobs:
           override: true
       - name: Setup sccache
         uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
         run: |
           cargo build -p jetstream --verbose
@@ -295,5 +340,15 @@ jobs:
         with:
           toolchain: stable
           override: true
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Run sccache-cache only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        uses: mozilla-actions/sccache-action@v0.0.6
+      - name: Set Rust caching env vars only on non-release runs
+        if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
+        run: |
+          echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
+          echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Run example echo
         run: cargo run --example echo
