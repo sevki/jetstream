@@ -1,5 +1,13 @@
 # Changelog
 
+## [8.0.3](https://github.com/sevki/jetstream/compare/v8.0.2...v8.0.3) (2025-01-30)
+
+
+### Bug Fixes
+
+* cargo lock resolver ([327d8bd](https://github.com/sevki/jetstream/commit/327d8bdfe9d11f3d4d99e245de100ffae9e5d94b))
+* dependency order ([9a0e1f9](https://github.com/sevki/jetstream/commit/9a0e1f979c85a45780bf71f669da4cc91ecd3f5b))
+
 ## [8.0.2](https://github.com/sevki/jetstream/compare/v8.0.1...v8.0.2) (2025-01-30)
 
 
