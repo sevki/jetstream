@@ -32,15 +32,7 @@ pretty_assertions = "1.4.0"
 prettyplease = "0.2.25"
 sha256 = "1.5.0"
 trybuild = "1.0.101"
-jetstream = { path = "../../", features = ["server", "client"] }
-jetstream_wireformat = { path = "../jetstream_wireformat" }
-jetstream_client = { path = "../jetstream_client" }
 futures = "0.3.31"
 tokio = { version = "1.43.0", features = ["full"] }
 turmoil = "0.6.4"
 okstd = { version = "0.2.0", features = ["macros"] }
-
-
-[[test]]
-name = "macro"
-path = "tests/macro/01-basic.rs"

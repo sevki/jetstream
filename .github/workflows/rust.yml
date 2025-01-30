@@ -239,7 +239,7 @@ jobs:
 
   # Depends on server
   jetstream_ufs:
-    needs: [jetstream_server]
+    needs: [jetstream]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -268,7 +268,7 @@ jobs:
 
   # Depends on rpc
   jetstream_distributed:
-    needs: [jetstream_server]
+    needs: [jetstream]
     runs-on: ubuntu-latest
     strategy:
       matrix:
