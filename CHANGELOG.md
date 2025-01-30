@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.5](https://github.com/sevki/jetstream/compare/v8.0.4...v8.0.5) (2025-01-30)
+
+
+### Bug Fixes
+
+* use cargo publish workspace ([e28a0f7](https://github.com/sevki/jetstream/commit/e28a0f75bfa9fca9a990c6f2b5527be5e25a3d16))
+
 ## [8.0.4](https://github.com/sevki/jetstream/compare/v8.0.3...v8.0.4) (2025-01-30)
 
 
