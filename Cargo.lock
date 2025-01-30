@@ -2308,7 +2308,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -3202,7 +3202,7 @@ checksum = "d75a2a4b1b190afb6f5425f10f6a8f959d2ea0b9c2b1d79553551850539e4674"
 
 [[package]]
 name = "jetstream"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "arbitrary",
  "async-trait",
@@ -3228,7 +3228,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "async-trait",
  "jetstream_macros",
@@ -3240,7 +3240,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_client"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "anyhow",
  "futures",
@@ -3257,7 +3257,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_distributed"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3283,7 +3283,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "convert_case 0.6.0",
  "futures",
@@ -3305,7 +3305,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "anyhow",
  "bytes",
@@ -3322,7 +3322,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_server"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3341,7 +3341,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "anyhow",
  "argh",
@@ -3358,7 +3358,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "bytes",
  "futures",
@@ -5031,7 +5031,7 @@ dependencies = [
 
 [[package]]
 name = "rustdoc_to_mdbook"
-version = "8.0.2"
+version = "8.0.3"
 dependencies = [
  "anyhow",
  "comrak",
