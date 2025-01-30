@@ -1,5 +1,15 @@
 # Changelog
 
+## [8.0.4](https://github.com/sevki/jetstream/compare/v8.0.3...v8.0.4) (2025-01-30)
+
+
+### Bug Fixes
+
+* dependency order and cycle ([6a6c997](https://github.com/sevki/jetstream/commit/6a6c99778f90f8481d5792d560a6e97e0c5926bc))
+* formatting ([049e584](https://github.com/sevki/jetstream/commit/049e58478f81be41983bdeef4a661f12eb21215a))
+* reexport tokio_util from rpc ([cf28c40](https://github.com/sevki/jetstream/commit/cf28c40a3783379ac89295fef4a55bd4212d4891))
+* rust.yml workflow ([9dc7bc0](https://github.com/sevki/jetstream/commit/9dc7bc09ad8a341e8bcf19f945b8efa478b0d67d))
+
 ## [8.0.3](https://github.com/sevki/jetstream/compare/v8.0.2...v8.0.3) (2025-01-30)
 
 
