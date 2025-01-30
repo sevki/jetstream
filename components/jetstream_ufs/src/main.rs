@@ -1,4 +1,4 @@
-use {okstd::prelude::*, std::path::PathBuf, tokio::net::UnixListener};
+use {okstd::prelude::*, std::path::PathBuf, tokio::net::UnixListener, tokio_util::codec::Framed};
 
 #[derive(FromArgs)]
 /// JetStream Ufs Server
@@ -25,7 +25,7 @@ async fn main() {
         let servercodec: jetstream_server::service::ServerCodec<jetstream_ufs::Server> =
             Default::default();
 
-        let service_transport = jetstream_rpc::Framed::new(stream, servercodec);
+        let service_transport = Framed::new(stream, servercodec);
         jetstream_server::service::run(&mut service, service_transport)
             .await
             .unwrap()
