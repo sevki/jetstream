@@ -77,6 +77,8 @@ pub enum Error {
     Generic(#[from] Box<dyn std::error::Error + Send + Sync>),
     #[error("{0}")]
     Custom(String),
+    #[error("invalid response")]
+    InvalidResponse,
 }
 
 pub struct Frame<T: Framer> {
