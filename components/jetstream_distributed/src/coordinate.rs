@@ -69,7 +69,6 @@ impl Default for Config {
 
 /// A Vivaldi coordinate
 #[derive(Debug, Clone, JetStreamWireFormat)]
-#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Coordinate {
     /// Euclidean portion of the coordinate (in seconds)
     vec: Vec<f64>,
