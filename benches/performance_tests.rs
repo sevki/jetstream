@@ -2,6 +2,7 @@ use {
     criterion::{criterion_group, criterion_main, Criterion},
     echo_protocol::EchoChannel,
     jetstream::prelude::*,
+    jetstream_rpc::Framed,
     s2n_quic::{client::Connect, provider::tls, Client, Server},
     std::{
         net::SocketAddr,

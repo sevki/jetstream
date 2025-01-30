@@ -24,8 +24,6 @@ pub mod prelude {
 
     pub use lazy_static::*;
 
-    pub use tokio_util::codec::{Decoder, Encoder, Framed};
-
     pub use jetstream_wireformat::{Data, WireFormat};
 
     pub use {async_trait::async_trait, trait_variant};

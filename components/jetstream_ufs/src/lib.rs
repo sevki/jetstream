@@ -991,7 +991,7 @@ impl Protocol for Server {
 
     type Response = crate::ufs::Rmessage;
 
-    type Error = jetstream::prelude::Error;
+    type Error = jetstream_rpc::Error;
 
     const VERSION: &'static str = "9P2000.L";
 
