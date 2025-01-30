@@ -32,7 +32,7 @@ const ZERO_THRESHOLD: f64 = 1.0e-6;
 
 /// Configuration for the Vivaldi coordinate system
 #[derive(Debug, Clone, PartialEq, JetStreamWireFormat)]
-
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Config {
     /// The dimensionality of the coordinate system
     pub dimensionality: usize,
@@ -69,6 +69,7 @@ impl Default for Config {
 
 /// A Vivaldi coordinate
 #[derive(Debug, Clone, JetStreamWireFormat)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Coordinate {
     /// Euclidean portion of the coordinate (in seconds)
     vec: Vec<f64>,
