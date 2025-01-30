@@ -2,14 +2,10 @@ use {
     criterion::{criterion_group, criterion_main, Criterion},
     echo_protocol::EchoChannel,
     jetstream::prelude::*,
-    jetstream_macros::service,
-    okstd::prelude::*,
     s2n_quic::{client::Connect, provider::tls, Client, Server},
     std::{
-        hint::black_box,
         net::SocketAddr,
         path::Path,
-        pin::pin,
         time::{Duration, Instant},
     },
 };

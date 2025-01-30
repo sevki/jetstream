@@ -407,13 +407,23 @@ pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream
                     syn::FnArg::Receiver(_) => quote! {},
                 }
             });
-            let inputs_clone = inputs.clone();
+            let args = method.sig.inputs.iter().map(|arg| {
+                match arg {
+                    syn::FnArg::Typed(pat) => {
+                        let name = pat.pat.clone();
+                        quote! {
+                             #name,
+                        }
+                    }
+                    syn::FnArg::Receiver(_) => quote! {},
+                }
+            });
             let new = quote! {
                 #maybe_async fn #method_name(&mut self, #(#inputs)*)  #retn {
                     let tag =#tag_name.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
                     let req = Tmessage::#variant_name(#request_struct_ident {
                         #(
-                            #inputs_clone
+                            #args
                         )*
                     });
                     let tframe= Frame::from((tag, req));
