@@ -41,16 +41,17 @@ jobs:
         with:
           toolchain: stable
           override: true
-
-      - name: publish to crates.io
+      - name: Update and install dependencies
         run: |
-          apt-get update -y
-          apt-get install -y libssl-dev pkg-config
+          sudo apt-get update -y
+          sudo apt-get install -y libssl-dev pkg-config
+
+      - name: publish to crates.io (dry-run)
+        run: |
           cargo install cargo-publish-workspace-v2
-          CI_TAG = v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
-          cargo publish-workspace --crate-prefix jetstream_ --target-version $VERSION --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run
+          cargo publish-workspace --crate-prefix jetstream_ --version v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run
 
       - name: publish to crates.io
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          cargo publish-workspace --crate-prefix jetstream_ --target-version $VERSION --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
+          cargo publish-workspace --crate-prefix jetstream_ --version v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
