@@ -431,6 +431,7 @@ pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream
                     let rmsg = rframe.msg;
                     match rmsg {
                         Rmessage::#variant_name(msg) => Ok(msg.0),
+                        _ => Err(Error::InvalidResponse),
                     }
                 }
             };
@@ -786,6 +787,7 @@ mod tests {
                         let rmsg = rframe.msg;
                         match rmsg {
                             Rmessage::Ping(msg) => Ok(msg.0),
+                            _ => Err(Error::InvalidResponse),
                         }
                     }
                 }
@@ -966,6 +968,7 @@ mod tests {
                         let rmsg = rframe.msg;
                         match rmsg {
                             Rmessage::Ping(msg) => Ok(msg.0),
+                            _ => Err(Error::InvalidResponse),
                         }
                     }
                 }
@@ -1146,6 +1149,7 @@ mod tests {
                         let rmsg = rframe.msg;
                         match rmsg {
                             Rmessage::Ping(msg) => Ok(msg.0),
+                            _ => Err(Error::InvalidResponse),
                         }
                     }
                 }
