@@ -45,7 +45,7 @@ prost = "0.13.4"
 s2n-quic = "1.52.0"
 tmpdir = "1.0.0"
 tokio = { version = "1.43.0", features = ["full"] }
-turmoil = "0.6.4"
+turmoil = "0.6.5"
 
 
 [workspace]
