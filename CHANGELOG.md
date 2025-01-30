@@ -1,5 +1,16 @@
 # Changelog
 
+## [8.0.2](https://github.com/sevki/jetstream/compare/v8.0.1...v8.0.2) (2025-01-30)
+
+
+### Bug Fixes
+
+* criterion benchmark test, framed implementation ([25b1611](https://github.com/sevki/jetstream/commit/25b1611be97ffde52a1cb403ea4a55e3aa5f8e0b))
+* failing serde tests ([81db0de](https://github.com/sevki/jetstream/commit/81db0ded08429489cf5d83d5540804b00fdb9802))
+* reenable sccache ([757bb7e](https://github.com/sevki/jetstream/commit/757bb7e248996a587ee13c2a8c21246d0e198a04))
+* service macro works correctly with client calls ([eb1fd0f](https://github.com/sevki/jetstream/commit/eb1fd0f01bc899b7f0650dbfca29e2d77ec76720))
+* snapshots for macros ([fab686d](https://github.com/sevki/jetstream/commit/fab686df8c79710b5e9319519d8aa3d17b203847))
+
 ## [8.0.1](https://github.com/sevki/jetstream/compare/v8.0.0...v8.0.1) (2025-01-28)
 
 
