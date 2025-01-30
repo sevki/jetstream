@@ -2,6 +2,7 @@ use {
     echo_protocol::EchoChannel,
     jetstream::prelude::*,
     jetstream_macros::service,
+    jetstream_rpc::Framed,
     okstd::prelude::*,
     s2n_quic::{client::Connect, provider::tls, Client, Server},
     std::{net::SocketAddr, path::Path},

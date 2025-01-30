@@ -16,6 +16,9 @@ use {
     },
 };
 
+// Re-export codecs
+pub use tokio_util::codec::{Decoder, Encoder, Framed};
+
 /// A trait representing a message that can be encoded and decoded.
 pub trait Message: WireFormat + Send + Sync {}
 

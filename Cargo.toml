@@ -53,7 +53,6 @@ turmoil = "0.6.5"
 members = [
     "components/jetstream_9p",
     "components/jetstream_client",
-    "components/jetstream_distributed",
     "components/jetstream_macros",
     "components/jetstream_rpc",
     "components/jetstream_server",

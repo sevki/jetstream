@@ -1,5 +1,7 @@
 use std::{net::SocketAddr, path::Path};
 
+use jetstream_rpc::Framed;
+
 use {
     echo_protocol::EchoChannel,
     jetstream::prelude::*,
