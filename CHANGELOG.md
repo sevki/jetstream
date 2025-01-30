@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.7](https://github.com/sevki/jetstream/compare/v8.0.6...v8.0.7) (2025-01-30)
+
+
+### Bug Fixes
+
+* release please ([53a698b](https://github.com/sevki/jetstream/commit/53a698b53ad31d12cc068ba8e921779b710a448e))
+
 ## [8.0.6](https://github.com/sevki/jetstream/compare/v8.0.5...v8.0.6) (2025-01-30)
 
 
