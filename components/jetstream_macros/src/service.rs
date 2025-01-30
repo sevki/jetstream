@@ -960,7 +960,7 @@ mod tests {
                 impl<'a> Echo for EchoChannel<'a> {
                     async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
                         let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                        let req = Tmessage::Ping(Tping { message: String });
+                        let req = Tmessage::Ping(Tping { message });
                         let tframe = Frame::from((tag, req));
                         let rframe = self.rpc(tframe).await?;
                         let rmsg = rframe.msg;
@@ -1140,7 +1140,7 @@ mod tests {
                 impl<'a> Echo for EchoChannel<'a> {
                     async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
                         let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-                        let req = Tmessage::Ping(Tping { message: String });
+                        let req = Tmessage::Ping(Tping { message });
                         let tframe = Frame::from((tag, req));
                         let rframe = self.rpc(tframe).await?;
                         let rmsg = rframe.msg;
