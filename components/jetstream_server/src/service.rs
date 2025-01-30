@@ -34,9 +34,24 @@ where
     type Item = Frame<P::Request>;
 
     fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+        // check to see if you have at least 4 bytes to figure out the size
+        if src.len() < 4 {
+            src.reserve(4);
+            return Ok(None);
+        }
+        let Some(mut bytz) = src.get(..4) else {
+            return Ok(None);
+        };
+
+        let byte_size: u32 = WireFormat::decode(&mut bytz)?;
+        if src.len() < byte_size as usize {
+            src.reserve(byte_size as usize);
+            return Ok(None);
+        }
+
         Frame::<P::Request>::decode(&mut src.reader())
             .map(Some)
-            .map_err(Error::Io)
+            .map_err(|_| Error::Custom("()".to_string()))
     }
 }
 
@@ -52,7 +67,7 @@ where
         dst: &mut bytes::BytesMut,
     ) -> Result<(), Self::Error> {
         item.encode(&mut dst.writer())
-            .map_err(Error::Io)
+            .map_err(|_| Error::Custom("()".to_string()))
             .map(|_| ())
     }
 }
@@ -65,8 +80,7 @@ where
     use futures::{SinkExt, StreamExt};
     let mut a = pin!(p);
     while let Some(Ok(frame)) = stream.next().await {
-        let res = a.rpc(frame).await?;
-        stream.send(res).await?
+        stream.send(a.rpc(frame).await?).await?
     }
     Ok(())
 }

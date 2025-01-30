@@ -44,9 +44,9 @@ fn network_partitions_during_connect() -> turmoil::Result {
                 let servercodec: jetstream::prelude::server::service::ServerCodec<
                     echo_protocol::EchoService<EchoImpl>,
                 > = Default::default();
-                let framed = Framed::new(stream, servercodec);
+                let framed = Framed::with_capacity(stream, servercodec, 1024 * 1024 * 10);
                 let mut serv = echo_protocol::EchoService { inner: echo };
-                run(&mut serv, framed).await?;
+                run(&mut serv, framed).await.expect("server run failed");
             }
         }
     });
@@ -58,20 +58,9 @@ fn network_partitions_during_connect() -> turmoil::Result {
         let mut chan = EchoChannel {
             inner: Box::new(&mut framed),
         };
-        chan.ping().await?;
+        chan.ping().await.expect("ping failed");
         Ok(())
     });
 
     sim.run()
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[okstd::test]
-    #[okstd::log(debug)]
-    fn test_network_partitions_during_connect() {
-        network_partitions_during_connect().unwrap()
-    }
 }

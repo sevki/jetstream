@@ -38,7 +38,21 @@ impl<P: jetstream_rpc::Protocol> Decoder for ClientCodec<P> {
     type Error = std::io::Error;
 
     fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
-        Ok(Some(Frame::<P::Response>::decode(&mut src.reader())?))
+        // check to see if you have at least 4 bytes to figure out the size
+        if src.len() < 4 {
+            src.reserve(4);
+            return Ok(None);
+        }
+        let Some(mut bytz) = src.get(..4) else {
+            return Ok(None);
+        };
+
+        let byte_size: u32 = WireFormat::decode(&mut bytz)?;
+        if src.len() < byte_size as usize {
+            src.reserve(byte_size as usize);
+            return Ok(None);
+        }
+        Frame::<P::Response>::decode(&mut src.reader()).map(Some)
     }
 
     type Item = Frame<P::Response>;

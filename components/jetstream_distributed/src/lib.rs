@@ -10,6 +10,7 @@ pub mod access_control;
 pub mod cluster;
 pub mod coordinate;
 pub mod placement;
+pub mod service;
 
 /// Error type
 #[derive(thiserror::Error, Debug)]

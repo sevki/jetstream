@@ -1,17 +1,10 @@
 use {
-    criterion::{criterion_group, criterion_main, Criterion},
     echo_protocol::EchoChannel,
     jetstream::prelude::*,
     jetstream_macros::service,
     okstd::prelude::*,
     s2n_quic::{client::Connect, provider::tls, Client, Server},
-    std::{
-        hint::black_box,
-        net::SocketAddr,
-        path::Path,
-        pin::pin,
-        time::{Duration, Instant},
-    },
+    std::{net::SocketAddr, path::Path},
 };
 
 #[service]
@@ -23,6 +16,8 @@ struct EchoImpl {}
 
 impl Echo for EchoImpl {
     async fn ping(&mut self) -> Result<String, Error> {
+        eprintln!("Ping received");
+        eprintln!("Pong sent");
         Ok("pong".to_string())
     }
 }
@@ -33,7 +28,7 @@ pub static CLIENT_KEY_PEM: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/cl
 pub static SERVER_CERT_PEM: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
 pub static SERVER_KEY_PEM: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
 
-async fn server() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+async fn server() -> Result<(), Box<dyn std::error::Error>> {
     let tls = tls::default::Server::builder()
         .with_trusted_certificate(Path::new(CA_CERT_PEM))?
         .with_certificate(Path::new(SERVER_CERT_PEM), Path::new(SERVER_KEY_PEM))?
@@ -48,9 +43,15 @@ async fn server() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'stati
     while let Some(mut connection) = server.accept().await {
         // spawn a new task for the connection
         tokio::spawn(async move {
+            eprintln!("Connection accepted from {:?}", connection.remote_addr());
+
             while let Ok(Some(stream)) = connection.accept_bidirectional_stream().await {
                 // spawn a new task for the stream
                 tokio::spawn(async move {
+                    eprintln!(
+                        "Stream opened from {:?}",
+                        &stream.connection().remote_addr()
+                    );
                     let echo = EchoImpl {};
                     let servercodec: jetstream::prelude::server::service::ServerCodec<
                         echo_protocol::EchoService<EchoImpl>,
@@ -68,7 +69,7 @@ async fn server() -> Result<(), Box<dyn std::error::Error + Send + Sync + 'stati
     Ok(())
 }
 
-async fn client(iters: u64) -> Result<Duration, Box<dyn std::error::Error>> {
+async fn client() -> Result<(), Box<dyn std::error::Error>> {
     let tls = tls::default::Client::builder()
         .with_certificate(Path::new(CA_CERT_PEM))?
         .with_client_identity(Path::new(CLIENT_CERT_PEM), Path::new(CLIENT_KEY_PEM))?
@@ -93,29 +94,22 @@ async fn client(iters: u64) -> Result<Duration, Box<dyn std::error::Error>> {
     let mut chan = EchoChannel {
         inner: Box::new(&mut framed),
     };
-    let start = Instant::now();
-    for _ in 0..iters {
+    for _ in 0..100 {
         if let Err(e) = chan.ping().await {
             eprintln!("Ping error: {:?}", e);
             break;
         }
     }
+    // Properly close the stream
     drop(chan);
-    Ok(start.elapsed())
+    Ok(())
 }
 
-fn jetstream_benchmark(c: &mut Criterion) {
-    let rt = tokio::runtime::Runtime::new().unwrap();
-
-    c.bench_function("ping-pong", |b| {
-        b.to_async(&rt).iter_custom(|iters| {
-            async move {
-                tokio::spawn(server());
-                client(iters).await.unwrap()
-            }
-        })
-    });
+#[okstd::test]
+#[okstd::log(debug)]
+async fn echo() {
+    tokio::select! {
+      _ = server() => {},
+      _ = client() => {},
+    }
 }
-
-criterion_group!(benches, jetstream_benchmark);
-criterion_main!(benches);

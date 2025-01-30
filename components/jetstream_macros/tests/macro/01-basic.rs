@@ -12,14 +12,14 @@ use {
 
 #[service]
 pub trait Echo {
-    async fn ping(&mut self) -> Result<(), Error>;
+    async fn ping(&mut self) -> Result<String, Error>;
 }
 
 struct EchoImpl {}
 
 impl Echo for EchoImpl {
-    async fn ping(&mut self) -> Result<(), Error> {
-        Ok(())
+    async fn ping(&mut self) -> Result<String, Error> {
+        Ok("pong".to_string())
     }
 }
 
@@ -47,7 +47,7 @@ fn network_partitions_during_connect() -> turmoil::Result {
                 > = Default::default();
                 let framed = Framed::new(stream, servercodec);
                 let mut serv = echo_protocol::EchoService { inner: echo };
-                run(&mut serv, framed).await?;
+                run(&mut serv, framed).await.expect("run");
             }
         }
     });

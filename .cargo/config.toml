@@ -2,3 +2,6 @@
 
 [net]
 git-fetch-with-cli = true
+
+[resolver]
+incompatible-rust-versions = "fallback"
