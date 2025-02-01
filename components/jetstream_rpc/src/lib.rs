@@ -100,14 +100,14 @@ impl<T: Framer> WireFormat for Frame<T> {
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-        self.byte_size().encode(writer).expect("byte_size");
+        self.byte_size().encode(writer)?;
 
         let ty = self.msg.message_type();
 
-        ty.encode(writer).expect("ty");
-        self.tag.encode(writer).expect("tag");
+        ty.encode(writer)?;
+        self.tag.encode(writer)?;
 
-        self.msg.encode(writer).expect("msg");
+        self.msg.encode(writer)?;
 
         Ok(())
     }
@@ -127,10 +127,10 @@ impl<T: Framer> WireFormat for Frame<T> {
         let reader = &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
 
         let mut ty = [0u8];
-        reader.read_exact(&mut ty).expect("ty");
+        reader.read_exact(&mut ty)?;
 
-        let tag: u16 = WireFormat::decode(reader).expect("tag");
-        let msg = T::decode(reader, ty[0]).expect("msg");
+        let tag: u16 = WireFormat::decode(reader)?;
+        let msg = T::decode(reader, ty[0])?;
 
         Ok(Frame { tag, msg })
     }
