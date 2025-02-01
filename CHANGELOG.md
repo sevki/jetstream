@@ -1,5 +1,12 @@
 # Changelog
 
+## [8.0.8](https://github.com/sevki/jetstream/compare/v8.0.7...v8.0.8) (2025-02-01)
+
+
+### Bug Fixes
+
+* remove expects ([8a58cf5](https://github.com/sevki/jetstream/commit/8a58cf565453d755100b5298c1c89ed478dff11e))
+
 ## [8.0.7](https://github.com/sevki/jetstream/compare/v8.0.6...v8.0.7) (2025-01-30)
 
 
