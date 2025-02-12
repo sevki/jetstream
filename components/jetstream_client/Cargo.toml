@@ -19,7 +19,7 @@ jetstream_wireformat = { version = "8.0.8", path = "../jetstream_wireformat", fe
     "async",
 ] }
 okstd = { version = "0.2.0" }
-s2n-quic = "1.52.0"
+s2n-quic = "1.53.0"
 tokio = { version = "1.43.0", features = ["full"] }
 tokio-vsock = { version = "0.7.0", optional = true }
 tokio-util = { version = "0.7.13", features = ["codec"] }
