@@ -15,5 +15,5 @@ jetstream_macros = { version = "8.0.8", path = "../jetstream_macros" }
 jetstream_wireformat = { version = "8.0.8", path = "../jetstream_wireformat" }
 jetstream_rpc = { version = "8.0.8", path = "../jetstream_rpc" }
 libc = "0.2.169"
-async-trait = "0.1.85"
+async-trait = "0.1.86"
 trait-variant = "0.1.2"
