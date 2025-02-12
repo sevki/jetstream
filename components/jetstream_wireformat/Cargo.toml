@@ -23,7 +23,7 @@ serde = ["dep:serde"]
 futures = ["dep:futures-util"]
 
 [dependencies]
-zerocopy = "0.8.13"
+zerocopy = "0.8.17"
 paste = "1.0.15"
 bytes = { version = "1.9.0", features = ["serde"] }
 jetstream_macros = { version = "8.0.8", path = "../jetstream_macros" }
