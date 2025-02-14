@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [8.0.9](https://github.com/sevki/jetstream/compare/v8.0.8...v8.0.9) (2025-02-14)
+
+
+### Bug Fixes
+
+* remove prost ([5a5ff9b](https://github.com/sevki/jetstream/commit/5a5ff9b7904f1023f5bbed6c5a6236ef01644c17))
+
 ## [8.0.8](https://github.com/sevki/jetstream/compare/v8.0.7...v8.0.8) (2025-02-01)
 
 
