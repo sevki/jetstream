@@ -3113,7 +3113,6 @@ dependencies = [
  "jetstream_wireformat",
  "lazy_static",
  "okstd",
- "prost",
  "s2n-quic",
  "tmpdir",
  "tokio",
@@ -4370,29 +4369,6 @@ version = "1.0.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a65f2e60fbf1063868558d69c6beacf412dc755f9fc020f514b7955fc914fe30"
 dependencies = [
- "quote",
- "syn 2.0.98",
-]
-
-[[package]]
-name = "prost"
-version = "0.13.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c0fef6c4230e4ccf618a35c59d7ede15dea37de8427500f50aff708806e42ec"
-dependencies = [
- "bytes",
- "prost-derive",
-]
-
-[[package]]
-name = "prost-derive"
-version = "0.13.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "157c5a9d7ea5c2ed2d9fb8f495b64759f7816c7eaea54ba3978f0d63000162e3"
-dependencies = [
- "anyhow",
- "itertools 0.13.0",
- "proc-macro2",
  "quote",
  "syn 2.0.98",
 ]

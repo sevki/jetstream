@@ -13,6 +13,7 @@ use {
 #[service]
 pub trait Echo {
     async fn ping(&mut self) -> Result<(), Error>;
+    async fn pong(&mut self) -> Result<(), Error>;
 }
 
 struct EchoImpl {}
@@ -20,6 +21,10 @@ struct EchoImpl {}
 impl Echo for EchoImpl {
     async fn ping(&mut self) -> Result<(), Error> {
         Ok(())
+    }
+
+    async fn pong(&mut self) -> Result<(), Error> {
+        todo!()
     }
 }
 
