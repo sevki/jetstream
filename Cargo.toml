@@ -41,7 +41,6 @@ jetstream_rpc = { version = "8.0.8", path = "components/jetstream_rpc" }
 jetstream_server = { version = "8.0.8", path = "components/jetstream_server" }
 jetstream_wireformat = { version = "8.0.8", path = "components/jetstream_wireformat" }
 okstd = { version = "0.2.0", features = ["macros"] }
-prost = "0.13.4"
 s2n-quic = "1.53.0"
 tmpdir = "1.0.0"
 tokio = { version = "1.43.0", features = ["full"] }
