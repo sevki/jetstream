@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [8.0.10](https://github.com/sevki/jetstream/compare/v8.0.9...v8.0.10) (2025-02-14)
+
+
+### Bug Fixes
+
+* broken lock file ([6148cf7](https://github.com/sevki/jetstream/commit/6148cf776ac29ab9941574422aeda44ed01450ee))
+
 ## [8.0.9](https://github.com/sevki/jetstream/compare/v8.0.8...v8.0.9) (2025-02-14)
 
 
