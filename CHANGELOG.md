@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [8.1.0](https://github.com/sevki/jetstream/compare/v8.0.10...v8.1.0) (2025-02-15)
+
+
+### Features
+
+* add websocket transport ([3f4054c](https://github.com/sevki/jetstream/commit/3f4054c9ebe2253c11a2096c4983c7d75073da9a))
+* channels can now be split ([ef646a5](https://github.com/sevki/jetstream/commit/ef646a590a5af13adc2c97c4871f19bca2a1d6b6))
+
 ## [8.0.10](https://github.com/sevki/jetstream/compare/v8.0.9...v8.0.10) (2025-02-14)
 
 
