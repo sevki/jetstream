@@ -17,7 +17,7 @@ use {
 };
 
 #[cfg(feature = "websocket")]
-mod websocket;
+pub mod websocket;
 
 pub struct ClientCodec<P>
 where
