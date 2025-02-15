@@ -8,7 +8,12 @@
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
 use {
-    futures::{Sink, Stream},
+    futures::{
+        stream::{SplitSink, SplitStream},
+        Sink,
+        Stream,
+        StreamExt,
+    },
     jetstream_wireformat::WireFormat,
     std::{
         io::{self, ErrorKind, Read, Write},
@@ -184,4 +189,23 @@ where
         + Sync
         + Unpin,
 {
+}
+
+pub trait Channel<P: Protocol>: Unpin + Sized {
+    fn split(self) -> (SplitSink<Self, Frame<P::Request>>, SplitStream<Self>);
+}
+
+impl<P, T> Channel<P> for T
+where
+    P: Protocol,
+    T: ClientTransport<P> + Unpin + Sized,
+{
+    fn split(
+        self,
+    ) -> (
+        SplitSink<Self, Frame<<P as Protocol>::Request>>,
+        SplitStream<Self>,
+    ) {
+        StreamExt::split(self)
+    }
 }
