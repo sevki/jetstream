@@ -34,7 +34,7 @@ impl IdentCased {
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
-    fn to_pascale_case(&self) -> Self {
+    fn to_pascal_case(&self) -> Self {
         let converter = convert_case::Converter::new().to_case(convert_case::Case::Pascal);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
@@ -74,7 +74,7 @@ fn generate_frame(
 
     let msg_variants = msgs.iter().map(|(ident, _p)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
         let constant_name: Ident = name.to_screaming_snake_case().into();
         quote! {
             #variant_name(#ident) = #constant_name,
@@ -82,7 +82,7 @@ fn generate_frame(
     });
     let cloned_byte_sizes = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
         quote! {
             #enum_name::#variant_name(msg) => msg.byte_size()
         }
@@ -90,7 +90,7 @@ fn generate_frame(
 
     let match_arms = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
         quote! {
             #enum_name::#variant_name(msg)
         }
@@ -98,7 +98,7 @@ fn generate_frame(
 
     let decode_bodies = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
-        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
 
         let const_name: Ident = name.to_screaming_snake_case().into();
         quote! {
@@ -262,7 +262,7 @@ fn generate_match_arms(
 ) -> impl Iterator<Item = proc_macro2::TokenStream> {
     tmsgs.map(|(ident, _)| {
         let name: IdentCased = (&ident).into();
-        let variant_name: Ident = name.remove_prefix().to_pascale_case().into();
+        let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
         quote! {
             Tmessage::#variant_name(msg)
         }
@@ -386,7 +386,7 @@ pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream
                 return;
             };
             let method_name = &method.sig.ident;
-            let variant_name: Ident = IdentCased(method_name.clone()).to_pascale_case().into();
+            let variant_name: Ident = IdentCased(method_name.clone()).to_pascal_case().into();
             let retn = &method.sig.output;
             let is_async = method.sig.asyncness.is_some();
             let maybe_async = if is_async {
@@ -467,7 +467,7 @@ pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream
                 TraitItem::Fn(method) => {
                     let method_name = &method.sig.ident;
                     let name: IdentCased = method_name.into();
-                    let variant_name: Ident = name.to_pascale_case().into();
+                    let variant_name: Ident = name.to_pascal_case().into();
                     let return_struct_ident =
                         Ident::new(&format!("R{}", method_name), method_name.span());
                     let variables_spead = method.sig.inputs.iter().map(|arg| {
