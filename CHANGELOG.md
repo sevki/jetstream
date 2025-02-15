@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [8.1.1](https://github.com/sevki/jetstream/compare/v8.1.0...v8.1.1) (2025-02-15)
+
+
+### Bug Fixes
+
+* make websocket pub ([6096ff9](https://github.com/sevki/jetstream/commit/6096ff9815b3b15dac1cfdd124821dc9d40218b0))
+
 ## [8.1.0](https://github.com/sevki/jetstream/compare/v8.0.10...v8.1.0) (2025-02-15)
 
 
