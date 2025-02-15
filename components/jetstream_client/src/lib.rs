@@ -25,6 +25,7 @@ where
 {
     _p: std::marker::PhantomData<P>,
 }
+
 impl<P: jetstream_rpc::Protocol> Encoder<Frame<P::Request>> for ClientCodec<P> {
     type Error = std::io::Error;
 

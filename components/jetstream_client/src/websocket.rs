@@ -11,7 +11,7 @@ use {
     tungstenite::{Message, WebSocket},
 };
 
-struct WebSocketTransport<P: Protocol>(
+pub struct WebSocketTransport<P: Protocol>(
     WebSocket<tungstenite::stream::MaybeTlsStream<std::net::TcpStream>>,
     PhantomData<P>,
 );
