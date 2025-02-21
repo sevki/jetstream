@@ -35,6 +35,6 @@ okstd = { version = "0.2.0" }
 futures = { version = "0.3.31", optional = true }
 tokio-util = { version = "0.7.13", features = ["full", "io", "time"] }
 time = "0.3.37"
-serde = { version = "1.0.215", features = ["derive"], optional = true }
+serde = { version = "1.0.218", features = ["derive"], optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
