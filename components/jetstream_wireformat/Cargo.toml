@@ -29,7 +29,7 @@ bytes = { version = "1.10.0", features = ["serde"] }
 jetstream_macros = { version = "8.1.2", path = "../jetstream_macros" }
 futures-util = { version = "0.3.31", optional = true }
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libc = "0.2.167"
+libc = "0.2.170"
 tokio = { version = "1.42.0", features = ["full"] }
 okstd = { version = "1.0.2" }
 futures = { version = "0.3.31", optional = true }
