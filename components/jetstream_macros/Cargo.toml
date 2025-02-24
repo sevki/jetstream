@@ -35,4 +35,4 @@ trybuild = "1.0.101"
 futures = "0.3.31"
 tokio = { version = "1.43.0", features = ["full"] }
 turmoil = "0.6.5"
-okstd = { version = "0.2.0", features = ["macros"] }
+okstd = { version = "1.0.2", features = ["macros"] }
