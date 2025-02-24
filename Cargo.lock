@@ -1241,17 +1241,6 @@ checksum = "5b63caa9aa9397e2d9480a9b13673856c78d8ac123288526c37d7839f2a86990"
 
 [[package]]
 name = "colored"
-version = "1.9.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a5f741c91823341bebf717d4c71bda820630ce065443b58bd1b7451af008355"
-dependencies = [
- "is-terminal",
- "lazy_static",
- "winapi",
-]
-
-[[package]]
-name = "colored"
 version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "117725a109d387c937a1533ce01b450cbde6b88abceea8473c4d7a85853cda3c"
@@ -1936,11 +1925,11 @@ dependencies = [
 
 [[package]]
 name = "fern"
-version = "0.6.2"
+version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d9f0c14694cbd524c8720dd69b0e3179344f04ebb5f90f2e4a440c6ea3b2f1ee"
+checksum = "4316185f709b23713e41e3195f90edef7fb00c3ed4adc79769cf09cc762a3b29"
 dependencies = [
- "colored 1.9.4",
+ "colored",
  "log",
 ]
 
@@ -3886,9 +3875,9 @@ dependencies = [
 
 [[package]]
 name = "ok_macros"
-version = "0.1.10"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b46b715ff7894b4b8d0e557a9c00f2ad363cddb87eae35bf4b70a9669f0d7db9"
+checksum = "e70bb92ed71faa1deadc03a8db0bdf0247f7e6f688e7f41ee3bcf89d24a088c2"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -3897,14 +3886,14 @@ dependencies = [
 
 [[package]]
 name = "okstd"
-version = "0.2.0"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85c2546c0c47beed096d7935c8090f1e3739803b67372224a7548889ec154f1f"
+checksum = "132931bcb0d11102a7814d32ff753cc6a76550efc20361088bf5ba296dc717bb"
 dependencies = [
  "anyhow",
  "argh",
  "base64",
- "colored 2.2.0",
+ "colored",
  "crc16",
  "crc32_digest",
  "fastvlq",
@@ -3914,7 +3903,6 @@ dependencies = [
  "log",
  "num_cpus",
  "ok_macros",
- "rustc-demangle",
  "termcolor",
  "tokio",
  "url",

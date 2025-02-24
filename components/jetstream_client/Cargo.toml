@@ -18,7 +18,7 @@ jetstream_rpc = { version = "8.1.2", path = "../jetstream_rpc" }
 jetstream_wireformat = { version = "8.1.2", path = "../jetstream_wireformat", features = [
     "async",
 ] }
-okstd = { version = "0.2.0" }
+okstd = { version = "1.0.2" }
 s2n-quic = "1.53.0"
 tokio = { version = "1.43.0", features = ["full"] }
 tokio-vsock = { version = "0.7.0", optional = true }

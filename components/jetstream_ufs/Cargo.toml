@@ -17,7 +17,7 @@ serde = { version = "1.0.218", features = ["derive"] }
 libc = "0.2.169"
 tokio = { version = "1.43.0", features = ["full"] }
 anyhow = "1.0.96"
-okstd = { version = "0.2.0", features = ["macros", "argh"] }
+okstd = { version = "1.0.2", features = ["macros", "argh"] }
 argh = "0.1.12"
 tokio-util = { version = "0.7", features = ["codec"] }
 
