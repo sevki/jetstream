@@ -36,4 +36,4 @@ tokio = { version = "1.43.0", features = ["full"] }
 [dev-dependencies]
 bytes = "1.10.0"
 anyhow = "1.0.96"
-s2n-quic = "1.53.0"
+s2n-quic = "1.54.0"
