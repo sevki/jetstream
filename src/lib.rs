@@ -11,6 +11,10 @@
 //! For more information please see the [JetStream Book](https://sevki.github.io/jetstream)
 
 extern crate async_trait;
+extern crate futures;
+extern crate jetstream_macros;
+extern crate jetstream_rpc;
+extern crate jetstream_wireformat;
 extern crate lazy_static;
 extern crate trait_variant;
 
@@ -19,7 +23,7 @@ pub mod prelude {
     pub use async_trait::async_trait;
     pub use jetstream_macros::{service, JetStreamWireFormat};
     pub use jetstream_rpc::{
-        ClientTransport, Error, Frame, Framer, Message, Protocol,
+        ClientTransport, Error, Frame, Framed, Framer, Message, Protocol,
         ServiceTransport, Tag,
     };
     pub use jetstream_wireformat::{Data, WireFormat};
@@ -28,16 +32,19 @@ pub mod prelude {
 
     #[cfg(feature = "9p")]
     pub mod p9 {
+        extern crate jetstream_9p;
         pub use jetstream_9p::*;
     }
 
     #[cfg(feature = "client")]
     pub mod client {
+        extern crate jetstream_client;
         pub use jetstream_client::*;
     }
 
     #[cfg(feature = "server")]
     pub mod server {
+        extern crate jetstream_server;
         pub use jetstream_server::*;
     }
 }
