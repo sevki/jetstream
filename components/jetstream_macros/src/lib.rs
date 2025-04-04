@@ -22,7 +22,7 @@ mod service;
 mod wireformat;
 
 /// Derives wire format encoding for structs
-#[proc_macro_derive(JetStreamWireFormat)]
+#[proc_macro_derive(JetStreamWireFormat, attributes(jetstream))]
 pub fn jetstream_wire_format(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as syn::DeriveInput);
     wireformat::wire_format_inner(input).into()
