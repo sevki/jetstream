@@ -822,5 +822,5 @@ async fn test_id_wire_format() {
     let buf = vec![];
     let mut writer = Cursor::new(buf);
 
-    let a = u1.encode(&mut writer).unwrap();
+    u1.encode(&mut writer).unwrap();
 }

@@ -4,17 +4,10 @@
 use std::{
     io::{self},
     net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6},
-    ops::Deref,
 };
 
 use bytes::Bytes;
 
-#[cfg(feature = "toasty")]
-use toasty::{
-    relation::HasMany,
-    stmt::{Expr, Id, IntoExpr},
-    Model,
-};
 #[cfg(feature = "toasty")]
 use uuid::Uuid;
 
