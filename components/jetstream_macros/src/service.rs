@@ -19,29 +19,34 @@ impl IdentCased {
     }
     #[allow(dead_code)]
     fn to_title_case(&self) -> Self {
-        let converter = convert_case::Converter::new().to_case(convert_case::Case::Title);
+        let converter =
+            convert_case::Converter::new().to_case(convert_case::Case::Title);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     #[allow(dead_code)]
     fn to_upper_case(&self) -> Self {
-        let converter = convert_case::Converter::new().to_case(convert_case::Case::Upper);
+        let converter =
+            convert_case::Converter::new().to_case(convert_case::Case::Upper);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     fn to_screaming_snake_case(&self) -> Self {
-        let converter = convert_case::Converter::new().to_case(convert_case::Case::ScreamingSnake);
+        let converter = convert_case::Converter::new()
+            .to_case(convert_case::Case::ScreamingSnake);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     fn to_pascal_case(&self) -> Self {
-        let converter = convert_case::Converter::new().to_case(convert_case::Case::Pascal);
+        let converter =
+            convert_case::Converter::new().to_case(convert_case::Case::Pascal);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
     #[allow(dead_code)]
     fn to_upper_flat(&self) -> Self {
-        let converter = convert_case::Converter::new().to_case(convert_case::Case::UpperFlat);
+        let converter = convert_case::Converter::new()
+            .to_case(convert_case::Case::UpperFlat);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
@@ -160,18 +165,31 @@ fn generate_frame(
     }
 }
 
-fn generate_tframe(tmsgs: &[(Ident, proc_macro2::TokenStream)]) -> proc_macro2::TokenStream {
+fn generate_tframe(
+    tmsgs: &[(Ident, proc_macro2::TokenStream)],
+) -> proc_macro2::TokenStream {
     generate_frame(Direction::Tx, tmsgs)
 }
 
-fn generate_rframe(rmsgs: &[(Ident, proc_macro2::TokenStream)]) -> proc_macro2::TokenStream {
+fn generate_rframe(
+    rmsgs: &[(Ident, proc_macro2::TokenStream)],
+) -> proc_macro2::TokenStream {
     generate_frame(Direction::Rx, rmsgs)
 }
 
-fn generate_msg_id(index: usize, method_name: &Ident) -> proc_macro2::TokenStream {
+fn generate_msg_id(
+    index: usize,
+    method_name: &Ident,
+) -> proc_macro2::TokenStream {
     let upper_cased_method_name = method_name.to_string().to_uppercase();
-    let tmsg_const_name = Ident::new(&format!("T{}", upper_cased_method_name), method_name.span());
-    let rmsg_const_name = Ident::new(&format!("R{}", upper_cased_method_name), method_name.span());
+    let tmsg_const_name = Ident::new(
+        &format!("T{}", upper_cased_method_name),
+        method_name.span(),
+    );
+    let rmsg_const_name = Ident::new(
+        &format!("R{}", upper_cased_method_name),
+        method_name.span(),
+    );
     let offset = 2 * index as u8;
 
     quote! {
@@ -184,17 +202,15 @@ fn generate_input_struct(
     request_struct_ident: &Ident,
     method_sig: &syn::Signature,
 ) -> proc_macro2::TokenStream {
-    let inputs = method_sig.inputs.iter().map(|arg| {
-        match arg {
-            syn::FnArg::Typed(pat) => {
-                let name = pat.pat.clone();
-                let ty = pat.ty.clone();
-                quote! {
-                    pub #name: #ty,
-                }
+    let inputs = method_sig.inputs.iter().map(|arg| match arg {
+        syn::FnArg::Typed(pat) => {
+            let name = pat.pat.clone();
+            let ty = pat.ty.clone();
+            quote! {
+                pub #name: #ty,
             }
-            syn::FnArg::Receiver(_) => quote! {},
         }
+        syn::FnArg::Receiver(_) => quote! {},
     });
 
     quote! {
@@ -217,9 +233,12 @@ fn generate_return_struct(
                     if let Some(segment) = type_path.path.segments.last() {
                         if segment.ident == "Result" {
                             // Extract the success type from Result<T, E>
-                            if let syn::PathArguments::AngleBracketed(args) = &segment.arguments {
-                                if let Some(syn::GenericArgument::Type(success_type)) =
-                                    args.args.first()
+                            if let syn::PathArguments::AngleBracketed(args) =
+                                &segment.arguments
+                            {
+                                if let Some(syn::GenericArgument::Type(
+                                    success_type,
+                                )) = args.args.first()
                                 {
                                     return quote! {
                                         #[allow(non_camel_case_types)]
@@ -278,7 +297,10 @@ fn handle_receiver(recv: &syn::Receiver) -> proc_macro2::TokenStream {
         (None, _) => quote! { self.inner, },
     }
 }
-pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream {
+pub(crate) fn service_impl(
+    item: ItemTrait,
+    is_async_trait: bool,
+) -> TokenStream {
     let trait_name = &item.ident;
     let trait_items = &item.items;
     let vis = &item.vis;
@@ -303,7 +325,8 @@ pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream
     );
     let protocol_version = Literal::string(protocol_version.as_str());
     let mut calls = vec![];
-    let tag_name = format_ident!("{}_TAG", trait_name.to_string().to_uppercase());
+    let tag_name =
+        format_ident!("{}_TAG", trait_name.to_string().to_uppercase());
 
     let mut server_calls = vec![];
 
@@ -312,26 +335,37 @@ pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream
             if let TraitItem::Fn(method) = item {
                 let method_name = &method.sig.ident;
 
-                let request_struct_ident =
-                    Ident::new(&format!("T{}", method_name), method_name.span());
-                let return_struct_ident =
-                    Ident::new(&format!("R{}", method_name), method_name.span());
+                let request_struct_ident = Ident::new(
+                    &format!("T{}", method_name),
+                    method_name.span(),
+                );
+                let return_struct_ident = Ident::new(
+                    &format!("R{}", method_name),
+                    method_name.span(),
+                );
                 let _output_type = match &method.sig.output {
                     syn::ReturnType::Type(_, ty) => quote! { #ty },
                     syn::ReturnType::Default => quote! { () },
                 };
                 let msg_id = generate_msg_id(index, method_name);
                 msg_ids.push(msg_id);
-                let request_struct =
-                    generate_input_struct(&request_struct_ident.clone(), &method.sig);
-                let return_struct =
-                    generate_return_struct(&return_struct_ident.clone(), &method.sig);
+                let request_struct = generate_input_struct(
+                    &request_struct_ident.clone(),
+                    &method.sig,
+                );
+                let return_struct = generate_return_struct(
+                    &return_struct_ident.clone(),
+                    &method.sig,
+                );
 
                 tmsgs.insert(
                     index,
                     (request_struct_ident.clone(), request_struct.clone()),
                 );
-                rmsgs.insert(index, (return_struct_ident.clone(), return_struct.clone()));
+                rmsgs.insert(
+                    index,
+                    (return_struct_ident.clone(), return_struct.clone()),
+                );
             }
         });
         calls.extend(with_calls);
@@ -455,56 +489,58 @@ pub(crate) fn service_impl(item: ItemTrait, is_async_trait: bool) -> TokenStream
     });
     let tmessage = generate_tframe(&tmsgs);
     let rmessage = generate_rframe(&rmsgs);
-    let proto_mod = format_ident!("{}_protocol", trait_name.to_string().to_lowercase());
+    let proto_mod =
+        format_ident!("{}_protocol", trait_name.to_string().to_lowercase());
 
     let match_arms = generate_match_arms(tmsgs.clone().into_iter());
     let match_arm_bodies: Vec<proc_macro2::TokenStream> = item
         .items
         .clone()
         .iter()
-        .map(|item| {
-            match item {
-                TraitItem::Fn(method) => {
-                    let method_name = &method.sig.ident;
-                    let name: IdentCased = method_name.into();
-                    let variant_name: Ident = name.to_pascal_case().into();
-                    let return_struct_ident =
-                        Ident::new(&format!("R{}", method_name), method_name.span());
-                    let variables_spead = method.sig.inputs.iter().map(|arg| {
-                        match arg {
-                            syn::FnArg::Typed(pat) => {
-                                let name = pat.pat.clone();
-                                quote! { msg.#name, }
-                            }
-                            syn::FnArg::Receiver(recv) => handle_receiver(recv),
+        .map(|item| match item {
+            TraitItem::Fn(method) => {
+                let method_name = &method.sig.ident;
+                let name: IdentCased = method_name.into();
+                let variant_name: Ident = name.to_pascal_case().into();
+                let return_struct_ident = Ident::new(
+                    &format!("R{}", method_name),
+                    method_name.span(),
+                );
+                let variables_spead =
+                    method.sig.inputs.iter().map(|arg| match arg {
+                        syn::FnArg::Typed(pat) => {
+                            let name = pat.pat.clone();
+                            quote! { msg.#name, }
                         }
+                        syn::FnArg::Receiver(recv) => handle_receiver(recv),
                     });
-                    quote! {
-                         {
-                            let msg = #trait_name::#method_name(
-                                #(
-                                    #variables_spead
-                                )*
-                            ).await?;
-                            let ret = #return_struct_ident(msg);
-                            Ok(Rmessage::#variant_name(ret))
-                        }
+                quote! {
+                     {
+                        let msg = #trait_name::#method_name(
+                            #(
+                                #variables_spead
+                            )*
+                        ).await?;
+                        let ret = #return_struct_ident(msg);
+                        Ok(Rmessage::#variant_name(ret))
                     }
                 }
-                _ => quote! {},
             }
+            _ => quote! {},
         })
         .collect();
-    let matches = std::iter::zip(match_arms, match_arm_bodies.iter()).map(|(arm, body)| {
-        quote! {
-            #arm => #body
-        }
-    });
+    let matches = std::iter::zip(match_arms, match_arm_bodies.iter()).map(
+        |(arm, body)| {
+            quote! {
+                #arm => #body
+            }
+        },
+    );
 
     let trait_attribute = if is_async_trait {
         quote! { #[jetstream::prelude::async_trait] }
     } else {
-        quote! { #[jetstream::prelude::trait_variant::make(Send + Sync)] }
+        quote! { #[jetstream::prelude::make(Send + Sync)] }
     };
     quote! {
         #vis mod #proto_mod{
