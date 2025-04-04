@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [8.1.3](https://github.com/sevki/jetstream/compare/v8.1.2...v8.1.3) (2025-04-04)
+
+
+### Bug Fixes
+
+* extern async_trait and trait_variant and lazy_static ([71e93e2](https://github.com/sevki/jetstream/commit/71e93e2db32236e01bfc2cc923a6db10a788a730))
+* extern_more ([1bd58d8](https://github.com/sevki/jetstream/commit/1bd58d8150031c1394f94e7074afd2c1c60928de))
+
 ## [8.1.2](https://github.com/sevki/jetstream/compare/v8.1.1...v8.1.2) (2025-02-15)
 
 
