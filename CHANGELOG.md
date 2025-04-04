@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [8.1.4](https://github.com/sevki/jetstream/compare/v8.1.3...v8.1.4) (2025-04-04)
+
+
+### Bug Fixes
+
+* add toasty types fix skip ([0fe936a](https://github.com/sevki/jetstream/commit/0fe936abdda512235343a77ff29fed7c972d3f96))
+* ci-builds, drop 1.76 ([5664e57](https://github.com/sevki/jetstream/commit/5664e571b607eb8ed3b6f9ee3488994b4cd568b9))
+* pin toasty ([03b6b18](https://github.com/sevki/jetstream/commit/03b6b18c6cce3cf9cdb274040bf29da21e1e5dd2))
+
 ## [8.1.3](https://github.com/sevki/jetstream/compare/v8.1.2...v8.1.3) (2025-04-04)
 
 
