@@ -1,4 +1,6 @@
-#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -7,20 +9,16 @@
 //! Of note is the `Protocol` trait which is meant to be used with the `service` attribute macro.
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use {
-    futures::{
-        stream::{SplitSink, SplitStream},
-        Sink,
-        Stream,
-        StreamExt,
-    },
-    jetstream_wireformat::WireFormat,
-    std::{
-        io::{self, ErrorKind, Read, Write},
-        mem,
-    },
+use std::{
+    io::{self, ErrorKind, Read, Write},
+    mem,
 };
 
+use futures::{
+    stream::{SplitSink, SplitStream},
+    Sink, Stream, StreamExt,
+};
+use jetstream_wireformat::WireFormat;
 // Re-export codecs
 pub use tokio_util::codec::{Decoder, Encoder, Framed};
 
@@ -101,7 +99,9 @@ impl<T: Framer> WireFormat for Frame<T> {
     fn byte_size(&self) -> u32 {
         let msg_size = self.msg.byte_size();
         // size + type + tag + message size
-        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32 + msg_size
+        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>())
+            as u32
+            + msg_size
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
@@ -129,7 +129,8 @@ impl<T: Framer> WireFormat for Frame<T> {
                 format!("byte_size(= {}) is less than 4 bytes", byte_size),
             ));
         }
-        let reader = &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
+        let reader =
+            &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
 
         let mut ty = [0u8];
         reader.read_exact(&mut ty)?;

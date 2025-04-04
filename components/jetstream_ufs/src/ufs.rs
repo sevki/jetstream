@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use {jetstream_9p::*, jetstream_rpc::Framer, jetstream_wireformat::WireFormat};
+use jetstream_9p::*;
+use jetstream_rpc::Framer;
+use jetstream_wireformat::WireFormat;
 
 pub use crate::Server;
 
@@ -186,7 +188,10 @@ impl Framer for Tmessage {
         }
     }
 
-    fn decode<R: std::io::Read>(reader: &mut R, ty: u8) -> std::io::Result<Self> {
+    fn decode<R: std::io::Read>(
+        reader: &mut R,
+        ty: u8,
+    ) -> std::io::Result<Self> {
         match ty {
             TVERSION => Ok(Tmessage::Version(Tversion::decode(reader)?)),
             TFLUSH => Ok(Tmessage::Flush(Tflush::decode(reader)?)),
@@ -207,7 +212,9 @@ impl Framer for Tmessage {
             TGETATTR => Ok(Tmessage::GetAttr(Tgetattr::decode(reader)?)),
             TSETATTR => Ok(Tmessage::SetAttr(Tsetattr::decode(reader)?)),
             TXATTRWALK => Ok(Tmessage::XattrWalk(Txattrwalk::decode(reader)?)),
-            TXATTRCREATE => Ok(Tmessage::XattrCreate(Txattrcreate::decode(reader)?)),
+            TXATTRCREATE => {
+                Ok(Tmessage::XattrCreate(Txattrcreate::decode(reader)?))
+            }
             TREADDIR => Ok(Tmessage::Readdir(Treaddir::decode(reader)?)),
             TFSYNC => Ok(Tmessage::Fsync(Tfsync::decode(reader)?)),
             TLOCK => Ok(Tmessage::Lock(Tlock::decode(reader)?)),
@@ -216,12 +223,10 @@ impl Framer for Tmessage {
             TMKDIR => Ok(Tmessage::Mkdir(Tmkdir::decode(reader)?)),
             TRENAMEAT => Ok(Tmessage::RenameAt(Trenameat::decode(reader)?)),
             TUNLINKAT => Ok(Tmessage::UnlinkAt(Tunlinkat::decode(reader)?)),
-            _ => {
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    "invalid message type",
-                ))
-            }
+            _ => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "invalid message type",
+            )),
         }
     }
 }
@@ -303,6 +308,7 @@ impl Framer for Rmessage {
             Rmessage::Lerror(msg) => msg.byte_size(),
         }
     }
+
     fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
         match self {
             Rmessage::Version(msg) => msg.encode(writer),
@@ -337,7 +343,10 @@ impl Framer for Rmessage {
         }
     }
 
-    fn decode<R: std::io::Read>(reader: &mut R, ty: u8) -> std::io::Result<Self> {
+    fn decode<R: std::io::Read>(
+        reader: &mut R,
+        ty: u8,
+    ) -> std::io::Result<Self> {
         match ty {
             RVERSION => Ok(Rmessage::Version(Rversion::decode(reader)?)),
             RFLUSH => Ok(Rmessage::Flush),
@@ -368,12 +377,10 @@ impl Framer for Rmessage {
             RRENAMEAT => Ok(Rmessage::RenameAt),
             RUNLINKAT => Ok(Rmessage::UnlinkAt),
             RLERROR => Ok(Rmessage::Lerror(Rlerror::decode(reader)?)),
-            _ => {
-                Err(std::io::Error::new(
-                    std::io::ErrorKind::InvalidData,
-                    "invalid message type",
-                ))
-            }
+            _ => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "invalid message type",
+            )),
         }
     }
 }

@@ -16,18 +16,15 @@ extern crate trait_variant;
 
 pub mod prelude {
 
+    pub use async_trait::async_trait;
     pub use jetstream_macros::{service, JetStreamWireFormat};
-
     pub use jetstream_rpc::{
         ClientTransport, Error, Frame, Framer, Message, Protocol,
         ServiceTransport, Tag,
     };
-
-    pub use lazy_static::*;
-
     pub use jetstream_wireformat::{Data, WireFormat};
-
-    pub use {async_trait::async_trait, trait_variant::make};
+    pub use lazy_static::*;
+    pub use trait_variant::make;
 
     #[cfg(feature = "9p")]
     pub mod p9 {

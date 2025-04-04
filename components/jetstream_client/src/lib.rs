@@ -1,19 +1,19 @@
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
 
-use {
-    jetstream_rpc::{Frame, Protocol},
-    jetstream_wireformat::WireFormat,
-    tokio_util::{
-        bytes::{self, Buf, BufMut},
-        codec::{Decoder, Encoder},
-    },
+use jetstream_rpc::{Frame, Protocol};
+use jetstream_wireformat::WireFormat;
+use tokio_util::{
+    bytes::{self, Buf, BufMut},
+    codec::{Decoder, Encoder},
 };
 
 #[cfg(feature = "websocket")]
@@ -40,8 +40,12 @@ impl<P: jetstream_rpc::Protocol> Encoder<Frame<P::Request>> for ClientCodec<P> {
 
 impl<P: jetstream_rpc::Protocol> Decoder for ClientCodec<P> {
     type Error = std::io::Error;
+    type Item = Frame<P::Response>;
 
-    fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode(
+        &mut self,
+        src: &mut bytes::BytesMut,
+    ) -> Result<Option<Self::Item>, Self::Error> {
         // check to see if you have at least 4 bytes to figure out the size
         if src.len() < 4 {
             src.reserve(4);
@@ -58,8 +62,6 @@ impl<P: jetstream_rpc::Protocol> Decoder for ClientCodec<P> {
         }
         Frame::<P::Response>::decode(&mut src.reader()).map(Some)
     }
-
-    type Item = Frame<P::Response>;
 }
 
 impl<P> Default for ClientCodec<P>

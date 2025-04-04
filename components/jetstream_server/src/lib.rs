@@ -1,4 +1,6 @@
-#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -17,11 +19,9 @@ pub mod quic;
 
 pub mod service;
 
-use {
-    std::fmt::Debug,
-    tokio::io::{AsyncRead, AsyncWrite},
-};
+use std::fmt::Debug;
 
+use tokio::io::{AsyncRead, AsyncWrite};
 #[cfg(feature = "vsock")]
 use tokio_vsock::{VsockAddr, VsockListener};
 
@@ -34,8 +34,9 @@ pub trait ListenerStream: Send + Sync + Debug + 'static {
 
 #[async_trait::async_trait]
 impl ListenerStream for tokio::net::UnixListener {
-    type Stream = tokio::net::UnixStream;
     type Addr = tokio::net::unix::SocketAddr;
+    type Stream = tokio::net::UnixStream;
+
     async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
         tokio::net::UnixListener::accept(self).await
     }
@@ -44,8 +45,9 @@ impl ListenerStream for tokio::net::UnixListener {
 #[cfg(feature = "vsock")]
 #[async_trait::async_trait]
 impl ListenerStream for VsockListener {
-    type Stream = tokio_vsock::VsockStream;
     type Addr = VsockAddr;
+    type Stream = tokio_vsock::VsockStream;
+
     async fn accept(&mut self) -> std::io::Result<(Self::Stream, Self::Addr)> {
         VsockListener::accept(self).await
     }

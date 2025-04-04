@@ -1,11 +1,10 @@
-use {
-    jetstream_rpc::{Error, Frame, Protocol, ServiceTransport},
-    jetstream_wireformat::WireFormat,
-    std::pin::pin,
-    tokio_util::{
-        bytes::{self, Buf, BufMut},
-        codec::{Decoder, Encoder},
-    },
+use std::pin::pin;
+
+use jetstream_rpc::{Error, Frame, Protocol, ServiceTransport};
+use jetstream_wireformat::WireFormat;
+use tokio_util::{
+    bytes::{self, Buf, BufMut},
+    codec::{Decoder, Encoder},
 };
 
 pub struct ServerCodec<P: Protocol> {
@@ -33,7 +32,10 @@ where
     type Error = Error;
     type Item = Frame<P::Request>;
 
-    fn decode(&mut self, src: &mut bytes::BytesMut) -> Result<Option<Self::Item>, Self::Error> {
+    fn decode(
+        &mut self,
+        src: &mut bytes::BytesMut,
+    ) -> Result<Option<Self::Item>, Self::Error> {
         // check to see if you have at least 4 bytes to figure out the size
         if src.len() < 4 {
             src.reserve(4);

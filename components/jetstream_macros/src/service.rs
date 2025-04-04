@@ -1,8 +1,6 @@
-use {
-    proc_macro2::{Literal, TokenStream},
-    quote::{format_ident, quote, ToTokens},
-    syn::{Ident, ItemTrait, TraitItem},
-};
+use proc_macro2::{Literal, TokenStream};
+use quote::{format_ident, quote, ToTokens};
+use syn::{Ident, ItemTrait, TraitItem};
 
 struct IdentCased(Ident);
 
@@ -17,6 +15,7 @@ impl IdentCased {
         let s = self.0.to_string();
         IdentCased(Ident::new(&s[1..], self.0.span()))
     }
+
     #[allow(dead_code)]
     fn to_title_case(&self) -> Self {
         let converter =
@@ -24,6 +23,7 @@ impl IdentCased {
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
+
     #[allow(dead_code)]
     fn to_upper_case(&self) -> Self {
         let converter =
@@ -31,18 +31,21 @@ impl IdentCased {
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
+
     fn to_screaming_snake_case(&self) -> Self {
         let converter = convert_case::Converter::new()
             .to_case(convert_case::Case::ScreamingSnake);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
+
     fn to_pascal_case(&self) -> Self {
         let converter =
             convert_case::Converter::new().to_case(convert_case::Case::Pascal);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
+
     #[allow(dead_code)]
     fn to_upper_flat(&self) -> Self {
         let converter = convert_case::Converter::new()
@@ -50,6 +53,7 @@ impl IdentCased {
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
+
     #[allow(dead_code)]
     fn remove_whitespace(&self) -> Self {
         let s = self.0.to_string().split_whitespace().collect::<String>();
@@ -634,7 +638,9 @@ pub(crate) fn service_impl(
 mod tests {
     use core::panic;
 
-    use {super::*, syn::parse_quote};
+    use syn::parse_quote;
+
+    use super::*;
 
     fn run_test_with_filters<F>(test_fn: F)
     where
@@ -668,7 +674,7 @@ mod tests {
         let syntax_tree: syn::File = syn::parse2(output).unwrap();
         let output_str = prettyplease::unparse(&syntax_tree);
         run_test_with_filters(|| {
-            insta::assert_snapshot!(output_str, @r###"
+            insta::assert_snapshot!(output_str, @r#"
             pub mod echo_protocol {
                 use jetstream::prelude::*;
                 use std::io::{self, Read, Write};
@@ -828,11 +834,11 @@ mod tests {
                     }
                 }
             }
-            #[jetstream::prelude::trait_variant::make(Send+Sync)]
+            #[jetstream::prelude::make(Send+Sync)]
             pub trait Echo {
                 async fn ping(&self) -> Result<(), std::io::Error>;
             }
-            "###)
+            "#)
         })
     }
 
@@ -847,7 +853,7 @@ mod tests {
         let syntax_tree: syn::File = syn::parse2(output).unwrap();
         let output_str = prettyplease::unparse(&syntax_tree);
         run_test_with_filters(|| {
-            insta::assert_snapshot!(output_str, @r###"
+            insta::assert_snapshot!(output_str, @r#"
             pub mod echo_protocol {
                 use jetstream::prelude::*;
                 use std::io::{self, Read, Write};
@@ -1009,11 +1015,11 @@ mod tests {
                     }
                 }
             }
-            #[jetstream::prelude::trait_variant::make(Send+Sync)]
+            #[jetstream::prelude::make(Send+Sync)]
             pub trait Echo {
                 async fn ping(&self, message: String) -> Result<String, std::io::Error>;
             }
-            "###)
+            "#)
         })
     }
 

@@ -1,4 +1,6 @@
-#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -117,8 +119,8 @@ pub const _P9_GETATTR_BTIME: u64 = 0x00000800;
 pub const _P9_GETATTR_GEN: u64 = 0x00001000;
 pub const _P9_GETATTR_DATA_VERSION: u64 = 0x00002000;
 
-pub const P9_GETATTR_BASIC: u64 = 0x000007ff; /* Mask for fields up to BLOCKS */
-pub const _P9_GETATTR_ALL: u64 = 0x00003fff; /* Mask for All fields above */
+pub const P9_GETATTR_BASIC: u64 = 0x000007ff; // Mask for fields up to BLOCKS
+pub const _P9_GETATTR_ALL: u64 = 0x00003fff; // Mask for All fields above
 
 // Bitmask values for the setattr request.
 pub const P9_SETATTR_MODE: u32 = 0x00000001;

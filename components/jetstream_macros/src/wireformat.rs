@@ -1,8 +1,6 @@
-use {
-    proc_macro2::{Span, TokenStream},
-    quote::{quote, quote_spanned},
-    syn::{spanned::Spanned, Data, DeriveInput, Fields, Ident, Meta},
-};
+use proc_macro2::{Span, TokenStream};
+use quote::{quote, quote_spanned};
+use syn::{spanned::Spanned, Data, DeriveInput, Fields, Ident, Meta};
 
 fn has_skip_attr(field: &syn::Field) -> bool {
     field.attrs.iter().any(|attr| {
@@ -89,13 +87,14 @@ pub(crate) fn wire_format_inner(input: DeriveInput) -> TokenStream {
 fn byte_size_sum(data: &Data) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
-            let fields = fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
-                let field = &f.ident;
-                let span = field.span();
-                quote_spanned! {span=>
-                    WireFormat::byte_size(&self.#field)
-                }
-            });
+            let fields =
+                fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
+                    let field = &f.ident;
+                    let span = field.span();
+                    quote_spanned! {span=>
+                        WireFormat::byte_size(&self.#field)
+                    }
+                });
 
             quote! {
                 0 #(+ #fields)*
@@ -172,13 +171,14 @@ fn byte_size_sum(data: &Data) -> TokenStream {
 fn encode_wire_format(data: &Data) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
-            let fields = fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
-                let field = &f.ident;
-                let span = field.span();
-                quote_spanned! {span=>
-                    WireFormat::encode(&self.#field, _writer)?;
-                }
-            });
+            let fields =
+                fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
+                    let field = &f.ident;
+                    let span = field.span();
+                    quote_spanned! {span=>
+                        WireFormat::encode(&self.#field, _writer)?;
+                    }
+                });
 
             quote! {
                 #(#fields)*
@@ -205,51 +205,52 @@ fn encode_wire_format(data: &Data) -> TokenStream {
             unimplemented!();
         }
     } else if let Data::Enum(ref data) = *data {
-        let variants = data.variants.iter().enumerate().map(|(idx, variant)| {
-            let variant_ident = &variant.ident;
-            let idx = idx as u8;
+        let variants =
+            data.variants.iter().enumerate().map(|(idx, variant)| {
+                let variant_ident = &variant.ident;
+                let idx = idx as u8;
 
-            match &variant.fields {
-                Fields::Named(ref fields) => {
-                    let field_idents = fields
-                        .named
-                        .iter()
-                        .filter(|f| !has_skip_attr(f))
-                        .map(|f| &f.ident)
-                        .collect::<Vec<_>>();
+                match &variant.fields {
+                    Fields::Named(ref fields) => {
+                        let field_idents = fields
+                            .named
+                            .iter()
+                            .filter(|f| !has_skip_attr(f))
+                            .map(|f| &f.ident)
+                            .collect::<Vec<_>>();
 
-                    quote! {
-                        Self::#variant_ident { #(ref #field_idents),* } => {
-                            WireFormat::encode(&(#idx), _writer)?;
-                            #(WireFormat::encode(#field_idents, _writer)?;)*
+                        quote! {
+                            Self::#variant_ident { #(ref #field_idents),* } => {
+                                WireFormat::encode(&(#idx), _writer)?;
+                                #(WireFormat::encode(#field_idents, _writer)?;)*
+                            }
+                        }
+                    }
+                    Fields::Unnamed(ref fields) => {
+                        let field_refs = fields
+                            .unnamed
+                            .iter()
+                            .enumerate()
+                            .filter(|(_, f)| !has_skip_attr(f))
+                            .map(|(i, _)| format!("__{}", i))
+                            .map(|name| Ident::new(&name, Span::call_site()))
+                            .collect::<Vec<_>>();
+                        quote! {
+                            Self::#variant_ident(#(ref #field_refs),*) => {
+                                WireFormat::encode(&(#idx), _writer)?;
+                                #(WireFormat::encode(#field_refs, _writer)?;)*
+                            }
+                        }
+                    }
+                    Fields::Unit => {
+                        quote! {
+                            Self::#variant_ident => {
+                                WireFormat::encode(&(#idx), _writer)?;
+                            }
                         }
                     }
                 }
-                Fields::Unnamed(ref fields) => {
-                    let field_refs = fields
-                        .unnamed
-                        .iter()
-                        .enumerate()
-                        .filter(|(_, f)| !has_skip_attr(f))
-                        .map(|(i, _)| format!("__{}", i))
-                        .map(|name| Ident::new(&name, Span::call_site()))
-                        .collect::<Vec<_>>();
-                    quote! {
-                        Self::#variant_ident(#(ref #field_refs),*) => {
-                            WireFormat::encode(&(#idx), _writer)?;
-                            #(WireFormat::encode(#field_refs, _writer)?;)*
-                        }
-                    }
-                }
-                Fields::Unit => {
-                    quote! {
-                        Self::#variant_ident => {
-                            WireFormat::encode(&(#idx), _writer)?;
-                        }
-                    }
-                }
-            }
-        });
+            });
 
         quote! {
             match self {
@@ -266,13 +267,14 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
             let all_fields = fields.named.iter().collect::<Vec<_>>();
-            let non_skipped_values = fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
-                let field = &f.ident;
-                let span = field.span();
-                quote_spanned! {span=>
-                    let #field = WireFormat::decode(_reader)?;
-                }
-            });
+            let non_skipped_values =
+                fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
+                    let field = &f.ident;
+                    let span = field.span();
+                    quote_spanned! {span=>
+                        let #field = WireFormat::decode(_reader)?;
+                    }
+                });
 
             let members = all_fields.iter().map(|f| {
                 let field = &f.ident;
@@ -307,7 +309,8 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                 .enumerate()
                 .filter(|(_, f)| !has_skip_attr(f))
                 .map(|(i, _f)| {
-                    let ident = Ident::new(&format!("__{}", i), Span::call_site());
+                    let ident =
+                        Ident::new(&format!("__{}", i), Span::call_site());
                     quote! {
                         let #ident = WireFormat::decode(_reader)?;
                     }
@@ -317,7 +320,8 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                 let ident = if *is_skipped {
                     quote! { Default::default() }
                 } else {
-                    let ident = Ident::new(&format!("__{}", i), Span::call_site());
+                    let ident =
+                        Ident::new(&format!("__{}", i), Span::call_site());
                     quote! { #ident }
                 };
                 quote! { #ident }
@@ -420,7 +424,8 @@ mod tests {
     extern crate pretty_assertions;
     use syn::parse_quote;
 
-    use {self::pretty_assertions::assert_eq, super::*};
+    use self::pretty_assertions::assert_eq;
+    use super::*;
 
     #[test]
     fn byte_size() {
@@ -439,7 +444,10 @@ mod tests {
                 + WireFormat::byte_size(&self.other)
         };
 
-        assert_eq!(byte_size_sum(&input.data).to_string(), expected.to_string());
+        assert_eq!(
+            byte_size_sum(&input.data).to_string(),
+            expected.to_string()
+        );
     }
 
     #[test]
@@ -622,7 +630,10 @@ mod tests {
             }
         };
 
-        assert_eq!(byte_size_sum(&input.data).to_string(), expected.to_string());
+        assert_eq!(
+            byte_size_sum(&input.data).to_string(),
+            expected.to_string()
+        );
     }
 
     #[test]

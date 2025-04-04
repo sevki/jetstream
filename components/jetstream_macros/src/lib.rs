@@ -1,4 +1,6 @@
-#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -13,7 +15,8 @@
 #![recursion_limit = "256"]
 
 extern crate proc_macro;
-use {proc_macro::TokenStream, syn::parse_macro_input};
+use proc_macro::TokenStream;
+use syn::parse_macro_input;
 
 mod service;
 mod wireformat;
@@ -28,7 +31,8 @@ pub fn jetstream_wire_format(input: TokenStream) -> TokenStream {
 /// Service attribute macro for creating RPC services
 #[proc_macro_attribute]
 pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let is_async_trait = !attr.is_empty() && attr.to_string().contains("async_trait");
+    let is_async_trait =
+        !attr.is_empty() && attr.to_string().contains("async_trait");
     let item = parse_macro_input!(item as syn::ItemTrait);
     service::service_impl(item, is_async_trait).into()
 }

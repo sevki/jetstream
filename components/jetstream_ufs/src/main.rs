@@ -1,4 +1,8 @@
-use {okstd::prelude::*, std::path::PathBuf, tokio::net::UnixListener, tokio_util::codec::Framed};
+use std::path::PathBuf;
+
+use okstd::prelude::*;
+use tokio::net::UnixListener;
+use tokio_util::codec::Framed;
 
 #[derive(FromArgs)]
 /// JetStream Ufs Server
@@ -22,8 +26,9 @@ async fn main() {
             std::collections::BTreeMap::new(),
         )
         .unwrap();
-        let servercodec: jetstream_server::service::ServerCodec<jetstream_ufs::Server> =
-            Default::default();
+        let servercodec: jetstream_server::service::ServerCodec<
+            jetstream_ufs::Server,
+        > = Default::default();
 
         let service_transport = Framed::new(stream, servercodec);
         jetstream_server::service::run(&mut service, service_transport)
