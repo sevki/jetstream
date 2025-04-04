@@ -1,21 +1,18 @@
-#[allow(unused_imports)]
-use tokio::time::sleep;
-use {
-    jetstream_9p::*,
-    jetstream_macros::JetStreamWireFormat,
-    jetstream_wireformat::*,
-    std::{
-        io::{self, Cursor},
-        mem,
-        pin::Pin,
-        string::String,
-        time::Duration,
-    },
-    tokio::io::{AsyncRead, AsyncWrite},
-    wire_format_extensions::tokio::AsyncWireFormatExt,
+use std::{
+    io::{self, Cursor},
+    mem,
+    pin::Pin,
+    string::String,
+    time::Duration,
 };
 
-use wire_format_extensions::ConvertWireFormat;
+use jetstream_9p::*;
+use jetstream_macros::JetStreamWireFormat;
+use jetstream_wireformat::*;
+use tokio::io::{AsyncRead, AsyncWrite};
+#[allow(unused_imports)]
+use tokio::time::sleep;
+use wire_format_extensions::{tokio::AsyncWireFormatExt, ConvertWireFormat};
 
 #[test]
 fn integer_byte_size() {
@@ -90,8 +87,10 @@ fn zero_length_string() {
 
     assert_eq!(
         s,
-        <String as WireFormat>::decode(&mut Cursor::new(&[0, 0, 0x61, 0x61][..]))
-            .expect("failed to decode empty string")
+        <String as WireFormat>::decode(&mut Cursor::new(
+            &[0, 0, 0x61, 0x61][..]
+        ))
+        .expect("failed to decode empty string")
     );
 }
 
@@ -130,8 +129,10 @@ fn string_decode() {
     assert_eq!(
         String::from("Google Video"),
         <String as WireFormat>::decode(&mut Cursor::new(
-            &[0x0c, 0x00, 0x47, 0x6F, 0x6F, 0x67, 0x6C, 0x65, 0x20, 0x56, 0x69, 0x64, 0x65, 0x6F,]
-                [..]
+            &[
+                0x0c, 0x00, 0x47, 0x6F, 0x6F, 0x67, 0x6C, 0x65, 0x20, 0x56,
+                0x69, 0x64, 0x65, 0x6F,
+            ][..]
         ))
         .unwrap()
     );
@@ -139,9 +140,10 @@ fn string_decode() {
         String::from("网页 图片 资讯更多 »"),
         <String as WireFormat>::decode(&mut Cursor::new(
             &[
-                0x1d, 0x00, 0xE7, 0xBD, 0x91, 0xE9, 0xA1, 0xB5, 0x20, 0xE5, 0x9B, 0xBE, 0xE7, 0x89,
-                0x87, 0x20, 0xE8, 0xB5, 0x84, 0xE8, 0xAE, 0xAF, 0xE6, 0x9B, 0xB4, 0xE5, 0xA4, 0x9A,
-                0x20, 0xC2, 0xBB,
+                0x1d, 0x00, 0xE7, 0xBD, 0x91, 0xE9, 0xA1, 0xB5, 0x20, 0xE5,
+                0x9B, 0xBE, 0xE7, 0x89, 0x87, 0x20, 0xE8, 0xB5, 0x84, 0xE8,
+                0xAE, 0xAF, 0xE6, 0x9B, 0xB4, 0xE5, 0xA4, 0x9A, 0x20, 0xC2,
+                0xBB,
             ][..]
         ))
         .unwrap()
@@ -150,9 +152,10 @@ fn string_decode() {
         String::from("Παγκόσμιος Ιστός"),
         <String as WireFormat>::decode(&mut Cursor::new(
             &[
-                0x1f, 0x00, 0xCE, 0xA0, 0xCE, 0xB1, 0xCE, 0xB3, 0xCE, 0xBA, 0xCF, 0x8C, 0xCF, 0x83,
-                0xCE, 0xBC, 0xCE, 0xB9, 0xCE, 0xBF, 0xCF, 0x82, 0x20, 0xCE, 0x99, 0xCF, 0x83, 0xCF,
-                0x84, 0xCF, 0x8C, 0xCF, 0x82,
+                0x1f, 0x00, 0xCE, 0xA0, 0xCE, 0xB1, 0xCE, 0xB3, 0xCE, 0xBA,
+                0xCF, 0x8C, 0xCF, 0x83, 0xCE, 0xBC, 0xCE, 0xB9, 0xCE, 0xBF,
+                0xCF, 0x82, 0x20, 0xCE, 0x99, 0xCF, 0x83, 0xCF, 0x84, 0xCF,
+                0x8C, 0xCF, 0x82,
             ][..]
         ))
         .unwrap()
@@ -161,10 +164,11 @@ fn string_decode() {
         String::from("Поиск страниц на русском"),
         <String as WireFormat>::decode(&mut Cursor::new(
             &[
-                0x2d, 0x00, 0xD0, 0x9F, 0xD0, 0xBE, 0xD0, 0xB8, 0xD1, 0x81, 0xD0, 0xBA, 0x20, 0xD1,
-                0x81, 0xD1, 0x82, 0xD1, 0x80, 0xD0, 0xB0, 0xD0, 0xBD, 0xD0, 0xB8, 0xD1, 0x86, 0x20,
-                0xD0, 0xBD, 0xD0, 0xB0, 0x20, 0xD1, 0x80, 0xD1, 0x83, 0xD1, 0x81, 0xD1, 0x81, 0xD0,
-                0xBA, 0xD0, 0xBE, 0xD0, 0xBC,
+                0x2d, 0x00, 0xD0, 0x9F, 0xD0, 0xBE, 0xD0, 0xB8, 0xD1, 0x81,
+                0xD0, 0xBA, 0x20, 0xD1, 0x81, 0xD1, 0x82, 0xD1, 0x80, 0xD0,
+                0xB0, 0xD0, 0xBD, 0xD0, 0xB8, 0xD1, 0x86, 0x20, 0xD0, 0xBD,
+                0xD0, 0xB0, 0x20, 0xD1, 0x80, 0xD1, 0x83, 0xD1, 0x81, 0xD1,
+                0x81, 0xD0, 0xBA, 0xD0, 0xBE, 0xD0, 0xBC,
             ][..]
         ))
         .unwrap()
@@ -173,8 +177,8 @@ fn string_decode() {
         String::from("전체서비스"),
         <String as WireFormat>::decode(&mut Cursor::new(
             &[
-                0x0f, 0x00, 0xEC, 0xA0, 0x84, 0xEC, 0xB2, 0xB4, 0xEC, 0x84, 0x9C, 0xEB, 0xB9, 0x84,
-                0xEC, 0x8A, 0xA4,
+                0x0f, 0x00, 0xEC, 0xA0, 0x84, 0xEC, 0xB2, 0xB4, 0xEC, 0x84,
+                0x9C, 0xEB, 0xB9, 0x84, 0xEC, 0x8A, 0xA4,
             ][..]
         ))
         .unwrap()
@@ -193,21 +197,29 @@ fn invalid_string_decode() {
     ]))
     .expect_err("overlong sequence");
 
-    let _ = <String as WireFormat>::decode(&mut Cursor::new(&[0x04, 0x00, 0xf4, 0x90, 0x80, 0x80]))
-        .expect_err("out of range");
+    let _ = <String as WireFormat>::decode(&mut Cursor::new(&[
+        0x04, 0x00, 0xf4, 0x90, 0x80, 0x80,
+    ]))
+    .expect_err("out of range");
 
-    let _ = <String as WireFormat>::decode(&mut Cursor::new(&[0x04, 0x00, 0x63, 0x61, 0x66, 0xe9]))
-        .expect_err("ISO-8859-1");
+    let _ = <String as WireFormat>::decode(&mut Cursor::new(&[
+        0x04, 0x00, 0x63, 0x61, 0x66, 0xe9,
+    ]))
+    .expect_err("ISO-8859-1");
 
-    let _ = <String as WireFormat>::decode(&mut Cursor::new(&[0x04, 0x00, 0xb0, 0xa1, 0xb0, 0xa2]))
-        .expect_err("EUC-KR");
+    let _ = <String as WireFormat>::decode(&mut Cursor::new(&[
+        0x04, 0x00, 0xb0, 0xa1, 0xb0, 0xa2,
+    ]))
+    .expect_err("EUC-KR");
 }
 
 #[test]
 fn vector_encode() {
-    let values: Vec<u32> = vec![291, 18_916, 2_497, 22, 797_162, 2_119_732, 3_213_929_716];
-    let mut expected: Vec<u8> =
-        Vec::with_capacity(values.len() * mem::size_of::<u32>() + mem::size_of::<u16>());
+    let values: Vec<u32> =
+        vec![291, 18_916, 2_497, 22, 797_162, 2_119_732, 3_213_929_716];
+    let mut expected: Vec<u8> = Vec::with_capacity(
+        values.len() * mem::size_of::<u32>() + mem::size_of::<u16>(),
+    );
     expected.push(values.len() as u8);
     expected.push((values.len() >> 8) as u8);
 
@@ -221,7 +233,8 @@ fn vector_encode() {
 
     let mut actual: Vec<u8> = vec![0; expected.len()];
 
-    WireFormat::encode(&values, &mut Cursor::new(&mut *actual)).expect("failed to encode vector");
+    WireFormat::encode(&values, &mut Cursor::new(&mut *actual))
+        .expect("failed to encode vector");
     assert_eq!(expected, actual);
 }
 
@@ -237,8 +250,9 @@ fn vector_decode() {
         961_189_198,
         7,
     ];
-    let mut input: Vec<u8> =
-        Vec::with_capacity(expected.len() * mem::size_of::<u32>() + mem::size_of::<u16>());
+    let mut input: Vec<u8> = Vec::with_capacity(
+        expected.len() * mem::size_of::<u32>() + mem::size_of::<u16>(),
+    );
     input.push(expected.len() as u8);
     input.push((expected.len() >> 8) as u8);
 
@@ -260,8 +274,9 @@ fn vector_decode() {
 #[test]
 fn data_encode() {
     let values = Data(vec![169, 155, 79, 67, 182, 199, 25, 73, 129, 200]);
-    let mut expected: Vec<u8> =
-        Vec::with_capacity(values.len() * mem::size_of::<u8>() + mem::size_of::<u32>());
+    let mut expected: Vec<u8> = Vec::with_capacity(
+        values.len() * mem::size_of::<u8>() + mem::size_of::<u32>(),
+    );
     expected.push(values.len() as u8);
     expected.push((values.len() >> 8) as u8);
     expected.push((values.len() >> 16) as u8);
@@ -270,15 +285,17 @@ fn data_encode() {
 
     let mut actual: Vec<u8> = vec![0; expected.len()];
 
-    WireFormat::encode(&values, &mut Cursor::new(&mut *actual)).expect("failed to encode datar");
+    WireFormat::encode(&values, &mut Cursor::new(&mut *actual))
+        .expect("failed to encode datar");
     assert_eq!(expected, actual);
 }
 
 #[test]
 fn data_decode() {
     let expected = Data(vec![219, 15, 8, 155, 194, 129, 79, 91, 46, 53, 173]);
-    let mut input: Vec<u8> =
-        Vec::with_capacity(expected.len() * mem::size_of::<u8>() + mem::size_of::<u32>());
+    let mut input: Vec<u8> = Vec::with_capacity(
+        expected.len() * mem::size_of::<u8>() + mem::size_of::<u32>(),
+    );
     input.push(expected.len() as u8);
     input.push((expected.len() >> 8) as u8);
     input.push((expected.len() >> 16) as u8);
@@ -287,7 +304,8 @@ fn data_decode() {
 
     assert_eq!(
         expected,
-        <Data as WireFormat>::decode(&mut Cursor::new(&mut *input)).expect("failed to decode data")
+        <Data as WireFormat>::decode(&mut Cursor::new(&mut *input))
+            .expect("failed to decode data")
     );
 }
 
@@ -317,7 +335,8 @@ fn error_cases() {
     let count = long_vec.len() * mem::size_of::<u32>();
     let mut buf = vec![0; count];
 
-    WireFormat::encode(&long_vec, &mut Cursor::new(&mut *buf)).expect_err("long vector");
+    WireFormat::encode(&long_vec, &mut Cursor::new(&mut *buf))
+        .expect_err("long vector");
 }
 
 #[derive(Debug, PartialEq, JetStreamWireFormat)]
@@ -337,7 +356,8 @@ fn struct_encode() {
         buf: Data(vec![254, 129, 0, 62, 49, 172]),
     };
 
-    let mut expected: Vec<u8> = vec![0x0c, 0xb1, 0xba, 0x00, 0xcc, 0x10, 0xad, 0xde];
+    let mut expected: Vec<u8> =
+        vec![0x0c, 0xb1, 0xba, 0x00, 0xcc, 0x10, 0xad, 0xde];
     let strlen = item.b.len() as u16;
     expected.push(strlen as u8);
     expected.push((strlen >> 8) as u8);
@@ -360,7 +380,8 @@ fn struct_encode() {
 
     let mut actual = vec![0; expected.len()];
 
-    WireFormat::encode(&item, &mut Cursor::new(&mut *actual)).expect("failed to encode item");
+    WireFormat::encode(&item, &mut Cursor::new(&mut *actual))
+        .expect("failed to encode item");
 
     assert_eq!(expected, actual);
 }
@@ -374,7 +395,8 @@ fn struct_decode() {
         buf: Data(vec![126, 236, 79, 59, 6, 159]),
     };
 
-    let mut input: Vec<u8> = vec![0x1d, 0x4b, 0x04, 0x04, 0x0c, 0xb0, 0xce, 0xfa];
+    let mut input: Vec<u8> =
+        vec![0x1d, 0x4b, 0x04, 0x04, 0x0c, 0xb0, 0xce, 0xfa];
     let strlen = expected.b.len() as u16;
     input.push(strlen as u8);
     input.push((strlen >> 8) as u8);
@@ -395,7 +417,8 @@ fn struct_decode() {
     input.push((buflen >> 24) as u8);
     input.extend_from_slice(&expected.buf);
 
-    let actual: Item = WireFormat::decode(&mut Cursor::new(input)).expect("failed to decode item");
+    let actual: Item = WireFormat::decode(&mut Cursor::new(input))
+        .expect("failed to decode item");
 
     assert_eq!(expected, actual);
 }
@@ -473,7 +496,8 @@ fn nested_encode() {
 
     let mut actual = vec![0; expected.len()];
 
-    WireFormat::encode(&value, &mut Cursor::new(&mut *actual)).expect("failed to encode value");
+    WireFormat::encode(&value, &mut Cursor::new(&mut *actual))
+        .expect("failed to encode value");
     assert_eq!(expected, actual);
 }
 
@@ -493,7 +517,8 @@ fn nested_decode() {
 
     assert_eq!(
         expected,
-        <Nested as WireFormat>::decode(&mut Cursor::new(&*input)).expect("failed to decode value")
+        <Nested as WireFormat>::decode(&mut Cursor::new(&*input))
+            .expect("failed to decode value")
     );
 }
 

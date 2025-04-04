@@ -1,4 +1,6 @@
-#![doc(html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png")]
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
@@ -7,21 +9,19 @@
 // Copyright 2018 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-pub use jetstream_macros::JetStreamWireFormat;
-
-use {
-    bytes::Buf,
-    std::{
-        ffi::{CStr, CString, OsStr},
-        fmt,
-        io::{self, ErrorKind, Read, Write},
-        mem,
-        ops::{Deref, DerefMut},
-        string::String,
-        vec::Vec,
-    },
-    zerocopy::LittleEndian,
+use std::{
+    ffi::{CStr, CString, OsStr},
+    fmt,
+    io::{self, ErrorKind, Read, Write},
+    mem,
+    ops::{Deref, DerefMut},
+    string::String,
+    vec::Vec,
 };
+
+use bytes::Buf;
+pub use jetstream_macros::JetStreamWireFormat;
+use zerocopy::LittleEndian;
 pub mod wire_format_extensions;
 
 /// A type that can be encoded on the wire using the 9P protocol.
@@ -62,8 +62,8 @@ impl P9String {
         let _check_utf8 = std::str::from_utf8(&string_bytes)
             .map_err(|e| io::Error::new(ErrorKind::InvalidInput, e))?;
 
-        let cstr =
-            CString::new(string_bytes).map_err(|e| io::Error::new(ErrorKind::InvalidInput, e))?;
+        let cstr = CString::new(string_bytes)
+            .map_err(|e| io::Error::new(ErrorKind::InvalidInput, e))?;
 
         Ok(P9String { cstr })
     }
@@ -83,6 +83,7 @@ impl P9String {
     pub fn as_bytes(&self) -> &[u8] {
         self.cstr.as_bytes()
     }
+
     #[cfg(not(target_arch = "wasm32"))]
     /// Returns a raw pointer to the string's storage.
     ///
@@ -273,7 +274,8 @@ impl WireFormat for String {
 // encoded u16 |N|, followed by |N| instances of the given type.
 impl<T: WireFormat> WireFormat for Vec<T> {
     fn byte_size(&self) -> u32 {
-        mem::size_of::<u16>() as u32 + self.iter().map(|elem| elem.byte_size()).sum::<u32>()
+        mem::size_of::<u16>() as u32
+            + self.iter().map(|elem| elem.byte_size()).sum::<u32>()
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
@@ -328,6 +330,7 @@ impl fmt::Debug for Data {
 // Implement Deref and DerefMut so that we don't have to use self.0 everywhere.
 impl Deref for Data {
     type Target = Vec<u8>;
+
     fn deref(&self) -> &Self::Target {
         &self.0
     }
@@ -341,7 +344,8 @@ impl DerefMut for Data {
 // Same as Vec<u8> except that it encodes the length as a u32 instead of a u16.
 impl WireFormat for Data {
     fn byte_size(&self) -> u32 {
-        mem::size_of::<u32>() as u32 + self.iter().map(|elem| elem.byte_size()).sum::<u32>()
+        mem::size_of::<u32>() as u32
+            + self.iter().map(|elem| elem.byte_size()).sum::<u32>()
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
@@ -408,12 +412,10 @@ where
         match tag {
             0 => Ok(None),
             1 => Ok(Some(WireFormat::decode(reader)?)),
-            _ => {
-                Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!("Invalid Option tag: {}", tag),
-                ))
-            }
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                format!("Invalid Option tag: {}", tag),
+            )),
         }
     }
 }
@@ -447,12 +449,10 @@ impl WireFormat for bool {
         match byte[0] {
             0 => Ok(false),
             1 => Ok(true),
-            _ => {
-                Err(io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    "invalid byte for bool",
-                ))
-            }
+            _ => Err(io::Error::new(
+                io::ErrorKind::InvalidData,
+                "invalid byte for bool",
+            )),
         }
     }
 }

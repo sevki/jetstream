@@ -3,18 +3,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-use {
-    jetstream_macros::JetStreamWireFormat,
-    jetstream_rpc::Message,
-    jetstream_wireformat::{Data, WireFormat},
-    std::{
-        io,
-        io::{ErrorKind, Read, Write},
-        mem,
-        string::String,
-        vec::Vec,
-    },
+use std::{
+    io,
+    io::{ErrorKind, Read, Write},
+    mem,
+    string::String,
+    vec::Vec,
 };
+
+use jetstream_macros::JetStreamWireFormat;
+use jetstream_rpc::Message;
+use jetstream_wireformat::{Data, WireFormat};
 
 use crate::{P9_QTDIR, P9_QTFILE, P9_QTSYMLINK};
 
@@ -171,7 +170,9 @@ impl WireFormat for Tframe {
         };
 
         // size + type + tag + message size
-        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32 + msg_size
+        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>())
+            as u32
+            + msg_size
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
@@ -241,7 +242,9 @@ impl WireFormat for Tframe {
             Tmessage::GetAttr(ref getattr) => getattr.encode(writer),
             Tmessage::SetAttr(ref setattr) => setattr.encode(writer),
             Tmessage::XattrWalk(ref xattrwalk) => xattrwalk.encode(writer),
-            Tmessage::XattrCreate(ref xattrcreate) => xattrcreate.encode(writer),
+            Tmessage::XattrCreate(ref xattrcreate) => {
+                xattrcreate.encode(writer)
+            }
             Tmessage::Readdir(ref readdir) => readdir.encode(writer),
             Tmessage::Fsync(ref fsync) => fsync.encode(writer),
             Tmessage::Lock(ref lock) => lock.encode(writer),
@@ -266,7 +269,8 @@ impl WireFormat for Tframe {
             ));
         }
 
-        let reader = &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
+        let reader =
+            &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
 
         let mut ty = [0u8];
         reader.read_exact(&mut ty)?;
@@ -300,7 +304,9 @@ impl Tframe {
             TGETATTR => Ok(Tmessage::GetAttr(WireFormat::decode(reader)?)),
             TSETATTR => Ok(Tmessage::SetAttr(WireFormat::decode(reader)?)),
             TXATTRWALK => Ok(Tmessage::XattrWalk(WireFormat::decode(reader)?)),
-            TXATTRCREATE => Ok(Tmessage::XattrCreate(WireFormat::decode(reader)?)),
+            TXATTRCREATE => {
+                Ok(Tmessage::XattrCreate(WireFormat::decode(reader)?))
+            }
             TREADDIR => Ok(Tmessage::Readdir(WireFormat::decode(reader)?)),
             TFSYNC => Ok(Tmessage::Fsync(WireFormat::decode(reader)?)),
             TLOCK => Ok(Tmessage::Lock(WireFormat::decode(reader)?)),
@@ -309,12 +315,10 @@ impl Tframe {
             TMKDIR => Ok(Tmessage::Mkdir(WireFormat::decode(reader)?)),
             TRENAMEAT => Ok(Tmessage::RenameAt(WireFormat::decode(reader)?)),
             TUNLINKAT => Ok(Tmessage::UnlinkAt(WireFormat::decode(reader)?)),
-            err => {
-                Err(io::Error::new(
-                    ErrorKind::InvalidData,
-                    format!("unknown message type {}", err),
-                ))
-            }
+            err => Err(io::Error::new(
+                ErrorKind::InvalidData,
+                format!("unknown message type {}", err),
+            )),
         }
     }
 }
@@ -395,7 +399,9 @@ impl WireFormat for Rframe {
         };
 
         // size + type + tag + message size
-        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>()) as u32 + msg_size
+        (mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>())
+            as u32
+            + msg_size
     }
 
     fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
@@ -474,7 +480,8 @@ impl WireFormat for Rframe {
 
         // byte_size includes the size of byte_size so remove that from the
         // expected length of the message.
-        let reader = &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
+        let reader =
+            &mut reader.take((byte_size - mem::size_of::<u32>() as u32) as u64);
 
         let mut ty = [0u8];
         reader.read_exact(&mut ty)?;
@@ -511,12 +518,10 @@ impl WireFormat for Rframe {
             RRENAMEAT => Ok(Rmessage::RenameAt),
             RUNLINKAT => Ok(Rmessage::UnlinkAt),
             RLERROR => Ok(Rmessage::Lerror(WireFormat::decode(reader)?)),
-            err => {
-                Err(io::Error::new(
-                    ErrorKind::InvalidData,
-                    format!("unknown message type {}", err),
-                ))
-            }
+            err => Err(io::Error::new(
+                ErrorKind::InvalidData,
+                format!("unknown message type {}", err),
+            )),
         }?;
 
         Ok(Rframe { tag, msg })
