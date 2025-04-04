@@ -753,3 +753,74 @@ fn test_bool_invalid_decode() {
         assert_eq!(e.kind(), io::ErrorKind::InvalidData);
     }
 }
+
+use okstd::prelude::*;
+use toasty::stmt::Id;
+
+use crate::WireFormat;
+
+#[derive(Debug, JetStreamWireFormat)]
+#[toasty::model]
+struct User {
+    #[key]
+    #[auto]
+    id: Id<Self>,
+
+    name: String,
+
+    #[unique]
+    email: String,
+
+    #[jetstream(skip)]
+    #[has_many]
+    todos: [Todo],
+
+    moto: Option<String>,
+}
+
+#[derive(Debug, JetStreamWireFormat)]
+#[toasty::model]
+struct Todo {
+    #[key]
+    #[auto]
+    id: Id<Self>,
+
+    #[index]
+    user_id: Id<User>,
+
+    #[jetstream(skip)]
+    #[belongs_to(key = user_id, references = id)]
+    user: User,
+
+    title: String,
+}
+
+#[okstd::test]
+async fn test_id_wire_format() {
+    let db = toasty::Db::builder()
+        .register::<User>()
+        .register::<Todo>()
+        .connect(
+            std::env::var("TOASTY_CONNECTION_URL")
+                .as_deref()
+                .unwrap_or("sqlite::memory:"),
+        )
+        .await
+        .unwrap();
+
+    // For now, reset!s
+    db.reset_db().await.unwrap();
+
+    println!("==> let u1 = User::create()");
+    let u1 = User::create()
+        .name("John Doe")
+        .email("john@example.com")
+        .exec(&db)
+        .await
+        .unwrap();
+
+    let buf = vec![];
+    let mut writer = Cursor::new(buf);
+
+    let a = u1.encode(&mut writer).unwrap();
+}

@@ -1,7 +1,14 @@
 dictionaries = []
 words = [
+    "jetstream",
+    "quic",
     "rframe",
     "tframe",
+    "tokio",
+    "vsock",
+    "wireformat",
 ]
 flag_words = []
 ignore_paths = []
+ignore_patterns = []
+use_global = true
