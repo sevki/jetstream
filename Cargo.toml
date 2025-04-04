@@ -64,8 +64,8 @@ members = [
 ]
 
 [workspace.dependencies]
-toasty = { git = "https://github.com/tokio-rs/toasty.git", rev = "a4d12583003b458709a5beef041a6cf00b6d2ec7"}
-toasty-core = { git = "https://github.com/tokio-rs/toasty.git",  rev = "a4d12583003b458709a5beef041a6cf00b6d2ec7" }
+toasty = { git = "https://github.com/tokio-rs/toasty.git", rev = "a4d12583003b458709a5beef041a6cf00b6d2ec7", version = "0.1.0"}
+toasty-core = { git = "https://github.com/tokio-rs/toasty.git",  rev = "a4d12583003b458709a5beef041a6cf00b6d2ec7", version = "0.1.0"}
 
 
 [lib]
