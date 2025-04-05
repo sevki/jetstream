@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [8.1.5](https://github.com/sevki/jetstream/compare/v8.1.4...v8.1.5) (2025-04-05)
+
+
+### Bug Fixes
+
+* rollback toasty ([ae0790b](https://github.com/sevki/jetstream/commit/ae0790b473fa81e1c67ec25003bec0f0d6082450))
+* version ([ca861a7](https://github.com/sevki/jetstream/commit/ca861a7ac9797925d208c3b08e8d195607d4d388))
+
 ## [8.1.4](https://github.com/sevki/jetstream/compare/v8.1.3...v8.1.4) (2025-04-04)
 
 
