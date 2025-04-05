@@ -1,5 +1,5 @@
 use std::{
-    io::{self, Cursor},
+    io::{self, Cursor, Read, Write},
     mem,
     pin::Pin,
     string::String,
@@ -754,73 +754,191 @@ fn test_bool_invalid_decode() {
     }
 }
 
-use okstd::prelude::*;
-use toasty::stmt::Id;
+// Simple types for testing
+#[derive(Debug, PartialEq)]
+struct SimpleInt(i32);
 
-use crate::WireFormat;
+#[derive(Debug, PartialEq)]
+struct WrappedInt(i32);
 
-#[derive(Debug, JetStreamWireFormat)]
-#[toasty::model]
-struct User {
-    #[key]
-    #[auto]
-    id: Id<Self>,
+// Implement conversion traits
+impl AsRef<SimpleInt> for WrappedInt {
+    fn as_ref(&self) -> &SimpleInt {
+        // This is just for the test and wouldn't work in practice
+        // In real code you'd have a reference to the inner value
+        unsafe { std::mem::transmute(&self.0) }
+    }
+}
 
+impl From<SimpleInt> for WrappedInt {
+    fn from(value: SimpleInt) -> Self {
+        WrappedInt(value.0)
+    }
+}
+
+// Implement WireFormat for SimpleInt
+impl WireFormat for SimpleInt {
+    fn byte_size(&self) -> u32 {
+        // i32 is 4 bytes
+        4
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        writer.write_all(&self.0.to_le_bytes())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let mut buffer = [0u8; 4];
+        reader.read_exact(&mut buffer)?;
+        Ok(SimpleInt(i32::from_le_bytes(buffer)))
+    }
+}
+
+#[test]
+fn test_wrapped_byte_size() {
+    // Use the Wrapped struct correctly with its public constructor
+    let wrapped = Wrapped::new(WrappedInt(42));
+    assert_eq!(wrapped.byte_size(), 4);
+}
+
+#[test]
+fn test_wrapped_encode() {
+    let wrapped = Wrapped::new(WrappedInt(42));
+    let mut buffer = Vec::new();
+    wrapped.encode(&mut buffer).unwrap();
+    assert_eq!(buffer, vec![42, 0, 0, 0]); // 42 in little-endian
+}
+
+#[test]
+fn test_wrapped_decode() {
+    let data = vec![42, 0, 0, 0]; // 42 in little-endian
+    let mut cursor = Cursor::new(data);
+    let wrapped: Wrapped<WrappedInt, SimpleInt> =
+        WireFormat::decode(&mut cursor).unwrap();
+    assert_eq!(wrapped.0, WrappedInt(42));
+}
+
+#[test]
+fn test_wrapped_roundtrip() {
+    // Original value
+    let original = Wrapped::new(WrappedInt(123));
+
+    // Encode
+    let mut buffer = Vec::new();
+    original.encode(&mut buffer).unwrap();
+
+    // Decode
+    let mut cursor = Cursor::new(buffer);
+    let decoded: Wrapped<WrappedInt, SimpleInt> =
+        WireFormat::decode(&mut cursor).unwrap();
+
+    // Compare
+    assert_eq!(decoded.0, original.0);
+}
+
+// Test with a more complex type
+#[derive(Debug, PartialEq)]
+struct Person {
+    id: u32,
     name: String,
-
-    #[unique]
-    email: String,
-
-    #[jetstream(skip)]
-    #[has_many]
-    todos: [Todo],
-
-    moto: Option<String>,
 }
 
-#[derive(Debug, JetStreamWireFormat)]
-#[toasty::model]
-struct Todo {
-    #[key]
-    #[auto]
-    id: Id<Self>,
-
-    #[index]
-    user_id: Id<User>,
-
-    #[jetstream(skip)]
-    #[belongs_to(key = user_id, references = id)]
-    user: User,
-
-    title: String,
+#[derive(Debug, PartialEq)]
+struct PersonDto {
+    id: u32,
+    name: String,
 }
 
-#[okstd::test]
-async fn test_id_wire_format() {
-    let db = toasty::Db::builder()
-        .register::<User>()
-        .register::<Todo>()
-        .connect(
-            std::env::var("TOASTY_CONNECTION_URL")
-                .as_deref()
-                .unwrap_or("sqlite::memory:"),
-        )
-        .await
-        .unwrap();
+impl AsRef<PersonDto> for Person {
+    fn as_ref(&self) -> &PersonDto {
+        // This is just for the test and wouldn't work in practice
+        unsafe { std::mem::transmute(self) }
+    }
+}
 
-    // For now, reset!s
-    db.reset_db().await.unwrap();
+impl From<PersonDto> for Person {
+    fn from(dto: PersonDto) -> Self {
+        Person {
+            id: dto.id,
+            name: dto.name,
+        }
+    }
+}
 
-    println!("==> let u1 = User::create()");
-    let u1 = User::create()
-        .name("John Doe")
-        .email("john@example.com")
-        .exec(&db)
-        .await
-        .unwrap();
+impl WireFormat for PersonDto {
+    fn byte_size(&self) -> u32 {
+        4 + 4 + self.name.len() as u32 // 4 bytes for id, 4 for string length, plus string bytes
+    }
 
-    let buf = vec![];
-    let mut writer = Cursor::new(buf);
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        // Write id
+        writer.write_all(&self.id.to_le_bytes())?;
 
-    u1.encode(&mut writer).unwrap();
+        // Write string length
+        let name_len = self.name.len() as u32;
+        writer.write_all(&name_len.to_le_bytes())?;
+
+        // Write string bytes
+        writer.write_all(self.name.as_bytes())?;
+
+        Ok(())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        // Read id
+        let mut id_buffer = [0u8; 4];
+        reader.read_exact(&mut id_buffer)?;
+        let id = u32::from_le_bytes(id_buffer);
+
+        // Read string length
+        let mut len_buffer = [0u8; 4];
+        reader.read_exact(&mut len_buffer)?;
+        let name_len = u32::from_le_bytes(len_buffer) as usize;
+
+        // Read string bytes
+        let mut name_bytes = vec![0u8; name_len];
+        reader.read_exact(&mut name_bytes)?;
+        let name = String::from_utf8(name_bytes).map_err(|_| {
+            io::Error::new(io::ErrorKind::InvalidData, "Invalid UTF-8")
+        })?;
+
+        Ok(PersonDto { id, name })
+    }
+}
+
+#[test]
+fn test_complex_wrapped_roundtrip() {
+    let original = Wrapped::new(Person {
+        id: 1,
+        name: "Alice".to_string(),
+    });
+
+    // Encode
+    let mut buffer = Vec::new();
+    original.encode(&mut buffer).unwrap();
+
+    // Decode
+    let mut cursor = Cursor::new(buffer);
+    let decoded: Wrapped<Person, PersonDto> =
+        WireFormat::decode(&mut cursor).unwrap();
+
+    // Compare
+    assert_eq!(decoded.0.id, original.0.id);
+    assert_eq!(decoded.0.name, original.0.name);
+}
+
+#[test]
+fn test_empty_buffer() {
+    let mut empty_buffer = Cursor::new(Vec::new());
+    let result: Result<Wrapped<WrappedInt, SimpleInt>, _> =
+        WireFormat::decode(&mut empty_buffer);
+    assert!(result.is_err());
+}
+
+#[test]
+fn test_partial_buffer() {
+    let mut partial_buffer = Cursor::new(vec![42, 0]); // Only 2 bytes instead of 4
+    let result: Result<Wrapped<WrappedInt, SimpleInt>, _> =
+        WireFormat::decode(&mut partial_buffer);
+    assert!(result.is_err());
 }

@@ -8,9 +8,6 @@ use std::{
 
 use bytes::Bytes;
 
-#[cfg(feature = "toasty")]
-use uuid::Uuid;
-
 use super::WireFormat;
 
 pub trait AsyncWireFormat: std::marker::Sized {
@@ -206,53 +203,5 @@ impl WireFormat for SocketAddrV6 {
         self::Ipv6Addr::decode(reader).and_then(|ip| {
             u16::decode(reader).map(|port| SocketAddrV6::new(ip, port, 0, 0))
         })
-    }
-}
-
-#[cfg(feature = "toasty")]
-impl<T> WireFormat for toasty::stmt::Id<T>
-where
-    T: toasty::Model + Send,
-{
-    fn byte_size(&self) -> u32 {
-        match (
-            self.to_string().parse::<u64>(),
-            self.to_string().parse::<Uuid>(),
-        ) {
-            (Ok(_), Ok(_)) => todo!(),
-            (Ok(num), Err(_)) => num.byte_size(),
-            (Err(_), Ok(uuid)) => uuid.as_u128().byte_size(),
-            (Err(_), Err(_)) => todo!(),
-        }
-    }
-
-    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()> {
-        match (
-            self.to_string().parse::<u64>(),
-            self.to_string().parse::<Uuid>(),
-        ) {
-            (Ok(_), Ok(_)) => todo!(),
-            (Ok(num), Err(_)) => WireFormat::encode(&num, writer),
-            (Err(_), Ok(uuid)) => WireFormat::encode(&uuid.as_u128(), writer),
-            (Err(_), Err(_)) => todo!(),
-        }
-    }
-
-    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
-        match (u64::decode(reader), u128::decode(reader)) {
-            (Ok(id), Err(_)) => Ok(Self::from_untyped(
-                toasty_core::stmt::Id::from_int(T::ID, id),
-            )),
-            (Err(_), Ok(uuid)) => {
-                Ok(Self::from_untyped(toasty_core::stmt::Id::from_string(
-                    T::ID,
-                    Uuid::from_u128(uuid).to_string(),
-                )))
-            }
-            _ => Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidData,
-                "Invalid Toasty ID",
-            )),
-        }
     }
 }

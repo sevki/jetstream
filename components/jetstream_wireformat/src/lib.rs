@@ -13,6 +13,7 @@ use std::{
     ffi::{CStr, CString, OsStr},
     fmt,
     io::{self, ErrorKind, Read, Write},
+    marker::PhantomData,
     mem,
     ops::{Deref, DerefMut},
     string::String,
@@ -460,5 +461,33 @@ impl WireFormat for bool {
 impl io::Read for Data {
     fn read(&mut self, buf: &mut [u8]) -> io::Result<usize> {
         self.0.reader().read(buf)
+    }
+}
+
+#[repr(transparent)]
+pub struct Wrapped<T, I>(pub T, PhantomData<I>);
+
+impl<T, I> Wrapped<T, I> {
+    pub fn new(value: T) -> Self {
+        Wrapped(value, PhantomData)
+    }
+}
+
+impl<T, I> WireFormat for Wrapped<T, I>
+where
+    T: Send + Send + std::convert::AsRef<I>,
+    I: WireFormat + std::convert::Into<T>,
+{
+    fn byte_size(&self) -> u32 {
+        AsRef::<I>::as_ref(&self.0).byte_size()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        AsRef::<I>::as_ref(&self.0).encode(writer)
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let inner = I::decode(reader)?;
+        Ok(Wrapped(inner.into(), PhantomData))
     }
 }

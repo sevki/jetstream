@@ -33,8 +33,6 @@ lazy_static = "1.5.0"
 arbitrary = "1.4.1"
 criterion = { version = "0.5.1", features = ["async_tokio"] }
 futures-util = "0.3.30"
-toasty = { workspace = true, features = ["sqlite"]}
-toasty-core = {  workspace = true,  version = "0.1.0" }
 jetstream_9p = { version = "8.1.4", path = "components/jetstream_9p" }
 jetstream_client = { version = "8.1.4", path = "components/jetstream_client" }
 jetstream_macros = { version = "8.1.4", path = "components/jetstream_macros" }
@@ -63,10 +61,6 @@ members = [
     "fuzz",
 ]
 
-[workspace.dependencies]
-toasty = { git = "https://github.com/tokio-rs/toasty.git", rev = "a4d12583003b458709a5beef041a6cf00b6d2ec7", version = "0.1.0"}
-toasty-core = { git = "https://github.com/tokio-rs/toasty.git",  rev = "a4d12583003b458709a5beef041a6cf00b6d2ec7", version = "0.1.0"}
-
 
 [lib]
 bench = false
@@ -93,6 +87,5 @@ client = ["dep:jetstream_client", "dep:s2n-quic"]
 server = ["dep:jetstream_server", "dep:s2n-quic"]
 all = ["client", "server", "9p"]
 9p = ["dep:jetstream_9p"]
-toasty=["jetstream_wireformat/toasty"]
 websocket = ["client", "jetstream_client/websocket"]
 quic = ["dep:s2n-quic"]

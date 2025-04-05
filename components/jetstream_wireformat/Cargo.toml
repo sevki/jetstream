@@ -16,13 +16,12 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 
 [features]
 default = ["async", "std"]
-all = ["std", "async", "testing", "serde", "futures", "toasty"]
+all = ["std", "async", "testing", "serde", "futures"]
 std = []
 async = ["dep:futures", "futures"]
 testing = ["serde"]
 serde = ["dep:serde"]
 futures = ["dep:futures-util"]
-toasty = ["dep:toasty","dep:toasty-core", "dep:uuid"]
 
 [dependencies]
 zerocopy = "0.8.20"
@@ -30,8 +29,6 @@ paste = "1.0.15"
 bytes = { version = "1.10.0", features = ["serde"] }
 jetstream_macros = { version = "8.1.4", path = "../jetstream_macros" }
 futures-util = { version = "0.3.31", optional = true }
-toasty = { workspace = true, features = ["sqlite"], optional = true}
-toasty-core = { workspace = true , optional = true }
 uuid = {version = "1.16.0", optional = true}
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
