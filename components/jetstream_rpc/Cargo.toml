@@ -31,7 +31,7 @@ jetstream_wireformat = { version = "8.1.5", path = "../jetstream_wireformat", de
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 jetstream_wireformat = { version = "8.1.5", path = "../jetstream_wireformat" }
-tokio = { version = "1.43.0", features = ["full"] }
+tokio = { version = "1.44.2", features = ["full"] }
 
 [dev-dependencies]
 bytes = "1.10.0"
