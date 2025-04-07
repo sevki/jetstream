@@ -9,17 +9,15 @@
 //! JetStream, is a collection of crates that provide a set of tools to build distributed systems.
 //! It started it's life off in the CrosVM project, and has since been extracted into it's own project.
 //! For more information please see the [JetStream Book](https://sevki.github.io/jetstream)
-
-extern crate async_trait;
-extern crate futures;
-extern crate jetstream_macros;
-extern crate jetstream_rpc;
-extern crate jetstream_wireformat;
-extern crate lazy_static;
-extern crate trait_variant;
-
 pub mod prelude {
-
+    pub extern crate async_trait;
+    pub extern crate futures;
+    pub extern crate jetstream_macros;
+    pub extern crate jetstream_rpc;
+    pub extern crate jetstream_wireformat;
+    pub extern crate lazy_static;
+    pub extern crate trait_variant;
+    
     pub use async_trait::async_trait;
     pub use jetstream_macros::{service, JetStreamWireFormat};
     pub use jetstream_rpc::{
