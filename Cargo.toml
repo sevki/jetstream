@@ -23,7 +23,7 @@ jetstream_wireformat = { version = "8.1.5", path = "components/jetstream_wirefor
 jetstream_rpc = { version = "8.1.5", path = "components/jetstream_rpc" }
 jetstream_9p = { version = "8.1.5", path = "components/jetstream_9p", optional = true }
 trait-variant = "0.1.2"
-s2n-quic = { version = "1.54.0", optional = true }
+s2n-quic = { version = "1.57.0", optional = true }
 async-trait = "0.1.86"
 tokio-util = { version = "0.7.13", features = ["codec"] }
 futures = "0.3.31"
@@ -40,7 +40,7 @@ jetstream_rpc = { version = "8.1.5", path = "components/jetstream_rpc" }
 jetstream_server = { version = "8.1.5", path = "components/jetstream_server" }
 jetstream_wireformat = { version = "8.1.5", path = "components/jetstream_wireformat", features = ["all"]}
 okstd = { version = "1.0.2", features = ["macros"] }
-s2n-quic = "1.54.0"
+s2n-quic = "1.57.0"
 tmpdir = "1.0.0"
 tokio = { version = "1.44.2", features = ["full"] }
 turmoil = "0.6.5"
