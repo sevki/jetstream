@@ -20,7 +20,7 @@ jetstream_wireformat = { version = "8.1.5", path = "../jetstream_wireformat" }
 okstd = { version = "1.0.2", features = ["macros"] }
 s2n-quic = { version = "1.57.0", optional = true }
 tokio = { version = "1.44.2", features = ["full"] }
-tokio-vsock = { version = "0.7.0", optional = true }
+tokio-vsock = { version = "0.7.1", optional = true }
 tokio-util = { version = "0.7.13", features = ["codec"] }
 trait-variant = "0.1.2"
 futures = "0.3.31"
