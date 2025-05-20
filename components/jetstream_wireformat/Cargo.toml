@@ -16,12 +16,13 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 
 [features]
 default = ["async", "std"]
-all = ["std", "async", "testing", "serde", "futures"]
+all = ["std", "async", "testing", "serde", "futures", "tokio"]
 std = []
 async = ["dep:futures", "futures"]
 testing = ["serde"]
 serde = ["dep:serde"]
 futures = ["dep:futures-util"]
+tokio = ["dep:tokio-util"]
 
 [dependencies]
 zerocopy = "0.8.20"
@@ -36,9 +37,18 @@ libc = "0.2.170"
 tokio = { version = "1.44.2", features = ["full"] }
 okstd = { version = "1.0.2" }
 futures = { version = "0.3.31", optional = true }
-tokio-util = { version = "0.7.13", features = ["full", "io", "time"] }
+tokio-util = { version = "0.7.13", features = ["full", "io", "time"], optional = true }
 time = "0.3.37"
 serde = { version = "1.0.218", features = ["derive"], optional = true }
 jetstream_macros = { version = "8.1.5", path = "../jetstream_macros" }
+mio = "1.0.3"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
+wasm-bindgen = "0.2.92"
+web-sys = { version = "0.3.69", features = ["console"] }
+js-sys = "0.3.69"
+futures = { version = "0.3.31", optional = true }
+getrandom = { version = "0.2.15", features = ["js"] }
+
+[dev-dependencies]
+wasm-bindgen-test = "0.3.42"

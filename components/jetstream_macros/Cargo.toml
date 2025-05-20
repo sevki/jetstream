@@ -15,10 +15,8 @@ documentation = { workspace = true }
 syn = { version = "2.0.98", features = ["full", "extra-traits"] }
 quote = "^1"
 proc-macro2 = "1.0.92"
-paste = "1.0.14"
 convert_case = "0.6.0"
 sha256 = "1.5.0"
-tokio-stream = "0.1.17"
 lazy_static = "1.5.0"
 
 [lib]

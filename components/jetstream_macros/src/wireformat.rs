@@ -1,8 +1,9 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
-use syn::{spanned::Spanned, Data, DeriveInput, Fields, Ident, Meta};
+use syn::{spanned::Spanned, Data, DeriveInput, Fields, Ident, Meta, GenericParam, TypeParam, 
+    WherePredicate, Type, TypeParamBound, TraitBound, Path, PathSegment, Generics, punctuated::Punctuated};
 
-fn has_skip_attr(field: &syn::Field) -> bool {
+pub(crate) fn has_skip_attr(field: &syn::Field) -> bool {
     field.attrs.iter().any(|attr| {
         if attr.path().is_ident("jetstream") {
             if let Ok(()) = attr.parse_nested_meta(|meta| {
@@ -19,7 +20,7 @@ fn has_skip_attr(field: &syn::Field) -> bool {
     })
 }
 
-fn extract_jetstream_type(input: &DeriveInput) -> Option<Ident> {
+pub(crate) fn extract_jetstream_type(input: &DeriveInput) -> Option<Ident> {
     for attr in &input.attrs {
         if attr.path().is_ident("jetstream_type") {
             if let Ok(Meta::Path(path)) = attr.parse_args() {
@@ -32,20 +33,89 @@ fn extract_jetstream_type(input: &DeriveInput) -> Option<Ident> {
     None
 }
 
-pub(crate) fn wire_format_inner(input: DeriveInput) -> TokenStream {
-    if !input.generics.params.is_empty() {
-        return quote! {
-            compile_error!("derive(JetStreamWireFormat) does not support generic parameters");
-        };
+// Add WireFormat bounds to generic type parameters
+pub(crate) fn add_wireformat_bounds(
+    generics: &Generics,
+    predicates: &mut Punctuated<WherePredicate, syn::token::Comma>,
+) {
+    for param in &generics.params {
+        if let GenericParam::Type(TypeParam { ident, .. }) = param {
+            let ty = Type::Path(syn::TypePath {
+                qself: None,
+                path: Path {
+                    leading_colon: None,
+                    segments: {
+                        let mut segments = Punctuated::new();
+                        segments.push(PathSegment {
+                            ident: ident.clone(),
+                            arguments: syn::PathArguments::None,
+                        });
+                        segments
+                    },
+                },
+            });
+
+            // Create the WireFormat trait bound
+            let trait_path = syn::parse_str::<Path>("jetstream_wireformat::WireFormat").unwrap();
+            let trait_bound = TypeParamBound::Trait(TraitBound {
+                paren_token: None,
+                modifier: syn::TraitBoundModifier::None,
+                lifetimes: None,
+                path: trait_path,
+            });
+
+            // Create the where predicate: T: WireFormat
+            let mut bounds = Punctuated::new();
+            bounds.push(trait_bound);
+            
+            let predicate = WherePredicate::Type(syn::PredicateType {
+                lifetimes: None,
+                bounded_ty: ty,
+                colon_token: syn::token::Colon::default(),
+                bounds,
+            });
+            
+            predicates.push(predicate);
+        }
     }
+}
+
+pub(crate) fn wire_format_inner(input: DeriveInput) -> TokenStream {
     let jetstream_type = extract_jetstream_type(&input);
-    let container = input.ident;
+    let container = input.ident.clone();
+    
+    // Extract generics information
+    let generics = input.generics;
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    
+    // Create a where clause for WireFormat bounds on generic types
+    let where_clause = match where_clause {
+        Some(where_clause) => {
+            let mut predicates = where_clause.predicates.clone();
+            add_wireformat_bounds(&generics, &mut predicates);
+            Some(syn::WhereClause {
+                where_token: syn::token::Where::default(),
+                predicates,
+            })
+        }
+        None if !generics.params.is_empty() => {
+            let mut predicates = syn::punctuated::Punctuated::new();
+            add_wireformat_bounds(&generics, &mut predicates);
+            Some(syn::WhereClause {
+                where_token: syn::token::Where::default(),
+                predicates,
+            })
+        }
+        None => None,
+    };
+    
+    let where_clause_tokens = where_clause.map_or_else(|| quote! {}, |wc| quote! { #wc });
 
     // Generate message type implementation
     let message_impl = if let Some(msg_type) = jetstream_type {
         quote! {
-           impl jetstream_wireformat::Message for #container {
-               const MESSAGE_TYPE: u8 = super::#msg_type;
+           impl #impl_generics jetstream_wireformat::Message for #container #ty_generics #where_clause_tokens {
+               const MESSAGE_TYPE: u8 = #msg_type;
            }
         }
     } else {
@@ -56,17 +126,19 @@ pub(crate) fn wire_format_inner(input: DeriveInput) -> TokenStream {
     let encode_impl = encode_wire_format(&input.data);
     let decode_impl = decode_wire_format(&input.data, &container);
 
-    let scope = format!("wire_format_{}", container).to_lowercase();
-    let scope = Ident::new(&scope, Span::call_site());
+    // Previously we used a scope for the module, but now we use a const block
+    // let scope = format!("wire_format_{}", container).to_lowercase();
+    // let scope = Ident::new(&scope, Span::call_site());
+    
+    // Use the container directly (not through type alias) to properly handle generics
     quote! {
-        mod #scope {
+        const _: () = {
             extern crate std;
-            use self::std::io;
-            use self::std::result::Result::Ok;
-            use super::#container;
+            use std::io;
+            use std::result::Result::Ok;
             use jetstream_wireformat::WireFormat;
 
-            impl WireFormat for #container {
+            impl #impl_generics WireFormat for #container #ty_generics #where_clause_tokens {
                 fn byte_size(&self) -> u32 {
                     #byte_size_impl
                 }
@@ -80,19 +152,118 @@ pub(crate) fn wire_format_inner(input: DeriveInput) -> TokenStream {
                 }
             }
             #message_impl
-        }
+        };
     }
 }
 
-fn byte_size_sum(data: &Data) -> TokenStream {
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
+pub(crate) struct Options {
+    /// #[jetstream(with(impl WireFormat))]
+    with: Option<syn::Path>,
+    /// #[jetstream(with_encode(impl WireFormat))]
+    encode: Option<syn::Path>,
+    /// #[jetstream(with_decode(impl WireFormat))]
+    decode: Option<syn::Path>,
+    /// #[jetstream(with_byte_size(FnOnce(As<T> -> u32)))]
+    byte_size: Option<syn::Path>,
+    /// #[jetstream(from(impl From<WireFormat>))]
+    from: Option<syn::Path>,
+    /// #[jetstream(into(impl Into<WireFormat>))]
+    into: Option<syn::Path>,
+    /// #[jetstream(as(impl As<WireFormat>))]
+    as_: Option<syn::Path>,
+}
+
+pub(crate) fn extract_field_options(field: &syn::Field) -> Options {
+    let mut options = Options {
+        ..Default::default()
+    };
+
+    for attr in &field.attrs {
+        if attr.path().is_ident("jetstream") {
+            attr.parse_nested_meta(|meta| {
+                if meta.path.is_ident("with") {
+                    let content;
+                    syn::parenthesized!(content in meta.input);
+                    let path: syn::Path = content.parse()?;
+                    options.with = Some(path);
+                    return Ok(());
+                }
+                if meta.path.is_ident("with_encode") {
+                    let content;
+                    syn::parenthesized!(content in meta.input);
+                    let path: syn::Path = content.parse()?;
+                    options.encode = Some(path);
+                    return Ok(());
+                }
+                if meta.path.is_ident("with_decode") {
+                    let content;
+                    syn::parenthesized!(content in meta.input);
+                    let path: syn::Path = content.parse()?;
+                    options.decode = Some(path);
+                    return Ok(());
+                }
+                if meta.path.is_ident("with_byte_size") {
+                    let content;
+                    syn::parenthesized!(content in meta.input);
+                    let path: syn::Path = content.parse()?;
+                    options.byte_size = Some(path);
+                    return Ok(());
+                }
+                if meta.path.is_ident("from") {
+                    let content;
+                    syn::parenthesized!(content in meta.input);
+                    let path: syn::Path = content.parse()?;
+                    options.from = Some(path);
+                    return Ok(());
+                }
+                if meta.path.is_ident("into") {
+                    let content;
+                    syn::parenthesized!(content in meta.input);
+                    let path: syn::Path = content.parse()?;
+                    options.into = Some(path);
+                    return Ok(());
+                }
+                if meta.path.is_ident("as") {
+                    let content;
+                    syn::parenthesized!(content in meta.input);
+                    let path: syn::Path = content.parse()?;
+                    options.as_ = Some(path);
+                    return Ok(());
+                }
+                if meta.path.is_ident("skip") {
+                    return Ok(());
+                }
+                Err(meta.error("unrecognized jetstream attribute"))
+            })
+            .ok();
+        }
+    }
+
+    options
+}
+
+pub(crate) fn byte_size_sum(data: &Data) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
             let fields =
                 fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
                     let field = &f.ident;
                     let span = field.span();
-                    quote_spanned! {span=>
-                        WireFormat::byte_size(&self.#field)
+                    let options = extract_field_options(f);
+
+                    if let Some(byte_size_fn) = options.byte_size {
+                        quote_spanned! {span=>
+                            #byte_size_fn(&self.#field)
+                        }
+                    } else if let Some(with_fn) = options.with {
+                        quote_spanned! {span=>
+                            #with_fn::byte_size(&self.#field)
+                        }
+                    } else {
+                        quote_spanned! {span=>
+                            WireFormat::byte_size(&self.#field)
+                        }
                     }
                 });
 
@@ -105,10 +276,22 @@ fn byte_size_sum(data: &Data) -> TokenStream {
                 .iter()
                 .enumerate()
                 .filter(|(_, f)| !has_skip_attr(f))
-                .map(|(i, _f)| {
+                .map(|(i, f)| {
                     let index = syn::Index::from(i);
-                    quote! {
-                        WireFormat::byte_size(&self.#index)
+                    let options = extract_field_options(f);
+
+                    if let Some(byte_size_fn) = options.byte_size {
+                        quote! {
+                            #byte_size_fn(&self.#index)
+                        }
+                    } else if let Some(with_fn) = options.with {
+                        quote! {
+                            #with_fn::byte_size(&self.#index)
+                        }
+                    } else {
+                        quote! {
+                            WireFormat::byte_size(&self.#index)
+                        }
                     }
                 });
 
@@ -127,26 +310,57 @@ fn byte_size_sum(data: &Data) -> TokenStream {
                         .named
                         .iter()
                         .filter(|f| !has_skip_attr(f))
-                        .map(|f| &f.ident)
+                        .map(|f| (f, &f.ident))
                         .collect::<Vec<_>>();
+                    
+                    let size_calcs = field_idents.iter().map(|(f, ident)| {
+                        let options = extract_field_options(f);
+                        if let Some(byte_size_fn) = options.byte_size {
+                            quote! { + #byte_size_fn(#ident) }
+                        } else if let Some(with_fn) = options.with {
+                            quote! { + #with_fn::byte_size(#ident) }
+                        } else {
+                            quote! { + WireFormat::byte_size(#ident) }
+                        }
+                    });
+                    
+                    let field_idents = field_idents.iter().map(|(_, ident)| ident);
+                    
                     quote! {
                         Self::#variant_ident { #(ref #field_idents),* } => {
-                            1 #(+ WireFormat::byte_size(#field_idents))*
+                            1 #(#size_calcs)*
                         }
                     }
                 }
                 Fields::Unnamed(fields) => {
-                    let refs = fields
+                    let refs_with_fields = fields
                         .unnamed
                         .iter()
                         .enumerate()
                         .filter(|(_, f)| !has_skip_attr(f))
-                        .map(|(i, _)| format!("__{}", i))
-                        .map(|name| Ident::new(&name, Span::call_site()))
+                        .map(|(i, f)| (f, format!("__{}", i)))
                         .collect::<Vec<_>>();
+                    
+                    let size_calcs = refs_with_fields.iter().map(|(f, name)| {
+                        let ident = Ident::new(name, Span::call_site());
+                        let options = extract_field_options(f);
+                        
+                        if let Some(byte_size_fn) = options.byte_size {
+                            quote! { + #byte_size_fn(#ident) }
+                        } else if let Some(with_fn) = options.with {
+                            quote! { + #with_fn::byte_size(#ident) }
+                        } else {
+                            quote! { + WireFormat::byte_size(#ident) }
+                        }
+                    });
+                    
+                    let refs = refs_with_fields.iter().map(|(_, name)|
+                        Ident::new(name, Span::call_site())
+                    );
+                    
                     quote! {
                         Self::#variant_ident(#(ref #refs),*) => {
-                            1 #(+ WireFormat::byte_size(#refs))*
+                            1 #(#size_calcs)*
                         }
                     }
                 }
@@ -168,15 +382,35 @@ fn byte_size_sum(data: &Data) -> TokenStream {
     }
 }
 
-fn encode_wire_format(data: &Data) -> TokenStream {
+pub(crate) fn encode_wire_format(data: &Data) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
             let fields =
                 fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
                     let field = &f.ident;
                     let span = field.span();
-                    quote_spanned! {span=>
-                        WireFormat::encode(&self.#field, _writer)?;
+                    let options = extract_field_options(f);
+                    
+                    if let Some(encode_fn) = options.encode {
+                        quote_spanned! {span=>
+                            #encode_fn(&self.#field, _writer)?;
+                        }
+                    } else if let Some(with_fn) = options.with {
+                        quote_spanned! {span=>
+                            #with_fn::encode(&self.#field, _writer)?;
+                        }
+                    } else if let Some(into_fn) = options.into {
+                        quote_spanned! {span=>
+                            WireFormat::encode(&(#into_fn(&self.#field)), _writer)?;
+                        }
+                    } else if let Some(as_fn) = options.as_ {
+                        quote_spanned! {span=>
+                            WireFormat::encode(&#as_fn(&self.#field), _writer)?;
+                        }
+                    } else {
+                        quote_spanned! {span=>
+                            WireFormat::encode(&self.#field, _writer)?;
+                        }
                     }
                 });
 
@@ -190,10 +424,30 @@ fn encode_wire_format(data: &Data) -> TokenStream {
                 .iter()
                 .enumerate()
                 .filter(|(_, f)| !has_skip_attr(f))
-                .map(|(i, _f)| {
+                .map(|(i, f)| {
                     let index = syn::Index::from(i);
-                    quote! {
-                        WireFormat::encode(&self.#index, _writer)?;
+                    let options = extract_field_options(f);
+                    
+                    if let Some(encode_fn) = options.encode {
+                        quote! {
+                            #encode_fn(&self.#index, _writer)?;
+                        }
+                    } else if let Some(with_fn) = options.with {
+                        quote! {
+                            #with_fn::encode(&self.#index, _writer)?;
+                        }
+                    } else if let Some(into_fn) = options.into {
+                        quote! {
+                            WireFormat::encode(&(#into_fn(&self.#index)), _writer)?;
+                        }
+                    } else if let Some(as_fn) = options.as_ {
+                        quote! {
+                            WireFormat::encode(&#as_fn(&self.#index), _writer)?;
+                        }
+                    } else {
+                        quote! {
+                            WireFormat::encode(&self.#index, _writer)?;
+                        }
                     }
                 });
 
@@ -212,33 +466,72 @@ fn encode_wire_format(data: &Data) -> TokenStream {
 
                 match &variant.fields {
                     Fields::Named(ref fields) => {
-                        let field_idents = fields
+                        let field_idents_with_fields = fields
                             .named
                             .iter()
                             .filter(|f| !has_skip_attr(f))
-                            .map(|f| &f.ident)
+                            .map(|f| (f, &f.ident))
                             .collect::<Vec<_>>();
+                        
+                        let encode_stmts = field_idents_with_fields.iter().map(|(f, ident)| {
+                            let options = extract_field_options(f);
+                            
+                            if let Some(encode_fn) = options.encode {
+                                quote! { #encode_fn(#ident, _writer)?; }
+                            } else if let Some(with_fn) = options.with {
+                                quote! { #with_fn::encode(#ident, _writer)?; }
+                            } else if let Some(into_fn) = options.into {
+                                quote! { WireFormat::encode(&(#into_fn(#ident)), _writer)?; }
+                            } else if let Some(as_fn) = options.as_ {
+                                quote! { WireFormat::encode(&#as_fn(#ident), _writer)?; }
+                            } else {
+                                quote! { WireFormat::encode(#ident, _writer)?; }
+                            }
+                        });
+                        
+                        let field_idents = field_idents_with_fields.iter().map(|(_, ident)| ident);
 
                         quote! {
                             Self::#variant_ident { #(ref #field_idents),* } => {
                                 WireFormat::encode(&(#idx), _writer)?;
-                                #(WireFormat::encode(#field_idents, _writer)?;)*
+                                #(#encode_stmts)*
                             }
                         }
                     }
                     Fields::Unnamed(ref fields) => {
-                        let field_refs = fields
+                        let field_refs_with_fields = fields
                             .unnamed
                             .iter()
                             .enumerate()
                             .filter(|(_, f)| !has_skip_attr(f))
-                            .map(|(i, _)| format!("__{}", i))
-                            .map(|name| Ident::new(&name, Span::call_site()))
+                            .map(|(i, f)| (f, format!("__{}", i)))
                             .collect::<Vec<_>>();
+                        
+                        let encode_stmts = field_refs_with_fields.iter().map(|(f, name)| {
+                            let ident = Ident::new(name, Span::call_site());
+                            let options = extract_field_options(f);
+                            
+                            if let Some(encode_fn) = options.encode {
+                                quote! { #encode_fn(#ident, _writer)?; }
+                            } else if let Some(with_fn) = options.with {
+                                quote! { #with_fn::encode(#ident, _writer)?; }
+                            } else if let Some(into_fn) = options.into {
+                                quote! { WireFormat::encode(&(#into_fn(#ident)), _writer)?; }
+                            } else if let Some(as_fn) = options.as_ {
+                                quote! { WireFormat::encode(&#as_fn(#ident), _writer)?; }
+                            } else {
+                                quote! { WireFormat::encode(#ident, _writer)?; }
+                            }
+                        });
+                        
+                        let field_refs = field_refs_with_fields.iter().map(|(_, name)| 
+                            Ident::new(name, Span::call_site())
+                        );
+                        
                         quote! {
                             Self::#variant_ident(#(ref #field_refs),*) => {
                                 WireFormat::encode(&(#idx), _writer)?;
-                                #(WireFormat::encode(#field_refs, _writer)?;)*
+                                #(#encode_stmts)*
                             }
                         }
                     }
@@ -263,7 +556,7 @@ fn encode_wire_format(data: &Data) -> TokenStream {
     }
 }
 
-fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
+pub(crate) fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
     if let Data::Struct(ref data) = *data {
         if let Fields::Named(ref fields) = data.fields {
             let all_fields = fields.named.iter().collect::<Vec<_>>();
@@ -271,8 +564,24 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                 fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
                     let field = &f.ident;
                     let span = field.span();
-                    quote_spanned! {span=>
-                        let #field = WireFormat::decode(_reader)?;
+                    let options = extract_field_options(f);
+                    
+                    if let Some(decode_fn) = options.decode {
+                        quote_spanned! {span=>
+                            let #field = #decode_fn(_reader)?;
+                        }
+                    } else if let Some(with_fn) = options.with {
+                        quote_spanned! {span=>
+                            let #field = #with_fn::decode(_reader)?;
+                        }
+                    } else if let Some(from_fn) = options.from {
+                        quote_spanned! {span=>
+                            let #field = #from_fn(WireFormat::decode(_reader)?);
+                        }
+                    } else {
+                        quote_spanned! {span=>
+                            let #field = WireFormat::decode(_reader)?;
+                        }
                     }
                 });
 
@@ -308,11 +617,26 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                 .iter()
                 .enumerate()
                 .filter(|(_, f)| !has_skip_attr(f))
-                .map(|(i, _f)| {
-                    let ident =
-                        Ident::new(&format!("__{}", i), Span::call_site());
-                    quote! {
-                        let #ident = WireFormat::decode(_reader)?;
+                .map(|(i, f)| {
+                    let ident = Ident::new(&format!("__{}", i), Span::call_site());
+                    let options = extract_field_options(f);
+                    
+                    if let Some(decode_fn) = options.decode {
+                        quote! {
+                            let #ident = #decode_fn(_reader)?;
+                        }
+                    } else if let Some(with_fn) = options.with {
+                        quote! {
+                            let #ident = #with_fn::decode(_reader)?;
+                        }
+                    } else if let Some(from_fn) = options.from {
+                        quote! {
+                            let #ident = #from_fn(WireFormat::decode(_reader)?);
+                        }
+                    } else {
+                        quote! {
+                            let #ident = WireFormat::decode(_reader)?;
+                        }
                     }
                 });
 
@@ -350,8 +674,19 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                         let field_decodes =
                             fields.named.iter().filter(|f| !has_skip_attr(f)).map(|f| {
                                 let field_ident = &f.ident;
-                                quote! { let #field_ident = WireFormat::decode(_reader)?; }
+                                let options = extract_field_options(f);
+                                
+                                if let Some(decode_fn) = options.decode {
+                                    quote! { let #field_ident = #decode_fn(_reader)?; }
+                                } else if let Some(with_fn) = options.with {
+                                    quote! { let #field_ident = #with_fn::decode(_reader)?; }
+                                } else if let Some(from_fn) = options.from {
+                                    quote! { let #field_ident = #from_fn(WireFormat::decode(_reader)?); }
+                                } else {
+                                    quote! { let #field_ident = WireFormat::decode(_reader)?; }
+                                }
                             });
+                        
                         let field_names = fields.named.iter().map(|f| {
                             let field_ident = &f.ident;
                             if has_skip_attr(f) {
@@ -375,10 +710,21 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
                             .iter()
                             .enumerate()
                             .filter(|(_, f)| !has_skip_attr(f))
-                            .map(|(i, _)| {
+                            .map(|(i, f)| {
                                 let field_name = Ident::new(&format!("__{}", i), Span::call_site());
-                                quote! { let #field_name = WireFormat::decode(_reader)?; }
+                                let options = extract_field_options(f);
+                                
+                                if let Some(decode_fn) = options.decode {
+                                    quote! { let #field_name = #decode_fn(_reader)?; }
+                                } else if let Some(with_fn) = options.with {
+                                    quote! { let #field_name = #with_fn::decode(_reader)?; }
+                                } else if let Some(from_fn) = options.from {
+                                    quote! { let #field_name = #from_fn(WireFormat::decode(_reader)?); }
+                                } else {
+                                    quote! { let #field_name = WireFormat::decode(_reader)?; }
+                                }
                             });
+                            
                         let field_names = fields.unnamed.iter().enumerate().map(|(i, f)| {
                             if has_skip_attr(f) {
                                 quote! { Default::default() }
@@ -419,579 +765,3 @@ fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    extern crate pretty_assertions;
-    use syn::parse_quote;
-
-    use self::pretty_assertions::assert_eq;
-    use super::*;
-
-    #[test]
-    fn byte_size() {
-        let input: DeriveInput = parse_quote! {
-            struct Item {
-                ident: u32,
-                with_underscores: String,
-                other: u8,
-            }
-        };
-
-        let expected = quote! {
-            0
-                + WireFormat::byte_size(&self.ident)
-                + WireFormat::byte_size(&self.with_underscores)
-                + WireFormat::byte_size(&self.other)
-        };
-
-        assert_eq!(
-            byte_size_sum(&input.data).to_string(),
-            expected.to_string()
-        );
-    }
-
-    #[test]
-    fn encode() {
-        let input: DeriveInput = parse_quote! {
-            struct Item {
-                ident: u32,
-                with_underscores: String,
-                other: u8,
-            }
-        };
-
-        let expected = quote! {
-            WireFormat::encode(&self.ident, _writer)?;
-            WireFormat::encode(&self.with_underscores, _writer)?;
-            WireFormat::encode(&self.other, _writer)?;
-            Ok(())
-        };
-
-        assert_eq!(
-            encode_wire_format(&input.data).to_string(),
-            expected.to_string(),
-        );
-    }
-
-    #[test]
-    fn decode() {
-        let input: DeriveInput = parse_quote! {
-            struct Item {
-                ident: u32,
-                with_underscores: String,
-                other: u8,
-            }
-        };
-
-        let container = Ident::new("Item", Span::call_site());
-        let expected = quote! {
-            let ident = WireFormat::decode(_reader)?;
-            let with_underscores = WireFormat::decode(_reader)?;
-            let other = WireFormat::decode(_reader)?;
-            Ok(Item {
-                ident: ident,
-                with_underscores: with_underscores,
-                other: other,
-            })
-        };
-
-        assert_eq!(
-            decode_wire_format(&input.data, &container).to_string(),
-            expected.to_string(),
-        );
-    }
-
-    #[test]
-    fn end_to_end() {
-        let input: DeriveInput = parse_quote! {
-            struct Niijima_先輩 {
-                a: u8,
-                b: u16,
-                c: u32,
-                d: u64,
-                e: String,
-                f: Vec<String>,
-                g: Nested,
-            }
-        };
-        let output = wire_format_inner(input);
-        let syntax_tree: syn::File = syn::parse2(output).unwrap();
-        let output_str = prettyplease::unparse(&syntax_tree);
-        insta::assert_snapshot!(output_str, @r###"
-        mod wire_format_niijima_先輩 {
-            extern crate std;
-            use self::std::io;
-            use self::std::result::Result::Ok;
-            use super::Niijima_先輩;
-            use jetstream_wireformat::WireFormat;
-            impl WireFormat for Niijima_先輩 {
-                fn byte_size(&self) -> u32 {
-                    0 + WireFormat::byte_size(&self.a) + WireFormat::byte_size(&self.b)
-                        + WireFormat::byte_size(&self.c) + WireFormat::byte_size(&self.d)
-                        + WireFormat::byte_size(&self.e) + WireFormat::byte_size(&self.f)
-                        + WireFormat::byte_size(&self.g)
-                }
-                fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
-                    WireFormat::encode(&self.a, _writer)?;
-                    WireFormat::encode(&self.b, _writer)?;
-                    WireFormat::encode(&self.c, _writer)?;
-                    WireFormat::encode(&self.d, _writer)?;
-                    WireFormat::encode(&self.e, _writer)?;
-                    WireFormat::encode(&self.f, _writer)?;
-                    WireFormat::encode(&self.g, _writer)?;
-                    Ok(())
-                }
-                fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
-                    let a = WireFormat::decode(_reader)?;
-                    let b = WireFormat::decode(_reader)?;
-                    let c = WireFormat::decode(_reader)?;
-                    let d = WireFormat::decode(_reader)?;
-                    let e = WireFormat::decode(_reader)?;
-                    let f = WireFormat::decode(_reader)?;
-                    let g = WireFormat::decode(_reader)?;
-                    Ok(Niijima_先輩 {
-                        a: a,
-                        b: b,
-                        c: c,
-                        d: d,
-                        e: e,
-                        f: f,
-                        g: g,
-                    })
-                }
-            }
-        }
-        "###);
-    }
-
-    #[test]
-    fn end_to_end_unnamed() {
-        let input: DeriveInput = parse_quote! {
-            struct Niijima_先輩(u8, u16, u32, u64, String, Vec<String>, Nested);
-        };
-
-        let output = wire_format_inner(input);
-        let syntax_tree: syn::File = syn::parse2(output).unwrap();
-        let output_str = prettyplease::unparse(&syntax_tree);
-        insta::assert_snapshot!(output_str, @r###"
-        mod wire_format_niijima_先輩 {
-            extern crate std;
-            use self::std::io;
-            use self::std::result::Result::Ok;
-            use super::Niijima_先輩;
-            use jetstream_wireformat::WireFormat;
-            impl WireFormat for Niijima_先輩 {
-                fn byte_size(&self) -> u32 {
-                    0 + WireFormat::byte_size(&self.0) + WireFormat::byte_size(&self.1)
-                        + WireFormat::byte_size(&self.2) + WireFormat::byte_size(&self.3)
-                        + WireFormat::byte_size(&self.4) + WireFormat::byte_size(&self.5)
-                        + WireFormat::byte_size(&self.6)
-                }
-                fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
-                    WireFormat::encode(&self.0, _writer)?;
-                    WireFormat::encode(&self.1, _writer)?;
-                    WireFormat::encode(&self.2, _writer)?;
-                    WireFormat::encode(&self.3, _writer)?;
-                    WireFormat::encode(&self.4, _writer)?;
-                    WireFormat::encode(&self.5, _writer)?;
-                    WireFormat::encode(&self.6, _writer)?;
-                    Ok(())
-                }
-                fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
-                    let __0 = WireFormat::decode(_reader)?;
-                    let __1 = WireFormat::decode(_reader)?;
-                    let __2 = WireFormat::decode(_reader)?;
-                    let __3 = WireFormat::decode(_reader)?;
-                    let __4 = WireFormat::decode(_reader)?;
-                    let __5 = WireFormat::decode(_reader)?;
-                    let __6 = WireFormat::decode(_reader)?;
-                    Ok(Niijima_先輩(__0, __1, __2, __3, __4, __5, __6))
-                }
-            }
-        }
-        "###);
-    }
-
-    #[test]
-    fn enum_byte_size() {
-        let input: DeriveInput = parse_quote! {
-            enum Message {
-                Ping,
-                Text { content: String },
-                Binary(Vec<u8>),
-            }
-        };
-
-        let expected = quote! {
-            match self {
-                Self::Ping => 1,
-                Self::Text { ref content } => { 1 + WireFormat::byte_size(content) },
-                Self::Binary(ref __0) => { 1 + WireFormat::byte_size(__0) }
-            }
-        };
-
-        assert_eq!(
-            byte_size_sum(&input.data).to_string(),
-            expected.to_string()
-        );
-    }
-
-    #[test]
-    fn enum_encode() {
-        let input: DeriveInput = parse_quote! {
-            enum Message {
-                Ping,
-                Text { content: String },
-                Binary(Vec<u8>),
-            }
-        };
-
-        let expected = quote! {
-            match self {
-                Self::Ping => {
-                    WireFormat::encode(&(0u8), _writer)?;
-                },
-                Self::Text { ref content } => {
-                    WireFormat::encode(&(1u8), _writer)?;
-                    WireFormat::encode(content, _writer)?;
-                },
-                Self::Binary(ref __0) => {
-                    WireFormat::encode(&(2u8), _writer)?;
-                    WireFormat::encode(__0, _writer)?;
-                }
-            }
-            Ok(())
-        };
-
-        assert_eq!(
-            encode_wire_format(&input.data).to_string(),
-            expected.to_string()
-        );
-    }
-
-    #[test]
-    fn enum_decode() {
-        let input: DeriveInput = parse_quote! {
-            enum Message {
-                Ping,
-                Text { content: String },
-                Binary(Vec<u8>),
-            }
-        };
-
-        let container = Ident::new("Message", Span::call_site());
-        let expected = quote! {
-            let variant_index: u8 = WireFormat::decode(_reader)?;
-            match variant_index {
-                0u8 => Ok(Self::Ping) ,
-                1u8 => {
-                    let content = WireFormat::decode(_reader)?;
-                    Ok(Self::Text { content })
-                },
-                2u8 => {
-                    let __0 = WireFormat::decode(_reader)?;
-                    Ok(Self::Binary(__0))
-                },
-                _ => Err(::std::io::Error::new(::std::io::ErrorKind::InvalidData, "invalid variant index"))
-            }
-        };
-
-        assert_eq!(
-            decode_wire_format(&input.data, &container).to_string(),
-            expected.to_string()
-        );
-    }
-
-    #[test]
-    fn enum_end_to_end() {
-        let input: DeriveInput = parse_quote! {
-            enum Message {
-                Ping,
-                Text { content: String },
-                Binary(Vec<u8>),
-            }
-        };
-        let output = wire_format_inner(input);
-        let syntax_tree: syn::File = syn::parse2(output).unwrap();
-        let output_str = prettyplease::unparse(&syntax_tree);
-        insta::assert_snapshot!(output_str, @r###"
-        mod wire_format_message {
-            extern crate std;
-            use self::std::io;
-            use self::std::result::Result::Ok;
-            use super::Message;
-            use jetstream_wireformat::WireFormat;
-            impl WireFormat for Message {
-                fn byte_size(&self) -> u32 {
-                    match self {
-                        Self::Ping => 1,
-                        Self::Text { ref content } => 1 + WireFormat::byte_size(content),
-                        Self::Binary(ref __0) => 1 + WireFormat::byte_size(__0),
-                    }
-                }
-                fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
-                    match self {
-                        Self::Ping => {
-                            WireFormat::encode(&(0u8), _writer)?;
-                        }
-                        Self::Text { ref content } => {
-                            WireFormat::encode(&(1u8), _writer)?;
-                            WireFormat::encode(content, _writer)?;
-                        }
-                        Self::Binary(ref __0) => {
-                            WireFormat::encode(&(2u8), _writer)?;
-                            WireFormat::encode(__0, _writer)?;
-                        }
-                    }
-                    Ok(())
-                }
-                fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
-                    let variant_index: u8 = WireFormat::decode(_reader)?;
-                    match variant_index {
-                        0u8 => Ok(Self::Ping),
-                        1u8 => {
-                            let content = WireFormat::decode(_reader)?;
-                            Ok(Self::Text { content })
-                        }
-                        2u8 => {
-                            let __0 = WireFormat::decode(_reader)?;
-                            Ok(Self::Binary(__0))
-                        }
-                        _ => {
-                            Err(
-                                ::std::io::Error::new(
-                                    ::std::io::ErrorKind::InvalidData,
-                                    "invalid variant index",
-                                ),
-                            )
-                        }
-                    }
-                }
-            }
-        }
-        "###);
-    }
-    #[test]
-    fn test_struct_skip_field() {
-        let input: DeriveInput = parse_quote! {
-            struct Item {
-                ident: u32,
-                #[jetstream(skip)]
-                skipped: String,
-                other: u8,
-            }
-        };
-
-        // Test byte_size
-        let expected_size = quote! {
-            0
-                + WireFormat::byte_size(&self.ident)
-                + WireFormat::byte_size(&self.other)
-        };
-
-        assert_eq!(
-            byte_size_sum(&input.data).to_string(),
-            expected_size.to_string()
-        );
-
-        // Test encode
-        let expected_encode = quote! {
-            WireFormat::encode(&self.ident, _writer)?;
-            WireFormat::encode(&self.other, _writer)?;
-            Ok(())
-        };
-
-        assert_eq!(
-            encode_wire_format(&input.data).to_string(),
-            expected_encode.to_string()
-        );
-
-        // Test decode
-        let container = Ident::new("Item", Span::call_site());
-        let expected_decode = quote! {
-            let ident = WireFormat::decode(_reader)?;
-            let other = WireFormat::decode(_reader)?;
-            Ok(Item {
-                ident: ident,
-                skipped: Default::default(),
-                other: other,
-            })
-        };
-
-        assert_eq!(
-            decode_wire_format(&input.data, &container).to_string(),
-            expected_decode.to_string()
-        );
-    }
-
-    #[test]
-    fn test_tuple_struct_skip_field() {
-        let input: DeriveInput = parse_quote! {
-            struct Item(u32, #[jetstream(skip)] String, u8);
-        };
-
-        // Test byte_size
-        let expected_size = quote! {
-            0
-                + WireFormat::byte_size(&self.0)
-                + WireFormat::byte_size(&self.2)
-        };
-
-        assert_eq!(
-            byte_size_sum(&input.data).to_string(),
-            expected_size.to_string()
-        );
-
-        // Test encode
-        let expected_encode = quote! {
-            WireFormat::encode(&self.0, _writer)?;
-            WireFormat::encode(&self.2, _writer)?;
-            Ok(())
-        };
-
-        assert_eq!(
-            encode_wire_format(&input.data).to_string(),
-            expected_encode.to_string()
-        );
-
-        // Test decode
-        let container = Ident::new("Item", Span::call_site());
-        let expected_decode = quote! {
-            let __0 = WireFormat::decode(_reader)?;
-            let __2 = WireFormat::decode(_reader)?;
-            Ok(Item(__0, Default::default(), __2,))
-        };
-
-        assert_eq!(
-            decode_wire_format(&input.data, &container).to_string(),
-            expected_decode.to_string()
-        );
-    }
-
-    #[test]
-    fn test_enum_skip_field() {
-        let input: DeriveInput = parse_quote! {
-            enum Message {
-                Ping,
-                Text {
-                    content: String,
-                    #[jetstream(skip)]
-                    metadata: Vec<u8>
-                },
-                Binary(Vec<u8>, #[jetstream(skip)] String),
-            }
-        };
-
-        // Test byte_size
-        let expected_size = quote! {
-            match self {
-                Self::Ping => 1,
-                Self::Text { ref content } => { 1 + WireFormat::byte_size(content) },
-                Self::Binary(ref __0) => { 1 + WireFormat::byte_size(__0) }
-            }
-        };
-
-        assert_eq!(
-            byte_size_sum(&input.data).to_string(),
-            expected_size.to_string()
-        );
-
-        // Test encode
-        let expected_encode = quote! {
-            match self {
-                Self::Ping => {
-                    WireFormat::encode(&(0u8), _writer)?;
-                },
-                Self::Text { ref content } => {
-                    WireFormat::encode(&(1u8), _writer)?;
-                    WireFormat::encode(content, _writer)?;
-                },
-                Self::Binary(ref __0) => {
-                    WireFormat::encode(&(2u8), _writer)?;
-                    WireFormat::encode(__0, _writer)?;
-                }
-            }
-            Ok(())
-        };
-
-        assert_eq!(
-            encode_wire_format(&input.data).to_string(),
-            expected_encode.to_string()
-        );
-
-        // Test decode
-        let container = Ident::new("Message", Span::call_site());
-        let expected_decode = quote! {
-            let variant_index: u8 = WireFormat::decode(_reader)?;
-            match variant_index {
-                0u8 => Ok(Self::Ping),
-                1u8 => {
-                    let content = WireFormat::decode(_reader)?;
-                    Ok(Self::Text { content, metadata: Default::default() })
-                },
-                2u8 => {
-                    let __0 = WireFormat::decode(_reader)?;
-                    Ok(Self::Binary(__0, Default::default()))
-                },
-                _ => Err(::std::io::Error::new(::std::io::ErrorKind::InvalidData, "invalid variant index"))
-            }
-        };
-
-        assert_eq!(
-            decode_wire_format(&input.data, &container).to_string(),
-            expected_decode.to_string()
-        );
-    }
-
-    #[test]
-    fn test_end_to_end_with_skip() {
-        let input: DeriveInput = parse_quote! {
-            struct Item {
-                a: u8,
-                #[jetstream(skip)]
-                skip_this: String,
-                b: u16,
-                #[jetstream(skip)]
-                also_skip: Vec<u8>,
-                c: u32,
-            }
-        };
-
-        let output = wire_format_inner(input);
-        let syntax_tree: syn::File = syn::parse2(output).unwrap();
-        let output_str = prettyplease::unparse(&syntax_tree);
-        insta::assert_snapshot!(output_str, @r###"
-        mod wire_format_item {
-            extern crate std;
-            use self::std::io;
-            use self::std::result::Result::Ok;
-            use super::Item;
-            use jetstream_wireformat::WireFormat;
-            impl WireFormat for Item {
-                fn byte_size(&self) -> u32 {
-                    0 + WireFormat::byte_size(&self.a) + WireFormat::byte_size(&self.b)
-                        + WireFormat::byte_size(&self.c)
-                }
-                fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()> {
-                    WireFormat::encode(&self.a, _writer)?;
-                    WireFormat::encode(&self.b, _writer)?;
-                    WireFormat::encode(&self.c, _writer)?;
-                    Ok(())
-                }
-                fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self> {
-                    let a = WireFormat::decode(_reader)?;
-                    let b = WireFormat::decode(_reader)?;
-                    let c = WireFormat::decode(_reader)?;
-                    Ok(Item {
-                        a: a,
-                        skip_this: Default::default(),
-                        b: b,
-                        also_skip: Default::default(),
-                        c: c,
-                    })
-                }
-            }
-        }
-        "###);
-    }
-}
