@@ -23,7 +23,13 @@ use jetstream_wireformat::WireFormat;
 pub use tokio_util::codec::{Decoder, Encoder, Framed};
 
 /// A trait representing a message that can be encoded and decoded.
-pub trait Message: WireFormat + Send + Sync {}
+#[cfg(not(target_arch = "wasm32"))]
+pub trait Message: WireFormat + Sync {}
+
+/// A trait representing a message that can be encoded and decoded.
+/// WebAssembly doesn't fully support Send+Sync, so we don't require those.
+#[cfg(target_arch = "wasm32")]
+pub trait Message: WireFormat {}
 
 #[repr(transparent)]
 pub struct Tag(u16);

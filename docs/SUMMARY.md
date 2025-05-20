@@ -1,5 +1,4 @@
 - [ JetStream](0intro.md)
-- [ 📍🗺️ Distributed JetStream](distributed/0intro.md)
 - [ 🆕 Changelog](CHANGELOG.md)
 - [ Coverage](coverage.md)
 - [ 🦀 Crates](crates.md)

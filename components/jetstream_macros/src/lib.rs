@@ -20,6 +20,8 @@ use syn::parse_macro_input;
 
 mod service;
 mod wireformat;
+#[cfg(test)]
+mod tests;
 
 /// Derives wire format encoding for structs
 #[proc_macro_derive(JetStreamWireFormat, attributes(jetstream))]

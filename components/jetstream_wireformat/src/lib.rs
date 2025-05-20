@@ -25,8 +25,29 @@ pub use jetstream_macros::JetStreamWireFormat;
 use zerocopy::LittleEndian;
 pub mod wire_format_extensions;
 
+#[cfg(target_arch = "wasm32")]
+pub mod wasm;
+
 /// A type that can be encoded on the wire using the 9P protocol.
-pub trait WireFormat: std::marker::Sized + Send {
+#[cfg(not(target_arch = "wasm32"))]
+pub trait WireFormat: Send {
+    /// Returns the number of bytes necessary to fully encode `self`.
+    fn byte_size(&self) -> u32;
+
+    /// Encodes `self` into `writer`.
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> where 
+        Self: Sized;
+
+    /// Decodes `Self` from `reader`.
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized;
+}
+
+/// A type that can be encoded on the wire using the 9P protocol.
+/// WebAssembly doesn't fully support Send, so we don't require it.
+#[cfg(target_arch = "wasm32")]
+pub trait WireFormat: std::marker::Sized {
     /// Returns the number of bytes necessary to fully encode `self`.
     fn byte_size(&self) -> u32;
 
@@ -91,6 +112,15 @@ impl P9String {
     /// The string bytes are always followed by a NUL terminator ('\0'), so the pointer can be
     /// passed directly to libc functions that expect a C string.
     pub fn as_ptr(&self) -> *const libc::c_char {
+        self.cstr.as_ptr()
+    }
+
+    #[cfg(target_arch = "wasm32")]
+    /// Returns a raw pointer to the string's storage.
+    ///
+    /// The string bytes are always followed by a NUL terminator ('\0').
+    /// Note: In WebAssembly, returns a raw pointer but libc is not available.
+    pub fn as_ptr(&self) -> *const std::os::raw::c_char {
         self.cstr.as_ptr()
     }
 }
@@ -473,9 +503,10 @@ impl<T, I> Wrapped<T, I> {
     }
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl<T, I> WireFormat for Wrapped<T, I>
 where
-    T: Send + Send + std::convert::AsRef<I>,
+    T: Send + std::convert::AsRef<I>,
     I: WireFormat + std::convert::Into<T>,
 {
     fn byte_size(&self) -> u32 {
@@ -489,5 +520,45 @@ where
     fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
         let inner = I::decode(reader)?;
         Ok(Wrapped(inner.into(), PhantomData))
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+impl<T, I> WireFormat for Wrapped<T, I>
+where
+    T: std::convert::AsRef<I>,
+    I: WireFormat + std::convert::Into<T>,
+{
+    fn byte_size(&self) -> u32 {
+        AsRef::<I>::as_ref(&self.0).byte_size()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        AsRef::<I>::as_ref(&self.0).encode(writer)
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let inner = I::decode(reader)?;
+        Ok(Wrapped(inner.into(), PhantomData))
+    }
+}
+
+
+
+impl<T:WireFormat> WireFormat for Box<T> {
+    fn byte_size(&self) -> u32 {
+        (**self).byte_size()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> where 
+        Self: Sized {
+        (**self).encode(writer)
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized {
+        let inner = T::decode(reader)?;
+        Ok(Box::new(inner))
     }
 }

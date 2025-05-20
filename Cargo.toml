@@ -54,7 +54,6 @@ members = [
     "components/jetstream_macros",
     "components/jetstream_rpc",
     "components/jetstream_server",
-    # "components/jetstream_testing",
     "components/jetstream_ufs",
     "components/jetstream_wireformat",
     "components/rustdoc_to_mdbook",
@@ -66,7 +65,8 @@ members = [
 bench = false
 
 [[test]]
-name = "wire_format"
+name = "jetstream_wire_format"
+path = "tests/jetstream_wire_format/mod.rs"
 bench = false
 [[test]]
 name = "server"
@@ -89,3 +89,5 @@ all = ["client", "server", "9p"]
 9p = ["dep:jetstream_9p"]
 websocket = ["client", "jetstream_client/websocket"]
 quic = ["dep:s2n-quic"]
+wasm = ["jetstream_wireformat/tokio"]
+tokio = ["jetstream_wireformat/tokio"]

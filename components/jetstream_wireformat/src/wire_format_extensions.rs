@@ -20,7 +20,7 @@ pub trait AsyncWireFormat: std::marker::Sized {
     ) -> impl std::future::Future<Output = io::Result<Self>> + Send;
 }
 
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(all(feature = "tokio", not(target_arch = "wasm32")))]
 pub mod tokio {
     use std::{future::Future, io};
 
@@ -46,7 +46,7 @@ pub mod tokio {
             writer: W,
         ) -> impl Future<Output = io::Result<()>>
         where
-            Self: Sync,
+            Self: Sync + Sized,
             W: AsyncWrite + Unpin + Send,
         {
             let mut writer = tokio_util::io::SyncIoBridge::new(writer);
@@ -68,7 +68,7 @@ pub mod tokio {
             reader: R,
         ) -> impl Future<Output = io::Result<Self>> + Send
         where
-            Self: Sync,
+            Self: Sync + Sized,
             R: AsyncRead + Unpin + Send,
         {
             let mut reader = tokio_util::io::SyncIoBridge::new(reader);
@@ -99,7 +99,9 @@ pub trait ConvertWireFormat: WireFormat {
     /// # Returns
     ///
     /// A `Result` containing the converted type or an `std::io::Error` if the conversion fails.
-    fn from_bytes(buf: &Bytes) -> Result<Self, std::io::Error>;
+    fn from_bytes(buf: &Bytes) -> Result<Self, std::io::Error>
+    where
+        Self: Sized;
 
     /// AsRef<[u8]> for the type.
     ///
@@ -136,7 +138,7 @@ where
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(target_arch = "wasm32")))]
 impl WireFormat for Ipv4Addr {
     fn byte_size(&self) -> u32 {
         self.octets().len() as u32
@@ -153,7 +155,7 @@ impl WireFormat for Ipv4Addr {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(target_arch = "wasm32")))]
 impl WireFormat for Ipv6Addr {
     fn byte_size(&self) -> u32 {
         self.octets().len() as u32
@@ -170,7 +172,7 @@ impl WireFormat for Ipv6Addr {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(target_arch = "wasm32")))]
 impl WireFormat for SocketAddrV4 {
     fn byte_size(&self) -> u32 {
         self.ip().byte_size() + 2
@@ -188,7 +190,7 @@ impl WireFormat for SocketAddrV4 {
     }
 }
 
-#[cfg(feature = "std")]
+#[cfg(all(feature = "std", not(target_arch = "wasm32")))]
 impl WireFormat for SocketAddrV6 {
     fn byte_size(&self) -> u32 {
         self.ip().byte_size() + 2
