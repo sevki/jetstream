@@ -17,15 +17,9 @@ fn try_make_books() -> anyhow::Result<()> {
     let current_dir = std::env::current_dir()?;
     let docs_path = current_dir.clone().join(target_dir).join("doc");
 
-    let org_docs = [
-        "0intro.md",
-        "distributed/0intro.md",
-        "CHANGELOG.md",
-        "coverage.md",
-        "crates.md",
-    ]
-    .map(PathBuf::from)
-    .to_vec();
+    let org_docs = ["0intro.md", "CHANGELOG.md", "coverage.md", "crates.md"]
+        .map(PathBuf::from)
+        .to_vec();
 
     let mut docs: Vec<_> = glob::glob(
         format!("{}/**/*.html", docs_path.as_path().to_string_lossy()).as_str(),
