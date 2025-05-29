@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [8.2.0](https://github.com/sevki/jetstream/compare/v8.1.5...v8.2.0) (2025-05-29)
+
+
+### Features
+
+* jetstream distributed features ([52b5e89](https://github.com/sevki/jetstream/commit/52b5e89e64b1e5559e600bed5fd91499cd051934))
+
+
+### Bug Fixes
+
+* Update lib.rs for extern crates ([ffb6777](https://github.com/sevki/jetstream/commit/ffb677744364c3d44274be2d5eb20c30ecabb6b5))
+
 ## [8.1.5](https://github.com/sevki/jetstream/compare/v8.1.4...v8.1.5) (2025-04-05)
 
 
