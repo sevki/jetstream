@@ -54,7 +54,7 @@ where
         self.get_mut()
             .0
             .send(WebsocketFrame(item).into())
-            .map_err(|e| io::Error::new(ErrorKind::Other, e))?;
+            .map_err(io::Error::other)?;
         Ok(())
     }
 
@@ -62,24 +62,14 @@ where
         self: Pin<&mut Self>,
         _cx: &mut Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(
-            self.get_mut()
-                .0
-                .flush()
-                .map_err(|e| io::Error::new(ErrorKind::Other, e)),
-        )
+        Poll::Ready(self.get_mut().0.flush().map_err(io::Error::other))
     }
 
     fn poll_close(
         self: Pin<&mut Self>,
         _cx: &mut Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Poll::Ready(
-            self.get_mut()
-                .0
-                .close(None)
-                .map_err(|e| io::Error::new(ErrorKind::Other, e)),
-        )
+        Poll::Ready(self.get_mut().0.close(None).map_err(io::Error::other))
     }
 }
 
