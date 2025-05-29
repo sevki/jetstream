@@ -1,5 +1,5 @@
 use std::{
-    io::{self, ErrorKind},
+    io,
     marker::PhantomData,
     pin::Pin,
     task::{Context, Poll},
