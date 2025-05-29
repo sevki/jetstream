@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [8.2.1](https://github.com/sevki/jetstream/compare/v8.2.0...v8.2.1) (2025-05-29)
+
+
+### Bug Fixes
+
+* rustdoc to mdbook ([2098ad1](https://github.com/sevki/jetstream/commit/2098ad11072e31ec329b42ae7df6dd380d993ff7))
+
 ## [8.2.0](https://github.com/sevki/jetstream/compare/v8.1.5...v8.2.0) (2025-05-29)
 
 
