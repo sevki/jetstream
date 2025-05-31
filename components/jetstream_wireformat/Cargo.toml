@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_wireformat"
-version = "8.2.1"
+version = "8.3.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -28,7 +28,7 @@ tokio = ["dep:tokio-util"]
 zerocopy = "0.8.20"
 paste = "1.0.15"
 bytes = { version = "1.10.0", features = ["serde"] }
-jetstream_macros = { version = "8.2.1", path = "../jetstream_macros" }
+jetstream_macros = { version = "8.3.0", path = "../jetstream_macros" }
 futures-util = { version = "0.3.31", optional = true }
 uuid = {version = "1.16.0", optional = true}
 
@@ -40,7 +40,7 @@ futures = { version = "0.3.31", optional = true }
 tokio-util = { version = "0.7.13", features = ["full", "io", "time"], optional = true }
 time = "0.3.37"
 serde = { version = "1.0.218", features = ["derive"], optional = true }
-jetstream_macros = { version = "8.2.1", path = "../jetstream_macros" }
+jetstream_macros = { version = "8.3.0", path = "../jetstream_macros" }
 mio = "1.0.3"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]

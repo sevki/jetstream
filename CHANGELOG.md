@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [8.3.0](https://github.com/sevki/jetstream/compare/v8.2.1...v8.3.0) (2025-05-31)
+
+
+### Features
+
+* jetstream_libc ([aba123b](https://github.com/sevki/jetstream/commit/aba123bb7a027a97cad4d8a9d7731d18bb4059ca))
+
 ## [8.2.1](https://github.com/sevki/jetstream/compare/v8.2.0...v8.2.1) (2025-05-29)
 
 
