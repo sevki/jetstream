@@ -3,6 +3,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+use jetstream_libc as libc;
 use std::{
     io,
     io::{ErrorKind, Read, Write},
@@ -1117,6 +1118,7 @@ pub struct Qid {
     pub path: u64,
 }
 
+#[cfg(not(target_arch = "wasm32"))]
 impl From<libc::stat64> for Qid {
     fn from(st: libc::stat64) -> Qid {
         let ty = match st.st_mode & libc::S_IFMT {
