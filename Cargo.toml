@@ -50,6 +50,7 @@ turmoil = "0.6.5"
 
 members = [
     "components/jetstream_9p",
+    "components/jetstream_libc",
     "components/jetstream_client",
     "components/jetstream_macros",
     "components/jetstream_rpc",
@@ -63,6 +64,7 @@ members = [
 
 [lib]
 bench = false
+crate-type = ["cdylib", "rlib"]
 
 [[test]]
 name = "jetstream_wire_format"

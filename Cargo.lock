@@ -3098,11 +3098,12 @@ name = "jetstream_9p"
 version = "8.2.1"
 dependencies = [
  "async-trait",
+ "jetstream_libc",
  "jetstream_macros",
  "jetstream_rpc",
  "jetstream_wireformat",
- "libc",
  "trait-variant",
+ "wasm-bindgen",
 ]
 
 [[package]]
@@ -3121,6 +3122,13 @@ dependencies = [
  "tokio-vsock",
  "trait-variant",
  "tungstenite",
+]
+
+[[package]]
+name = "jetstream_libc"
+version = "8.2.0"
+dependencies = [
+ "libc",
 ]
 
 [[package]]
