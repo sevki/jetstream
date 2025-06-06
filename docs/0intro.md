@@ -1,4 +1,7 @@
-<img src="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png" align="right" width="200px" />
+<picture >
+  <source media="(max-width:200px),(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream-dark.png">
+  <img width="200px" alt="Fallback image description" src="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png">
+</picture>
 
 # JetStream
 
