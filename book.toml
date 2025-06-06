@@ -6,8 +6,7 @@ src = "docs"
 title = "JetStream Book"
 
 [output.html]
-additional-css = ["ok.css"]
-preferred-dark-theme = "rust"
+additional-css = ["docs/styles.css"]
 no-section-label = false
 create-missing = false
 additional-js = ["mermaid.min.js", "mermaid-init.js"]
