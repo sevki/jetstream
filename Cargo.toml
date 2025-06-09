@@ -44,6 +44,9 @@ s2n-quic = "1.59.0"
 tmpdir = "1.0.0"
 tokio = { version = "1.44.2", features = ["full"] }
 turmoil = "0.6.5"
+quinn = "0.11"
+h3 = "0.0.8"
+h3-quinn = "0.0.10"
 
 
 [workspace]

@@ -39,6 +39,8 @@ JetStream is not ready for production use. It's still in the early stages of dev
 ## Examples
 
 - [echo](examples/echo.rs)
+- [quinn echo](examples/quinn_echo.rs)
+- [h3 server](examples/h3_server.rs)
 
 ## [License](./LICENSE)
 
