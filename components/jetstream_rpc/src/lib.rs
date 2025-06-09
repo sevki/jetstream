@@ -129,10 +129,12 @@ impl<T: Framer> WireFormat for Frame<T> {
         // byte_size includes the size of byte_size so remove that from the
         // expected length of the message.  Also make sure that byte_size is at least
         // that long to begin with.
-        if byte_size < mem::size_of::<u32>() as u32 {
+        let header_size =
+            mem::size_of::<u32>() + mem::size_of::<u8>() + mem::size_of::<u16>();
+        if byte_size < header_size as u32 {
             return Err(io::Error::new(
                 ErrorKind::InvalidData,
-                format!("byte_size(= {}) is less than 4 bytes", byte_size),
+                format!("byte_size(= {}) is less than {} bytes", byte_size, header_size),
             ));
         }
         let reader =
