@@ -7,7 +7,8 @@ use jetstream_rpc::Framed;
 use okstd::prelude::*;
 use quinn::{Endpoint, ServerConfig, ClientConfig, SendStream, RecvStream};
 use quinn::crypto::rustls::{QuicClientConfig, QuicServerConfig};
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use rustls::pki_types::{self, CertificateDer, PrivateKeyDer};
+use rustls::pki_types::pem::PemObject;
 use tokio::io::{AsyncRead, AsyncWrite, ReadBuf};
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -86,8 +87,8 @@ pub static SERVER_KEY_PEM: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
 
 async fn server() -> Result<(), Box<dyn std::error::Error>> {
-    let cert = CertificateDer::from(std::fs::read(SERVER_CERT_PEM)?);
-    let key = PrivateKeyDer::try_from(std::fs::read(SERVER_KEY_PEM)?)?;
+    let cert = CertificateDer::from_pem_file(SERVER_CERT_PEM)?;
+    let key = PrivateKeyDer::from_pem_file(SERVER_KEY_PEM)?;
     let mut tls = rustls::ServerConfig::builder()
         .with_no_client_auth()
         .with_single_cert(vec![cert], key)?;
@@ -118,10 +119,10 @@ async fn server() -> Result<(), Box<dyn std::error::Error>> {
 
 async fn client() -> Result<(), Box<dyn std::error::Error>> {
     let mut roots = rustls::RootCertStore::empty();
-    roots.add(CertificateDer::from(std::fs::read(CA_CERT_PEM)?))?;
+    roots.add(CertificateDer::from_pem_file(CA_CERT_PEM)?)?;
 
-    let cert = CertificateDer::from(std::fs::read(CLIENT_CERT_PEM)?);
-    let key = PrivateKeyDer::try_from(std::fs::read(CLIENT_KEY_PEM)?)?;
+    let cert = CertificateDer::from_pem_file(CLIENT_CERT_PEM)?;
+    let key = PrivateKeyDer::from_pem_file(CLIENT_KEY_PEM)?;
     let mut tls = rustls::ClientConfig::builder()
         .with_root_certificates(roots)
         .with_client_auth_cert(vec![cert], key)?;
@@ -146,6 +147,7 @@ async fn client() -> Result<(), Box<dyn std::error::Error>> {
 
 #[okstd::main]
 async fn main() {
+    rustls::crypto::aws_lc_rs::default_provider().install_default().unwrap();
     tokio::select! {
       _ = server() => {},
       _ = client() => {},

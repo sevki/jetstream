@@ -3,14 +3,16 @@ use std::sync::Arc;
 use bytes::Bytes;
 use h3_quinn::quinn::{self, crypto::rustls::QuicServerConfig};
 use http::Response;
-use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use rustls::pki_types::{self, CertificateDer, PrivateKeyDer};
+use rustls::pki_types::pem::PemObject;
 
 static ALPN: &[u8] = b"h3";
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let cert = CertificateDer::from(std::fs::read("certs/server-cert.pem")?);
-    let key = PrivateKeyDer::try_from(std::fs::read("certs/server-key.pem")?)?;
+    rustls::crypto::aws_lc_rs::default_provider().install_default().unwrap();
+    let cert = CertificateDer::from_pem_file("certs/server-cert.pem")?;
+    let key = PrivateKeyDer::from_pem_file("certs/server-key.pem")?;
 
     let mut tls_config = rustls::ServerConfig::builder()
         .with_no_client_auth()
