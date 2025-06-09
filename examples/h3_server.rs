@@ -1,8 +1,8 @@
 use std::sync::Arc;
 
 use bytes::Bytes;
-use h3::server::RequestResolver;
 use h3_quinn::quinn::{self, crypto::rustls::QuicServerConfig};
+use http::Response;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
 static ALPN: &[u8] = b"h3";
@@ -32,7 +32,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
                     tokio::spawn(async move {
                         let (request, mut stream) = resolver.resolve_request().await.unwrap();
                         println!("{} {}", request.method(), request.uri());
-                        let response = http::Response::builder().status(200).body(()).unwrap();
+                        let response = Response::builder().status(200).body(()).unwrap();
                         stream.send_response(response).await.unwrap();
                         stream
                             .send_data(Bytes::from_static(b"Hello from h3"))
