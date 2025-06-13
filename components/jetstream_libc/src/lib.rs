@@ -6,6 +6,8 @@
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
 
+extern crate kani;
+
 //! Platform-specific libc bindings for jetstream
 //!
 //! This crate provides a unified interface to libc constants across different platforms,
