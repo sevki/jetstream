@@ -39,7 +39,7 @@ jetstream_macros = { version = "8.3.1", path = "components/jetstream_macros" }
 jetstream_rpc = { version = "8.3.1", path = "components/jetstream_rpc" }
 jetstream_server = { version = "8.3.1", path = "components/jetstream_server" }
 jetstream_wireformat = { version = "8.3.1", path = "components/jetstream_wireformat", features = ["all"]}
-okstd = { version = "1.0.2", features = ["macros"] }
+okstd = { version = "2.0.1", features = ["macros"] }
 s2n-quic = "1.59.0"
 tmpdir = "1.0.0"
 tokio = { version = "1.44.2", features = ["full"] }
