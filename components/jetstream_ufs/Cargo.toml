@@ -14,7 +14,7 @@ jetstream_wireformat = { version = "8.3.1", path = "../jetstream_wireformat" }
 jetstream_rpc = { version = "8.3.1", path = "../jetstream_rpc" }
 jetstream_server = { version = "8.3.1", path = "../jetstream_server" }
 serde = { version = "1.0.218", features = ["derive"] }
-libc = "0.2.170"
+libc = "0.2.174"
 tokio = { version = "1.44.2", features = ["full"] }
 anyhow = "1.0.96"
 okstd = { version = "1.0.2", features = ["macros", "argh"] }
