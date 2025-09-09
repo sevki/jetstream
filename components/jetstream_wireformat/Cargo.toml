@@ -25,7 +25,7 @@ futures = ["dep:futures-util"]
 tokio = ["dep:tokio-util"]
 
 [dependencies]
-zerocopy = "0.8.20"
+zerocopy = "0.8.27"
 paste = "1.0.15"
 bytes = { version = "1.10.0", features = ["serde"] }
 jetstream_macros = { version = "8.3.1", path = "../jetstream_macros" }
