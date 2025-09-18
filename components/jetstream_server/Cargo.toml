@@ -12,7 +12,7 @@ bench = false
 
 [dependencies]
 anyhow = "1.0.96"
-async-trait = "0.1.86"
+async-trait = "0.1.89"
 jetstream_9p = { version = "8.3.1", path = "../jetstream_9p" }
 jetstream_client = { version = "8.3.1", path = "../jetstream_client", optional = true }
 jetstream_rpc = { version = "8.3.1", path = "../jetstream_rpc" }
