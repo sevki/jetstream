@@ -9,7 +9,7 @@ documentation.workspace = true
 publish = false
 
 [dependencies]
-anyhow = "1.0.96"
+anyhow = "1.0.99"
 glob = "0.3.3"
 pkg-config = "0.3"
 which = "8.0.0"
