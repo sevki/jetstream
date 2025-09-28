@@ -15,17 +15,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -44,17 +49,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -72,18 +82,23 @@ jobs:
       matrix:
         rust: [stable]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           target: wasm32-unknown-unknown
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -100,17 +115,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -129,18 +149,23 @@ jobs:
       matrix:
         rust: [stable]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           target: wasm32-unknown-unknown
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -158,17 +183,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -187,17 +217,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -216,17 +251,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -245,17 +285,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -274,17 +319,22 @@ jobs:
       matrix:
         rust: [stable, beta, nightly]
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust ${{ matrix.rust }}
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: ${{ matrix.rust }}
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
@@ -300,17 +350,22 @@ jobs:
     needs: [jetstream]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Setup Rust stable
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         with:
           toolchain: stable
           override: true
       - name: Setup sccache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |

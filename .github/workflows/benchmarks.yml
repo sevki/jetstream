@@ -9,18 +9,23 @@ jobs:
     name: run benchmark
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
-        uses: mozilla-actions/sccache-action@v0.0.9
+        uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
       - name: Set Rust caching env vars only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-      - uses: boa-dev/criterion-compare-action@v3
+      - uses: boa-dev/criterion-compare-action@adfd3a94634fe2041ce5613eb7df09d247555b87 # v3.2.4
         with:
           defaultFeatures: true
           branchName: ${{ github.base_ref }}

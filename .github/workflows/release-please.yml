@@ -12,7 +12,12 @@ jobs:
   release-please:
     runs-on: ubuntu-latest
     steps:
-      - uses: googleapis/release-please-action@v4
+      - name: Harden the runner (Audit all outbound calls)
+        uses: step-security/harden-runner@f4a75cfd619ee5ce8d5b864b0d183aff3c69b55a # v2.13.1
+        with:
+          egress-policy: audit
+
+      - uses: googleapis/release-please-action@c2a5a2bd6a758a0937f1ddb1e8950609867ed15c # v4.3.0
         id: release
         with:
           config-file: release-please-config.json
@@ -20,7 +25,7 @@ jobs:
           manifest-file: .release-please-manifest.json
           target-branch: ${{ github.ref_name }}
           release-type: rust
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
         run: |
@@ -36,7 +41,7 @@ jobs:
           git push origin v${{ steps.release.outputs.major }}
           git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
       - name: checkout rs
-        uses: actions-rs/toolchain@v1
+        uses: actions-rs/toolchain@16499b5e05bf2e26879000db0c1d13f7e13fa3af # v1.0.7
         if: ${{ steps.release.outputs.release_created }}
         with:
           toolchain: stable
