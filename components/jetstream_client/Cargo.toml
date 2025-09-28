@@ -11,7 +11,7 @@ documentation.workspace = true
 bench = false
 
 [dependencies]
-anyhow = "1.0.96"
+anyhow = "1.0.100"
 futures = "0.3.31"
 jetstream_9p = { version = "8.3.1", path = "../jetstream_9p" }
 jetstream_rpc = { version = "8.3.1", path = "../jetstream_rpc" }
