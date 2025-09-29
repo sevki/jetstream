@@ -1,6 +1,22 @@
 # Changelog
 
 
+## [9.0.0](https://github.com/sevki/jetstream/compare/v8.3.1...v9.0.0) (2025-09-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* move quic and webocket to their own crates.
+
+### Features
+
+* move quic and webocket to their own crates. ([7d0ba9f](https://github.com/sevki/jetstream/commit/7d0ba9fae68f1e4995d9ea6d1adcaf95b8dc983a))
+
+
+### Bug Fixes
+
+* simpler workflows for github actions ([17185dd](https://github.com/sevki/jetstream/commit/17185ddd3337fff27131f96a26eabcb0d1961155))
+
 ## [8.3.1](https://github.com/sevki/jetstream/compare/v8.3.0...v8.3.1) (2025-06-06)
 
 
