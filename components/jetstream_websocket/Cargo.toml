@@ -1,0 +1,15 @@
+[package]
+name = "jetstream_websocket"
+version = "0.1.0"
+edition.workspace = true
+description.workspace = true
+license.workspace = true
+repository.workspace = true
+documentation.workspace = true
+readme.workspace = true
+
+[dependencies]
+futures = "0.3.31"
+jetstream_rpc = { version = "8.3.0", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "8.3.0", path = "../jetstream_wireformat" }
+tungstenite = { version = "0.26.2" }

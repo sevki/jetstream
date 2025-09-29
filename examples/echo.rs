@@ -3,7 +3,7 @@ use std::{net::SocketAddr, path::Path};
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_macros::service;
-use jetstream_rpc::Framed;
+use jetstream_rpc::{client::ClientCodec, server::run, Framed};
 use okstd::prelude::*;
 use s2n_quic::{client::Connect, provider::tls, Client, Server};
 
@@ -66,12 +66,12 @@ async fn server() -> Result<(), Box<dyn std::error::Error>> {
                         &stream.connection().remote_addr()
                     );
                     let echo = EchoImpl {};
-                    let servercodec: jetstream::prelude::server::service::ServerCodec<
+                    let servercodec: jetstream::prelude::server::ServerCodec<
                         echo_protocol::EchoService<EchoImpl>,
                     > = Default::default();
                     let framed = Framed::new(stream, servercodec);
                     let mut serv = echo_protocol::EchoService { inner: echo };
-                    server::service::run(&mut serv, framed).await.unwrap();
+                    run(&mut serv, framed).await.unwrap();
                 });
             }
         });
@@ -103,8 +103,7 @@ async fn client() -> Result<(), Box<dyn std::error::Error>> {
 
     // open a new stream and split the receiving and sending sides
     let stream = connection.open_bidirectional_stream().await?;
-    let client_codec: jetstream_client::ClientCodec<EchoChannel> =
-        Default::default();
+    let client_codec: ClientCodec<EchoChannel> = Default::default();
     let mut framed = Framed::new(stream, client_codec);
     let mut chan = EchoChannel {
         inner: Box::new(&mut framed),

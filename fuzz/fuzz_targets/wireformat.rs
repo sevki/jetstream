@@ -2,9 +2,8 @@
 
 use std::io::Cursor;
 
-use jetstream::prelude::*;
+use jetstream::{p9::Tframe, prelude::*};
 use libfuzzer_sys::fuzz_target;
-use p9::Tframe;
 
 fuzz_target!(|data: &[u8]| {
     // Fuzz test for jetstream_9p module

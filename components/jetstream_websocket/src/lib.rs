@@ -1,14 +1,13 @@
+use futures::{Sink, Stream};
+use jetstream_rpc::{Frame, Framer, Protocol};
+use jetstream_wireformat::{
+    wire_format_extensions::ConvertWireFormat, WireFormat,
+};
 use std::{
     io,
     marker::PhantomData,
     pin::Pin,
     task::{Context, Poll},
-};
-
-use futures::{Sink, Stream};
-use jetstream_rpc::{Frame, Framer, Protocol};
-use jetstream_wireformat::{
-    wire_format_extensions::ConvertWireFormat, WireFormat,
 };
 use tungstenite::{Message, WebSocket};
 

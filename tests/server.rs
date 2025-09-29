@@ -2,8 +2,7 @@ use std::net::{IpAddr, Ipv4Addr};
 
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
-use jetstream_rpc::Framed;
-use server::service::run;
+use jetstream_rpc::{client::ClientCodec, server::run, Framed};
 use turmoil::{
     net::{TcpListener, TcpStream},
     Builder,
@@ -47,7 +46,7 @@ fn network_partitions_during_connect() -> turmoil::Result {
         loop {
             let (stream, _) = listener.accept().await?;
             let echo = EchoImpl {};
-            let servercodec: jetstream::prelude::server::service::ServerCodec<
+            let servercodec: jetstream::prelude::server::ServerCodec<
                 echo_protocol::EchoService<EchoImpl>,
             > = Default::default();
             let framed =
@@ -59,8 +58,7 @@ fn network_partitions_during_connect() -> turmoil::Result {
 
     sim.client("client", async {
         let stream = TcpStream::connect(("server", PORT)).await?;
-        let client_codec: jetstream_client::ClientCodec<EchoChannel> =
-            Default::default();
+        let client_codec: ClientCodec<EchoChannel> = Default::default();
         let mut framed = Framed::new(stream, client_codec);
         let mut chan = EchoChannel {
             inner: Box::new(&mut framed),

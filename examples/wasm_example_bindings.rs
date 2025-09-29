@@ -1,10 +1,10 @@
 //! WebAssembly example with explicit JavaScript bindings
-//! 
+//!
 //! This example demonstrates how to use JetStream RPC with JavaScript bindings.
 
+use jetstream_macros::JetStreamWireFormat;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
-use jetstream_macros::JetStreamWireFormat;
 
 // Define our message type
 #[derive(Debug, JetStreamWireFormat)]
@@ -28,7 +28,9 @@ pub fn encode_message(id: u32, content: String) -> Vec<u8> {
 pub fn decode_message(buffer: &[u8]) -> String {
     let mut cursor = Cursor::new(buffer);
     match WireFormat::decode::<_, Message>(&mut cursor) {
-        Ok(msg) => format!("{{\"id\":{},\"content\":\"{}\"}}", msg.id, msg.content),
+        Ok(msg) => {
+            format!("{{\"id\":{},\"content\":\"{}\"}}", msg.id, msg.content)
+        }
         Err(_) => "{{\"error\":\"Failed to decode message\"}}".to_string(),
     }
 }

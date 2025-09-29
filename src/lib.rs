@@ -17,32 +17,38 @@ pub mod prelude {
     pub extern crate jetstream_wireformat;
     pub extern crate lazy_static;
     pub extern crate trait_variant;
-    
+
     pub use async_trait::async_trait;
     pub use jetstream_macros::{service, JetStreamWireFormat};
     pub use jetstream_rpc::{
-        ClientTransport, Error, Frame, Framed, Framer, Message, Protocol,
-        ServiceTransport, Tag,
+        client, client::ClientTransport, server, Error, Frame, Framed, Framer,
+        Message, Protocol, Tag,
     };
     pub use jetstream_wireformat::{Data, WireFormat};
     pub use lazy_static::*;
     pub use trait_variant::make;
+}
 
-    #[cfg(feature = "9p")]
-    pub mod p9 {
-        extern crate jetstream_9p;
-        pub use jetstream_9p::*;
-    }
+#[cfg(feature = "9p")]
+pub mod p9 {
+    extern crate jetstream_9p;
+    pub use jetstream_9p::*;
+}
 
-    #[cfg(feature = "client")]
-    pub mod client {
-        extern crate jetstream_client;
-        pub use jetstream_client::*;
-    }
+#[cfg(feature = "websocket")]
+pub mod websocket {
+    extern crate jetstream_websocket;
+    pub use jetstream_websocket::*;
+}
 
-    #[cfg(feature = "server")]
-    pub mod server {
-        extern crate jetstream_server;
-        pub use jetstream_server::*;
-    }
+#[cfg(feature = "quic")]
+pub mod quic {
+    extern crate jetstream_quic;
+    pub use jetstream_quic::*;
+}
+
+#[cfg(feature = "iroh")]
+pub mod iroh {
+    extern crate jetstream_iroh;
+    pub use jetstream_iroh::*;
 }
