@@ -1,24 +1,24 @@
-use std::fmt::Debug;
-
+use crate::echo_protocol::{EchoChannel, EchoService};
 use jetstream::prelude::*;
 use jetstream_iroh::{
     iroh::{endpoint::VarInt, protocol::Router, Endpoint, Watcher},
     IrohTransport,
 };
-
-use crate::echo_protocol::{EchoChannel, EchoService};
+use jetstream_macros::service;
+use okstd::prelude::*;
+use std::fmt::Debug;
 
 #[service]
 pub trait Echo {
-    async fn ping(&mut self) -> Result<String, Error>;
+    async fn square(&mut self, i: u32) -> Result<String, Error>;
 }
 
 #[derive(Debug, Clone)]
 struct EchoServer;
 
 impl Echo for EchoServer {
-    async fn ping(&mut self) -> Result<String, Error> {
-        Ok("pong".to_string())
+    async fn square(&mut self, i: u32) -> Result<String, Error> {
+        Ok((i * i).to_string())
     }
 }
 
@@ -28,8 +28,8 @@ impl<P: Echo> Debug for EchoService<P> {
     }
 }
 
-#[tokio::test]
-async fn test_iroh_echo_service() {
+#[okstd::main]
+async fn main() {
     // Build an endpoint, defaulting to the public n0 relay network
     let endpoint = Endpoint::builder().discovery_n0().bind().await.unwrap();
 
@@ -65,18 +65,11 @@ async fn test_iroh_echo_service() {
     let mut ec = EchoChannel {
         inner: Box::new(&mut transport),
     };
-    for _ in 0..10 {
-        let b = ec.ping().await.unwrap();
-        println!("Ping response: {:?}", b);
+    for i in 0..10 {
+        let b = ec.square(i).await.unwrap();
+        println!("square response: {i} * {i} = {b}");
     }
     conn.close(VarInt::from_u32(1), "reason".as_bytes());
-    // sleeep
-    tokio::time::sleep(std::time::Duration::from_millis(200)).await;
 
-    // Wait for exit
-
-    // Gracefully close the endpoint & protocols.
-    // This makes sure that remote nodes are notified about possibly still open connections
-    // and any data is written to disk fully (or any other shutdown procedure for protocols).
     router.shutdown().await.unwrap();
 }

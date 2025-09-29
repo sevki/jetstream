@@ -5,7 +5,7 @@ use futures::{Sink, Stream};
 use jetstream_wireformat::WireFormat;
 use tokio_util::{
     bytes::{self, Buf, BufMut},
-    codec::{Decoder, Encoder, Framed},
+    codec::{Decoder, Encoder},
 };
 
 pub struct ServerCodec<P: Protocol> {
@@ -104,18 +104,4 @@ where
         stream.send(a.rpc(frame).await?).await?
     }
     Ok(())
-}
-
-pub struct Server<P: Protocol + Send + Sync + Unpin> {
-    inner: P,
-    framed: Box<dyn ServiceTransport<P>>,
-}
-
-impl<P> Server<P>
-where
-    P: Protocol + Send + Sync + Unpin,
-{
-    pub fn new(inner: P, framed: Box<dyn ServiceTransport<P>>) -> Self {
-        Self { inner, framed }
-    }
 }
