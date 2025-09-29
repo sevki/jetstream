@@ -41,8 +41,6 @@ impl From<u16> for Tag {
     }
 }
 
-trait Context {}
-
 /// Defines the request and response types for the JetStream protocol.
 #[trait_variant::make(Send + Sync + Sized)]
 pub trait Protocol: Send + Sync {

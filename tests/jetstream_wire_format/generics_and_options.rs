@@ -10,18 +10,18 @@ struct CustomCodec;
 
 impl CustomCodec {
     // Byte size calculation
-    fn byte_size(data: &Vec<u8>) -> u32 {
+    fn byte_size(data: &[u8]) -> u32 {
         // For demo purposes, just use the regular serialization
         (data.len() as u32) + 4 // 4 bytes for length prefix
     }
-    
+
     // Encode data
-    fn encode<W: Write>(data: &Vec<u8>, writer: &mut W) -> std::io::Result<()> {
+    fn encode<W: Write>(data: &[u8], writer: &mut W) -> std::io::Result<()> {
         // Write length + data
         WireFormat::encode(&(data.len() as u32), writer)?;
         writer.write_all(data)
     }
-    
+
     // Decode data
     fn decode<R: Read>(reader: &mut R) -> std::io::Result<Vec<u8>> {
         // Read length then data
@@ -40,7 +40,6 @@ fn into_wire_format(value: &String) -> Vec<u8> {
 fn from_wire_format(bytes: Vec<u8>) -> String {
     String::from_utf8(bytes).unwrap_or_default()
 }
-
 
 // A wrapper type to test generic support
 #[derive(Debug, PartialEq, Clone, JetStreamWireFormat)]
@@ -84,17 +83,21 @@ fn round_trip<T: WireFormat + PartialEq + std::fmt::Debug>(value: T) -> T {
     let size = value.byte_size();
     let mut buffer = Vec::with_capacity(size as usize);
     value.encode(&mut buffer).expect("Failed to encode");
-    
+
     // Verify the size calculation was correct
-    assert_eq!(buffer.len(), size as usize, "Byte size calculation was incorrect");
-    
+    assert_eq!(
+        buffer.len(),
+        size as usize,
+        "Byte size calculation was incorrect"
+    );
+
     // Deserialize
     let mut cursor = Cursor::new(buffer);
     let decoded: T = WireFormat::decode(&mut cursor).expect("Failed to decode");
-    
+
     // Verify cursor position reached the end
     assert_eq!(cursor.position(), size as u64, "Didn't read all bytes");
-    
+
     decoded
 }
 
@@ -104,15 +107,17 @@ fn test_generic_wrapper() {
     let original = Wrapper { value: 42u32 };
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
-    
+
     // Test with a string
-    let original = Wrapper { value: "Hello, world!".to_string() };
+    let original = Wrapper {
+        value: "Hello, world!".to_string(),
+    };
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
-    
+
     // Test with a nested wrapper
-    let original = Wrapper { 
-        value: Wrapper { value: 42u32 } 
+    let original = Wrapper {
+        value: Wrapper { value: 42u32 },
     };
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
@@ -130,13 +135,13 @@ fn test_complex_message() {
         generic_field_u: "Generic U".to_string(),
         skipped_field: 0xDEADBEEF, // This should be set to default (0) in the decoded version
     };
-    
+
     let decoded = round_trip(original.clone());
-    
+
     // The skipped field should be set to default
     let mut expected = original.clone();
     expected.skipped_field = 0;
-    
+
     assert_eq!(decoded, expected);
 }
 
@@ -146,29 +151,28 @@ fn test_generic_enum() {
     let original: GenericEnum<u32, u32> = GenericEnum::Plain(42);
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
-    
+
     // Test WithCustom variant
-    let original: GenericEnum<u32, u32> = GenericEnum::WithCustom { 
-        data: vec![1, 2, 3, 4, 5] 
+    let original: GenericEnum<u32, u32> = GenericEnum::WithCustom {
+        data: vec![1, 2, 3, 4, 5],
     };
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
-    
+
     // Test WithGeneric variant with u32
     let original: GenericEnum<u32, String> = GenericEnum::WithGeneric(42);
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
-    
+
     // Test WithGeneric variant with String
-    let original: GenericEnum<String, u32> = GenericEnum::WithGeneric("Hello".to_string());
+    let original: GenericEnum<String, u32> =
+        GenericEnum::WithGeneric("Hello".to_string());
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
-    
+
     // Test WithBoth variant
-    let original: GenericEnum<u32, String> = GenericEnum::WithBoth(
-        "Hello".to_string(), 
-        vec![1, 2, 3, 4, 5]
-    );
+    let original: GenericEnum<u32, String> =
+        GenericEnum::WithBoth("Hello".to_string(), vec![1, 2, 3, 4, 5]);
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
 }
@@ -184,9 +188,11 @@ struct NestedGeneric<T: Clone, U: Clone> {
 fn test_nested_generics() {
     let original = NestedGeneric {
         outer: Wrapper { value: 42u32 },
-        inner: Wrapper { value: "Hello".to_string() },
+        inner: Wrapper {
+            value: "Hello".to_string(),
+        },
     };
-    
+
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
 }
@@ -245,7 +251,7 @@ fn test_phantom_data() {
         value: 42,
         _phantom: PhantomData,
     };
-    
+
     let decoded = round_trip(original.clone());
     assert_eq!(decoded, original);
 }

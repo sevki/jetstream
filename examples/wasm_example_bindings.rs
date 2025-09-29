@@ -2,16 +2,8 @@
 //!
 //! This example demonstrates how to use JetStream RPC with JavaScript bindings.
 
-use jetstream_macros::JetStreamWireFormat;
 #[cfg(target_arch = "wasm32")]
 use wasm_bindgen::prelude::*;
-
-// Define our message type
-#[derive(Debug, JetStreamWireFormat)]
-struct Message {
-    id: u32,
-    content: String,
-}
 
 // WebAssembly bindings
 #[cfg(target_arch = "wasm32")]

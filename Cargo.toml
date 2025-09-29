@@ -85,6 +85,11 @@ harness = false
 name = "echo"
 bench = false
 
+[[example]]
+name = "iroh_echo"
+bench = false
+required-features = ["iroh"]
+
 
 [features]
 default = ["iroh"]

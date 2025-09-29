@@ -54,7 +54,7 @@ impl<D: AsRawFd> ReadDir<'_, D> {
     /// Return the next directory entry. This is implemented as a separate method rather than via
     /// the `Iterator` trait because rust doesn't currently support generic associated types.
     #[allow(clippy::should_implement_trait)]
-    pub fn next(&mut self) -> Option<Result<DirEntry>> {
+    pub fn next(&mut self) -> Option<Result<DirEntry<'_>>> {
         if self.current >= self.end {
             let res: Result<libc::c_long> = syscall!(unsafe {
                 libc::syscall(
@@ -115,7 +115,7 @@ impl<D: AsRawFd> ReadDir<'_, D> {
 pub fn read_dir<D: AsRawFd>(
     dir: &mut D,
     offset: libc::off64_t,
-) -> Result<ReadDir<D>> {
+) -> Result<ReadDir<'_, D>> {
     // Safe because this doesn't modify any memory and we check the return value.
     syscall!(unsafe {
         libc::lseek64(dir.as_raw_fd(), offset, libc::SEEK_SET)

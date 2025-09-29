@@ -399,7 +399,7 @@ impl Iterator for Readdir<'_> {
     }
 }
 
-fn readdir(server: &mut Server, fid: u32) -> Readdir {
+fn readdir(server: &mut Server, fid: u32) -> Readdir<'_> {
     Readdir {
         server,
         fid,

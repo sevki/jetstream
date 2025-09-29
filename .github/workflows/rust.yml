@@ -85,3 +85,5 @@ jobs:
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Run example echo
         run: cargo run --example echo
+      - name: Run example iroh_echo
+        run: cargo run --example iroh_echo
