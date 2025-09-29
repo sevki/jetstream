@@ -15,15 +15,18 @@ repository = "https://github.com/sevki/jetstream"
 documentation = "https://sevki.github.io/jetstream/"
 readme = "README.md"
 
+
+[workspace.dependencies]
+
 [dependencies]
-jetstream_client = { version = "8.3.1", path = "components/jetstream_client", optional = true }
-jetstream_macros = { version = "8.3.1", path = "components/jetstream_macros" }
-jetstream_server = { version = "8.3.1", path = "components/jetstream_server", optional = true }
-jetstream_wireformat = { version = "8.3.1", path = "components/jetstream_wireformat" }
-jetstream_rpc = { version = "8.3.1", path = "components/jetstream_rpc" }
-jetstream_9p = { version = "8.3.1", path = "components/jetstream_9p", optional = true }
+jetstream_macros = { version = "8.3.0", path = "components/jetstream_macros" }
+jetstream_wireformat = { version = "8.3.0", path = "components/jetstream_wireformat" }
+jetstream_rpc = { version = "8.3.0", path = "components/jetstream_rpc" }
+jetstream_9p = { version = "8.3.0", path = "components/jetstream_9p", optional = true }
+jetstream_quic = { version = "*", path = "components/jetstream_quic", optional = true }
+jetstream_websocket = { version = "*", path = "components/jetstream_websocket", optional = true }
+jetstream_iroh = { version = "*", path = "components/jetstream_iroh", optional = true }
 trait-variant = "0.1.2"
-s2n-quic = { version = "1.59.0", optional = true }
 async-trait = "0.1.89"
 tokio-util = { version = "0.7.16", features = ["codec"] }
 futures = "0.3.31"
@@ -33,12 +36,11 @@ lazy_static = "1.5.0"
 arbitrary = "1.4.1"
 criterion = { version = "0.6.0", features = ["async_tokio"] }
 futures-util = "0.3.30"
-jetstream_9p = { version = "8.3.1", path = "components/jetstream_9p" }
-jetstream_client = { version = "8.3.1", path = "components/jetstream_client" }
-jetstream_macros = { version = "8.3.1", path = "components/jetstream_macros" }
-jetstream_rpc = { version = "8.3.1", path = "components/jetstream_rpc" }
-jetstream_server = { version = "8.3.1", path = "components/jetstream_server" }
-jetstream_wireformat = { version = "8.3.1", path = "components/jetstream_wireformat", features = ["all"]}
+jetstream_9p = { version = "8.3.0", path = "components/jetstream_9p" }
+jetstream_macros = { version = "8.3.0", path = "components/jetstream_macros" }
+jetstream_rpc = { version = "8.3.0", path = "components/jetstream_rpc" }
+jetstream_wireformat = { version = "8.3.0", path = "components/jetstream_wireformat", features = ["all"]}
+
 okstd = { version = "1.0.2", features = ["macros"] }
 s2n-quic = "1.59.0"
 tmpdir = "1.0.0"
@@ -51,13 +53,14 @@ turmoil = "0.6.5"
 members = [
     "components/jetstream_9p",
     "components/jetstream_libc",
-    "components/jetstream_client",
     "components/jetstream_macros",
     "components/jetstream_rpc",
-    "components/jetstream_server",
     "components/jetstream_ufs",
     "components/jetstream_wireformat",
     "components/rustdoc_to_mdbook",
+    "components/jetstream_websocket",
+    "components/jetstream_quic",
+    "components/jetstream_iroh",
     "fuzz",
 ]
 
@@ -84,12 +87,11 @@ bench = false
 
 
 [features]
-default = ["server", "client"]
-client = ["dep:jetstream_client", "dep:s2n-quic"]
-server = ["dep:jetstream_server", "dep:s2n-quic"]
-all = ["client", "server", "9p"]
+default = ["iroh"]
+all = [ "9p", "iroh"]
 9p = ["dep:jetstream_9p"]
-websocket = ["client", "jetstream_client/websocket"]
-quic = ["dep:s2n-quic"]
+websocket = ["dep:jetstream_websocket"]
+quic = ["dep:jetstream_quic"]
 wasm = ["jetstream_wireformat/tokio"]
 tokio = ["jetstream_wireformat/tokio"]
+iroh = ["dep:jetstream_iroh"]

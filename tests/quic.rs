@@ -66,14 +66,12 @@ async fn server() -> Result<(), Box<dyn std::error::Error>> {
                         &stream.connection().remote_addr()
                     );
                     let echo = EchoImpl {};
-                    let servercodec: jetstream::prelude::server::service::ServerCodec<
+                    let servercodec: jetstream::prelude::server::ServerCodec<
                         echo_protocol::EchoService<EchoImpl>,
                     > = Default::default();
                     let framed = Framed::new(stream, servercodec);
                     let mut serv = echo_protocol::EchoService { inner: echo };
-                    if let Err(e) =
-                        server::service::run(&mut serv, framed).await
-                    {
+                    if let Err(e) = server::run(&mut serv, framed).await {
                         eprintln!("Server stream error: {:?}", e);
                     }
                 });
@@ -107,7 +105,7 @@ async fn client() -> Result<(), Box<dyn std::error::Error>> {
 
     // open a new stream and split the receiving and sending sides
     let stream = connection.open_bidirectional_stream().await?;
-    let client_codec: jetstream_client::ClientCodec<EchoChannel> =
+    let client_codec: jetstream_rpc::client::ClientCodec<EchoChannel> =
         Default::default();
     let mut framed = Framed::new(stream, client_codec);
     let mut chan = EchoChannel {

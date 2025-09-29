@@ -20,6 +20,7 @@ use syn::parse_macro_input;
 
 mod service;
 mod wireformat;
+mod utils;
 #[cfg(test)]
 mod tests;
 

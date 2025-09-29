@@ -1,5 +1,6 @@
 use std::path::PathBuf;
 
+use jetstream_rpc::server::{run, ServerCodec};
 use okstd::prelude::*;
 use tokio::net::UnixListener;
 use tokio_util::codec::Framed;
@@ -26,13 +27,10 @@ async fn main() {
             std::collections::BTreeMap::new(),
         )
         .unwrap();
-        let servercodec: jetstream_server::service::ServerCodec<
-            jetstream_ufs::Server,
-        > = Default::default();
+        let server_codec: ServerCodec<jetstream_ufs::Server> =
+            Default::default();
 
-        let service_transport = Framed::new(stream, servercodec);
-        jetstream_server::service::run(&mut service, service_transport)
-            .await
-            .unwrap()
+        let service_transport = Framed::new(stream, server_codec);
+        run(&mut service, service_transport).await.unwrap()
     }
 }

@@ -14,13 +14,14 @@ use std::{
     mem,
 };
 
-use futures::{
-    stream::{SplitSink, SplitStream},
-    Sink, Stream, StreamExt,
-};
 use jetstream_wireformat::WireFormat;
 // Re-export codecs
 pub use tokio_util::codec::{Decoder, Encoder, Framed};
+
+extern crate tokio_util;
+
+pub mod client;
+pub mod server;
 
 /// A trait representing a message that can be encoded and decoded.
 #[cfg(not(target_arch = "wasm32"))]
@@ -40,30 +41,7 @@ impl From<u16> for Tag {
     }
 }
 
-pub struct Context<T: WireFormat> {
-    pub tag: Tag,
-    pub msg: T,
-}
-
-pub trait FromContext<T: WireFormat> {
-    fn from_context(ctx: Context<T>) -> Self;
-}
-
-impl<T: WireFormat> FromContext<T> for T {
-    fn from_context(ctx: Context<T>) -> Self {
-        ctx.msg
-    }
-}
-
-impl<T: WireFormat> FromContext<T> for Tag {
-    fn from_context(ctx: Context<T>) -> Self {
-        ctx.tag
-    }
-}
-
-pub trait Handler<T: WireFormat> {
-    fn call(self, context: Context<T>);
-}
+trait Context {}
 
 /// Defines the request and response types for the JetStream protocol.
 #[trait_variant::make(Send + Sync + Sized)]
@@ -132,7 +110,7 @@ impl<T: Framer> WireFormat for Frame<T> {
         if byte_size < mem::size_of::<u32>() as u32 {
             return Err(io::Error::new(
                 ErrorKind::InvalidData,
-                format!("byte_size(= {}) is less than 4 bytes", byte_size),
+                format!("byte_size(= {byte_size}) is less than 4 bytes"),
             ));
         }
         let reader =
@@ -158,61 +136,4 @@ pub trait Framer: Sized + Send + Sync {
 
     /// Decodes `Self` from `reader`.
     fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Self>;
-}
-
-pub trait ServiceTransport<P: Protocol>:
-    Sink<Frame<P::Response>, Error = P::Error>
-    + Stream<Item = Result<Frame<P::Request>, P::Error>>
-    + Send
-    + Sync
-    + Unpin
-{
-}
-
-impl<P: Protocol, T> ServiceTransport<P> for T where
-    T: Sink<Frame<P::Response>, Error = P::Error>
-        + Stream<Item = Result<Frame<P::Request>, P::Error>>
-        + Send
-        + Sync
-        + Unpin
-{
-}
-
-pub trait ClientTransport<P: Protocol>:
-    Sink<Frame<P::Request>, Error = std::io::Error>
-    + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
-    + Send
-    + Sync
-    + Unpin
-{
-}
-
-impl<P: Protocol, T> ClientTransport<P> for T
-where
-    Self: Sized,
-    T: Sink<Frame<P::Request>, Error = std::io::Error>
-        + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
-        + Send
-        + Sync
-        + Unpin,
-{
-}
-
-pub trait Channel<P: Protocol>: Unpin + Sized {
-    fn split(self) -> (SplitSink<Self, Frame<P::Request>>, SplitStream<Self>);
-}
-
-impl<P, T> Channel<P> for T
-where
-    P: Protocol,
-    T: ClientTransport<P> + Unpin + Sized,
-{
-    fn split(
-        self,
-    ) -> (
-        SplitSink<Self, Frame<<P as Protocol>::Request>>,
-        SplitStream<Self>,
-    ) {
-        StreamExt::split(self)
-    }
 }

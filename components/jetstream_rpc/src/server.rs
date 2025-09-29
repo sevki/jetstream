@@ -1,10 +1,11 @@
 use std::pin::pin;
 
-use jetstream_rpc::{Error, Frame, Protocol, ServiceTransport};
+use crate::{Error, Frame, Protocol};
+use futures::{Sink, Stream};
 use jetstream_wireformat::WireFormat;
 use tokio_util::{
     bytes::{self, Buf, BufMut},
-    codec::{Decoder, Encoder},
+    codec::{Decoder, Encoder, Framed},
 };
 
 pub struct ServerCodec<P: Protocol> {
@@ -23,6 +24,24 @@ impl<P: Protocol> Default for ServerCodec<P> {
     fn default() -> Self {
         Self::new()
     }
+}
+
+pub trait ServiceTransport<P: Protocol>:
+    Sink<Frame<P::Response>, Error = P::Error>
+    + Stream<Item = Result<Frame<P::Request>, P::Error>>
+    + Send
+    + Sync
+    + Unpin
+{
+}
+
+impl<P: Protocol, T> ServiceTransport<P> for T where
+    T: Sink<Frame<P::Response>, Error = P::Error>
+        + Stream<Item = Result<Frame<P::Request>, P::Error>>
+        + Send
+        + Sync
+        + Unpin
+{
 }
 
 impl<P> Decoder for ServerCodec<P>
@@ -85,4 +104,18 @@ where
         stream.send(a.rpc(frame).await?).await?
     }
     Ok(())
+}
+
+pub struct Server<P: Protocol + Send + Sync + Unpin> {
+    inner: P,
+    framed: Box<dyn ServiceTransport<P>>,
+}
+
+impl<P> Server<P>
+where
+    P: Protocol + Send + Sync + Unpin,
+{
+    pub fn new(inner: P, framed: Box<dyn ServiceTransport<P>>) -> Self {
+        Self { inner, framed }
+    }
 }

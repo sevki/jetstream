@@ -1,23 +1,13 @@
-// Copyright (c) 2024, Sevki <s@sevki.io>
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
-#![doc(
-    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
-#![doc(
-    html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
-)]
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
-
-use jetstream_rpc::{Frame, Protocol};
+use crate::{Frame, Protocol};
+use futures::{
+    stream::{SplitSink, SplitStream},
+    Sink, Stream, StreamExt,
+};
 use jetstream_wireformat::WireFormat;
 use tokio_util::{
     bytes::{self, Buf, BufMut},
     codec::{Decoder, Encoder},
 };
-
-#[cfg(feature = "websocket")]
-pub mod websocket;
 
 pub struct ClientCodec<P>
 where
@@ -26,7 +16,7 @@ where
     _p: std::marker::PhantomData<P>,
 }
 
-impl<P: jetstream_rpc::Protocol> Encoder<Frame<P::Request>> for ClientCodec<P> {
+impl<P: Protocol> Encoder<Frame<P::Request>> for ClientCodec<P> {
     type Error = std::io::Error;
 
     fn encode(
@@ -38,7 +28,7 @@ impl<P: jetstream_rpc::Protocol> Encoder<Frame<P::Request>> for ClientCodec<P> {
     }
 }
 
-impl<P: jetstream_rpc::Protocol> Decoder for ClientCodec<P> {
+impl<P: Protocol> Decoder for ClientCodec<P> {
     type Error = std::io::Error;
     type Item = Frame<P::Response>;
 
@@ -66,11 +56,50 @@ impl<P: jetstream_rpc::Protocol> Decoder for ClientCodec<P> {
 
 impl<P> Default for ClientCodec<P>
 where
-    P: jetstream_rpc::Protocol,
+    P: Protocol,
 {
     fn default() -> Self {
         Self {
             _p: std::marker::PhantomData,
         }
+    }
+}
+
+pub trait ClientTransport<P: Protocol>:
+    Sink<Frame<P::Request>, Error = std::io::Error>
+    + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
+    + Send
+    + Sync
+    + Unpin
+{
+}
+
+impl<P: Protocol, T> ClientTransport<P> for T
+where
+    Self: Sized,
+    T: Sink<Frame<P::Request>, Error = std::io::Error>
+        + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
+        + Send
+        + Sync
+        + Unpin,
+{
+}
+
+pub trait Channel<P: Protocol>: Unpin + Sized {
+    fn split(self) -> (SplitSink<Self, Frame<P::Request>>, SplitStream<Self>);
+}
+
+impl<P, T> Channel<P> for T
+where
+    P: Protocol,
+    T: ClientTransport<P> + Unpin + Sized,
+{
+    fn split(
+        self,
+    ) -> (
+        SplitSink<Self, Frame<<P as Protocol>::Request>>,
+        SplitStream<Self>,
+    ) {
+        StreamExt::split(self)
     }
 }

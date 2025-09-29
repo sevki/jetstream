@@ -1,10 +1,11 @@
 //! Example of WebAssembly compatibility for JetStream RPC
-//! 
+//!
 //! This example demonstrates how to use JetStream RPC in a WebAssembly context.
+
+use std::io::Cursor;
 
 use jetstream_macros::JetStreamWireFormat;
 use jetstream_wireformat::WireFormat;
-use std::io::Cursor;
 
 #[derive(Debug, JetStreamWireFormat)]
 struct Message {
@@ -23,7 +24,8 @@ fn encode_message(id: u32, content: String) -> Vec<u8> {
 // This function would be exported to JavaScript in a real WebAssembly binary
 fn decode_message(buffer: &[u8]) -> (u32, String) {
     let mut cursor = Cursor::new(buffer);
-    let msg: Message = WireFormat::decode(&mut cursor).expect("Failed to decode message");
+    let msg: Message =
+        WireFormat::decode(&mut cursor).expect("Failed to decode message");
     (msg.id, msg.content)
 }
 
@@ -32,7 +34,7 @@ fn main() {
     // Create a message
     let encoded = encode_message(42, "Hello from WebAssembly!".to_string());
     println!("Encoded message: {:?}", encoded);
-    
+
     // Decode the message
     let (id, content) = decode_message(&encoded);
     println!("Decoded message: id={}, content=\"{}\"", id, content);
