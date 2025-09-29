@@ -44,4 +44,3 @@ JetStream is not ready for production use. It's still in the early stages of dev
 
 BSD-3-Clause
 
-[![FOSSA Status](https://app.fossa.com/api/projects/custom%2B51159%2Fgithub.com%2Fsevki%2Fjetstream.svg?type=large&issueType=license)](https://app.fossa.com/projects/custom%2B51159%2Fgithub.com%2Fsevki%2Fjetstream?ref=badge_large&issueType=license)
