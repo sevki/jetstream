@@ -13,84 +13,28 @@
 
 extern crate libc;
 
-// Common types
-#[cfg(not(target_arch = "wasm32"))]
+// Types - Linux uses libc, others use core::ffi
+#[cfg(target_os = "linux")]
 pub use libc::{c_int, mode_t};
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(not(target_os = "linux"))]
 pub use core::ffi::c_int;
 
-#[cfg(target_arch = "wasm32")]
+#[cfg(not(target_os = "linux"))]
 #[allow(non_camel_case_types)]
 pub type mode_t = u32;
 
-// Platform-specific re-exports and definitions
-#[cfg(not(target_arch = "wasm32"))]
-mod platform {
+// Error constants - Unix platforms use libc, others define them
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub use libc::{
+    EADDRINUSE, EADDRNOTAVAIL, ECONNABORTED, ECONNREFUSED, ECONNRESET, EEXIST,
+    EINTR, EINVAL, EIO, ENOENT, ENOTCONN, EPERM, EPIPE, ETIMEDOUT, EWOULDBLOCK,
+};
 
-    pub use libc::{
-        // Stat structure
-        stat64,
-        EADDRINUSE,
-        EADDRNOTAVAIL,
-        ECONNABORTED,
-        ECONNREFUSED,
-        ECONNRESET,
-        EEXIST,
-        EINTR,
-        // Error constants
-        EINVAL,
-        EIO,
-        ENOENT,
-        ENOTCONN,
-        EPERM,
-        EPIPE,
-        ETIMEDOUT,
-        EWOULDBLOCK,
-
-        O_APPEND,
-        O_CREAT,
-        O_DSYNC,
-        O_EXCL,
-        O_NOCTTY,
-        O_NONBLOCK,
-        // Open flags
-        O_RDONLY,
-        O_RDWR,
-        O_SYNC,
-
-        O_TRUNC,
-        O_WRONLY,
-        S_IFDIR,
-        S_IFLNK,
-
-        // File mode constants
-        S_IFMT,
-        S_IFREG,
-    };
-
-    // Linux-specific flags
-    #[cfg(target_os = "linux")]
-    pub use libc::{O_DIRECT, O_DIRECTORY, O_LARGEFILE, O_NOATIME, O_NOFOLLOW};
-
-    // Provide default values for non-Linux platforms
-    #[cfg(not(target_os = "linux"))]
-    pub const O_DIRECT: c_int = 0o40000;
-    #[cfg(not(target_os = "linux"))]
-    pub const O_LARGEFILE: c_int = 0o100000;
-    #[cfg(not(target_os = "linux"))]
-    pub const O_DIRECTORY: c_int = 0o200000;
-    #[cfg(not(target_os = "linux"))]
-    pub const O_NOFOLLOW: c_int = 0o400000;
-    #[cfg(not(target_os = "linux"))]
-    pub const O_NOATIME: c_int = 0o1000000;
-}
-
-#[cfg(target_arch = "wasm32")]
-mod platform {
+#[cfg(any(target_arch = "wasm32", target_os = "windows"))]
+mod error_constants {
     use super::c_int;
 
-    // WASI error constants - these match the standard POSIX values
     pub const EPERM: c_int = 1;
     pub const ENOENT: c_int = 2;
     pub const EIO: c_int = 5;
@@ -106,14 +50,22 @@ mod platform {
     pub const ETIMEDOUT: c_int = 110;
     pub const ECONNREFUSED: c_int = 111;
     pub const EINTR: c_int = 4;
+}
 
-    // File mode constants
-    pub const S_IFMT: u32 = 0o170000;
-    pub const S_IFDIR: u32 = 0o040000;
-    pub const S_IFREG: u32 = 0o100000;
-    pub const S_IFLNK: u32 = 0o120000;
+#[cfg(any(target_arch = "wasm32", target_os = "windows"))]
+pub use error_constants::*;
 
-    // Open flags - WASI standard values
+// Open flags - Unix platforms use libc, others define them
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub use libc::{
+    O_APPEND, O_CREAT, O_DSYNC, O_EXCL, O_NOCTTY, O_NONBLOCK, O_RDONLY, O_RDWR,
+    O_SYNC, O_TRUNC, O_WRONLY,
+};
+
+#[cfg(any(target_arch = "wasm32", target_os = "windows"))]
+mod open_flags {
+    use super::c_int;
+
     pub const O_RDONLY: c_int = 0;
     pub const O_WRONLY: c_int = 1;
     pub const O_RDWR: c_int = 2;
@@ -125,35 +77,68 @@ mod platform {
     pub const O_NONBLOCK: c_int = 0o4000;
     pub const O_DSYNC: c_int = 0o10000;
     pub const O_SYNC: c_int = 0o4010000;
+}
 
-    // Linux-specific flags (provide as constants for compatibility)
+#[cfg(any(target_arch = "wasm32", target_os = "windows"))]
+pub use open_flags::*;
+
+// Linux-specific flags
+#[cfg(target_os = "linux")]
+pub use libc::{O_DIRECT, O_DIRECTORY, O_LARGEFILE, O_NOATIME, O_NOFOLLOW};
+
+#[cfg(not(target_os = "linux"))]
+mod linux_compat {
+    use super::c_int;
+
     pub const O_DIRECT: c_int = 0o40000;
     pub const O_LARGEFILE: c_int = 0o100000;
     pub const O_DIRECTORY: c_int = 0o200000;
     pub const O_NOFOLLOW: c_int = 0o400000;
     pub const O_NOATIME: c_int = 0o1000000;
-
-    // Minimal stat structure for wasm32
-    #[repr(C)]
-    pub struct stat64 {
-        pub st_dev: u64,
-        pub st_ino: u64,
-        pub st_mode: u32,
-        pub st_nlink: u32,
-        pub st_uid: u32,
-        pub st_gid: u32,
-        pub st_rdev: u64,
-        pub st_size: i64,
-        pub st_blksize: i64,
-        pub st_blocks: i64,
-        pub st_atime: i64,
-        pub st_atime_nsec: i64,
-        pub st_mtime: i64,
-        pub st_mtime_nsec: i64,
-        pub st_ctime: i64,
-        pub st_ctime_nsec: i64,
-    }
 }
 
-// Re-export everything from the platform module
-pub use platform::*;
+#[cfg(not(target_os = "linux"))]
+pub use linux_compat::*;
+
+// File mode constants
+#[cfg(any(target_os = "linux", target_os = "macos"))]
+pub use libc::{S_IFDIR, S_IFLNK, S_IFMT, S_IFREG};
+
+#[cfg(any(target_arch = "wasm32", target_os = "windows"))]
+mod file_modes {
+    pub const S_IFMT: u32 = 0o170000;
+    pub const S_IFDIR: u32 = 0o040000;
+    pub const S_IFREG: u32 = 0o100000;
+    pub const S_IFLNK: u32 = 0o120000;
+}
+
+#[cfg(any(target_arch = "wasm32", target_os = "windows"))]
+pub use file_modes::*;
+
+// Stat structure
+#[cfg(target_os = "linux")]
+pub use libc::stat64;
+
+#[cfg(target_os = "macos")]
+pub use libc::stat as stat64;
+
+#[cfg(any(target_arch = "wasm32", target_os = "windows"))]
+#[repr(C)]
+pub struct stat64 {
+    pub st_dev: u64,
+    pub st_ino: u64,
+    pub st_mode: u32,
+    pub st_nlink: u32,
+    pub st_uid: u32,
+    pub st_gid: u32,
+    pub st_rdev: u64,
+    pub st_size: i64,
+    pub st_blksize: i64,
+    pub st_blocks: i64,
+    pub st_atime: i64,
+    pub st_atime_nsec: i64,
+    pub st_mtime: i64,
+    pub st_mtime_nsec: i64,
+    pub st_ctime: i64,
+    pub st_ctime_nsec: i64,
+}

@@ -4175,6 +4175,7 @@ dependencies = [
 name = "jetstream_libc"
 version = "9.0.0"
 dependencies = [
+ "cfg_aliases 0.2.1",
  "libc",
 ]
 
