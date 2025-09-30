@@ -12,4 +12,4 @@ readme.workspace = true
 futures = "0.3.31"
 jetstream_rpc = { version = "9.0.0", path = "../jetstream_rpc" }
 jetstream_wireformat = { version = "9.0.0", path = "../jetstream_wireformat" }
-tungstenite = { version = "0.26.2" }
+tungstenite = { version = "0.28.0" }
