@@ -66,10 +66,15 @@ jobs:
 
   # Examples on stable only
   examples:
+    needs: jetstream
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        include:
+          - os: ubuntu-latest
+          - os: windows-latest
+          - os: macos-latest
     steps:
       - uses: actions/checkout@v3
       - name: Setup Rust stable
