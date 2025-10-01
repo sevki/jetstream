@@ -33,13 +33,10 @@ pub static SERVER_CERT_PEM: &str =
 pub static SERVER_KEY_PEM: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
 
+#[cfg(not(windows))]
 async fn server() -> Result<(), Box<dyn std::error::Error>> {
     #[cfg(windows)]
-    let tls = tls::default::Server::builder()
-        .with_certificate(Path::new(SERVER_CERT_PEM), Path::new(SERVER_KEY_PEM))
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?
-        .build()
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
+    return Ok(());
 
     #[cfg(not(windows))]
     let tls = tls::default::Server::builder()
@@ -87,16 +84,8 @@ async fn server() -> Result<(), Box<dyn std::error::Error>> {
 
     Ok(())
 }
-
+#[cfg(not(windows))]
 async fn client() -> Result<(), Box<dyn std::error::Error>> {
-    #[cfg(windows)]
-    let tls = tls::default::Client::builder()
-        .with_certificate(Path::new(CA_CERT_PEM))
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?
-        .build()
-        .map_err(|e| Box::new(e) as Box<dyn std::error::Error>)?;
-
-    #[cfg(not(windows))]
     let tls = tls::default::Client::builder()
         .with_certificate(Path::new(CA_CERT_PEM))?
         .with_client_identity(
@@ -131,9 +120,13 @@ async fn client() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[okstd::main]
+#[cfg(not(windows))]
 async fn main() {
     tokio::select! {
       _ = server() => {},
       _ = client() => {},
     }
 }
+
+#[cfg(windows)]
+fn main() {}
