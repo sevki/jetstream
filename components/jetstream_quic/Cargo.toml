@@ -19,7 +19,7 @@ rcgen = { version = "0.13" }
 rustls = { version = "0.23", default-features = false, features = [
     "logging",
 ] }
-rustls-native-certs = "0.7"
+rustls-native-certs = "0.8"
 structopt = "0.3"
 tokio = { version = "1.27", features = ["full"] }
 tracing = "0.1.37"
