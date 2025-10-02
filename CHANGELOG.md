@@ -1,6 +1,20 @@
 # Changelog
 
 
+## [9.1.0](https://github.com/sevki/jetstream/compare/v9.0.0...v9.1.0) (2025-10-02)
+
+
+### Features
+
+* introduce iroh examples ([86e001f](https://github.com/sevki/jetstream/commit/86e001f9195a28429e34670597347d3148ea22d9))
+
+
+### Bug Fixes
+
+* add support for libc in windows and mac ([1fb3b5b](https://github.com/sevki/jetstream/commit/1fb3b5ba61c36372db24231f66753453a05b149a))
+* disable running echo on windows ([828d6be](https://github.com/sevki/jetstream/commit/828d6be26328a938417b976cb8c8f63ddc1a9bea))
+* disable running echo on windows ([7f44956](https://github.com/sevki/jetstream/commit/7f44956f965d5c906812e91b138e5c21597e37df))
+
 ## [9.0.0](https://github.com/sevki/jetstream/compare/v8.3.1...v9.0.0) (2025-09-29)
 
 

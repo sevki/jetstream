@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_iroh"
-version = "9.0.0"
+version = "9.1.0"
 edition.workspace = true
 description.workspace = true
 license.workspace = true
@@ -10,8 +10,8 @@ readme.workspace = true
 
 [dependencies]
 futures = "0.3.31"
-jetstream_rpc = { version = "9.0.0", path = "../jetstream_rpc" }
-jetstream_wireformat = { version = "9.0.0", path = "../jetstream_wireformat" }
+jetstream_rpc = { version = "9.1.0", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "9.1.0", path = "../jetstream_wireformat" }
 tokio = { version = "1.47.1", features = ["full"] }
 tokio-util = { version = "0.7.16", features = ["full"] }
 iroh = { version = "0.92.0"}
