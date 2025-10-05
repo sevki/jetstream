@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_websocket"
-version = "9.1.2"
+version = "9.2.0"
 edition.workspace = true
 description.workspace = true
 license.workspace = true
@@ -10,6 +10,6 @@ readme.workspace = true
 
 [dependencies]
 futures = "0.3.31"
-jetstream_rpc = { version = "9.1.2", path = "../jetstream_rpc" }
-jetstream_wireformat = { version = "9.1.2", path = "../jetstream_wireformat" }
+jetstream_rpc = { version = "9.2.0", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "9.2.0", path = "../jetstream_wireformat" }
 tungstenite = { version = "0.28.0" }

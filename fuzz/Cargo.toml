@@ -1,6 +1,6 @@
 [package]
 name = "fuzz"
-version = "9.1.2"
+version = "9.2.0"
 publish = false
 edition = "2021"
 
