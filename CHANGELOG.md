@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [9.2.0](https://github.com/sevki/jetstream/compare/v9.1.2...v9.2.0) (2025-10-05)
+
+
+### Features
+
+* dt features, remove rustdoc_to_md_book ([0398159](https://github.com/sevki/jetstream/commit/039815903e127055ec494a3dc3e1780b7afb4fe2))
+
+
+### Bug Fixes
+
+* iroh example needs -F iroh ([5246fb2](https://github.com/sevki/jetstream/commit/5246fb234453964ebf0e0f12ad0437f23780032d))
+* wasm-pack build error. rm rustdoc2mdbook ([68076cc](https://github.com/sevki/jetstream/commit/68076ccbcf88d18d1dadb30355d8358283864b54))
+
 ## [9.1.2](https://github.com/sevki/jetstream/compare/v9.1.1...v9.1.2) (2025-10-05)
 
 
