@@ -93,6 +93,6 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Run example echo
-        run: cargo run --example echo
+        run: cargo run --example echo --features quic
       - name: Run example iroh_echo
-        run: cargo run --example iroh_echo
+        run: cargo run --example iroh_echo --features iroh
