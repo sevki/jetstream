@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [9.1.1](https://github.com/sevki/jetstream/compare/v9.1.0...v9.1.1) (2025-10-05)
+
+
+### Bug Fixes
+
+* benchmarks and add iroh_benchmarks ([56dbc12](https://github.com/sevki/jetstream/commit/56dbc12c0938ed5aa1b22d8e4867beaaf7b0d587))
+* hide documentation for iroh ([47b104d](https://github.com/sevki/jetstream/commit/47b104d73ece751924c1e41a77a92a8317c968f9))
+
 ## [9.1.0](https://github.com/sevki/jetstream/compare/v9.0.0...v9.1.0) (2025-10-02)
 
 
