@@ -114,7 +114,7 @@ async fn client(iters: u64) -> Result<Duration, Box<dyn std::error::Error>> {
     Ok(start.elapsed())
 }
 
-fn jetstream_benchmark(c: &mut Criterion) {
+fn quic_benchmark(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
 
     c.bench_function("ping-pong", |b| {
@@ -125,5 +125,5 @@ fn jetstream_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, jetstream_benchmark);
+criterion_group!(benches, quic_benchmark);
 criterion_main!(benches);
