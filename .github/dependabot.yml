@@ -5,7 +5,47 @@
 
 version: 2
 updates:
-  - package-ecosystem: "cargo" # See documentation for possible values
-    directory: "/" # Location of package manifests
+  - package-ecosystem: "cargo"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_websocket"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_ufs"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_rpc"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_9p"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_libc"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_quic"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_wireformat"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_macros"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/components/jetstream_iroh"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "cargo"
+    directory: "/fuzz"
     schedule:
       interval: "daily"
