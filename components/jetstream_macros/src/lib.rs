@@ -11,7 +11,7 @@
 //!
 //! ## `JetStreamWireFormat`
 //! The `JetStreamWireFormat` macro is used to derive the `WireFormat` trait for a struct.
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 #![recursion_limit = "256"]
 
 extern crate proc_macro;

@@ -1,3 +1,10 @@
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
+#![doc(
+    html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 use bytes::Bytes;
 use h3::server::RequestResolver;
 use h3_quinn::quinn::{self};

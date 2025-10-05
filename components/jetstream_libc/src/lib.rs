@@ -5,7 +5,7 @@
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
-
+#![cfg_attr(docsrs, feature(doc_cfg))]
 //! Platform-specific libc bindings for jetstream
 //!
 //! This crate provides a unified interface to libc constants across different platforms,

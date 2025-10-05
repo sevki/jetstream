@@ -1,3 +1,10 @@
+#![doc(
+    html_logo_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
+#![doc(
+    html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
+)]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 use futures::{Sink, Stream};
 use jetstream_rpc::{Frame, Framer, Protocol};
 use jetstream_wireformat::{

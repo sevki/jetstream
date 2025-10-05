@@ -4,7 +4,7 @@
 #![doc(
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
-#![cfg_attr(docsrs, feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
 //! # JetStream
 //! JetStream, is a collection of crates that provide a set of tools to build distributed systems.
 //! It started it's life off in the CrosVM project, and has since been extracted into it's own project.
