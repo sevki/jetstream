@@ -2244,7 +2244,7 @@ dependencies = [
  "iroh-metrics",
  "iroh-quinn",
  "iroh-quinn-proto",
- "lru",
+ "lru 0.13.0",
  "n0-future",
  "n0-snafu",
  "nested_enum_utils",
@@ -2335,7 +2335,7 @@ dependencies = [
  "iroh",
  "jetstream_rpc",
  "jetstream_wireformat",
- "pkarr 4.0.0",
+ "pkarr 5.0.0",
  "tokio",
  "tokio-util",
  "url",
@@ -2567,6 +2567,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "lru"
+version = "0.16.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bfe949189f46fabb938b3a9a0be30fdd93fd8a09260da863399a8cf3db756ec8"
+
+[[package]]
 name = "lru-slab"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2574,18 +2580,18 @@ checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 
 [[package]]
 name = "mainline"
-version = "5.4.0"
+version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c258b001fa52b7270dc1a239b36a9b608b024e68733648c1757b025204fdc248"
+checksum = "5be6c12ff79bfbf65bcbec84882a4bf700177df6d83a7b866c6a01cda7db4777"
 dependencies = [
  "crc",
  "document-features",
  "dyn-clone",
- "ed25519-dalek 2.2.0",
+ "ed25519-dalek 3.0.0-pre.1",
  "flume",
  "futures-lite",
- "getrandom 0.2.16",
- "lru",
+ "getrandom 0.3.3",
+ "lru 0.16.1",
  "serde",
  "serde_bencode",
  "serde_bytes",
@@ -3232,7 +3238,7 @@ dependencies = [
  "futures-lite",
  "getrandom 0.2.16",
  "log",
- "lru",
+ "lru 0.13.0",
  "ntimestamp",
  "reqwest",
  "self_cell",
@@ -3248,9 +3254,9 @@ dependencies = [
 
 [[package]]
 name = "pkarr"
-version = "4.0.0"
+version = "5.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a3e29542b35f65c89fb347945819af996f8b003e5e46d1e66e1c9bebbd54ba09"
+checksum = "792c1328860f6874e90e3b387b4929819cc7783a6bd5a4728e918706eb436a48"
 dependencies = [
  "async-compat",
  "base32",
@@ -3263,7 +3269,7 @@ dependencies = [
  "futures-lite",
  "getrandom 0.3.3",
  "log",
- "lru",
+ "lru 0.13.0",
  "mainline",
  "ntimestamp",
  "reqwest",
