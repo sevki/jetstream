@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_quic"
-version = "9.1.1"
+version = "9.1.2"
 edition.workspace = true
 description.workspace = true
 license.workspace = true
