@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [9.1.2](https://github.com/sevki/jetstream/compare/v9.1.1...v9.1.2) (2025-10-05)
+
+
+### Bug Fixes
+
+* failing docs ([232ddee](https://github.com/sevki/jetstream/commit/232ddee45d616dc08ea7e6dcd072db2c7f2cbba6))
+
 ## [9.1.1](https://github.com/sevki/jetstream/compare/v9.1.0...v9.1.1) (2025-10-05)
 
 
