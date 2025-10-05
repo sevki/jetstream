@@ -5,14 +5,14 @@ edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
-documentation = "https://sevki.github.io/jetstream/"
+documentation = "https://jetstream.rs"
 
 [workspace.package]
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
-documentation = "https://sevki.github.io/jetstream/"
+documentation = "https://jetstream.rs"
 readme = "README.md"
 
 
@@ -57,7 +57,6 @@ members = [
     "components/jetstream_rpc",
     "components/jetstream_ufs",
     "components/jetstream_wireformat",
-    "components/rustdoc_to_mdbook",
     "components/jetstream_websocket",
     "components/jetstream_quic",
     "components/jetstream_iroh",
@@ -96,11 +95,16 @@ required-features = ["iroh"]
 
 
 [features]
-default = ["iroh"]
-all = [ "9p", "iroh"]
+default = []
+all = [ "9p", "iroh", "quic"]
 9p = ["dep:jetstream_9p"]
 websocket = ["dep:jetstream_websocket"]
 quic = ["dep:jetstream_quic"]
 wasm = ["jetstream_wireformat/tokio"]
 tokio = ["jetstream_wireformat/tokio"]
 iroh = ["dep:jetstream_iroh"]
+
+[package.metadata.docs.rs]
+
+# Features to pass to Cargo (default: [])
+features = ["all"]
