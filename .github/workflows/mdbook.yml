@@ -53,7 +53,6 @@ jobs:
       - name: Run Cargo Doc
         run: |
           cargo +nightly doc --release --all-features
-          cargo run -p rustdoc_to_mdbook
 
       - name: Setup Pages
         id: pages
