@@ -1,4 +1,9 @@
 name: "Rust Matrix Build & Test"
+
+permissions:
+  contents: read
+  actions: write
+
 on:
   pull_request:
     branches: ["main"]
