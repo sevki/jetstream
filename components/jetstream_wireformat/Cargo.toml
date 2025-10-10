@@ -33,7 +33,7 @@ futures-util = { version = "0.3.31", optional = true }
 uuid = {version = "1.18.1", optional = true}
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libc = "0.2.175"
+libc = "0.2.177"
 tokio = { version = "1.47.1", features = ["full"] }
 okstd = { version = "1.0.2" }
 futures = { version = "0.3.31", optional = true }
