@@ -13,6 +13,6 @@ crate-type = [ "rlib"]
 bench = false
 
 [dependencies]
-libc = { version = "0.2.175", default-features = false }
+libc = { version = "0.2.177", default-features = false }
 [build-dependencies]
 cfg_aliases = "0.2.1"
