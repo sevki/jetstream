@@ -2,8 +2,6 @@
 //! 
 //! This module provides WebAssembly-specific functionality for the wire format.
 
-#![cfg(target_arch = "wasm32")]
-
 use crate::WireFormat;
 use js_sys::{Uint8Array, ArrayBuffer};
 use wasm_bindgen::prelude::*;

@@ -1,10 +1,10 @@
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-use std::{
-    io::{self},
-    net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6},
-};
+use std::io::{self};
+
+#[cfg(all(feature = "std", not(target_arch = "wasm32")))]
+use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 
 use bytes::Bytes;
 
