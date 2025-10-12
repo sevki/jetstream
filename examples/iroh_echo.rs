@@ -1,7 +1,6 @@
 #![cfg(feature = "iroh")]
 use crate::echo_protocol::{EchoChannel, EchoService};
 use jetstream::prelude::*;
-use jetstream_iroh::iroh::Watcher;
 use jetstream_macros::service;
 use okstd::prelude::*;
 use std::fmt::Debug;
