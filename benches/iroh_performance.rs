@@ -2,7 +2,6 @@
 use crate::echo_protocol::{EchoChannel, EchoService};
 use criterion::{criterion_group, criterion_main, Criterion};
 use jetstream::prelude::*;
-use jetstream_iroh::iroh::Watcher;
 use jetstream_macros::service;
 use std::{fmt::Debug, sync::Arc};
 use tokio::sync::Mutex;
