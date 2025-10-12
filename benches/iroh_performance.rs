@@ -37,7 +37,7 @@ fn iroh_benchmark(c: &mut Criterion) {
         .await
         .unwrap();
 
-        let addr = router.endpoint().node_addr().initialized().await;
+        let addr = router.endpoint().node_addr();
 
         // Build client transport and connect
         let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)

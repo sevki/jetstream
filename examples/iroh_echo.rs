@@ -37,7 +37,7 @@ async fn main() {
 
     // get our own address. At this point we have a running router
     // that's ready to accept connections.
-    let addr = router.endpoint().node_addr().initialized().await;
+    let addr = router.endpoint().node_addr();
 
     // Build client transport and connect
     let mut transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
