@@ -179,7 +179,7 @@ macro_rules! uint_wire_format_impl {
             fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
                 let mut buf = [0; mem::size_of::<$Ty>()];
                 reader.read_exact(&mut buf)?;
-                paste::expr! {
+                pastey::expr! {
                     let num: zerocopy::[<$Ty:snake:upper>]<LittleEndian> =  zerocopy::byteorder::[<$Ty:snake:upper>]::from_bytes(buf);
                     Ok(num.get())
                 }
@@ -206,7 +206,7 @@ macro_rules! float_wire_format_impl {
             }
 
             fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
-                paste::expr! {
+                pastey::expr! {
                     writer.write_all(&self.to_le_bytes())
                 }
             }
@@ -214,7 +214,7 @@ macro_rules! float_wire_format_impl {
             fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
                 let mut buf = [0; mem::size_of::<$Ty>()];
                 reader.read_exact(&mut buf)?;
-                paste::expr! {
+                pastey::expr! {
                     let num: zerocopy::[<$Ty:snake:upper>]<LittleEndian> =  zerocopy::byteorder::[<$Ty:snake:upper>]::from_bytes(buf);
                     Ok(num.get())
                 }
