@@ -2,7 +2,6 @@
 use std::fmt::Debug;
 
 use jetstream::prelude::*;
-use jetstream_iroh::iroh::Watcher;
 
 use crate::echo_protocol::{EchoChannel, EchoService};
 
@@ -37,7 +36,7 @@ async fn test_iroh_echo_service() {
 
     // get our own address. At this point we have a running router
     // that's ready to accept connections.
-    let addr = router.endpoint().node_addr().initialized().await;
+    let addr = router.endpoint().node_addr();
 
     // Build client transport and connect
     let mut transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
