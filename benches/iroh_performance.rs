@@ -2,7 +2,6 @@
 use crate::echo_protocol::{EchoChannel, EchoService};
 use criterion::{criterion_group, criterion_main, Criterion};
 use jetstream::prelude::*;
-use jetstream_iroh::iroh::Watcher;
 use jetstream_macros::service;
 use std::{fmt::Debug, sync::Arc};
 use tokio::sync::Mutex;
@@ -37,7 +36,7 @@ fn iroh_benchmark(c: &mut Criterion) {
         .await
         .unwrap();
 
-        let addr = router.endpoint().node_addr().initialized().await;
+        let addr = router.endpoint().node_addr();
 
         // Build client transport and connect
         let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
