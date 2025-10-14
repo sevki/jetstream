@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [9.3.0](https://github.com/sevki/jetstream/compare/v9.2.0...v9.3.0) (2025-10-14)
+
+
+### Features
+
+* add tracing feature ([5cb2907](https://github.com/sevki/jetstream/commit/5cb290799dd251c6e04ab4c2fe52089e3f32336c))
+
 ## [9.2.0](https://github.com/sevki/jetstream/compare/v9.1.2...v9.2.0) (2025-10-05)
 
 
