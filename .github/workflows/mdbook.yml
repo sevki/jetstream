@@ -53,7 +53,7 @@ jobs:
 
       - name: Run Cargo Doc
         run: |
-          cargo +nightly doc --release --all-features
+          cargo +nightly doc --workspace --no-deps --release --all-features
 
       - name: Setup Pages
         id: pages
@@ -64,9 +64,15 @@ jobs:
           mdbook build
           # Copy coverage report to the book output
           cp -r coverage/ book/coverage/
-          # Copy jetstream rustdoc to the book output
+          # Copy rustdoc to the book output (includes static files, fonts, etc.)
           mkdir -p book/doc/
+          # Copy all jetstream crate docs
           cp -r target/doc/jetstream* book/doc/
+          # Copy shared static resources (CSS, JS, fonts)
+          cp -r target/doc/static.files book/doc/
+          # Copy other shared files needed by rustdoc
+          cp target/doc/*.js book/doc/ 2>/dev/null || true
+          cp target/doc/*.html book/doc/ 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
