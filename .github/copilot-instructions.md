@@ -14,21 +14,6 @@ JetStream is a high-performance RPC framework for Rust, originally built on top 
 
 **Project Status:** Early development stage - not ready for production use
 
-## Technology Stack
-
-### Core Technologies
-- **Language:** Rust (Edition 2021)
-- **Async Runtime:** Tokio
-- **Transport Protocols:** QUIC (s2n-quic), WebSocket, Iroh
-- **Security:** TLS/mTLS via s2n-quic and rustls
-
-### Key Dependencies
-- `async-trait` - Async trait support
-- `tokio` - Async runtime
-- `futures` - Async combinators
-- `s2n-quic` - QUIC protocol implementation
-- `trait-variant` - Trait variants for sync/async
-
 ## Repository Structure
 
 ```
@@ -206,16 +191,12 @@ cargo run --example iroh_echo --features iroh
 
 ## Common Issues and Solutions
 
-1. **Build Failures on Windows:**
-   - Some examples are Unix-only (check `#[cfg(not(windows))]`)
-   - TLS certificate paths may need adjustment
-
-2. **Feature Flag Confusion:**
+1. **Feature Flag Confusion:**
    - Default features are minimal
    - Use `--all-features` for full functionality
    - Check `Cargo.toml` for available features
 
-3. **Async Trait Issues:**
+2. **Async Trait Issues:**
    - Always use `async-trait` crate for async traits
    - Generated code may require `#[async_trait]` attribute
 
@@ -235,3 +216,4 @@ When contributing:
 4. Run `cargo fmt`, `cargo clippy`, and `cargo test` before submitting
 5. Keep changes focused and minimal
 6. Ensure CI passes on all platforms
+7. Use [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages - this project uses [release-please](https://github.com/googleapis/release-please) for automated releases
