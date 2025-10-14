@@ -8,9 +8,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  pull-requests: write
 
 concurrency:
   group: "pages"
@@ -52,7 +53,7 @@ jobs:
 
       - name: Run Cargo Doc
         run: |
-          cargo +nightly doc --release --all-features
+          cargo +nightly doc --workspace --no-deps --release --all-features
 
       - name: Setup Pages
         id: pages
@@ -63,9 +64,15 @@ jobs:
           mdbook build
           # Copy coverage report to the book output
           cp -r coverage/ book/coverage/
-          # Copy jetstream rustdoc to the book output
+          # Copy rustdoc to the book output (includes static files, fonts, etc.)
           mkdir -p book/doc/
+          # Copy all jetstream crate docs
           cp -r target/doc/jetstream* book/doc/
+          # Copy shared static resources (CSS, JS, fonts)
+          cp -r target/doc/static.files book/doc/
+          # Copy other shared files needed by rustdoc
+          cp target/doc/*.js book/doc/ 2>/dev/null || true
+          cp target/doc/*.html book/doc/ 2>/dev/null || true
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
@@ -85,13 +92,29 @@ jobs:
         uses: actions/deploy-pages@v4
 
   preview:
-    environment:
-      name: preview-${{ github.event.pull_request.number }}
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'pull_request'
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
-      - name: Deploy to Preview Environment
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: ./artifact
+      
+      - name: Extract artifact
+        run: |
+          cd artifact
+          tar -xf artifact.tar
+          rm artifact.tar
+      
+      - name: Deploy to PR preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./artifact
