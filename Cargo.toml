@@ -7,16 +7,10 @@ license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
 documentation = "https://jetstream.rs"
 
-[workspace.package]
-edition = "2021"
-description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
-license = "BSD-3-Clause"
-repository = "https://github.com/sevki/jetstream"
-documentation = "https://jetstream.rs"
-readme = "README.md"
+[package.metadata.docs.rs]
 
-
-[workspace.dependencies]
+# Features to pass to Cargo (default: [])
+features = ["all"]
 
 [dependencies]
 jetstream_macros = { version = "9.2.0", path = "components/jetstream_macros" }
@@ -31,6 +25,8 @@ async-trait = "0.1.89"
 tokio-util = { version = "0.7.16", features = ["codec"] }
 futures = "0.3.31"
 lazy_static = "1.5.0"
+tracing = { version = "0.1.41", optional = true }
+tracing-subscriber = "0.3.20"
 
 [dev-dependencies]
 arbitrary = "1.4.1"
@@ -48,21 +44,6 @@ tokio = { version = "1.47.1", features = ["full"] }
 turmoil = "0.6.5"
 
 
-[workspace]
-
-members = [
-    "components/jetstream_9p",
-    "components/jetstream_libc",
-    "components/jetstream_macros",
-    "components/jetstream_rpc",
-    "components/jetstream_ufs",
-    "components/jetstream_wireformat",
-    "components/jetstream_websocket",
-    "components/jetstream_quic",
-    "components/jetstream_iroh",
-    "fuzz",
-]
-
 
 [lib]
 bench = false
@@ -72,6 +53,7 @@ crate-type = ["cdylib", "rlib"]
 name = "jetstream_wire_format"
 path = "tests/jetstream_wire_format/mod.rs"
 bench = false
+
 [[test]]
 name = "server"
 bench = false
@@ -95,16 +77,37 @@ required-features = ["iroh"]
 
 
 [features]
-default = []
-all = [ "9p", "iroh", "quic"]
+default = ["tracing"]
+all = [ "9p", "iroh", "quic", "tracing"]
 9p = ["dep:jetstream_9p"]
 websocket = ["dep:jetstream_websocket"]
 quic = ["dep:jetstream_quic"]
 wasm = ["jetstream_wireformat/tokio"]
 tokio = ["jetstream_wireformat/tokio"]
 iroh = ["dep:jetstream_iroh"]
+tracing = ["dep:tracing"]
+[workspace]
 
-[package.metadata.docs.rs]
+members = [
+    "components/jetstream_9p",
+    "components/jetstream_libc",
+    "components/jetstream_macros",
+    "components/jetstream_rpc",
+    "components/jetstream_ufs",
+    "components/jetstream_wireformat",
+    "components/jetstream_websocket",
+    "components/jetstream_quic",
+    "components/jetstream_iroh",
+    "fuzz",
+]
 
-# Features to pass to Cargo (default: [])
-features = ["all"]
+[workspace.package]
+edition = "2021"
+description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
+license = "BSD-3-Clause"
+repository = "https://github.com/sevki/jetstream"
+documentation = "https://jetstream.rs"
+readme = "README.md"
+
+
+[workspace.dependencies]

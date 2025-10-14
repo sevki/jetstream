@@ -2321,6 +2321,8 @@ dependencies = [
  "tmpdir",
  "tokio",
  "tokio-util",
+ "tracing",
+ "tracing-subscriber",
  "trait-variant",
  "turmoil",
 ]

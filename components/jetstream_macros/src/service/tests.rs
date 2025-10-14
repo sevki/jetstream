@@ -32,7 +32,7 @@ fn test_simple_service() {
             async fn ping(&self) -> Result<(), std::io::Error>;
         }
     };
-    let output = service_impl(input, false);
+    let output = service_impl(input, false, false);
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {
@@ -47,7 +47,7 @@ fn test_service_with_args() {
             async fn ping(&self, message: String) -> Result<String, std::io::Error>;
         }
     };
-    let output = service_impl(input, false);
+    let output = service_impl(input, false, false);
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {
@@ -62,7 +62,7 @@ fn test_async_trait_service_with_args() {
             async fn ping(&mut self, message: String) -> Result<String, std::io::Error>;
         }
     };
-    let output = service_impl(input, true);
+    let output = service_impl(input, true, false);
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {

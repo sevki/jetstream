@@ -27,6 +27,13 @@ pub mod prelude {
     pub use jetstream_wireformat::{Data, WireFormat};
     pub use lazy_static::*;
     pub use trait_variant::make;
+
+    #[cfg(feature = "tracing")]
+    pub extern crate tracing;
+    #[cfg(feature = "tracing")]
+    pub use tracing::*;
+    #[cfg(feature = "tracing")]
+    pub extern crate tracing_subscriber;
 }
 
 #[cfg(feature = "9p")]

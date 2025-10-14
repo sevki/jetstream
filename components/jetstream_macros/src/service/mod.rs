@@ -3,17 +3,32 @@ mod frame;
 mod message;
 mod server;
 mod tests;
+mod tests_tracing;
+mod tracing;
 
 use proc_macro2::{Literal, TokenStream};
 use quote::{format_ident, quote, ToTokens};
 use syn::{ItemTrait, TraitItem};
 
+use crate::service::tracing::take_attributes;
+
 pub(crate) fn service_impl(
     item: ItemTrait,
     is_async_trait: bool,
+    enable_tracing: bool,
 ) -> TokenStream {
     let trait_name = &item.ident;
-    let trait_items = &item.items;
+    let maps = take_attributes(
+        item.items
+            .iter()
+            .flat_map(|i| match i {
+                TraitItem::Fn(trait_item_fn) => Some(trait_item_fn.clone()),
+                _ => None,
+            })
+            .collect::<Vec<_>>()
+            .as_slice(),
+    );
+    let trait_items = maps.iter().map(|(item, _)| item).collect::<Vec<_>>();
     let vis = &item.vis;
 
     // Generate protocol metadata
@@ -39,6 +54,7 @@ pub(crate) fn service_impl(
     let mut tmsgs = Vec::new();
     let mut rmsgs = Vec::new();
     let mut msg_ids = Vec::new();
+    let mut method_attrs = Vec::new();
 
     for (index, item) in item.items.iter().enumerate() {
         if let TraitItem::Fn(method) = item {
@@ -62,6 +78,10 @@ pub(crate) fn service_impl(
 
             tmsgs.push((request_struct_ident, request_struct));
             rmsgs.push((return_struct_ident, return_struct));
+
+            // Collect tracing attributes from method
+            let attrs = tracing::extract_method_tracing_attrs(method);
+            method_attrs.push(attrs);
         }
     }
 
@@ -77,6 +97,8 @@ pub(crate) fn service_impl(
         &tmsgs,
         &rmsgs,
         &protocol_version,
+        &method_attrs,
+        enable_tracing,
     );
 
     // Generate client implementation
@@ -88,6 +110,8 @@ pub(crate) fn service_impl(
         &rmsgs,
         &protocol_version,
         &tag_name,
+        &method_attrs,
+        enable_tracing,
     );
 
     // Generate final trait with attribute

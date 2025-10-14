@@ -6,8 +6,32 @@
 )]
 //! # JetStream Derive
 //! This crate provides macros for JetStream.
+//!
 //! ## `service`
 //! The `service` macro is used to define a JetStream service.
+//!
+//! ### Basic Usage
+//! ```ignore
+//! #[service]
+//! pub trait Echo {
+//!     async fn ping(&mut self, message: String) -> Result<String, Error>;
+//! }
+//! ```
+//!
+//! ### Tracing Support
+//!
+//! Add distributed tracing to your services using the `tracing` crate:
+//!
+//! ```ignore
+//! #[service(tracing)]  // Auto-instrument all methods
+//! pub trait Echo {
+//!     // Custom instrumentation
+//!     #[instrument(skip(self), fields(msg_len = message.len()))]
+//!     async fn ping(&mut self, message: String) -> Result<String, Error>;
+//! }
+//! ```
+//!
+//! See the [Tracing Guide](../../docs/tracing.md) for detailed documentation on tracing support.
 //!
 //! ## `JetStreamWireFormat`
 //! The `JetStreamWireFormat` macro is used to derive the `WireFormat` trait for a struct.
@@ -19,10 +43,10 @@ use proc_macro::TokenStream;
 use syn::parse_macro_input;
 
 mod service;
-mod wireformat;
-mod utils;
 #[cfg(test)]
 mod tests;
+mod utils;
+mod wireformat;
 
 /// Derives wire format encoding for structs
 #[proc_macro_derive(JetStreamWireFormat, attributes(jetstream))]
@@ -36,6 +60,7 @@ pub fn jetstream_wire_format(input: TokenStream) -> TokenStream {
 pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {
     let is_async_trait =
         !attr.is_empty() && attr.to_string().contains("async_trait");
+    let enable_tracing = attr.to_string().contains("tracing");
     let item = parse_macro_input!(item as syn::ItemTrait);
-    service::service_impl(item, is_async_trait).into()
+    service::service_impl(item, is_async_trait, enable_tracing).into()
 }

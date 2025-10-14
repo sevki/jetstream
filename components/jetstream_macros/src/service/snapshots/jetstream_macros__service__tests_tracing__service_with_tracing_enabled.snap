@@ -1,6 +1,6 @@
 ---
-source: components/jetstream_macros/src/service/tests.rs
-assertion_line: 39
+source: components/jetstream_macros/src/service/tests_tracing.rs
+assertion_line: 54
 expression: output_str
 ---
 pub mod echo_protocol {
@@ -15,10 +15,12 @@ pub mod echo_protocol {
     pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
     #[allow(non_camel_case_types)]
     #[derive(Debug, JetStreamWireFormat)]
-    pub struct Tping {}
+    pub struct Tping {
+        pub message: String,
+    }
     #[allow(non_camel_case_types)]
     #[derive(Debug, JetStreamWireFormat)]
-    pub struct Rping(pub ());
+    pub struct Rping(pub String);
     #[derive(Debug)]
     #[repr(u8)]
     pub enum Tmessage {
@@ -106,10 +108,14 @@ pub mod echo_protocol {
             Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
         > + Send + Sync {
             Box::pin(async move {
+                let _span = tracing::debug_span!(
+                    "rpc_server", service = stringify!(Echo), tag = frame.tag
+                );
+                let _enter = _span.enter();
                 let req: <Self as Protocol>::Request = frame.msg;
                 let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
                     Tmessage::Ping(msg) => {
-                        let result = self.ping().await?;
+                        let result = self.ping(msg.message).await?;
                         let ret = Rping(result);
                         Ok(Rmessage::Ping(ret))
                     }
@@ -126,8 +132,9 @@ pub mod echo_protocol {
     where
         T: Echo + Send + Sync + Sized,
     {
-        async fn ping(&self) -> Result<(), std::io::Error> {
-            self.inner.ping().await
+        #[tracing::instrument(skip(self))]
+        async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
+            self.inner.ping(message).await
         }
     }
     pub struct EchoChannel<'a> {
@@ -146,6 +153,10 @@ pub mod echo_protocol {
         > + Send + Sync {
             use futures::{SinkExt, StreamExt};
             Box::pin(async move {
+                let _span = tracing::debug_span!(
+                    "rpc_client", service = stringify!(Echo), tag = frame.tag
+                );
+                let _enter = _span.enter();
                 self.inner.send(frame).await?;
                 let frame = self.inner.next().await.unwrap()?;
                 Ok(frame)
@@ -157,9 +168,10 @@ pub mod echo_protocol {
         std::sync::atomic::AtomicU16::new(0);
     }
     impl<'a> Echo for EchoChannel<'a> {
-        async fn ping(&mut self) -> Result<(), std::io::Error> {
+        #[tracing::instrument(skip(self))]
+        async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
             let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
-            let req = Tmessage::Ping(Tping {});
+            let req = Tmessage::Ping(Tping { message });
             let tframe = Frame::from((tag, req));
             let rframe = self.rpc(tframe).await?;
             let rmsg = rframe.msg;
@@ -172,5 +184,5 @@ pub mod echo_protocol {
 }
 #[jetstream::prelude::make(Send+Sync)]
 pub trait Echo {
-    async fn ping(&self) -> Result<(), std::io::Error>;
+    async fn ping(&mut self, message: String) -> Result<String, std::io::Error>;
 }

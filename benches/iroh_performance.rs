@@ -20,12 +20,6 @@ impl Echo for EchoServer {
     }
 }
 
-impl<P: Echo> Debug for EchoService<P> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("EchoService").finish()
-    }
-}
-
 fn iroh_benchmark(c: &mut Criterion) {
     let rt = tokio::runtime::Runtime::new().unwrap();
     let (_router, mut transport) = rt.block_on(async {
