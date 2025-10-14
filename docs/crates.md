@@ -1,10 +1,16 @@
 # 🦀 Crates
 
-- [`JetSteam`](crates/jetstream/index.md) The main crate, which contains the `jetstream::prelude` module.
-- [`JetSteam Client`](crates/jetstream_client/index.md) The client crate.
-- [`JetSteam Server`](crates/jetstream_server/index.md) The server crate.
-- [`JetSteam Wireformat`](crates/jetstream_wireformat/index.md) The wireformat has the encoding and decoding logic.
-- [`JetSteam Macros`](crates/jetstream_macros/index.md) The macros crate.
-- [`JetSteam Ufs`](crates/jetstream_ufs/index.md) The [UFS](https://plan9.io/magic/man2html/4/u9fs) crate.
-- [`JetSteam Rpc`](crates/jetstream_rpc/index.md) The RPC crate.
-- [`JetSteam 9p`](crates/jetstream_9p/index.md) The [9p](https://en.wikipedia.org/wiki/9P) crate.
+For detailed API documentation of all crates in this repository, please see the [rustdoc documentation](doc/jetstream/index.html).
+
+The main crates include:
+- **jetstream** - The main crate with the `jetstream::prelude` module
+- **jetstream_client** - Client implementation
+- **jetstream_server** - Server implementation  
+- **jetstream_wireformat** - Encoding and decoding logic
+- **jetstream_macros** - Procedural macros
+- **jetstream_rpc** - RPC framework core
+- **jetstream_9p** - 9P protocol implementation
+- **jetstream_ufs** - UFS (Unix File System) implementation
+- **jetstream_quic** - QUIC transport
+- **jetstream_iroh** - Iroh transport
+- **jetstream_websocket** - WebSocket transport
