@@ -120,7 +120,7 @@ For testing purposes only, you can use the provided scripts:
 Security advisories will be published in the following locations:
 - [GitHub Security Advisories](https://github.com/sevki/jetstream/security/advisories)
 - Repository [CHANGELOG.md](CHANGELOG.md)
-- Rust Security Advisory Database (for critical issues)
+- [Rust Security Advisory Database](https://rustsec.org/) (for critical issues)
 
 ## Additional Resources
 
