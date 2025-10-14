@@ -50,9 +50,27 @@ Please include the following information in your report:
 
 JetStream uses several cryptographic and security-sensitive components:
 
-- **TLS/mTLS**: Powered by [s2n-tls](https://github.com/aws/s2n-tls) for QUIC connections
+#### Transport Layer Security
+
+- **s2n-quic**: AWS's implementation of QUIC protocol with [s2n-tls](https://github.com/aws/s2n-tls) for TLS
+- **rustls**: Modern TLS library used by Quinn and Iroh transports
+  - Used in `jetstream_quic` component via [quinn](https://github.com/quinn-rs/quinn)
+  - Used in `jetstream_iroh` component via [iroh-quinn](https://github.com/n0-computer/iroh)
+  - Backed by [ring](https://github.com/briansmith/ring) for cryptographic primitives
+- **quinn**: Pure Rust QUIC implementation with rustls integration
+
+#### Cryptographic Libraries
+
+- **ed25519-dalek**: EdDSA signatures over Curve25519
+  - Used for identity and signing operations
+  - Version pinned for security and compatibility
+- **ring**: Cryptographic primitives library (via rustls)
+- **WebSocket Security**: TLS support via [tungstenite](https://github.com/snapview/tungstenite-rs) in `jetstream_websocket`
+
+#### Certificate Management
+
 - **Certificate Management**: Self-signed certificates in the repository are for **testing purposes only**
-- **Transport Security**: Built on [s2n-quic](https://github.com/aws/s2n-quic) for secure, encrypted communication
+- Supports both s2n-tls (with s2n-quic) and rustls (with Quinn/Iroh) certificate formats
 
 ### Best Practices for Users
 
@@ -124,9 +142,23 @@ Security advisories will be published in the following locations:
 
 ## Additional Resources
 
+### Security Documentation
+
 - [s2n-quic Security](https://github.com/aws/s2n-quic/blob/main/docs/SECURITY.md)
 - [s2n-tls Security](https://github.com/aws/s2n-tls/blob/main/SECURITY.md)
+- [rustls Documentation](https://docs.rs/rustls/)
+- [Quinn Security Considerations](https://github.com/quinn-rs/quinn#security)
+- [Iroh Security](https://github.com/n0-computer/iroh)
 - [Rust Security Guidelines](https://anssi-fr.github.io/rust-guide/)
+
+### Transport Security
+
+JetStream supports multiple transport backends, each with different security implementations:
+
+- **QUIC (s2n-quic)**: Uses s2n-tls for TLS 1.3
+- **QUIC (quinn)**: Uses rustls for TLS 1.3  
+- **Iroh**: Uses rustls with custom peer-to-peer security model
+- **WebSocket**: Uses tungstenite with optional TLS
 
 ## Questions?
 
