@@ -8,9 +8,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
+  pull-requests: write
 
 concurrency:
   group: "pages"
@@ -85,13 +86,22 @@ jobs:
         uses: actions/deploy-pages@v4
 
   preview:
-    environment:
-      name: preview-${{ github.event.pull_request.number }}
-      url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
     if: github.event_name == 'pull_request'
     steps:
-      - name: Deploy to Preview Environment
-        id: deployment
-        uses: actions/deploy-pages@v4
+      - name: Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: github-pages
+          path: ./preview
+      
+      - name: Extract artifact
+        run: |
+          cd preview
+          tar -xf artifact.tar
+      
+      - name: Deploy to PR preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: ./preview
