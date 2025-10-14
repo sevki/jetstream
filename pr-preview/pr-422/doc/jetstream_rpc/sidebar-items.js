@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Error"],"mod":["client","server"],"struct":["Frame","Framed","Tag"],"trait":["Decoder","Encoder","Framer","Message","Protocol"]};
