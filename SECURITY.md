@@ -99,7 +99,9 @@ When choosing and configuring a transport layer:
 
 ### TLS Configuration
 
-When configuring TLS for JetStream:
+When configuring TLS for JetStream, refer to the appropriate documentation based on your transport choice:
+
+#### For s2n-quic Transport
 
 ```rust
 // Use strong cipher suites and security policies
@@ -107,13 +109,16 @@ When configuring TLS for JetStream:
 // https://github.com/aws/s2n-tls/blob/main/docs/USAGE-GUIDE.md
 ```
 
-### Certificate Generation
+#### For Quinn/Iroh Transports (rustls)
 
-For testing purposes only, you can use the provided scripts:
-- `certs/generate_certs.sh` - Generate mTLS certificates for client/server
-- `components/jetstream_quic/examples/generate_localhost_cert.sh` - Generate localhost certificates
-
-**Warning**: These scripts generate self-signed certificates suitable only for development and testing.
+```rust
+// Configure rustls with appropriate cipher suites
+// Refer to rustls documentation:
+// https://docs.rs/rustls/latest/rustls/
+// Example configuration:
+use rustls::{ServerConfig, ClientConfig};
+// Configure with appropriate certificates and cipher suites
+```
 
 ## Security Advisories
 
