@@ -72,40 +72,22 @@ JetStream uses several cryptographic and security-sensitive components:
 - **Certificate Management**: Self-signed certificates in the repository are for **testing purposes only**
 - Supports both s2n-tls (with s2n-quic) and rustls (with Quinn/Iroh) certificate formats
 
-### Best Practices for Users
+### Security Guidelines
 
-When using JetStream in your applications:
+#### Important Warnings
 
-1. **Certificate Management**
-   - Never use the development certificates (`certs/` directory) in production
-   - Always generate new certificates for production environments
-   - Use certificates from trusted Certificate Authorities (CAs) when possible
-   - Regularly rotate certificates and private keys
+- **Production Readiness**: JetStream is **not yet ready for production use**
+- **Test Certificates**: Never use the development certificates (`certs/` directory) in production. These are for testing only.
+- **Certificate Formats**: When configuring TLS, ensure you use the correct certificate format for your chosen transport (s2n-tls format for s2n-quic, rustls format for quinn/iroh)
 
-2. **Key Storage**
-   - Never commit private keys to version control
-   - Use secure key storage mechanisms (e.g., hardware security modules, key management services)
-   - Restrict file permissions on private key files (e.g., `chmod 600`)
+#### Transport-Specific Considerations
 
-3. **Network Configuration**
-   - Use mTLS for mutual authentication between clients and servers
-   - Configure appropriate timeout values for connections
-   - Implement rate limiting to prevent abuse
+When choosing and configuring a transport layer:
 
-4. **Dependencies**
-   - Keep JetStream and all dependencies up to date
-   - Monitor security advisories for dependencies
-   - Use `cargo audit` regularly to check for known vulnerabilities
-
-5. **Input Validation**
-   - Validate all input from untrusted sources
-   - Be cautious when deserializing data from the network
-   - Set appropriate limits on message sizes and connection counts
-
-6. **Development vs Production**
-   - JetStream is **not yet ready for production use**
-   - Thoroughly test security configurations before deployment
-   - Enable all security features and use secure defaults
+- **s2n-quic**: Requires s2n-tls compatible certificates. Refer to [s2n-tls security policy](https://github.com/aws/s2n-tls/blob/main/docs/USAGE-GUIDE.md) for cipher suite configuration.
+- **quinn (jetstream_quic)**: Uses rustls certificates. Configure using `rustls::ServerConfig` and `rustls::ClientConfig`.
+- **iroh (jetstream_iroh)**: Implements a peer-to-peer security model with built-in identity management.
+- **WebSocket (jetstream_websocket)**: TLS configuration depends on your WebSocket server setup.
 
 ### Known Limitations
 
