@@ -9,7 +9,7 @@ use turmoil::{
 };
 
 #[service]
-pub trait Echo {
+pub trait Echo: Debug {
     async fn ping(&mut self) -> Result<(), Error>;
     async fn pong(&mut self) -> Result<(), Error>;
 }

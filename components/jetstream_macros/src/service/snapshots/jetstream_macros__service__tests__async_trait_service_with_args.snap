@@ -1,5 +1,6 @@
 ---
 source: components/jetstream_macros/src/service/tests.rs
+assertion_line: 69
 expression: output_str
 ---
 pub mod echo_protocol {
@@ -88,7 +89,7 @@ pub mod echo_protocol {
             }
         }
     }
-    #[derive(Clone)]
+    #[derive(Clone, Debug)]
     pub struct EchoService<T: Echo> {
         pub inner: T,
     }
@@ -110,8 +111,8 @@ pub mod echo_protocol {
                 let req: <Self as Protocol>::Request = frame.msg;
                 let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
                     Tmessage::Ping(msg) => {
-                        let msg = Echo::ping(&mut self.inner, msg.message).await?;
-                        let ret = Rping(msg);
+                        let result = self.ping(msg.message).await?;
+                        let ret = Rping(result);
                         Ok(Rmessage::Ping(ret))
                     }
                 };
@@ -121,6 +122,14 @@ pub mod echo_protocol {
                 ));
                 Ok(rframe)
             })
+        }
+    }
+    impl<T> Echo for EchoService<T>
+    where
+        T: Echo + Send + Sync + Sized,
+    {
+        async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
+            self.inner.ping(message).await
         }
     }
     pub struct EchoChannel<'a> {
