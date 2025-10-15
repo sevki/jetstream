@@ -582,7 +582,13 @@ impl<K: WireFormat + Send + Sync + Ord, V: WireFormat + Send + Sync> WireFormat
     where
         Self: Sized,
     {
-        let len = self.len();
+        if self.len() > u16::MAX as usize {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Map too large",
+            ));
+        }
+        let len = self.len() as u16;
         len.encode(writer)?;
         for (k, v) in self {
             k.encode(writer)?;
@@ -619,7 +625,13 @@ impl<V: WireFormat + Send + Sync + Ord> WireFormat for BinaryHeap<V> {
     where
         Self: Sized,
     {
-        let len = self.len();
+        if self.len() > u16::MAX as usize {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Map too large",
+            ));
+        }
+        let len = self.len() as u16;
         len.encode(writer)?;
         for elem in self {
             elem.encode(writer)?;
@@ -650,7 +662,13 @@ impl<V: WireFormat + Send + Sync + Ord> WireFormat for VecDeque<V> {
     where
         Self: Sized,
     {
-        let len = self.len();
+        if self.len() > u16::MAX as usize {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Map too large",
+            ));
+        }
+        let len = self.len() as u16;
         len.encode(writer)?;
         for elem in self {
             elem.encode(writer)?;
@@ -681,7 +699,13 @@ impl<V: WireFormat + Send + Sync + Ord> WireFormat for BTreeSet<V> {
     where
         Self: Sized,
     {
-        let len = self.len();
+        if self.len() > u16::MAX as usize {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Map too large",
+            ));
+        }
+        let len = self.len() as u16;
         len.encode(writer)?;
         for elem in self {
             elem.encode(writer)?;
