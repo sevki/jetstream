@@ -90,7 +90,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded "><a href="0intro.html"><strong aria-hidden="true">1.</strong>  JetStream</a></li><li class="chapter-item expanded "><a href="CHANGELOG.html"><strong aria-hidden="true">2.</strong>  🆕 Changelog</a></li><li class="chapter-item expanded "><a href="coverage.html"><strong aria-hidden="true">3.</strong>  Coverage</a></li><li class="chapter-item expanded "><a href="crates.html"><strong aria-hidden="true">4.</strong>  🦀 Crates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="doc/jetstream/index.html"><strong aria-hidden="true">4.1.</strong> 📦 jetstream</a></li><li class="chapter-item expanded "><a href="doc/jetstream_9p/index.html"><strong aria-hidden="true">4.2.</strong> 📦 jetstream_9p</a></li><li class="chapter-item expanded "><a href="doc/jetstream_iroh/index.html"><strong aria-hidden="true">4.3.</strong> 📦 jetstream_iroh</a></li><li class="chapter-item expanded "><a href="doc/jetstream_libc/index.html"><strong aria-hidden="true">4.4.</strong> 📦 jetstream_libc</a></li><li class="chapter-item expanded "><a href="doc/jetstream_macros/index.html"><strong aria-hidden="true">4.5.</strong> 📦 jetstream_macros</a></li><li class="chapter-item expanded "><a href="doc/jetstream_quic/index.html"><strong aria-hidden="true">4.6.</strong> 📦 jetstream_quic</a></li><li class="chapter-item expanded "><a href="doc/jetstream_rpc/index.html"><strong aria-hidden="true">4.7.</strong> 📦 jetstream_rpc</a></li><li class="chapter-item expanded "><a href="doc/jetstream_ufs/index.html"><strong aria-hidden="true">4.8.</strong> 📦 jetstream_ufs</a></li><li class="chapter-item expanded "><a href="doc/jetstream_websocket/index.html"><strong aria-hidden="true">4.9.</strong> 📦 jetstream_websocket</a></li><li class="chapter-item expanded "><a href="doc/jetstream_wireformat/index.html"><strong aria-hidden="true">4.10.</strong> 📦 jetstream_wireformat</a></li></ol></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded "><a href="0intro.html"><strong aria-hidden="true">1.</strong>  JetStream</a></li><li class="chapter-item expanded "><a href="CHANGELOG.html"><strong aria-hidden="true">2.</strong>  🆕 Changelog</a></li><li class="chapter-item expanded "><a href="coverage.html"><strong aria-hidden="true">3.</strong>  Coverage</a></li><li class="chapter-item expanded "><a href="crates.html"><strong aria-hidden="true">4.</strong>  🦀 Crates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="doc/jetstream/index.html"><strong aria-hidden="true">4.1.</strong> 📦 jetstream</a></li><li class="chapter-item expanded "><a href="doc/jetstream_9p/index.html"><strong aria-hidden="true">4.2.</strong> 📦 jetstream_9p</a></li><li class="chapter-item expanded "><a href="doc/jetstream_iroh/index.html"><strong aria-hidden="true">4.3.</strong> 📦 jetstream_iroh</a></li><li class="chapter-item expanded "><a href="doc/jetstream_libc/index.html"><strong aria-hidden="true">4.4.</strong> 📦 jetstream_libc</a></li><li class="chapter-item expanded "><a href="doc/jetstream_macros/index.html"><strong aria-hidden="true">4.5.</strong> 📦 jetstream_macros</a></li><li class="chapter-item expanded "><a href="doc/jetstream_quic/index.html"><strong aria-hidden="true">4.6.</strong> 📦 jetstream_quic</a></li><li class="chapter-item expanded "><a href="doc/jetstream_rpc/index.html"><strong aria-hidden="true">4.7.</strong> 📦 jetstream_rpc</a></li><li class="chapter-item expanded "><a href="doc/jetstream_ufs/index.html"><strong aria-hidden="true">4.8.</strong> 📦 jetstream_ufs</a></li><li class="chapter-item expanded "><a href="doc/jetstream_websocket/index.html"><strong aria-hidden="true">4.9.</strong> 📦 jetstream_websocket</a></li><li class="chapter-item expanded "><a href="doc/jetstream_wireformat/index.html"><strong aria-hidden="true">4.10.</strong> 📦 jetstream_wireformat</a></li></ol></li><li class="chapter-item expanded "><a href="guides.html"><strong aria-hidden="true">5.</strong>  📚 Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="context.html"><strong aria-hidden="true">5.1.</strong>  🔍 Context</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">5.2.</strong>  📊 Tracing</a></li></ol></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle">
                 <div class="sidebar-resize-indicator"></div>
@@ -872,6 +872,633 @@
 <div style="break-before: page; page-break-before: always;"></div><h1 id="-jetstream_ufs"><a class="header" href="#-jetstream_ufs">📦 jetstream_ufs</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="-jetstream_websocket"><a class="header" href="#-jetstream_websocket">📦 jetstream_websocket</a></h1>
 <div style="break-before: page; page-break-before: always;"></div><h1 id="-jetstream_wireformat"><a class="header" href="#-jetstream_wireformat">📦 jetstream_wireformat</a></h1>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="guides"><a class="header" href="#guides">Guides</a></h1>
+<p>This section contains practical guides for working with JetStream's key features.</p>
+<h2 id="available-guides"><a class="header" href="#available-guides">Available Guides</a></h2>
+<h3 id="context"><a class="header" href="#context"><a href="context.html">Context</a></a></h3>
+<p>Learn how to use JetStream's <code>Context</code> type to access connection metadata and peer information. This guide covers:</p>
+<ul>
+<li>Understanding remote addresses and peer information</li>
+<li>Accessing process credentials on Unix systems</li>
+<li>Implementing access control and audit logging</li>
+<li>Platform-specific features and best practices</li>
+</ul>
+<h3 id="tracing"><a class="header" href="#tracing"><a href="tracing.html">Tracing</a></a></h3>
+<p>Discover how to instrument your RPC services with distributed tracing. This guide covers:</p>
+<ul>
+<li>Enabling and configuring tracing in your services</li>
+<li>Automatic vs. custom instrumentation</li>
+<li>Structured logging and span management</li>
+<li>Integration with observability platforms</li>
+<li>Performance considerations and best practices</li>
+</ul>
+<h2 id="getting-started"><a class="header" href="#getting-started">Getting Started</a></h2>
+<p>If you're new to JetStream, we recommend starting with the <a href="0intro.html">introduction</a> and then exploring these guides based on your needs:</p>
+<ol>
+<li><strong>Need to identify callers?</strong> → Start with <a href="context.html">Context</a></li>
+<li><strong>Want to monitor and debug services?</strong> → Start with <a href="tracing.html">Tracing</a></li>
+</ol>
+<h2 id="examples-1"><a class="header" href="#examples-1">Examples</a></h2>
+<p>All guides include practical examples. For complete, runnable examples, see the <a href="https://github.com/sevki/jetstream/tree/main/examples">examples directory</a> in the repository:</p>
+<ul>
+<li><code>echo.rs</code> - Basic RPC service</li>
+<li><code>echo_with_tracing.rs</code> - RPC service with full tracing instrumentation</li>
+<li><code>iroh_echo.rs</code> - Using iroh transport with context</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="context-1"><a class="header" href="#context-1">Context</a></h1>
+<p>The <code>Context</code> type in JetStream provides access to connection metadata and peer information for RPC calls. It allows services to determine who is making requests and from where, enabling security, auditing, and routing decisions.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>Context</code> struct contains two main pieces of information:</p>
+<ul>
+<li><code>remote</code>: The remote address of the connection</li>
+<li><code>peer</code>: Information about the peer (process credentials on Unix, node ID for iroh)</li>
+</ul>
+<h2 id="key-components"><a class="header" href="#key-components">Key Components</a></h2>
+<h3 id="context-structure"><a class="header" href="#context-structure">Context Structure</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Context {
+    remote: Option&lt;RemoteAddr&gt;,
+    peer: Option&lt;Peer&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="remote-address-types"><a class="header" href="#remote-address-types">Remote Address Types</a></h3>
+<p>The <code>RemoteAddr</code> enum represents different types of remote addresses:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum RemoteAddr {
+    UnixAddr(PathBuf),      // Unix domain socket path
+    NodeAddr(NodeAddr),      // Iroh node address
+    IpAddr(IpAddr),         // IP address (for QUIC/TCP)
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="peer-types"><a class="header" href="#peer-types">Peer Types</a></h3>
+<p>The <code>Peer</code> enum provides information about the connected peer:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Peer {
+    Unix(Unix),        // Unix credentials (uid, gid, pid)
+    NodeId(NodeId),    // Iroh node identifier
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
+<h3 id="obtaining-context-from-a-connection"><a class="header" href="#obtaining-context-from-a-connection">Obtaining Context from a Connection</a></h3>
+<p>Any framed connection that implements the <code>Contextual</code> trait can provide context:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+// For a Unix domain socket connection
+let framed: Framed&lt;UnixStream, _&gt; = /* ... */;
+let ctx = framed.context();
+
+// For a QUIC connection
+let framed: Framed&lt;BidirectionalStream, _&gt; = /* ... */;
+let ctx = framed.context();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="supported-transports"><a class="header" href="#supported-transports">Supported Transports</a></h3>
+<p>JetStream provides <code>Contextual</code> implementations for:</p>
+<ul>
+<li><strong>Unix Domain Sockets</strong> (Linux/macOS): Provides path and process credentials</li>
+<li><strong>QUIC streams</strong> (via s2n-quic): Provides IP address</li>
+<li><strong>TCP streams</strong> (via turmoil): Provides IP address</li>
+<li><strong>Iroh connections</strong>: Provides node address and ID</li>
+</ul>
+<h3 id="accessing-context-information"><a class="header" href="#accessing-context-information">Accessing Context Information</a></h3>
+<h4 id="remote-address"><a class="header" href="#remote-address">Remote Address</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+fn check_remote_address(ctx: &amp;Context) {
+    if let Some(remote) = &amp;ctx.remote {
+        match remote {
+            RemoteAddr::UnixAddr(path) =&gt; {
+                println!(&quot;Connection from Unix socket: {:?}&quot;, path);
+            }
+            RemoteAddr::IpAddr(ip) =&gt; {
+                println!(&quot;Connection from IP: {}&quot;, ip);
+            }
+            RemoteAddr::NodeAddr(node_addr) =&gt; {
+                println!(&quot;Connection from Iroh node: {:?}&quot;, node_addr);
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="peer-credentials-unix"><a class="header" href="#peer-credentials-unix">Peer Credentials (Unix)</a></h4>
+<p>On Linux and macOS, you can access process credentials for Unix domain socket connections:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+#[cfg(any(target_os = &quot;linux&quot;, target_os = &quot;macos&quot;))]
+fn check_peer_credentials(ctx: &amp;Context) {
+    if let Some(Peer::Unix(unix_cred)) = &amp;ctx.peer {
+        println!(&quot;UID: {}&quot;, unix_cred.uid());
+        println!(&quot;GID: {}&quot;, unix_cred.gid());
+        
+        if let Some(pid) = unix_cred.pid() {
+            println!(&quot;PID: {}&quot;, pid);
+            
+            #[cfg(target_os = &quot;linux&quot;)]
+            if let Ok(path) = unix_cred.process_path() {
+                println!(&quot;Process path: {:?}&quot;, path);
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="example-access-control"><a class="header" href="#example-access-control">Example: Access Control</a></h2>
+<p>Here's a complete example showing how to use Context for access control:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+use jetstream_macros::service;
+
+#[service]
+pub trait SecureService {
+    async fn restricted_operation(&amp;mut self) -&gt; Result&lt;String, Error&gt;;
+}
+
+struct SecureServiceImpl {
+    allowed_uids: Vec&lt;u32&gt;,
+}
+
+impl SecureService for SecureServiceImpl {
+    async fn restricted_operation(&amp;mut self) -&gt; Result&lt;String, Error&gt; {
+        // Note: In a real service, you would obtain the context
+        // from the framed connection when handling the request
+        Ok(&quot;Operation completed&quot;.to_string())
+    }
+}
+
+// In the server handler
+async fn handle_connection(stream: impl std::io::Read + std::io::Write) {
+    let framed = Framed::new(stream, /* codec */);
+    let ctx = framed.context();
+    
+    #[cfg(any(target_os = &quot;linux&quot;, target_os = &quot;macos&quot;))]
+    if let Some(Peer::Unix(unix_cred)) = &amp;ctx.peer {
+        let allowed_uids = vec![1000, 1001];
+        if !allowed_uids.contains(&amp;unix_cred.uid()) {
+            eprintln!(&quot;Access denied for UID: {}&quot;, unix_cred.uid());
+            return;
+        }
+    }
+    
+    // Process the request...
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="example-audit-logging"><a class="header" href="#example-audit-logging">Example: Audit Logging</a></h2>
+<p>Using Context to log connection information:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+fn log_connection_info(ctx: &amp;Context) {
+    let mut log_msg = String::from(&quot;Connection: &quot;);
+    
+    if let Some(remote) = &amp;ctx.remote {
+        match remote {
+            RemoteAddr::UnixAddr(path) =&gt; {
+                log_msg.push_str(&amp;format!(&quot;Unix socket {:?}&quot;, path));
+            }
+            RemoteAddr::IpAddr(ip) =&gt; {
+                log_msg.push_str(&amp;format!(&quot;IP {}&quot;, ip));
+            }
+            RemoteAddr::NodeAddr(node_addr) =&gt; {
+                log_msg.push_str(&amp;format!(&quot;Iroh node {:?}&quot;, node_addr));
+            }
+        }
+    }
+    
+    #[cfg(any(target_os = &quot;linux&quot;, target_os = &quot;macos&quot;))]
+    if let Some(Peer::Unix(unix_cred)) = &amp;ctx.peer {
+        log_msg.push_str(&amp;format!(
+            &quot; (UID: {}, GID: {}&quot;,
+            unix_cred.uid(),
+            unix_cred.gid()
+        ));
+        if let Some(pid) = unix_cred.pid() {
+            log_msg.push_str(&amp;format!(&quot;, PID: {}&quot;, pid));
+        }
+        log_msg.push(')');
+    }
+    
+    println!(&quot;{}&quot;, log_msg);
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="platform-support"><a class="header" href="#platform-support">Platform Support</a></h2>
+<h3 id="unix-domain-sockets-linuxmacos"><a class="header" href="#unix-domain-sockets-linuxmacos">Unix Domain Sockets (Linux/macOS)</a></h3>
+<ul>
+<li>Provides full peer credentials (UID, GID, PID)</li>
+<li>Can retrieve process path on Linux via <code>/proc/{pid}/exe</code></li>
+<li>Most detailed context information available</li>
+</ul>
+<h3 id="quic-connections"><a class="header" href="#quic-connections">QUIC Connections</a></h3>
+<ul>
+<li>Provides remote IP address</li>
+<li>No peer credentials (use mTLS certificates for authentication)</li>
+</ul>
+<h3 id="iroh-connections"><a class="header" href="#iroh-connections">Iroh Connections</a></h3>
+<ul>
+<li>Provides node address with optional relay URL</li>
+<li>Provides node ID for peer identification</li>
+<li>Supports direct addresses for connection info</li>
+</ul>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Always check for None</strong>: Context fields are <code>Option</code> types and may not always be available</li>
+<li><strong>Platform-specific code</strong>: Use <code>#[cfg]</code> attributes for Unix-specific functionality</li>
+<li><strong>Security</strong>: Don't rely solely on context for authentication; use it in combination with mTLS or other authentication mechanisms</li>
+<li><strong>Logging</strong>: Include context information in audit logs for debugging and security monitoring</li>
+</ol>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="tracing.html">Tracing documentation</a> - For instrumenting RPC calls</li>
+<li><a href="https://github.com/sevki/jetstream/tree/main/examples">Examples</a> - See context in action</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div><h1 id="tracing-1"><a class="header" href="#tracing-1">Tracing</a></h1>
+<p>JetStream provides built-in support for distributed tracing using the <code>tracing</code> crate. This allows you to instrument your RPC services and gain visibility into request flows, performance, and debugging information.</p>
+<h2 id="overview-1"><a class="header" href="#overview-1">Overview</a></h2>
+<p>Tracing in JetStream helps you:</p>
+<ul>
+<li>Track request execution across service boundaries</li>
+<li>Measure performance of individual RPC methods</li>
+<li>Debug issues with structured logging</li>
+<li>Monitor service behavior in production</li>
+</ul>
+<h2 id="enabling-tracing"><a class="header" href="#enabling-tracing">Enabling Tracing</a></h2>
+<p>Tracing is available through the <code>tracing</code> feature flag, which is enabled by default:</p>
+<pre><code class="language-toml">[dependencies]
+jetstream = &quot;9.4&quot;  # tracing enabled by default
+</code></pre>
+<p>To explicitly control the feature:</p>
+<pre><code class="language-toml">[dependencies]
+jetstream = { version = &quot;9.4&quot;, default-features = false, features = [&quot;tracing&quot;] }
+</code></pre>
+<h2 id="using-tracing-in-services"><a class="header" href="#using-tracing-in-services">Using Tracing in Services</a></h2>
+<h3 id="automatic-instrumentation"><a class="header" href="#automatic-instrumentation">Automatic Instrumentation</a></h3>
+<p>The easiest way to add tracing is using the <code>#[service(tracing)]</code> attribute on your service trait:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+use jetstream_macros::service;
+
+#[service(tracing)]  // Automatically instrument all methods
+pub trait MyService {
+    async fn process(&amp;mut self, data: String) -&gt; Result&lt;String, Error&gt;;
+    async fn compute(&amp;mut self, x: i32, y: i32) -&gt; Result&lt;i32, Error&gt;;
+}
+
+struct MyServiceImpl;
+
+impl MyService for MyServiceImpl {
+    async fn process(&amp;mut self, data: String) -&gt; Result&lt;String, Error&gt; {
+        // Method is automatically traced
+        tracing::info!(&quot;Processing data of length {}&quot;, data.len());
+        Ok(data.to_uppercase())
+    }
+    
+    async fn compute(&amp;mut self, x: i32, y: i32) -&gt; Result&lt;i32, Error&gt; {
+        // Method is automatically traced
+        tracing::debug!(&quot;Computing {} + {}&quot;, x, y);
+        Ok(x + y)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="custom-instrumentation"><a class="header" href="#custom-instrumentation">Custom Instrumentation</a></h3>
+<p>For more control, use the <code>#[instrument]</code> attribute on individual methods:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+use jetstream_macros::service;
+
+#[service]
+pub trait AdvancedService {
+    /// Custom tracing with specific configuration
+    #[instrument(
+        name = &quot;advanced_operation&quot;,
+        skip(self, large_data),
+        fields(
+            data_len = large_data.len(),
+            user_id = %user_id,
+        ),
+        level = &quot;debug&quot;
+    )]
+    async fn process_data(
+        &amp;mut self,
+        user_id: String,
+        large_data: Vec&lt;u8&gt;,
+    ) -&gt; Result&lt;(), Error&gt;;
+    
+    /// Simple instrumentation
+    #[instrument(skip(self))]
+    async fn simple_call(&amp;mut self, value: i32) -&gt; Result&lt;i32, Error&gt;;
+}
+
+struct AdvancedServiceImpl;
+
+impl AdvancedService for AdvancedServiceImpl {
+    async fn process_data(
+        &amp;mut self,
+        user_id: String,
+        large_data: Vec&lt;u8&gt;,
+    ) -&gt; Result&lt;(), Error&gt; {
+        tracing::info!(&quot;Starting data processing&quot;);
+        // Processing logic...
+        tracing::info!(&quot;Data processing complete&quot;);
+        Ok(())
+    }
+    
+    async fn simple_call(&amp;mut self, value: i32) -&gt; Result&lt;i32, Error&gt; {
+        Ok(value * 2)
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="instrument-attribute-options"><a class="header" href="#instrument-attribute-options">Instrument Attribute Options</a></h3>
+<p>Common options for the <code>#[instrument]</code> attribute:</p>
+<ul>
+<li><code>name = &quot;span_name&quot;</code>: Custom span name (default: function name)</li>
+<li><code>skip(arg1, arg2)</code>: Skip specific arguments from the span</li>
+<li><code>skip_all</code>: Skip all arguments</li>
+<li><code>fields(key = value)</code>: Add custom fields to the span</li>
+<li><code>level = &quot;trace|debug|info|warn|error&quot;</code>: Set the span level</li>
+<li><code>err</code>: Automatically record errors</li>
+<li><code>ret</code>: Record the return value</li>
+</ul>
+<h2 id="initializing-the-tracing-subscriber"><a class="header" href="#initializing-the-tracing-subscriber">Initializing the Tracing Subscriber</a></h2>
+<p>Before using tracing, initialize a subscriber in your <code>main</code> function:</p>
+<h3 id="basic-setup"><a class="header" href="#basic-setup">Basic Setup</a></h3>
+<pre><pre class="playground"><code class="language-rust">#[tokio::main]
+async fn main() {
+    // Simple initialization with default settings
+    tracing_subscriber::fmt::init();
+    
+    // Your application code...
+}</code></pre></pre>
+<h3 id="advanced-configuration"><a class="header" href="#advanced-configuration">Advanced Configuration</a></h3>
+<pre><pre class="playground"><code class="language-rust">use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+
+#[tokio::main]
+async fn main() {
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_thread_ids(true)
+        .with_thread_names(true)
+        .with_file(true)
+        .with_line_number(true)
+        .with_target(false)
+        .with_span_events(
+            fmt::format::FmtSpan::ENTER | fmt::format::FmtSpan::EXIT
+        )
+        .with_env_filter(
+            EnvFilter::from_default_env()
+                .add_directive(tracing::Level::INFO.into())
+        )
+        .init();
+    
+    // Your application code...
+}</code></pre></pre>
+<h3 id="environment-based-configuration"><a class="header" href="#environment-based-configuration">Environment-based Configuration</a></h3>
+<p>Use the <code>RUST_LOG</code> environment variable to control log levels:</p>
+<pre><code class="language-bash"># Set global level
+RUST_LOG=debug cargo run
+
+# Set per-module levels
+RUST_LOG=info,my_service=debug,jetstream=trace cargo run
+
+# Complex filtering
+RUST_LOG=&quot;warn,my_service::handler=debug&quot; cargo run
+</code></pre>
+<h2 id="complete-example"><a class="header" href="#complete-example">Complete Example</a></h2>
+<p>Here's a full example from the JetStream repository showing tracing in action:</p>
+<pre><pre class="playground"><code class="language-rust">use std::{net::SocketAddr, path::Path};
+use jetstream::prelude::*;
+use jetstream_macros::service;
+use jetstream_rpc::{client::ClientCodec, server::run, Framed};
+use s2n_quic::{client::Connect, provider::tls, Client, Server};
+
+/// Service with automatic tracing enabled
+#[service(tracing)]
+pub trait Echo {
+    /// This method has custom tracing configuration
+    #[instrument(
+        name = &quot;echo_ping&quot;,
+        skip(self),
+        fields(
+            message_len = message.len(),
+        ),
+        level = &quot;debug&quot;
+    )]
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String, Error&gt;;
+    
+    /// This method uses default auto-instrumentation
+    async fn echo(&amp;mut self, text: String) -&gt; Result&lt;String, Error&gt;;
+}
+
+struct EchoImpl;
+
+impl Echo for EchoImpl {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String, Error&gt; {
+        tracing::info!(&quot;Ping received: {}&quot;, message);
+        Ok(format!(&quot;Pong: {}&quot;, message))
+    }
+    
+    async fn echo(&amp;mut self, text: String) -&gt; Result&lt;String, Error&gt; {
+        tracing::info!(&quot;Echo received: {}&quot;, text);
+        Ok(text)
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    // Initialize tracing subscriber with detailed configuration
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_thread_ids(true)
+        .with_span_events(
+            tracing_subscriber::fmt::format::FmtSpan::ENTER
+                | tracing_subscriber::fmt::format::FmtSpan::EXIT,
+        )
+        .init();
+    
+    tracing::info!(&quot;Starting echo service with tracing&quot;);
+    
+    // Server and client implementation...
+}</code></pre></pre>
+<h2 id="tracing-levels"><a class="header" href="#tracing-levels">Tracing Levels</a></h2>
+<p>JetStream uses standard tracing levels:</p>
+<div class="table-wrapper"><table><thead><tr><th>Level</th><th>Usage</th></tr></thead><tbody>
+<tr><td><code>ERROR</code></td><td>Critical errors that require immediate attention</td></tr>
+<tr><td><code>WARN</code></td><td>Warning conditions that should be investigated</td></tr>
+<tr><td><code>INFO</code></td><td>Informational messages about normal operation</td></tr>
+<tr><td><code>DEBUG</code></td><td>Detailed information for debugging</td></tr>
+<tr><td><code>TRACE</code></td><td>Very detailed trace information</td></tr>
+</tbody></table>
+</div>
+<p>Example usage:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>impl MyService for MyServiceImpl {
+    async fn complex_operation(&amp;mut self) -&gt; Result&lt;(), Error&gt; {
+        tracing::trace!(&quot;Entering complex operation&quot;);
+        
+        tracing::debug!(&quot;Step 1: Validating input&quot;);
+        // validation logic...
+        
+        tracing::info!(&quot;Processing started&quot;);
+        // main logic...
+        
+        if some_condition {
+            tracing::warn!(&quot;Unusual condition detected&quot;);
+        }
+        
+        if critical_error {
+            tracing::error!(&quot;Critical error occurred&quot;);
+            return Err(Error::from(&quot;Critical error&quot;));
+        }
+        
+        tracing::info!(&quot;Processing complete&quot;);
+        Ok(())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="structured-logging"><a class="header" href="#structured-logging">Structured Logging</a></h2>
+<p>Tracing supports structured fields for better log analysis:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+async fn process_request(user_id: u64, request_id: String) -&gt; Result&lt;(), Error&gt; {
+    // Create a span with structured fields
+    let span = tracing::info_span!(
+        &quot;process_request&quot;,
+        user_id = %user_id,
+        request_id = %request_id,
+        status = tracing::field::Empty,
+    );
+    
+    let _guard = span.enter();
+    
+    tracing::info!(&quot;Request started&quot;);
+    
+    // Update fields during execution
+    span.record(&quot;status&quot;, &quot;processing&quot;);
+    
+    // ... processing logic ...
+    
+    span.record(&quot;status&quot;, &quot;complete&quot;);
+    tracing::info!(&quot;Request completed&quot;);
+    
+    Ok(())
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="performance-considerations"><a class="header" href="#performance-considerations">Performance Considerations</a></h2>
+<ol>
+<li><strong>Use appropriate levels</strong>: Use <code>debug</code> and <code>trace</code> for development, <code>info</code> and above for production</li>
+<li><strong>Skip large data</strong>: Use <code>skip()</code> to avoid logging large payloads</li>
+<li><strong>Conditional compilation</strong>: Tracing has minimal overhead when disabled, but you can also use compile-time feature gates</li>
+<li><strong>Sampling</strong>: For high-throughput services, consider implementing sampling</li>
+</ol>
+<p>Example with conditional tracing:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[service]
+pub trait HighThroughputService {
+    #[instrument(skip(self, large_payload), level = &quot;debug&quot;)]
+    async fn process(&amp;mut self, id: u64, large_payload: Vec&lt;u8&gt;) -&gt; Result&lt;(), Error&gt;;
+}
+
+impl HighThroughputService for MyImpl {
+    async fn process(&amp;mut self, id: u64, large_payload: Vec&lt;u8&gt;) -&gt; Result&lt;(), Error&gt; {
+        // Only log in debug builds
+        #[cfg(debug_assertions)]
+        tracing::debug!(&quot;Processing {} bytes&quot;, large_payload.len());
+        
+        // Production info (always compiled)
+        if id % 1000 == 0 {  // Sample every 1000th request
+            tracing::info!(&quot;Processed request {}&quot;, id);
+        }
+        
+        Ok(())
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="integration-with-observability-tools"><a class="header" href="#integration-with-observability-tools">Integration with Observability Tools</a></h2>
+<p>JetStream's tracing can be exported to various observability platforms:</p>
+<h3 id="opentelemetry"><a class="header" href="#opentelemetry">OpenTelemetry</a></h3>
+<pre><code class="language-toml">[dependencies]
+tracing-opentelemetry = &quot;0.23&quot;
+opentelemetry = &quot;0.22&quot;
+opentelemetry-jaeger = &quot;0.21&quot;
+</code></pre>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use opentelemetry::global;
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+
+fn init_tracing() {
+    let tracer = opentelemetry_jaeger::new_agent_pipeline()
+        .with_service_name(&quot;my-jetstream-service&quot;)
+        .install_simple()
+        .expect(&quot;Failed to install OpenTelemetry tracer&quot;);
+    
+    tracing_subscriber::registry()
+        .with(tracing_opentelemetry::layer().with_tracer(tracer))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="json-output"><a class="header" href="#json-output">JSON Output</a></h3>
+<p>For structured log aggregation:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>tracing_subscriber::fmt()
+    .json()
+    .with_max_level(tracing::Level::INFO)
+    .init();
+<span class="boring">}</span></code></pre></pre>
+<h2 id="best-practices-1"><a class="header" href="#best-practices-1">Best Practices</a></h2>
+<ol>
+<li><strong>Use <code>#[service(tracing)]</code> for simple cases</strong>: It provides good defaults for most services</li>
+<li><strong>Add custom spans for business logic</strong>: Use <code>#[instrument]</code> or manual spans for important operations</li>
+<li><strong>Include context</strong>: Add relevant fields like user IDs, request IDs, etc.</li>
+<li><strong>Skip sensitive data</strong>: Never log passwords, tokens, or other secrets</li>
+<li><strong>Set appropriate levels</strong>: Use debug/trace for verbose information, info for important events</li>
+<li><strong>Test with tracing enabled</strong>: Ensure your traces provide useful information</li>
+<li><strong>Monitor overhead</strong>: Profile your application to ensure tracing doesn't impact performance</li>
+</ol>
+<h2 id="troubleshooting"><a class="header" href="#troubleshooting">Troubleshooting</a></h2>
+<h3 id="no-output-when-tracing"><a class="header" href="#no-output-when-tracing">No output when tracing</a></h3>
+<p>Make sure you've initialized a subscriber:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>tracing_subscriber::fmt::init();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="too-much-output"><a class="header" href="#too-much-output">Too much output</a></h3>
+<p>Adjust the log level:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>tracing_subscriber::fmt()
+    .with_max_level(tracing::Level::INFO)
+    .init();
+<span class="boring">}</span></code></pre></pre>
+<p>Or use environment variables:</p>
+<pre><code class="language-bash">RUST_LOG=info cargo run
+</code></pre>
+<h3 id="missing-spans"><a class="header" href="#missing-spans">Missing spans</a></h3>
+<p>Ensure the <code>tracing</code> feature is enabled:</p>
+<pre><code class="language-toml">jetstream = { version = &quot;9.4&quot;, features = [&quot;tracing&quot;] }
+</code></pre>
+<h2 id="see-also-1"><a class="header" href="#see-also-1">See Also</a></h2>
+<ul>
+<li><a href="context.html">Context documentation</a> - For accessing connection metadata</li>
+<li><a href="https://github.com/sevki/jetstream/blob/main/examples/echo_with_tracing.rs">echo_with_tracing.rs example</a> - Complete working example</li>
+<li><a href="https://docs.rs/tracing">tracing crate documentation</a> - Detailed tracing documentation</li>
+<li><a href="https://docs.rs/tracing-subscriber">tracing-subscriber documentation</a> - Subscriber configuration</li>
+</ul>
 
                     </main>
 

@@ -1,0 +1,444 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title> 🔍 Context - JetStream Book</title>
+
+
+        <!-- Custom HTML head -->
+        
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon.svg">
+        <link rel="shortcut icon" href="favicon.png">
+        <link rel="stylesheet" href="css/variables.css">
+        <link rel="stylesheet" href="css/general.css">
+        <link rel="stylesheet" href="css/chrome.css">
+        <link rel="stylesheet" href="css/print.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="FontAwesome/css/font-awesome.css">
+        <link rel="stylesheet" href="fonts/fonts.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" href="highlight.css">
+        <link rel="stylesheet" href="tomorrow-night.css">
+        <link rel="stylesheet" href="ayu-highlight.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="docs/styles.css">
+
+    </head>
+    <body class="sidebar-visible no-js">
+    <div id="body-container">
+        <!-- Provide site root to javascript -->
+        <script>
+            var path_to_root = "";
+            var default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? "navy" : "light";
+        </script>
+
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                var theme = localStorage.getItem('mdbook-theme');
+                var sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            var theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            var html = document.querySelector('html');
+            html.classList.remove('light')
+            html.classList.add(theme);
+            var body = document.querySelector('body');
+            body.classList.remove('no-js')
+            body.classList.add('js');
+        </script>
+
+        <input type="checkbox" id="sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            var body = document.querySelector('body');
+            var sidebar = null;
+            var sidebar_toggle = document.getElementById("sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+            }
+            sidebar_toggle.checked = sidebar === 'visible';
+            body.classList.remove('sidebar-visible');
+            body.classList.add("sidebar-" + sidebar);
+        </script>
+
+        <nav id="sidebar" class="sidebar" aria-label="Table of contents">
+            <div class="sidebar-scrollbox">
+                <ol class="chapter"><li class="chapter-item expanded "><a href="0intro.html"><strong aria-hidden="true">1.</strong>  JetStream</a></li><li class="chapter-item expanded "><a href="CHANGELOG.html"><strong aria-hidden="true">2.</strong>  🆕 Changelog</a></li><li class="chapter-item expanded "><a href="coverage.html"><strong aria-hidden="true">3.</strong>  Coverage</a></li><li class="chapter-item expanded "><a href="crates.html"><strong aria-hidden="true">4.</strong>  🦀 Crates</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="doc/jetstream/index.html"><strong aria-hidden="true">4.1.</strong> 📦 jetstream</a></li><li class="chapter-item expanded "><a href="doc/jetstream_9p/index.html"><strong aria-hidden="true">4.2.</strong> 📦 jetstream_9p</a></li><li class="chapter-item expanded "><a href="doc/jetstream_iroh/index.html"><strong aria-hidden="true">4.3.</strong> 📦 jetstream_iroh</a></li><li class="chapter-item expanded "><a href="doc/jetstream_libc/index.html"><strong aria-hidden="true">4.4.</strong> 📦 jetstream_libc</a></li><li class="chapter-item expanded "><a href="doc/jetstream_macros/index.html"><strong aria-hidden="true">4.5.</strong> 📦 jetstream_macros</a></li><li class="chapter-item expanded "><a href="doc/jetstream_quic/index.html"><strong aria-hidden="true">4.6.</strong> 📦 jetstream_quic</a></li><li class="chapter-item expanded "><a href="doc/jetstream_rpc/index.html"><strong aria-hidden="true">4.7.</strong> 📦 jetstream_rpc</a></li><li class="chapter-item expanded "><a href="doc/jetstream_ufs/index.html"><strong aria-hidden="true">4.8.</strong> 📦 jetstream_ufs</a></li><li class="chapter-item expanded "><a href="doc/jetstream_websocket/index.html"><strong aria-hidden="true">4.9.</strong> 📦 jetstream_websocket</a></li><li class="chapter-item expanded "><a href="doc/jetstream_wireformat/index.html"><strong aria-hidden="true">4.10.</strong> 📦 jetstream_wireformat</a></li></ol></li><li class="chapter-item expanded "><a href="guides.html"><strong aria-hidden="true">5.</strong>  📚 Guides</a></li><li><ol class="section"><li class="chapter-item expanded "><a href="context.html" class="active"><strong aria-hidden="true">5.1.</strong>  🔍 Context</a></li><li class="chapter-item expanded "><a href="tracing.html"><strong aria-hidden="true">5.2.</strong>  📊 Tracing</a></li></ol></li></ol>
+            </div>
+            <div id="sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <!-- Track and set sidebar scroll position -->
+        <script>
+            var sidebarScrollbox = document.querySelector('#sidebar .sidebar-scrollbox');
+            sidebarScrollbox.addEventListener('click', function(e) {
+                if (e.target.tagName === 'A') {
+                    sessionStorage.setItem('sidebar-scroll', sidebarScrollbox.scrollTop);
+                }
+            }, { passive: true });
+            var sidebarScrollTop = sessionStorage.getItem('sidebar-scroll');
+            sessionStorage.removeItem('sidebar-scroll');
+            if (sidebarScrollTop) {
+                // preserve sidebar scroll position when navigating via links within sidebar
+                sidebarScrollbox.scrollTop = sidebarScrollTop;
+            } else {
+                // scroll sidebar to current active section when navigating via "next/previous chapter" buttons
+                var activeSection = document.querySelector('#sidebar .active');
+                if (activeSection) {
+                    activeSection.scrollIntoView({ block: 'center' });
+                }
+            }
+        </script>
+
+        <div id="page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                                <div id="menu-bar-hover-placeholder"></div>
+                <div id="menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="sidebar-toggle" class="icon-button" for="sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="sidebar">
+                            <i class="fa fa-bars"></i>
+                        </label>
+                        <button id="theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="theme-list">
+                            <i class="fa fa-paint-brush"></i>
+                        </button>
+                        <ul id="theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="ayu">Ayu</button></li>
+                        </ul>
+                        <button id="search-toggle" class="icon-button" type="button" title="Search. (Shortkey: s)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="S" aria-controls="searchbar">
+                            <i class="fa fa-search"></i>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">JetStream Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <i id="print-button" class="fa fa-print"></i>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="search-wrapper" class="hidden">
+                    <form id="searchbar-outer" class="searchbar-outer">
+                        <input type="search" id="searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="searchresults-outer" aria-describedby="searchresults-header">
+                    </form>
+                    <div id="searchresults-outer" class="searchresults-outer hidden">
+                        <div id="searchresults-header" class="searchresults-header"></div>
+                        <ul id="searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="content" class="content">
+                    <main>
+                        <h1 id="context"><a class="header" href="#context">Context</a></h1>
+<p>The <code>Context</code> type in JetStream provides access to connection metadata and peer information for RPC calls. It allows services to determine who is making requests and from where, enabling security, auditing, and routing decisions.</p>
+<h2 id="overview"><a class="header" href="#overview">Overview</a></h2>
+<p>The <code>Context</code> struct contains two main pieces of information:</p>
+<ul>
+<li><code>remote</code>: The remote address of the connection</li>
+<li><code>peer</code>: Information about the peer (process credentials on Unix, node ID for iroh)</li>
+</ul>
+<h2 id="key-components"><a class="header" href="#key-components">Key Components</a></h2>
+<h3 id="context-structure"><a class="header" href="#context-structure">Context Structure</a></h3>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub struct Context {
+    remote: Option&lt;RemoteAddr&gt;,
+    peer: Option&lt;Peer&gt;,
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="remote-address-types"><a class="header" href="#remote-address-types">Remote Address Types</a></h3>
+<p>The <code>RemoteAddr</code> enum represents different types of remote addresses:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum RemoteAddr {
+    UnixAddr(PathBuf),      // Unix domain socket path
+    NodeAddr(NodeAddr),      // Iroh node address
+    IpAddr(IpAddr),         // IP address (for QUIC/TCP)
+}
+<span class="boring">}</span></code></pre></pre>
+<h3 id="peer-types"><a class="header" href="#peer-types">Peer Types</a></h3>
+<p>The <code>Peer</code> enum provides information about the connected peer:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>pub enum Peer {
+    Unix(Unix),        // Unix credentials (uid, gid, pid)
+    NodeId(NodeId),    // Iroh node identifier
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="usage"><a class="header" href="#usage">Usage</a></h2>
+<h3 id="obtaining-context-from-a-connection"><a class="header" href="#obtaining-context-from-a-connection">Obtaining Context from a Connection</a></h3>
+<p>Any framed connection that implements the <code>Contextual</code> trait can provide context:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+// For a Unix domain socket connection
+let framed: Framed&lt;UnixStream, _&gt; = /* ... */;
+let ctx = framed.context();
+
+// For a QUIC connection
+let framed: Framed&lt;BidirectionalStream, _&gt; = /* ... */;
+let ctx = framed.context();
+<span class="boring">}</span></code></pre></pre>
+<h3 id="supported-transports"><a class="header" href="#supported-transports">Supported Transports</a></h3>
+<p>JetStream provides <code>Contextual</code> implementations for:</p>
+<ul>
+<li><strong>Unix Domain Sockets</strong> (Linux/macOS): Provides path and process credentials</li>
+<li><strong>QUIC streams</strong> (via s2n-quic): Provides IP address</li>
+<li><strong>TCP streams</strong> (via turmoil): Provides IP address</li>
+<li><strong>Iroh connections</strong>: Provides node address and ID</li>
+</ul>
+<h3 id="accessing-context-information"><a class="header" href="#accessing-context-information">Accessing Context Information</a></h3>
+<h4 id="remote-address"><a class="header" href="#remote-address">Remote Address</a></h4>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+fn check_remote_address(ctx: &amp;Context) {
+    if let Some(remote) = &amp;ctx.remote {
+        match remote {
+            RemoteAddr::UnixAddr(path) =&gt; {
+                println!(&quot;Connection from Unix socket: {:?}&quot;, path);
+            }
+            RemoteAddr::IpAddr(ip) =&gt; {
+                println!(&quot;Connection from IP: {}&quot;, ip);
+            }
+            RemoteAddr::NodeAddr(node_addr) =&gt; {
+                println!(&quot;Connection from Iroh node: {:?}&quot;, node_addr);
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h4 id="peer-credentials-unix"><a class="header" href="#peer-credentials-unix">Peer Credentials (Unix)</a></h4>
+<p>On Linux and macOS, you can access process credentials for Unix domain socket connections:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+#[cfg(any(target_os = &quot;linux&quot;, target_os = &quot;macos&quot;))]
+fn check_peer_credentials(ctx: &amp;Context) {
+    if let Some(Peer::Unix(unix_cred)) = &amp;ctx.peer {
+        println!(&quot;UID: {}&quot;, unix_cred.uid());
+        println!(&quot;GID: {}&quot;, unix_cred.gid());
+        
+        if let Some(pid) = unix_cred.pid() {
+            println!(&quot;PID: {}&quot;, pid);
+            
+            #[cfg(target_os = &quot;linux&quot;)]
+            if let Ok(path) = unix_cred.process_path() {
+                println!(&quot;Process path: {:?}&quot;, path);
+            }
+        }
+    }
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="example-access-control"><a class="header" href="#example-access-control">Example: Access Control</a></h2>
+<p>Here's a complete example showing how to use Context for access control:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+use jetstream_macros::service;
+
+#[service]
+pub trait SecureService {
+    async fn restricted_operation(&amp;mut self) -&gt; Result&lt;String, Error&gt;;
+}
+
+struct SecureServiceImpl {
+    allowed_uids: Vec&lt;u32&gt;,
+}
+
+impl SecureService for SecureServiceImpl {
+    async fn restricted_operation(&amp;mut self) -&gt; Result&lt;String, Error&gt; {
+        // Note: In a real service, you would obtain the context
+        // from the framed connection when handling the request
+        Ok(&quot;Operation completed&quot;.to_string())
+    }
+}
+
+// In the server handler
+async fn handle_connection(stream: impl std::io::Read + std::io::Write) {
+    let framed = Framed::new(stream, /* codec */);
+    let ctx = framed.context();
+    
+    #[cfg(any(target_os = &quot;linux&quot;, target_os = &quot;macos&quot;))]
+    if let Some(Peer::Unix(unix_cred)) = &amp;ctx.peer {
+        let allowed_uids = vec![1000, 1001];
+        if !allowed_uids.contains(&amp;unix_cred.uid()) {
+            eprintln!(&quot;Access denied for UID: {}&quot;, unix_cred.uid());
+            return;
+        }
+    }
+    
+    // Process the request...
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="example-audit-logging"><a class="header" href="#example-audit-logging">Example: Audit Logging</a></h2>
+<p>Using Context to log connection information:</p>
+<pre><pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+
+fn log_connection_info(ctx: &amp;Context) {
+    let mut log_msg = String::from(&quot;Connection: &quot;);
+    
+    if let Some(remote) = &amp;ctx.remote {
+        match remote {
+            RemoteAddr::UnixAddr(path) =&gt; {
+                log_msg.push_str(&amp;format!(&quot;Unix socket {:?}&quot;, path));
+            }
+            RemoteAddr::IpAddr(ip) =&gt; {
+                log_msg.push_str(&amp;format!(&quot;IP {}&quot;, ip));
+            }
+            RemoteAddr::NodeAddr(node_addr) =&gt; {
+                log_msg.push_str(&amp;format!(&quot;Iroh node {:?}&quot;, node_addr));
+            }
+        }
+    }
+    
+    #[cfg(any(target_os = &quot;linux&quot;, target_os = &quot;macos&quot;))]
+    if let Some(Peer::Unix(unix_cred)) = &amp;ctx.peer {
+        log_msg.push_str(&amp;format!(
+            &quot; (UID: {}, GID: {}&quot;,
+            unix_cred.uid(),
+            unix_cred.gid()
+        ));
+        if let Some(pid) = unix_cred.pid() {
+            log_msg.push_str(&amp;format!(&quot;, PID: {}&quot;, pid));
+        }
+        log_msg.push(')');
+    }
+    
+    println!(&quot;{}&quot;, log_msg);
+}
+<span class="boring">}</span></code></pre></pre>
+<h2 id="platform-support"><a class="header" href="#platform-support">Platform Support</a></h2>
+<h3 id="unix-domain-sockets-linuxmacos"><a class="header" href="#unix-domain-sockets-linuxmacos">Unix Domain Sockets (Linux/macOS)</a></h3>
+<ul>
+<li>Provides full peer credentials (UID, GID, PID)</li>
+<li>Can retrieve process path on Linux via <code>/proc/{pid}/exe</code></li>
+<li>Most detailed context information available</li>
+</ul>
+<h3 id="quic-connections"><a class="header" href="#quic-connections">QUIC Connections</a></h3>
+<ul>
+<li>Provides remote IP address</li>
+<li>No peer credentials (use mTLS certificates for authentication)</li>
+</ul>
+<h3 id="iroh-connections"><a class="header" href="#iroh-connections">Iroh Connections</a></h3>
+<ul>
+<li>Provides node address with optional relay URL</li>
+<li>Provides node ID for peer identification</li>
+<li>Supports direct addresses for connection info</li>
+</ul>
+<h2 id="best-practices"><a class="header" href="#best-practices">Best Practices</a></h2>
+<ol>
+<li><strong>Always check for None</strong>: Context fields are <code>Option</code> types and may not always be available</li>
+<li><strong>Platform-specific code</strong>: Use <code>#[cfg]</code> attributes for Unix-specific functionality</li>
+<li><strong>Security</strong>: Don't rely solely on context for authentication; use it in combination with mTLS or other authentication mechanisms</li>
+<li><strong>Logging</strong>: Include context information in audit logs for debugging and security monitoring</li>
+</ol>
+<h2 id="see-also"><a class="header" href="#see-also">See Also</a></h2>
+<ul>
+<li><a href="tracing.html">Tracing documentation</a> - For instrumenting RPC calls</li>
+<li><a href="https://github.com/sevki/jetstream/tree/main/examples">Examples</a> - See context in action</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="guides.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
+
+                            <a rel="next prefetch" href="tracing.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="guides.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
+
+                    <a rel="next prefetch" href="tracing.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
+            </nav>
+
+        </div>
+
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr.min.js"></script>
+        <script src="mark.min.js"></script>
+        <script src="searcher.js"></script>
+
+        <script src="clipboard.min.js"></script>
+        <script src="highlight.js"></script>
+        <script src="book.js"></script>
+
+        <!-- Custom JS scripts -->
+        <script src="mermaid.min.js"></script>
+        <script src="mermaid-init.js"></script>
+
+
+    </div>
+    </body>
+</html>
