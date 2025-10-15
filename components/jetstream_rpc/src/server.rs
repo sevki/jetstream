@@ -49,7 +49,7 @@ where
     T: Contextual,
 {
     fn context(&self) -> Context {
-        self.context()
+        <Self as Contextual>::context(self)
     }
 }
 
