@@ -12,3 +12,6 @@
 	- [📦 jetstream_ufs](doc/jetstream_ufs/index.html)
 	- [📦 jetstream_websocket](doc/jetstream_websocket/index.html)
 	- [📦 jetstream_wireformat](doc/jetstream_wireformat/index.html)
+- [ 📚 Guides](guides.md)
+	- [ 🔍 Context](context.md)
+	- [ 📊 Tracing](tracing.md)

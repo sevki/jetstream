@@ -27,10 +27,13 @@ JetStream is not ready for production use. It's still in the early stages of dev
 ## Docs
 
 - [API Documentation](https://jetstream.rs)
+- [Context Guide](https://sevki.github.io/jetstream/context.html) - Learn how to use Context for accessing connection metadata
+- [Tracing Guide](https://sevki.github.io/jetstream/tracing.html) - Learn how to instrument your services with distributed tracing
 
 ## Examples
 
 - [echo](examples/echo.rs) - Basic QUIC-based echo service example
+- [echo_with_tracing](examples/echo_with_tracing.rs) - Echo service with distributed tracing instrumentation
 - [iroh_echo](examples/iroh_echo.rs) - Echo service using iroh transport
 - [wasm_example](examples/wasm_example.rs) - WebAssembly example
 - [wasm_example_bindings](examples/wasm_example_bindings.rs) - WebAssembly bindings example
