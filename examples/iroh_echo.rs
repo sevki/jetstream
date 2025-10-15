@@ -3,7 +3,6 @@ use crate::echo_protocol::{EchoChannel, EchoService};
 use jetstream::prelude::*;
 use jetstream_macros::service;
 use okstd::prelude::*;
-use std::fmt::Debug;
 
 #[service]
 pub trait Echo {
@@ -16,12 +15,6 @@ struct EchoServer;
 impl Echo for EchoServer {
     async fn square(&mut self, i: u32) -> Result<String, Error> {
         Ok((i * i).to_string())
-    }
-}
-
-impl<P: Echo> Debug for EchoService<P> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("EchoService").finish()
     }
 }
 

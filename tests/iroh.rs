@@ -1,5 +1,4 @@
 #![cfg(feature = "iroh")]
-use std::fmt::Debug;
 
 use jetstream::prelude::*;
 
@@ -16,12 +15,6 @@ struct EchoServer;
 impl Echo for EchoServer {
     async fn ping(&mut self) -> Result<String, Error> {
         Ok("pong".to_string())
-    }
-}
-
-impl<P: Echo> Debug for EchoService<P> {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("EchoService").finish()
     }
 }
 
