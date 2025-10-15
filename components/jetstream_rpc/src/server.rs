@@ -1,6 +1,9 @@
 use std::pin::pin;
 
-use crate::{Error, Frame, Protocol};
+use crate::{
+    context::{Context, Contextual},
+    Error, Frame, Protocol,
+};
 use futures::{Sink, Stream};
 use jetstream_wireformat::WireFormat;
 use tokio_util::{
@@ -33,15 +36,21 @@ pub trait ServiceTransport<P: Protocol>:
     + Sync
     + Unpin
 {
+    fn context(&self) -> Context;
 }
 
-impl<P: Protocol, T> ServiceTransport<P> for T where
+impl<P: Protocol, T> ServiceTransport<P> for T
+where
     T: Sink<Frame<P::Response>, Error = P::Error>
         + Stream<Item = Result<Frame<P::Request>, P::Error>>
         + Send
         + Sync
-        + Unpin
+        + Unpin,
+    T: Contextual,
 {
+    fn context(&self) -> Context {
+        self.context()
+    }
 }
 
 impl<P> Decoder for ServerCodec<P>
@@ -101,7 +110,7 @@ where
     use futures::{SinkExt, StreamExt};
     let mut a = pin!(p);
     while let Some(Ok(frame)) = stream.next().await {
-        stream.send(a.rpc(frame).await?).await?
+        stream.send(a.rpc(stream.context(), frame).await?).await?
     }
     Ok(())
 }

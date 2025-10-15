@@ -6,14 +6,14 @@ use okstd::prelude::*;
 
 #[service]
 pub trait Echo {
-    async fn square(&mut self, i: u32) -> Result<String, Error>;
+    async fn square(&mut self, ctx: Context, i: u32) -> Result<String, Error>;
 }
 
 #[derive(Debug, Clone)]
 struct EchoServer;
 
 impl Echo for EchoServer {
-    async fn square(&mut self, i: u32) -> Result<String, Error> {
+    async fn square(&mut self, _ctx: Context, i: u32) -> Result<String, Error> {
         Ok((i * i).to_string())
     }
 }
@@ -40,7 +40,7 @@ async fn main() {
         inner: Box::new(&mut transport),
     };
     for i in 0..10 {
-        let b = ec.square(i).await.unwrap();
+        let b = ec.square(Context::default(), i).await.unwrap();
         println!("square response: {i} * {i} = {b}");
     }
 

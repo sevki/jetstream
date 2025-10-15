@@ -1,6 +1,6 @@
 [package]
 name = "jetstream"
-version = "9.3.0"
+version = {workspace = true}
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "BSD-3-Clause"
@@ -13,13 +13,13 @@ documentation = "https://jetstream.rs"
 features = ["all"]
 
 [dependencies]
-jetstream_macros = { version = "9.3.0", path = "components/jetstream_macros" }
-jetstream_wireformat = { version = "9.3.0", path = "components/jetstream_wireformat" }
-jetstream_rpc = { version = "9.3.0", path = "components/jetstream_rpc" }
-jetstream_9p = { version = "9.3.0", path = "components/jetstream_9p", optional = true }
-jetstream_quic = { version = "9.3.0", path = "components/jetstream_quic", optional = true }
-jetstream_websocket = { version = "9.3.0", path = "components/jetstream_websocket", optional = true }
-jetstream_iroh = { version = "9.3.0", path = "components/jetstream_iroh", optional = true }
+jetstream_macros = { workspace = true }
+jetstream_wireformat = { workspace = true }
+jetstream_rpc = { workspace = true }
+jetstream_9p = { workspace = true, optional = true }
+jetstream_quic = { workspace = true, optional = true }
+jetstream_websocket = { workspace = true, optional = true }
+jetstream_iroh = { workspace = true, optional = true }
 trait-variant = "0.1.2"
 async-trait = "0.1.89"
 tokio-util = { version = "0.7.16", features = ["codec"] }
@@ -32,18 +32,16 @@ tracing-subscriber = "0.3.20"
 arbitrary = "1.4.1"
 criterion = { version = "0.7.0", features = ["async_tokio"] }
 futures-util = "0.3.30"
-jetstream_9p = { version = "9.3.0", path = "components/jetstream_9p" }
-jetstream_macros = { version = "9.3.0", path = "components/jetstream_macros" }
-jetstream_rpc = { version = "9.3.0", path = "components/jetstream_rpc" }
-jetstream_wireformat = { version = "9.3.0", path = "components/jetstream_wireformat", features = ["all"]}
+jetstream_9p = { workspace = true }
+jetstream_macros = { workspace = true }
+jetstream_rpc = { workspace = true, features = ["s2n-quic", "turmoil"] }
+jetstream_wireformat = { workspace = true, features = ["all"] }
 
 okstd = { version = "1.0.2", features = ["macros"] }
-s2n-quic = "1.59.0"
+s2n-quic = { workspace = true }
 tmpdir = "1.0.0"
 tokio = { version = "1.47.1", features = ["full"] }
-turmoil = "0.6.5"
-
-
+turmoil = { workspace = true }
 
 [lib]
 bench = false
@@ -84,7 +82,7 @@ websocket = ["dep:jetstream_websocket"]
 quic = ["dep:jetstream_quic"]
 wasm = ["jetstream_wireformat/tokio"]
 tokio = ["jetstream_wireformat/tokio"]
-iroh = ["dep:jetstream_iroh"]
+iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh"]
 tracing = ["dep:tracing"]
 [workspace]
 
@@ -108,6 +106,27 @@ license = "BSD-3-Clause"
 repository = "https://github.com/sevki/jetstream"
 documentation = "https://jetstream.rs"
 readme = "README.md"
+version = "9.3.0"
 
 
 [workspace.dependencies]
+jetstream_macros = { version = "*", path = "components/jetstream_macros" }
+jetstream_libc = { version = "*", path = "components/jetstream_libc" }
+jetstream_wireformat = { version = "*", path = "components/jetstream_wireformat", default-features = true }
+jetstream_rpc = { version = "*", path = "components/jetstream_rpc" }
+jetstream_9p = { version = "*", path = "components/jetstream_9p"}
+jetstream_quic = { version = "*", path = "components/jetstream_quic" }
+jetstream_websocket = { version = "*", path = "components/jetstream_websocket"}
+jetstream_iroh = { version = "*", path = "components/jetstream_iroh" }
+tokio-util = { version = "0.7.16", features = ["codec"] }
+okid = "0.21.0"
+url = "2.5.7"
+uuid = {version = "1.18.1"}
+iroh = { version = "0.93.2"}
+s2n-quic = "1.59.0"
+turmoil = "0.6.5"
+
+
+[patch.crates-io]
+jetstream_macros = { path = "components/jetstream_macros" }
+jetstream_wireformat = { path = "components/jetstream_wireformat" }

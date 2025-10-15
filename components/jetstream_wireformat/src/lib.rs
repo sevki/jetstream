@@ -5,11 +5,14 @@
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#[cfg(feature = "std")]
+use std::collections::{BTreeMap, BinaryHeap};
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Copyright 2018 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 use std::{
+    collections::{BTreeSet, VecDeque},
     ffi::{CStr, CString, OsStr},
     fmt,
     io::{self, ErrorKind, Read, Write},
@@ -35,7 +38,8 @@ pub trait WireFormat: Send {
     fn byte_size(&self) -> u32;
 
     /// Encodes `self` into `writer`.
-    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> where 
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()>
+    where
         Self: Sized;
 
     /// Decodes `Self` from `reader`.
@@ -543,22 +547,200 @@ where
     }
 }
 
-
-
-impl<T:WireFormat> WireFormat for Box<T> {
+impl<T: WireFormat> WireFormat for Box<T> {
     fn byte_size(&self) -> u32 {
         (**self).byte_size()
     }
 
-    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> where 
-        Self: Sized {
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
         (**self).encode(writer)
     }
 
     fn decode<R: Read>(reader: &mut R) -> io::Result<Self>
     where
-        Self: Sized {
+        Self: Sized,
+    {
         let inner = T::decode(reader)?;
         Ok(Box::new(inner))
+    }
+}
+
+#[cfg(feature = "std")]
+impl<K: WireFormat + Send + Sync + Ord, V: WireFormat + Send + Sync> WireFormat
+    for BTreeMap<K, V>
+{
+    fn byte_size(&self) -> u32 {
+        self.iter()
+            .fold(0, |acc, (k, v)| acc + k.byte_size() + v.byte_size())
+            + 2
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        let len = self.len();
+        len.encode(writer)?;
+        for (k, v) in self {
+            k.encode(writer)?;
+            v.encode(writer)?;
+        }
+        Ok(())
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut map = BTreeMap::new();
+        for _ in 0..len {
+            let k = K::decode(reader)?;
+            let v = V::decode(reader)?;
+            map.insert(k, v);
+        }
+        Ok(map)
+    }
+}
+
+#[cfg(feature = "std")]
+impl<V: WireFormat + Send + Sync + Ord> WireFormat for BinaryHeap<V> {
+    fn byte_size(&self) -> u32 {
+        self.as_slice()
+            .iter()
+            .fold(0, |acc, elem| acc + elem.byte_size())
+            + 2
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        let len = self.len();
+        len.encode(writer)?;
+        for elem in self {
+            elem.encode(writer)?;
+        }
+        Ok(())
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut heap = BinaryHeap::new();
+        for _ in 0..len {
+            let elem = V::decode(reader)?;
+            heap.push(elem);
+        }
+        Ok(heap)
+    }
+}
+
+impl<V: WireFormat + Send + Sync + Ord> WireFormat for VecDeque<V> {
+    fn byte_size(&self) -> u32 {
+        self.iter().fold(0, |acc, elem| acc + elem.byte_size()) + 2
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        let len = self.len();
+        len.encode(writer)?;
+        for elem in self {
+            elem.encode(writer)?;
+        }
+        Ok(())
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut deque = VecDeque::with_capacity(len as usize);
+        for _ in 0..len {
+            let elem = V::decode(reader)?;
+            deque.push_back(elem);
+        }
+        Ok(deque)
+    }
+}
+
+impl<V: WireFormat + Send + Sync + Ord> WireFormat for BTreeSet<V> {
+    fn byte_size(&self) -> u32 {
+        self.iter().fold(0, |acc, elem| acc + elem.byte_size()) + 2
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        let len = self.len();
+        len.encode(writer)?;
+        for elem in self {
+            elem.encode(writer)?;
+        }
+        Ok(())
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut set = BTreeSet::new();
+        for _ in 0..len {
+            let elem = V::decode(reader)?;
+            set.insert(elem);
+        }
+        Ok(set)
+    }
+}
+
+impl<T: WireFormat> WireFormat for PhantomData<T> {
+    fn byte_size(&self) -> u32 {
+        0
+    }
+
+    fn encode<W: io::Write>(&self, _writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        Ok(())
+    }
+
+    fn decode<R: io::Read>(_reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        Ok(PhantomData)
+    }
+}
+
+impl WireFormat for url::Url {
+    fn byte_size(&self) -> u32 {
+        self.to_string().byte_size()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        self.to_string().encode(writer)
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let string = String::decode(reader)?;
+        url::Url::parse(&string)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
     }
 }

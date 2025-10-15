@@ -49,7 +49,7 @@ pub fn generate_client(
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
 
-            fn rpc(&mut self, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
+            fn rpc(&mut self,_ctx: Context, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
                 Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
             > + Send + Sync {
                 use futures::{SinkExt, StreamExt};
@@ -106,13 +106,22 @@ fn generate_client_calls(
                     }
                 });
 
-                let args = method.sig.inputs.iter().map(|arg| {
+                let args = method.sig.inputs.iter().filter_map(|arg| {
                     match arg {
                         syn::FnArg::Typed(pat) => {
                             let name = pat.pat.clone();
-                            quote! { #name, }
+                            let ty = &pat.ty;
+                            // Skip Context type - it's not in the request struct
+                            if let syn::Type::Path(type_path) = &**ty {
+                                if let Some(segment) = type_path.path.segments.last() {
+                                    if segment.ident == "Context" {
+                                        return None;
+                                    }
+                                }
+                            }
+                            Some(quote! { #name, })
                         }
-                        syn::FnArg::Receiver(_) => quote! {},
+                        syn::FnArg::Receiver(_) => None,
                     }
                 });
 
@@ -134,7 +143,8 @@ fn generate_client_calls(
                             #(#args)*
                         });
                         let tframe = Frame::from((tag, req));
-                        let rframe = self.rpc(tframe).await?;
+                        let context = Context::default();
+                        let rframe = self.rpc(context, tframe).await?;
                         let rmsg = rframe.msg;
                         match rmsg {
                             Rmessage::#variant_name(msg) => Ok(msg.0),

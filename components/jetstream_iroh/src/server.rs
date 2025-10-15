@@ -2,7 +2,11 @@ use std::{fmt::Debug, io};
 
 use futures::{SinkExt, StreamExt};
 use iroh::{endpoint::Connection, protocol::ProtocolHandler};
-use jetstream_rpc::{server::ServerCodec, Protocol};
+use jetstream_rpc::{
+    context::{Context, NodeId},
+    server::ServerCodec,
+    Protocol,
+};
 use tokio_util::codec::{FramedRead, FramedWrite};
 
 #[derive(Debug)]
@@ -29,8 +33,13 @@ impl<P: Protocol + Debug + Clone + 'static> ProtocolHandler for IrohServer<P> {
             let mut writer =
                 FramedWrite::new(send_stream, ServerCodec::<P>::new());
             while let Some(req) = reader.next().await {
+                let node_id: NodeId = connection
+                    .remote_node_id()
+                    .expect("Failed to get remote node ID")
+                    .into();
+                let context = Context::from(node_id);
                 match req {
-                    Ok(req) => match handler.rpc(req).await {
+                    Ok(req) => match handler.rpc(context, req).await {
                         Ok(resp) => {
                             writer.send(resp).await.unwrap();
                         }

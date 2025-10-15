@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_9p"
-version = "9.3.0"
+version = {workspace = true}
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -11,10 +11,10 @@ documentation.workspace = true
 bench = false
 crate-type = ["cdylib", "rlib"]
 [dependencies]
-jetstream_macros = { version = "9.3.0", path = "../jetstream_macros" }
-jetstream_wireformat = { version = "9.3.0", path = "../jetstream_wireformat" }
-jetstream_rpc = { version = "9.3.0", path = "../jetstream_rpc" }
-jetstream_libc = { version = "9.3.0", path = "../jetstream_libc" }
+jetstream_macros = { workspace = true }
+jetstream_wireformat = { workspace = true }
+jetstream_rpc = { workspace = true }
+jetstream_libc = { workspace = true }
 async-trait = "0.1.89"
 trait-variant = "0.1.2"
 

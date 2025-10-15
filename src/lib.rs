@@ -21,8 +21,8 @@ pub mod prelude {
     pub use async_trait::async_trait;
     pub use jetstream_macros::{service, JetStreamWireFormat};
     pub use jetstream_rpc::{
-        client, client::ClientTransport, server, Error, Frame, Framed, Framer,
-        Message, Protocol, Tag,
+        client, client::ClientTransport, context::Context, server, Error,
+        Frame, Framed, Framer, Message, Protocol, Tag,
     };
     pub use jetstream_wireformat::{Data, WireFormat};
     pub use lazy_static::*;

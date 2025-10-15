@@ -15,7 +15,7 @@ extern crate libc;
 
 // Types - Linux uses libc, others use core::ffi
 #[cfg(target_os = "linux")]
-pub use libc::{c_int, mode_t};
+pub use libc::{c_int, gid_t, mode_t, pid_t, ucred, uid_t};
 
 #[cfg(not(target_os = "linux"))]
 pub use core::ffi::c_int;
@@ -23,6 +23,18 @@ pub use core::ffi::c_int;
 #[cfg(not(target_os = "linux"))]
 #[allow(non_camel_case_types)]
 pub type mode_t = u32;
+
+#[cfg(not(target_os = "linux"))]
+#[allow(non_camel_case_types)]
+pub type pid_t = i32;
+
+#[cfg(not(target_os = "linux"))]
+#[allow(non_camel_case_types)]
+pub type uid_t = u32;
+
+#[cfg(not(target_os = "linux"))]
+#[allow(non_camel_case_types)]
+pub type gid_t = u32;
 
 // Error constants - Unix platforms use libc, others define them
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -141,4 +153,18 @@ pub struct stat64 {
     pub st_mtime_nsec: i64,
     pub st_ctime: i64,
     pub st_ctime_nsec: i64,
+}
+
+// ucred structure - credentials passed over Unix sockets
+// On Linux, ucred is already exported from libc at the top
+#[cfg(not(target_os = "linux"))]
+#[repr(C)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ucred {
+    /// Process ID of the sending process
+    pub pid: pid_t,
+    /// User ID of the sending process
+    pub uid: uid_t,
+    /// Group ID of the sending process
+    pub gid: gid_t,
 }

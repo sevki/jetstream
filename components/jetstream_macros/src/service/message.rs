@@ -10,10 +10,7 @@ pub fn return_struct_name(method_name: &Ident) -> Ident {
     Ident::new(&format!("R{}", method_name), method_name.span())
 }
 
-pub fn generate_msg_id(
-    index: usize,
-    method_name: &Ident,
-) -> TokenStream {
+pub fn generate_msg_id(index: usize, method_name: &Ident) -> TokenStream {
     let upper_cased_method_name = method_name.to_string().to_uppercase();
     let tmsg_const_name = Ident::new(
         &format!("T{}", upper_cased_method_name),
@@ -39,6 +36,14 @@ pub fn generate_input_struct(
         syn::FnArg::Typed(pat) => {
             let name = pat.pat.clone();
             let ty = pat.ty.clone();
+            // if the pat is ::jetstream_rpc::context::Context, skip
+            if let syn::Type::Path(type_path) = &*ty {
+                if let Some(segment) = type_path.path.segments.last() {
+                    if segment.ident == "Context" {
+                        return quote! {};
+                    }
+                }
+            }
             quote! {
                 pub #name: #ty,
             }

@@ -43,7 +43,7 @@ use std::{
 };
 
 use jetstream_9p::*;
-use jetstream_rpc::{Frame, Protocol};
+use jetstream_rpc::{context::Context, Frame, Protocol};
 use jetstream_wireformat::{Data, WireFormat};
 use read_dir::read_dir;
 use serde::{Deserialize, Serialize};
@@ -1058,6 +1058,7 @@ impl Protocol for Server {
 
     async fn rpc(
         &mut self,
+        _context: Context,
         frame: Frame<Self::Request>,
     ) -> Result<Frame<Self::Response>, Self::Error> {
         let Frame { msg, tag } = frame;

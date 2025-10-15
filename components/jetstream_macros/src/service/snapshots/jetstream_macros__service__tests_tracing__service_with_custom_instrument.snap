@@ -1,6 +1,5 @@
 ---
 source: components/jetstream_macros/src/service/tests_tracing.rs
-assertion_line: 75
 expression: output_str
 ---
 pub mod echo_protocol {
@@ -103,6 +102,7 @@ pub mod echo_protocol {
         const VERSION: &'static str = PROTOCOL_VERSION;
         fn rpc(
             &mut self,
+            ctx: Context,
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
             Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
@@ -148,6 +148,7 @@ pub mod echo_protocol {
         const VERSION: &'static str = PROTOCOL_VERSION;
         fn rpc(
             &mut self,
+            _ctx: Context,
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
             Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
@@ -175,7 +176,8 @@ pub mod echo_protocol {
             let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             let req = Tmessage::Ping(Tping { message });
             let tframe = Frame::from((tag, req));
-            let rframe = self.rpc(tframe).await?;
+            let context = Context::default();
+            let rframe = self.rpc(context, tframe).await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::Ping(msg) => Ok(msg.0),

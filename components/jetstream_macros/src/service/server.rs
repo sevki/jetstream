@@ -28,11 +28,23 @@ pub fn generate_server(
                 let variant_name: Ident = name.to_pascal_case().into();
                 let return_struct_ident = &rmsgs[index].0;
 
-                // Get the method parameters (excluding self) from the message
+                // Get the method parameters (excluding self and Context)
+                // Context is passed separately via _ctx parameter
                 let params =
                     method.sig.inputs.iter().filter_map(|arg| match arg {
                         syn::FnArg::Typed(pat) => {
                             let name = pat.pat.clone();
+                            let ty = &pat.ty;
+                            // Skip Context type - it's not in the message struct
+                            if let syn::Type::Path(type_path) = &**ty {
+                                if let Some(segment) =
+                                    type_path.path.segments.last()
+                                {
+                                    if segment.ident == "Context" {
+                                        return Some(quote! { ctx });
+                                    }
+                                }
+                            }
                             Some(quote! { msg.#name })
                         }
                         syn::FnArg::Receiver(_) => None,
@@ -86,7 +98,7 @@ pub fn generate_server(
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
 
-            fn rpc(&mut self, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
+            fn rpc(&mut self, ctx: Context, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
                 Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
             > + Send + Sync {
                 Box::pin(async move {
@@ -134,6 +146,7 @@ fn generate_trait_methods(
                 let method_name = &method_sig.ident;
 
                 // Get the method parameters (excluding self)
+                // Pass all parameters including Context
                 let params =
                     method_sig.inputs.iter().filter_map(|arg| match arg {
                         syn::FnArg::Typed(pat) => Some(pat.pat.clone()),

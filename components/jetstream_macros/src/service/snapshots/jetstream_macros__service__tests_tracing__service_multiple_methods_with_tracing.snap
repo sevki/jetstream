@@ -1,6 +1,5 @@
 ---
 source: components/jetstream_macros/src/service/tests_tracing.rs
-assertion_line: 114
 expression: output_str
 ---
 pub mod complexservice_protocol {
@@ -136,6 +135,7 @@ pub mod complexservice_protocol {
         const VERSION: &'static str = PROTOCOL_VERSION;
         fn rpc(
             &mut self,
+            ctx: Context,
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
             Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
@@ -202,6 +202,7 @@ pub mod complexservice_protocol {
         const VERSION: &'static str = PROTOCOL_VERSION;
         fn rpc(
             &mut self,
+            _ctx: Context,
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
             Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
@@ -233,7 +234,8 @@ pub mod complexservice_protocol {
                 .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             let req = Tmessage::Login(Tlogin { username, password });
             let tframe = Frame::from((tag, req));
-            let rframe = self.rpc(tframe).await?;
+            let context = Context::default();
+            let rframe = self.rpc(context, tframe).await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::Login(msg) => Ok(msg.0),
@@ -246,7 +248,8 @@ pub mod complexservice_protocol {
                 .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             let req = Tmessage::Logout(Tlogout {});
             let tframe = Frame::from((tag, req));
-            let rframe = self.rpc(tframe).await?;
+            let context = Context::default();
+            let rframe = self.rpc(context, tframe).await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::Logout(msg) => Ok(msg.0),
@@ -259,7 +262,8 @@ pub mod complexservice_protocol {
                 .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             let req = Tmessage::GetStatus(Tget_status {});
             let tframe = Frame::from((tag, req));
-            let rframe = self.rpc(tframe).await?;
+            let context = Context::default();
+            let rframe = self.rpc(context, tframe).await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::GetStatus(msg) => Ok(msg.0),
