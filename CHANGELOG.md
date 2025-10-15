@@ -1,6 +1,21 @@
 # Changelog
 
 
+## [9.4.0](https://github.com/sevki/jetstream/compare/v9.3.0...v9.4.0) (2025-10-15)
+
+
+### Features
+
+* add context ([4771c84](https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d))
+
+
+### Bug Fixes
+
+* cargo toml version issues ([3481015](https://github.com/sevki/jetstream/commit/3481015e9fd2ffb3fc881168bb38ee03c72144d5))
+* collections can only be u16::MAX ([6ada71a](https://github.com/sevki/jetstream/commit/6ada71a7222d16b0e3035837c76b8e3bcb51f627))
+* recursive self call ([c51d455](https://github.com/sevki/jetstream/commit/c51d455ececd5ac461561b8bd44709a92a45b2b7))
+* wasm32 feature gates ([755f9c1](https://github.com/sevki/jetstream/commit/755f9c1c6628fc46b1d4d3df03441106de3abdfd))
+
 ## [9.3.0](https://github.com/sevki/jetstream/compare/v9.2.0...v9.3.0) (2025-10-14)
 
 
