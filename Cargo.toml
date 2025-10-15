@@ -1,6 +1,6 @@
 [package]
 name = "jetstream"
-version = {workspace = true}
+version = "9.3.0"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 license = "BSD-3-Clause"
@@ -110,14 +110,14 @@ version = "9.3.0"
 
 
 [workspace.dependencies]
-jetstream_macros = { version = "*", path = "components/jetstream_macros" }
-jetstream_libc = { version = "*", path = "components/jetstream_libc" }
-jetstream_wireformat = { version = "*", path = "components/jetstream_wireformat", default-features = true }
-jetstream_rpc = { version = "*", path = "components/jetstream_rpc" }
-jetstream_9p = { version = "*", path = "components/jetstream_9p"}
-jetstream_quic = { version = "*", path = "components/jetstream_quic" }
-jetstream_websocket = { version = "*", path = "components/jetstream_websocket"}
-jetstream_iroh = { version = "*", path = "components/jetstream_iroh" }
+jetstream_macros = { version = "9.3.0", path = "components/jetstream_macros" }
+jetstream_libc = { version = "9.3.0", path = "components/jetstream_libc" }
+jetstream_wireformat = { version = "9.3.0", path = "components/jetstream_wireformat", default-features = true }
+jetstream_rpc = { version = "9.3.0", path = "components/jetstream_rpc" }
+jetstream_9p = { version = "9.3.0", path = "components/jetstream_9p"}
+jetstream_quic = { version = "9.3.0", path = "components/jetstream_quic" }
+jetstream_websocket = { version = "9.3.0", path = "components/jetstream_websocket"}
+jetstream_iroh = { version = "9.3.0", path = "components/jetstream_iroh" }
 tokio-util = { version = "0.7.16", features = ["codec"] }
 okid = "0.21.0"
 url = "2.5.7"
