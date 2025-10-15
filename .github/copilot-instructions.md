@@ -217,3 +217,4 @@ When contributing:
 5. Keep changes focused and minimal
 6. Ensure CI passes on all platforms
 7. Use [Conventional Commits](https://www.conventionalcommits.org/) format for commit messages - this project uses [release-please](https://github.com/googleapis/release-please) for automated releases
+8. Check preview deployments on pull requests - PRs automatically generate documentation previews via GitHub Pages that can be reviewed before merging
