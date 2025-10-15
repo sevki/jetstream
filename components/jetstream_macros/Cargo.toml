@@ -1,7 +1,5 @@
 [package]
 name = "jetstream_macros"
-
-authors = ["Sevki <s@sevki.io>", "The ChromiumOS Authors"]
 version = {workspace = true}
 edition = { workspace = true }
 description = { workspace = true }

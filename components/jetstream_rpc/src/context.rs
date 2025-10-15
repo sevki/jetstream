@@ -8,6 +8,7 @@ use std::{
 
 #[cfg(feature = "s2n-quic")]
 use s2n_quic::stream::BidirectionalStream;
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 use tokio::net::{unix::UCred, UnixStream};
 use tokio_util::codec::Framed;
 use url::Url;
@@ -29,7 +30,7 @@ impl From<NodeId> for Context {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RemoteAddr {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     UnixAddr(PathBuf),
     NodeAddr(NodeAddr),
     IpAddr(IpAddr),
@@ -37,7 +38,7 @@ pub enum RemoteAddr {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Peer {
-    #[cfg(not(target_arch = "wasm32"))]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     Unix(Unix),
     NodeId(NodeId),
 }
@@ -91,8 +92,10 @@ impl From<iroh::NodeAddr> for NodeAddr {
 }
 
 #[derive(Debug, Clone)]
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 pub struct Unix(UCred);
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl std::hash::Hash for Unix {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         if let Some(pid) = self.0.pid() {
@@ -103,6 +106,7 @@ impl std::hash::Hash for Unix {
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl PartialEq for Unix {
     fn eq(&self, other: &Self) -> bool {
         self.0.pid() == other.0.pid()
@@ -111,8 +115,10 @@ impl PartialEq for Unix {
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl Eq for Unix {}
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl Deref for Unix {
     type Target = UCred;
 
@@ -121,12 +127,14 @@ impl Deref for Unix {
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl DerefMut for Unix {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl Unix {
     /// returns the process' path
     #[cfg(target_os = "linux")]
@@ -147,6 +155,7 @@ pub trait Contextual {
     fn context(&self) -> Context;
 }
 
+#[cfg(any(target_os = "linux", target_os = "macos"))]
 impl<U> Contextual for Framed<UnixStream, U> {
     fn context(&self) -> Context {
         let addr = self.get_ref().peer_addr().unwrap();

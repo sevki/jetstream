@@ -1,4 +1,4 @@
-use std::{fmt::Debug, net::SocketAddr, path::Path};
+use std::{net::SocketAddr, path::Path};
 
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
