@@ -3048,9 +3048,9 @@ dependencies = [
 
 [[package]]
 name = "octets"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cffde765a2e1ff94d65a81e3a52cc81ccb4012ffb2a3ff95a753c3978465e3fe"
+checksum = "4df8e8352f73465f015867c7ab24d2c46511bb8148e7177fe823e88f4f1f9765"
 
 [[package]]
 name = "ok_macros"
