@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [9.4.1](https://github.com/sevki/jetstream/compare/v9.4.0...v9.4.1) (2025-10-17)
+
+
+### Bug Fixes
+
+* remove redundant io imports and use fully qualified paths ([7de4b9e](https://github.com/sevki/jetstream/commit/7de4b9ea0cece01326cde4af027eae8a3120f1f9))
+* target os cfg attrs ([16e5c84](https://github.com/sevki/jetstream/commit/16e5c849b2c1b7b962590dfab779f4429cf06445))
+
 ## [9.4.0](https://github.com/sevki/jetstream/compare/v9.3.0...v9.4.0) (2025-10-15)
 
 
