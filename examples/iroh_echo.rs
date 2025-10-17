@@ -4,7 +4,7 @@ use jetstream::prelude::*;
 use jetstream_macros::service;
 use okstd::prelude::*;
 
-#[service]
+#[service(tracing)]
 pub trait Echo {
     async fn square(&mut self, ctx: Context, i: u32) -> Result<String, Error>;
 }
@@ -20,6 +20,15 @@ impl Echo for EchoServer {
 
 #[okstd::main]
 async fn main() {
+    // Initialize tracing subscriber
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_thread_ids(true)
+        .with_span_events(
+            tracing_subscriber::fmt::format::FmtSpan::ENTER
+                | tracing_subscriber::fmt::format::FmtSpan::EXIT,
+        )
+        .init();
     // Build the server router with the echo service
     let router = jetstream_iroh::server_builder(EchoService {
         inner: EchoServer {},

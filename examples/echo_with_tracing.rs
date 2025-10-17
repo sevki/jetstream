@@ -21,11 +21,14 @@ pub trait Echo {
         skip(self),
         fields(
             message_len = message.len(),
-            // Add custom fields here
         ),
         level = "debug"
     )]
-    async fn ping(&mut self, message: String) -> Result<String, Error>;
+    async fn ping(
+        &mut self,
+        ctx: Context,
+        message: String,
+    ) -> Result<String, Error>;
 
     /// This method uses default auto-instrumentation from #[service(tracing)]
     async fn echo(&mut self, text: String) -> Result<String, Error>;
@@ -34,8 +37,13 @@ pub trait Echo {
 struct EchoImpl {}
 
 impl Echo for EchoImpl {
-    async fn ping(&mut self, message: String) -> Result<String, Error> {
-        tracing::info!("Ping received: {}", message);
+    async fn ping(
+        &mut self,
+        ctx: Context,
+        message: String,
+    ) -> Result<String, Error> {
+        tracing::info!("Ping received: {} {:?} ", message, ctx);
+
         Ok(format!("Pong: {}", message))
     }
 
@@ -129,7 +137,9 @@ async fn client() -> Result<(), Box<dyn std::error::Error>> {
     };
 
     tracing::info!("Sending ping...");
-    let response = chan.ping("Hello, World!".to_string()).await?;
+    let response = chan
+        .ping(Context::default(), "Hello, World!".to_string())
+        .await?;
     tracing::info!("Received: {}", response);
 
     tracing::info!("Sending echo...");

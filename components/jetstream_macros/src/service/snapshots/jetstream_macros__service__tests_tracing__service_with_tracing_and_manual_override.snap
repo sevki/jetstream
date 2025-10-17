@@ -4,7 +4,6 @@ expression: output_str
 ---
 pub mod echo_protocol {
     use jetstream::prelude::*;
-    use std::io::{self, Read, Write};
     use std::mem;
     use super::Echo;
     const MESSAGE_ID_START: u8 = 101;
@@ -44,14 +43,17 @@ pub mod echo_protocol {
         fn message_type(&self) -> u8 {
             unsafe { *<*const _>::from(self).cast::<u8>() }
         }
-        fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
             match &self {
                 Tmessage::Ping(msg) => msg.encode(writer)?,
                 Tmessage::Pong(msg) => msg.encode(writer)?,
             }
             Ok(())
         }
-        fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Tmessage> {
+        fn decode<R: std::io::Read>(
+            reader: &mut R,
+            ty: u8,
+        ) -> std::io::Result<Tmessage> {
             match ty {
                 TPING => Ok(Tmessage::Ping(WireFormat::decode(reader)?)),
                 TPONG => Ok(Tmessage::Pong(WireFormat::decode(reader)?)),
@@ -82,14 +84,17 @@ pub mod echo_protocol {
         fn message_type(&self) -> u8 {
             unsafe { *<*const _>::from(self).cast::<u8>() }
         }
-        fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
             match &self {
                 Rmessage::Ping(msg) => msg.encode(writer)?,
                 Rmessage::Pong(msg) => msg.encode(writer)?,
             }
             Ok(())
         }
-        fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<Rmessage> {
+        fn decode<R: std::io::Read>(
+            reader: &mut R,
+            ty: u8,
+        ) -> std::io::Result<Rmessage> {
             match ty {
                 RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
                 RPONG => Ok(Rmessage::Pong(WireFormat::decode(reader)?)),
