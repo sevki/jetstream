@@ -17,7 +17,7 @@ use iroh::{
         IntoDiscovery,
     },
     protocol::Router,
-    NodeAddr,
+    NodeAddr, RelayMap,
 };
 use jetstream_rpc::Protocol;
 pub use server::IrohServer;
@@ -26,19 +26,20 @@ pub extern crate iroh;
 
 fn dt_resolver() -> impl IntoDiscovery {
     PkarrResolver::builder(
-        url::Url::parse("https://discovery.devtoo.ls").unwrap(),
+        url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
     .build()
 }
 
 fn dt_publisher_builder() -> impl IntoDiscovery {
     PkarrPublisher::builder(
-        url::Url::parse("https://discovery.devtoo.ls").unwrap(),
+        url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
 }
 
 pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
     iroh::Endpoint::builder()
+        .relay_mode(iroh::RelayMode::Custom(RelayMap::empty()))
         .alpns(vec![P::VERSION.as_bytes().to_vec()])
         .add_discovery(dt_publisher_builder())
         .add_discovery(dt_resolver())

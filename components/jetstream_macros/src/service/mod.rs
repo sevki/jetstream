@@ -132,7 +132,6 @@ pub(crate) fn service_impl(
     quote! {
         #vis mod #proto_mod {
             use jetstream::prelude::*;
-            use std::io::{self, Read, Write};
             use std::mem;
             use super::#trait_name;
 

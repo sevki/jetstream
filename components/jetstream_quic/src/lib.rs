@@ -17,7 +17,7 @@ pub struct Server {
     endpoint: quinn::Endpoint,
 }
 
-static ALPN: &[u8] = b"h3";
+static H3: &[u8] = b"h3";
 
 impl Server {
     pub fn new_with_addr(
@@ -30,7 +30,7 @@ impl Server {
             .with_single_cert(vec![cert], key)
             .unwrap();
         tls_config.max_early_data_size = u32::MAX;
-        tls_config.alpn_protocols = vec![ALPN.into()];
+        tls_config.alpn_protocols = vec![H3.into()];
 
         let _server_config = quinn::ServerConfig::with_crypto(Arc::new(
             QuicServerConfig::try_from(tls_config).unwrap(),

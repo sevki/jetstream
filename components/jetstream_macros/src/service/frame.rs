@@ -26,7 +26,7 @@ pub fn generate_frame(
             #variant_name(#ident) = #constant_name,
         }
     });
-    
+
     let cloned_byte_sizes = msgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
         let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
@@ -81,7 +81,7 @@ pub fn generate_frame(
                 unsafe { *<*const _>::from(self).cast::<u8>() }
             }
 
-            fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+            fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
                 match &self {
                     #(
                         #encode_match_arms
@@ -90,7 +90,7 @@ pub fn generate_frame(
                 Ok(())
             }
 
-            fn decode<R: Read>(reader: &mut R, ty: u8) -> io::Result<#enum_name> {
+            fn decode<R: std::io::Read>(reader: &mut R, ty: u8) -> std::io::Result<#enum_name> {
                 match ty {
                     #(
                         #decode_bodies

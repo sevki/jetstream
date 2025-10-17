@@ -2,10 +2,12 @@
 use std::path::PathBuf;
 use std::{
     collections::BTreeSet,
+    fmt::Display,
     net::IpAddr,
     ops::{Deref, DerefMut},
 };
 
+use jetstream_wireformat::JetStreamWireFormat;
 #[cfg(feature = "s2n-quic")]
 use s2n_quic::stream::BidirectionalStream;
 #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -17,6 +19,22 @@ use url::Url;
 pub struct Context {
     remote: Option<RemoteAddr>,
     peer: Option<Peer>,
+}
+
+impl Display for Context {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.peer {
+            Some(Peer::NodeId(ref id)) => write!(f, "{}", id.0),
+            Some(Peer::Unix(ref cred)) => write!(
+                f,
+                "{}",
+                cred.process_path()
+                    .expect("Failed to get process path")
+                    .to_string_lossy()
+            ),
+            None => write!(f, "None"),
+        }
+    }
 }
 
 impl From<NodeId> for Context {
@@ -43,10 +61,10 @@ pub enum Peer {
     NodeId(NodeId),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct NodeId(okid::OkId);
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct NodeAddr {
     id: NodeId,
     relay_url: Option<Url>,
