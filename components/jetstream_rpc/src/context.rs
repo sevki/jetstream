@@ -25,6 +25,7 @@ impl Display for Context {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.peer {
             Some(Peer::NodeId(ref id)) => write!(f, "{}", id.0),
+            #[cfg(any(target_os = "linux", target_os = "macos"))]
             Some(Peer::Unix(ref cred)) => write!(
                 f,
                 "{}",
@@ -155,7 +156,6 @@ impl DerefMut for Unix {
 #[cfg(any(target_os = "linux", target_os = "macos"))]
 impl Unix {
     /// returns the process' path
-    #[cfg(target_os = "linux")]
     pub fn process_path(&self) -> Result<PathBuf, std::io::Error> {
         use std::fs::read_link;
         if let Some(pid) = self.pid() {
