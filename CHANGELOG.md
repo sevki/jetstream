@@ -1,6 +1,13 @@
 # Changelog
 
 
+## [9.4.2](https://github.com/sevki/jetstream/compare/v9.4.1...v9.4.2) (2025-10-28)
+
+
+### Bug Fixes
+
+* dependency sudoku ([7df5f9b](https://github.com/sevki/jetstream/commit/7df5f9bdce4a3a830609fe5f50bfc3cdd278b5d2))
+
 ## [9.4.1](https://github.com/sevki/jetstream/compare/v9.4.0...v9.4.1) (2025-10-17)
 
 

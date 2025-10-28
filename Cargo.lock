@@ -1354,7 +1354,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -2265,7 +2265,7 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "jetstream"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "async-trait",
  "criterion",
@@ -2289,7 +2289,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros",
@@ -2301,7 +2301,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "futures",
  "iroh",
@@ -2314,7 +2314,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2322,7 +2322,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "convert_case",
  "futures",
@@ -2342,7 +2342,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "bytes",
  "h3",
@@ -2357,7 +2357,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "anyhow",
  "bytes",
@@ -2376,7 +2376,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -2391,7 +2391,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_websocket"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "futures",
  "jetstream_rpc",
@@ -2401,7 +2401,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "9.4.1"
+version = "9.4.2"
 dependencies = [
  "bytes",
  "futures",

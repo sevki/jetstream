@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_macros"
-version = "9.4.1"
+version = "9.4.2"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }

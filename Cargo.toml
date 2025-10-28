@@ -1,6 +1,6 @@
 [package]
 name = "jetstream"
-version = "9.4.1"
+version = "9.4.2"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 documentation = "https://jetstream.rs"
