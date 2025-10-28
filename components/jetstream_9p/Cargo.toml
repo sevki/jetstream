@@ -15,7 +15,6 @@ jetstream_macros = { workspace = true }
 jetstream_wireformat = { workspace = true }
 jetstream_rpc = { workspace = true }
 jetstream_libc = { workspace = true }
-async-trait = "0.1.89"
 trait-variant = "0.1.2"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
