@@ -92,33 +92,27 @@ jetstream_rpc = { workspace = true }
 jetstream_websocket = { workspace = true, optional = true }
 jetstream_wireformat = { workspace = true }
 lazy_static = "1.5.0"
-tokio-util = { version = "0.7.16", features = ["codec"] }
 tracing = { version = "0.1.41", optional = true }
-tracing-subscriber = "0.3.20"
+tracing-subscriber = { version = "0.3.20", optional = true }
 trait-variant = "0.1.2"
 
 [dev-dependencies]
-arbitrary = "1.4.1"
 criterion = { version = "0.7.0", features = ["async_tokio"] }
-futures-util = "0.3.30"
-jetstream_9p = { workspace = true }
-jetstream_macros = { workspace = true }
 jetstream_rpc = { workspace = true, features = ["s2n-quic", "turmoil"] }
 jetstream_wireformat = { workspace = true, features = ["all"] }
 okstd = { version = "1.0.2", features = ["macros"] }
 s2n-quic = { workspace = true }
-tmpdir = "1.0.0"
 tokio = { version = "1.47.1", features = ["full"] }
 turmoil = { workspace = true }
 
 [features]
 default = ["tracing"]
 9p = ["dep:jetstream_9p"]
-all = ["9p", "iroh", "quic", "tracing"]
+all = ["9p", "iroh", "quic", "tracing", "websocket", "tokio", "wasm"]
 iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh"]
-quic = ["dep:jetstream_quic"]
+quic = ["dep:jetstream_quic", "jetstream_rpc/s2n-quic"]
 tokio = ["jetstream_wireformat/tokio"]
-tracing = ["dep:tracing"]
+tracing = ["dep:tracing", "dep:tracing-subscriber"]
 wasm = ["jetstream_wireformat/tokio"]
 websocket = ["dep:jetstream_websocket"]
 

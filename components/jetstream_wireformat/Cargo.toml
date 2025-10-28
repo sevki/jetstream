@@ -16,12 +16,11 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 
 [features]
 default = ["async", "std"]
-all = ["std", "async", "testing", "serde", "futures", "tokio"]
+all = ["std", "async", "testing", "serde", "tokio"]
 std = []
-async = ["dep:futures", "futures"]
+async = ["dep:futures"]
 testing = ["serde"]
 serde = ["dep:serde"]
-futures = ["dep:futures-util"]
 tokio = ["dep:tokio-util"]
 
 [dependencies]
@@ -29,8 +28,6 @@ zerocopy = "0.8.27"
 paste = "1.0.15"
 bytes = { version = "1.10.0", features = ["serde"] }
 jetstream_macros = { workspace = true }
-futures-util = { version = "0.3.31", optional = true }
-uuid = {workspace = true, optional = true}
 url = {workspace = true}
 
 

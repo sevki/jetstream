@@ -11,7 +11,6 @@ readme.workspace = true
 [dependencies]
 futures = "0.3.31"
 jetstream_rpc = { workspace = true, features = ["iroh"] }
-jetstream_wireformat = { workspace = true }
 tokio = { version = "1.47.1", features = ["full"] }
 tokio-util = { version = "0.7.16", features = ["full"] }
 iroh = { workspace = true }
