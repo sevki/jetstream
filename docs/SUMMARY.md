@@ -1,6 +1,6 @@
 - [ JetStream](0intro.md)
 - [ 🆕 Changelog](CHANGELOG.md)
-- [ Coverage](coverage.md)
+- [ ⛅ Cloudflare](cloudflare.md)
 - [ 🦀 Crates](crates.md)
 	- [📦 jetstream](doc/jetstream/index.html)
 	- [📦 jetstream_9p](doc/jetstream_9p/index.html)
