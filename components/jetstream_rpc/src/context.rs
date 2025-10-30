@@ -1,17 +1,15 @@
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(tokio_unix)]
+use std::ops::{Deref, DerefMut};
+#[cfg(tokio_unix)]
 use std::path::PathBuf;
-use std::{
-    collections::BTreeSet,
-    fmt::Display,
-    net::IpAddr,
-    ops::{Deref, DerefMut},
-};
+use std::{collections::BTreeSet, fmt::Display, net::IpAddr};
 
 use jetstream_wireformat::JetStreamWireFormat;
 #[cfg(feature = "s2n-quic")]
 use s2n_quic::stream::BidirectionalStream;
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 use tokio::net::{unix::UCred, UnixStream};
+#[cfg(any(feature = "s2n-quic", feature = "turmoil", tokio_unix))]
 use tokio_util::codec::Framed;
 use url::Url;
 
@@ -25,7 +23,7 @@ impl Display for Context {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self.peer {
             Some(Peer::NodeId(ref id)) => write!(f, "{}", id.0),
-            #[cfg(any(target_os = "linux", target_os = "macos"))]
+            #[cfg(tokio_unix)]
             Some(Peer::Unix(ref cred)) => write!(
                 f,
                 "{}",
@@ -49,7 +47,7 @@ impl From<NodeId> for Context {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum RemoteAddr {
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[cfg(tokio_unix)]
     UnixAddr(PathBuf),
     NodeAddr(NodeAddr),
     IpAddr(IpAddr),
@@ -57,7 +55,7 @@ pub enum RemoteAddr {
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum Peer {
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[cfg(tokio_unix)]
     Unix(Unix),
     NodeId(NodeId),
 }
@@ -111,10 +109,10 @@ impl From<iroh::NodeAddr> for NodeAddr {
 }
 
 #[derive(Debug, Clone)]
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 pub struct Unix(UCred);
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 impl std::hash::Hash for Unix {
     fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
         if let Some(pid) = self.0.pid() {
@@ -125,7 +123,7 @@ impl std::hash::Hash for Unix {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 impl PartialEq for Unix {
     fn eq(&self, other: &Self) -> bool {
         self.0.pid() == other.0.pid()
@@ -134,10 +132,10 @@ impl PartialEq for Unix {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 impl Eq for Unix {}
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 impl Deref for Unix {
     type Target = UCred;
 
@@ -146,14 +144,14 @@ impl Deref for Unix {
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 impl DerefMut for Unix {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
     }
 }
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 impl Unix {
     /// returns the process' path
     pub fn process_path(&self) -> Result<PathBuf, std::io::Error> {
@@ -173,7 +171,7 @@ pub trait Contextual {
     fn context(&self) -> Context;
 }
 
-#[cfg(any(target_os = "linux", target_os = "macos"))]
+#[cfg(tokio_unix)]
 impl<U> Contextual for Framed<UnixStream, U> {
     fn context(&self) -> Context {
         let addr = self.get_ref().peer_addr().unwrap();
@@ -212,5 +210,21 @@ impl<U> Contextual for Framed<turmoil::net::TcpStream, U> {
             remote: Some(RemoteAddr::IpAddr(addr.ip())),
             peer: None,
         }
+    }
+}
+
+#[cfg(cloudflare)]
+impl Contextual for worker::Request {
+    fn context(&self) -> Context {
+        Context {
+            remote: None,
+            peer: None,
+        }
+    }
+}
+
+impl Context {
+    pub fn new(remote: Option<RemoteAddr>, peer: Option<Peer>) -> Self {
+        Context { remote, peer }
     }
 }

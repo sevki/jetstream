@@ -12,4 +12,6 @@ readme.workspace = true
 futures = "0.3.31"
 jetstream_rpc = { workspace = true }
 jetstream_wireformat = { workspace = true }
-tungstenite = { version = "0.28.0" }
+tokio = { version = "1.48.0", features = ["io-std", "io-util", "net"] }
+tokio-tungstenite = { version = "0.28.0", features = ["rustls-tls-native-roots", "url", "connect"] }
+tracing = "0.1.41"
