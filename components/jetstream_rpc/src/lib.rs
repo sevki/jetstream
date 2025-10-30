@@ -22,7 +22,7 @@ pub use tokio_util::codec::{Decoder, Encoder, Framed};
 pub use framer::*;
 
 /// A trait representing a message that can be encoded and decoded.
-#[cfg(not(target_arch = "wasm32"))]
+#[cfg(native)]
 pub trait Message: WireFormat + Sync {}
 
 /// A trait representing a message that can be encoded and decoded.

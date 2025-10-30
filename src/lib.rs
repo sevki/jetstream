@@ -59,3 +59,9 @@ pub mod iroh {
     extern crate jetstream_iroh;
     pub use jetstream_iroh::*;
 }
+
+#[cfg(feature = "cloudflare")]
+pub mod cloudflare {
+    extern crate jetstream_cloudflare;
+    pub use jetstream_cloudflare::*;
+}

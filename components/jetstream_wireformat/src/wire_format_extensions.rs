@@ -6,6 +6,8 @@ use std::io::{self};
 
 use bytes::Bytes;
 
+pub extern crate bytes;
+
 use super::WireFormat;
 
 pub trait AsyncWireFormat: std::marker::Sized {
