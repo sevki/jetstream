@@ -46,7 +46,6 @@ impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        tracing::info!("Polling WebSocket connection for readiness");
         self.get_mut()
             .0
             .poll_ready_unpin(cx)
@@ -57,7 +56,6 @@ impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
         self: Pin<&mut Self>,
         item: jetstream_rpc::Frame<P::Request>,
     ) -> Result<(), Self::Error> {
-        tracing::info!("Sending frame over WebSocket");
         self.get_mut()
             .0
             .start_send_unpin(Message::Binary(item.to_bytes()))
@@ -68,7 +66,6 @@ impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        tracing::info!("Flushing WebSocket connection");
         self.get_mut()
             .0
             .poll_flush_unpin(cx)
@@ -79,7 +76,6 @@ impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        tracing::info!("Closing WebSocket connection");
         self.get_mut()
             .0
             .poll_close_unpin(cx)
@@ -97,7 +93,6 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Option<Self::Item>> {
-        tracing::info!("Polling next item");
         self.get_mut().1.poll_next_unpin(cx).map(|opt| {
             opt.map(|res| match res {
                 Ok(msg) => {
