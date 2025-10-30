@@ -31,7 +31,9 @@ pub mod echo_protocol {
             }
         }
         fn message_type(&self) -> u8 {
-            unsafe { *<*const _>::from(self).cast::<u8>() }
+            match self {
+                Tmessage::Ping(_) => TPING,
+            }
         }
         fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
             match &self {
@@ -68,7 +70,9 @@ pub mod echo_protocol {
             }
         }
         fn message_type(&self) -> u8 {
-            unsafe { *<*const _>::from(self).cast::<u8>() }
+            match self {
+                Rmessage::Ping(_) => RPING,
+            }
         }
         fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
             match &self {

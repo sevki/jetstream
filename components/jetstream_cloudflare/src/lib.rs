@@ -11,7 +11,7 @@ use jetstream_wireformat::wire_format_extensions::{
     bytes::Bytes, ConvertWireFormat,
 };
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
-use worker::{wasm_bindgen_futures, Env, WebSocketPair};
+use worker::{wasm_bindgen_futures, Env, WebSocket, WebSocketPair};
 
 use crate::websocket_transport::WebSocketTransport;
 
@@ -67,6 +67,21 @@ impl HtmlAssets for DefaultHtmlFallback {
     }
 }
 
+#[repr(u16)]
+enum Shutdown {
+    MissingProtocol = 1,
+}
+
+impl Shutdown {
+    fn shutdown(self, ws: &mut WebSocket) -> worker::Result<()> {
+        match self {
+            Shutdown::MissingProtocol => {
+                ws.close(Some(self as u16), Some("Missing Protocol"))
+            }
+        }
+    }
+}
+
 /// A protocol aware router
 pub struct Router<H: HtmlAssets> {
     html_fallbacks: PhantomData<H>,
@@ -117,43 +132,31 @@ impl<H: HtmlAssets> Router<H> {
         // Check for WebSocket upgrade request
         let upgrade_header = req.headers().get("Upgrade")?;
 
-        worker::console_log!(
-            "Request received - Proto: {:?}, Upgrade: {:?}",
-            proto,
-            upgrade_header
-        );
-
         match (proto, upgrade_header) {
             (Some(proto), Some(upgrade_header))
                 if upgrade_header == "websocket" =>
             {
-                worker::console_log!(
-                    "WebSocket upgrade request for protocol: {}",
-                    proto
-                );
                 let ip = req.headers().get("CF-Connecting-IP")?;
                 let Some(ip) = ip else {
-                    worker::console_log!("Missing IP address");
                     return error::JetstreamProtocolError::MissingIPAddress
                         .into();
                 };
-                worker::console_log!("Client IP: {}", ip);
                 let ws = WebSocketPair::new()?;
                 let (client, server) = (ws.client, ws.server);
-                worker::console_log!("WebSocket pair created");
                 let mut server_transport =
                     WebSocketTransport::new(server, ip).unwrap();
                 let handlers = self.handlers.clone();
 
-                worker::console_log!("Starting background handler");
                 wasm_bindgen_futures::spawn_local(async move {
-                    worker::console_log!("Background handler started");
                     let mut guard = handlers.lock().await;
-                    let handler = guard.get_mut(&proto).unwrap();
+                    let Some(handler) = guard.get_mut(&proto) else {
+                        let _ = server_transport
+                            .shutdown(Shutdown::MissingProtocol);
+                        return;
+                    };
                     server_transport.handle(handler).await
                 });
 
-                worker::console_log!("Returning WebSocket response");
                 return worker::Response::from_websocket(client);
             }
             _ => {

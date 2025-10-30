@@ -4,6 +4,7 @@
 - [ 🦀 Crates](crates.md)
 	- [📦 jetstream](doc/jetstream/index.html)
 	- [📦 jetstream_9p](doc/jetstream_9p/index.html)
+	- [📦 jetstream_cloudflare](doc/jetstream_cloudflare/index.html)
 	- [📦 jetstream_iroh](doc/jetstream_iroh/index.html)
 	- [📦 jetstream_libc](doc/jetstream_libc/index.html)
 	- [📦 jetstream_macros](doc/jetstream_macros/index.html)

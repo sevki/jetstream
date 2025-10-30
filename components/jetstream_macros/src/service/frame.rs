@@ -58,6 +58,15 @@ pub fn generate_frame(
         }
     });
 
+    let message_type_match_arms = msgs.iter().map(|(ident, _)| {
+        let name: IdentCased = ident.into();
+        let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
+        let const_name: Ident = name.to_screaming_snake_case().into();
+        quote! {
+            #enum_name::#variant_name(_) => #const_name
+        }
+    });
+
     quote! {
         #[derive(Debug)]
         #[repr(u8)]
@@ -75,10 +84,11 @@ pub fn generate_frame(
             }
 
             fn message_type(&self) -> u8 {
-                // SAFETY: Because `Self` is marked `repr(u8)`, its layout is a `repr(C)` `union`
-                // between `repr(C)` structs, each of which has the `u8` discriminant as its first
-                // field, so we can read the discriminant without offsetting the pointer.
-                unsafe { *<*const _>::from(self).cast::<u8>() }
+                match self {
+                    #(
+                        #message_type_match_arms,
+                     )*
+                }
             }
 
             fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
