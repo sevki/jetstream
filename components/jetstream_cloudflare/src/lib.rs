@@ -70,6 +70,7 @@ impl HtmlAssets for DefaultHtmlFallback {
 #[repr(u16)]
 enum Shutdown {
     MissingProtocol = 1,
+    RpcFailure = 2,
 }
 
 impl Shutdown {
@@ -77,6 +78,9 @@ impl Shutdown {
         match self {
             Shutdown::MissingProtocol => {
                 ws.close(Some(self as u16), Some("Missing Protocol"))
+            }
+            Shutdown::RpcFailure => {
+                ws.close(Some(self as u16), Some("RPC Failure"))
             }
         }
     }
