@@ -89,6 +89,10 @@ impl Shutdown {
 /// A protocol aware router
 pub struct Router<H: HtmlAssets> {
     html_fallbacks: PhantomData<H>,
+    // Cloudflare Workers run on a single OS thread, but several request futures
+    // can still be in-flight on the executor. Because we await on handler RPC
+    // calls, we need an async-aware lock to queue those borrows instead of
+    // panicking on a re-entrant `RefCell` borrow.
     handlers: Arc<Mutex<HashMap<String, Box<dyn DynamicProtocol>>>>,
 }
 
