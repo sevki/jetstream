@@ -46,7 +46,7 @@ anyhow = "1.0.100"
 s2n-quic = "1.67.0"
 
 [features]
-iroh = ["dep:iroh", "okid/iroh","okid/pkarr", "cloudflare"]
+iroh = ["dep:iroh", "okid/iroh", "okid/pkarr"]
 s2n-quic = ["dep:s2n-quic"]
 turmoil = ["dep:turmoil","tokio"]
 pkarr = ["okid/pkarr"]

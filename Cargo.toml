@@ -100,7 +100,6 @@ members = [
   "components/jetstream_wireformat",
   "fuzz",
 ]
-# exclude = ["components/jetstream_radar"]
 
 [workspace.package]
 version = "9.3.0"

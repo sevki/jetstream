@@ -20,7 +20,7 @@ worker = { version = "0.6" }
 worker-macros = { version = "0.6" }
 
 [features]
-default = ["server","client"]
+default = ["server", "client"]
 server = ["jetstream/cloudflare"]
 client = ["jetstream/websocket","jetstream/tracing", "jetstream/tokio", "url", "tokio", "argh", "reqwest", "rustls", "tracing-subscriber"]
 url = ["dep:url"]
