@@ -1,6 +1,21 @@
 # Changelog
 
 
+## [9.5.0](https://github.com/sevki/jetstream/compare/v9.4.2...v9.5.0) (2025-10-30)
+
+
+### Features
+
+* add cleanup code serverside. add cloudflare docs to mdbook ([91da99c](https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b))
+* introduce jetstream cloudflare module. ([6e8cc01](https://github.com/sevki/jetstream/commit/6e8cc015024d3066f9f3208e20bd4725c03b0ac2))
+
+
+### Bug Fixes
+
+* add comment about cf exec model ([c979856](https://github.com/sevki/jetstream/commit/c979856a7406e0f612fc26adbfa200471034fbeb))
+* remove tracing from sink and stream ([97ac0a5](https://github.com/sevki/jetstream/commit/97ac0a59b3c0cd8aefb2b0af2804b81316ea6acf))
+* remove unsafe code ([a286d93](https://github.com/sevki/jetstream/commit/a286d93fddc7bf8329defe77b5d01c0b6dbabd17))
+
 ## [9.4.2](https://github.com/sevki/jetstream/compare/v9.4.1...v9.4.2) (2025-10-28)
 
 
