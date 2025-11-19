@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_radar"
-version = "9.5.0"
+version = "10.0.0"
 edition = "2021"
 publish = false
 
@@ -9,7 +9,7 @@ crate-type = ["rlib", "cdylib"]
 
 [dependencies]
 argh = { version = "0.1.13", optional = true }
-jetstream = {version="9.5.0",path="../../", default-features = false }
+jetstream = {version="10.0.0",path="../../", default-features = false }
 reqwest = { version = "0.12.24", optional = true }
 rustls = { version = "0.23.34", features = ["ring"], optional = true }
 thiserror = "2.0.17"

@@ -1441,7 +1441,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -2370,7 +2370,7 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "jetstream"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "async-trait",
  "cfg_aliases",
@@ -2396,7 +2396,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros",
@@ -2408,7 +2408,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_cloudflare"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "askama",
  "async-trait",
@@ -2421,7 +2421,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "futures",
  "iroh",
@@ -2434,7 +2434,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2442,7 +2442,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "convert_case",
  "futures",
@@ -2462,7 +2462,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "bytes",
  "h3",
@@ -2477,7 +2477,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_radar"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "argh",
  "jetstream",
@@ -2493,7 +2493,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2516,7 +2516,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -2531,7 +2531,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_websocket"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "futures",
  "jetstream_rpc",
@@ -2543,7 +2543,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "9.5.0"
+version = "10.0.0"
 dependencies = [
  "bytes",
  "futures",
