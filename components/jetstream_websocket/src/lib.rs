@@ -11,7 +11,7 @@ use futures::{
     stream::{SplitSink, SplitStream},
     Sink, SinkExt, Stream, StreamExt,
 };
-use jetstream_rpc::{Frame, Protocol};
+use jetstream_rpc::{Error, Frame, Protocol};
 use jetstream_wireformat::wire_format_extensions::ConvertWireFormat;
 use std::{
     io,
@@ -40,16 +40,16 @@ impl<P: Protocol + Unpin> From<WebSocketStream<MaybeTlsStream<TcpStream>>>
 impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
     for WebSocketTransport<P>
 {
-    type Error = std::io::Error;
+    type Error = Error;
 
     fn poll_ready(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        self.get_mut()
-            .0
-            .poll_ready_unpin(cx)
-            .map_err(io::Error::other)
+        self.get_mut().0.poll_ready_unpin(cx).map_err(|e| {
+            let err = io::Error::other(e);
+            Error::from(err)
+        })
     }
 
     fn start_send(
@@ -59,7 +59,7 @@ impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
         self.get_mut()
             .0
             .start_send_unpin(Message::Binary(item.to_bytes()))
-            .map_err(io::Error::other)
+            .map_err(|e| Error::from(io::Error::other(e)))
     }
 
     fn poll_flush(
@@ -69,7 +69,7 @@ impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
         self.get_mut()
             .0
             .poll_flush_unpin(cx)
-            .map_err(io::Error::other)
+            .map_err(|e| Error::from(io::Error::other(e)))
     }
 
     fn poll_close(
@@ -79,7 +79,7 @@ impl<P: Protocol + Unpin> Sink<jetstream_rpc::Frame<P::Request>>
         self.get_mut()
             .0
             .poll_close_unpin(cx)
-            .map_err(io::Error::other)
+            .map_err(|e| Error::from(io::Error::other(e)))
     }
 }
 
@@ -87,7 +87,7 @@ impl<P: Protocol> Stream for WebSocketTransport<P>
 where
     Self: Unpin,
 {
-    type Item = Result<jetstream_rpc::Frame<P::Response>, io::Error>;
+    type Item = Result<jetstream_rpc::Frame<P::Response>, Error>;
 
     fn poll_next(
         self: Pin<&mut Self>,
@@ -97,9 +97,9 @@ where
             opt.map(|res| match res {
                 Ok(msg) => {
                     let data = msg.into_data();
-                    Frame::<P::Response>::from_bytes(&data)
+                    Frame::<P::Response>::from_bytes(&data).map_err(Error::from)
                 }
-                Err(e) => Err(io::Error::other(e)),
+                Err(e) => Err(Error::from(io::Error::other(e))),
             })
         })
     }

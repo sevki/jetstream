@@ -3,8 +3,7 @@ use std::time::Instant;
 
 use argh::FromArgs;
 use jetstream::{
-    cloudflare::JETSTREAM_PROTO_HEADER_KEY,
-    prelude::tracing,
+    prelude::{jetstream_rpc::HEADER_KEY_JETSTREAM_PROTO, tracing},
     websocket::tokio_tungstenite::{
         connect_async, tungstenite::client::IntoClientRequest,
     },
@@ -54,7 +53,7 @@ async fn main() {
             let mut req = web_socket.url.clone().into_client_request().unwrap();
             // this is a custom header, doesn't have anything to do with websocket handshake
             req.headers_mut().insert(
-                JETSTREAM_PROTO_HEADER_KEY,
+                HEADER_KEY_JETSTREAM_PROTO,
                 HeaderValue::from_static(radar_protocol::PROTOCOL_VERSION),
             );
 

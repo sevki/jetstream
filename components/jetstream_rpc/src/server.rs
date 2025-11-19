@@ -79,9 +79,8 @@ where
             return Ok(None);
         }
 
-        Frame::<P::Request>::decode(&mut src.reader())
-            .map(Some)
-            .map_err(|_| Error::Custom("()".to_string()))
+        let frame = Frame::<P::Request>::decode(&mut src.reader())?;
+        Ok(Some(frame))
     }
 }
 
@@ -96,9 +95,8 @@ where
         item: Frame<P::Response>,
         dst: &mut bytes::BytesMut,
     ) -> Result<(), Self::Error> {
-        item.encode(&mut dst.writer())
-            .map_err(|_| Error::Custom("()".to_string()))
-            .map(|_| ())
+        item.encode(&mut dst.writer())?;
+        Ok(())
     }
 }
 

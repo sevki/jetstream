@@ -35,11 +35,7 @@ bench = false
 
 [[bench]]
 harness = false
-name = "quic_performance"
-
-[[bench]]
-name = "iroh_performance"
-harness = false
+name = "perf"
 
 [dependencies]
 async-trait = "0.1.89"
@@ -80,6 +76,7 @@ tracing = ["dep:tracing", "dep:tracing-subscriber"]
 wasm = ["jetstream_wireformat/tokio"]
 websocket = ["dep:jetstream_websocket"]
 cloudflare = ["dep:jetstream_cloudflare", "jetstream_rpc/cloudflare"]
+serde = ["jetstream_rpc/serde"]
 
 [patch.crates-io]
 jetstream_macros = { path = "components/jetstream_macros" }

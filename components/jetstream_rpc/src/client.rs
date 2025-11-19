@@ -1,6 +1,6 @@
 use std::{io, marker::PhantomData};
 
-use crate::{context::NodeAddr, Frame, Protocol};
+use crate::{context::NodeAddr, Error, Frame, Protocol};
 use futures::{
     stream::{SplitSink, SplitStream},
     Sink, Stream, StreamExt,
@@ -19,19 +19,20 @@ where
 }
 
 impl<P: Protocol> Encoder<Frame<P::Request>> for ClientCodec<P> {
-    type Error = std::io::Error;
+    type Error = Error;
 
     fn encode(
         &mut self,
         item: Frame<P::Request>,
         dst: &mut bytes::BytesMut,
     ) -> Result<(), Self::Error> {
-        WireFormat::encode(&item, &mut dst.writer())
+        WireFormat::encode(&item, &mut dst.writer())?;
+        Ok(())
     }
 }
 
 impl<P: Protocol> Decoder for ClientCodec<P> {
-    type Error = std::io::Error;
+    type Error = Error;
     type Item = Frame<P::Response>;
 
     fn decode(
@@ -52,7 +53,8 @@ impl<P: Protocol> Decoder for ClientCodec<P> {
             src.reserve(byte_size as usize);
             return Ok(None);
         }
-        Frame::<P::Response>::decode(&mut src.reader()).map(Some)
+        let frame = Frame::<P::Response>::decode(&mut src.reader())?;
+        Ok(Some(frame))
     }
 }
 
@@ -68,8 +70,8 @@ where
 }
 
 pub trait ClientTransport<P: Protocol>:
-    Sink<Frame<P::Request>, Error = std::io::Error>
-    + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
+    Sink<Frame<P::Request>, Error = Error>
+    + Stream<Item = Result<Frame<P::Response>, Error>>
     + Send
     + Sync
     + Unpin
@@ -79,8 +81,8 @@ pub trait ClientTransport<P: Protocol>:
 impl<P: Protocol, T> ClientTransport<P> for T
 where
     Self: Sized,
-    T: Sink<Frame<P::Request>, Error = std::io::Error>
-        + Stream<Item = Result<Frame<P::Response>, std::io::Error>>
+    T: Sink<Frame<P::Request>, Error = Error>
+        + Stream<Item = Result<Frame<P::Response>, Error>>
         + Send
         + Sync
         + Unpin,
