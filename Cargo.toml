@@ -99,7 +99,7 @@ members = [
 ]
 
 [workspace.package]
-version = "9.3.0"
+version = "10.0.0"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 documentation = "https://jetstream.rs"
@@ -109,15 +109,15 @@ license = "BSD-3-Clause"
 
 [workspace.dependencies]
 iroh = { version = "0.93.2" }
-jetstream_9p = { path = "components/jetstream_9p", version = "9.3.0" }
-jetstream_cloudflare = { path = "components/jetstream_cloudflare", version = "9.3.0" }
-jetstream_iroh = { path = "components/jetstream_iroh", version = "9.3.0" }
-jetstream_libc = { path = "components/jetstream_libc", version = "9.3.0" }
-jetstream_macros = { path = "components/jetstream_macros", version = "9.3.0" }
-jetstream_quic = { path = "components/jetstream_quic", version = "9.3.0" }
-jetstream_rpc = { path = "components/jetstream_rpc", version = "9.3.0" }
-jetstream_websocket = { path = "components/jetstream_websocket", version = "9.3.0" }
-jetstream_wireformat = { path = "components/jetstream_wireformat", version = "9.3.0", default-features = true }
+jetstream_9p = { path = "components/jetstream_9p", version = "*" }
+jetstream_cloudflare = { path = "components/jetstream_cloudflare", version = "*" }
+jetstream_iroh = { path = "components/jetstream_iroh", version = "*" }
+jetstream_libc = { path = "components/jetstream_libc", version = "*" }
+jetstream_macros = { path = "components/jetstream_macros", version = "*" }
+jetstream_quic = { path = "components/jetstream_quic", version = "*" }
+jetstream_rpc = { path = "components/jetstream_rpc", version = "*" }
+jetstream_websocket = { path = "components/jetstream_websocket", version = "*" }
+jetstream_wireformat = { path = "components/jetstream_wireformat", version = "*", default-features = true }
 okid = "0.21.0"
 s2n-quic = "1.59.0"
 tokio-util = { version = "0.7.16", features = ["codec"] }
