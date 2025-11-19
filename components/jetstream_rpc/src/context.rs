@@ -60,8 +60,66 @@ pub enum Peer {
     NodeId(NodeId),
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct NodeId(okid::OkId);
+
+// Manual WireFormat implementation to bridge version compatibility between
+// jetstream_wireformat 9.5 (used by okid) and 10.0 (used by this crate)
+impl jetstream_wireformat::WireFormat for NodeId {
+    fn byte_size(&self) -> u32 {
+        // Delegate to the underlying OkId's WireFormat implementation
+        // The size is 1 byte for type + variable bytes for digest
+        1 + match self.0.hash_type().chars().next().unwrap() {
+            '2' => 32, // SHA256
+            '3' => 64, // SHA3-512
+            'B' => 32, // Blake3
+            'U' => 16, // ULID
+            'V' => 16, // UUID
+            'F' => 8,  // Fingerprint
+            'P' => 32, // PubKey
+            _ => 32,   // Default
+        }
+    }
+
+    fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+        // Encode the type byte
+        let type_char = self.0.hash_type().chars().next().unwrap();
+        writer.write_all(&[type_char as u8])?;
+        // Encode the key bytes
+        writer.write_all(self.0.as_key())
+    }
+
+    fn decode<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self> {
+        // Decode type byte
+        let mut type_byte = [0u8; 1];
+        reader.read_exact(&mut type_byte)?;
+        let type_char = type_byte[0] as char;
+
+        // Decode the appropriate number of bytes based on type
+        let size = match type_char {
+            '2' => 32, // SHA256
+            '3' => 64, // SHA3-512
+            'B' => 32, // Blake3
+            'U' => 16, // ULID
+            'V' => 16, // UUID
+            'F' => 8,  // Fingerprint
+            'P' => 32, // PubKey
+            _ => return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                format!("Unknown OkId type: {}", type_char),
+            )),
+        };
+
+        let mut bytes = vec![0u8; size];
+        reader.read_exact(&mut bytes)?;
+
+        // Reconstruct the OkId string representation and parse it
+        let okid_str = format!("{}{}", type_char, hex::encode(&bytes));
+        okid_str.parse::<okid::OkId>()
+            .map(NodeId)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))
+    }
+}
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct NodeAddr {
