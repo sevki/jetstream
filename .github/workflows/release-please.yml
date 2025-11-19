@@ -50,18 +50,8 @@ jobs:
           export VERSION=v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           echo $VERSION
           echo "CI_TAG=$VERSION" >> $GITHUB_ENV
-          # Publish workspace packages in dependency order
-          for package in jetstream_macros jetstream_wireformat jetstream_libc jetstream_rpc jetstream_9p jetstream_cloudflare jetstream_iroh jetstream_quic jetstream_websocket jetstream_ufs jetstream_radar jetstream; do
-            echo "Publishing $package (dry-run)..."
-            cargo publish -p $package --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run || true
-          done
+          cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run
       - name: publish to crates.io
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          # Publish workspace packages in dependency order
-          for package in jetstream_macros jetstream_wireformat jetstream_libc jetstream_rpc jetstream_9p jetstream_cloudflare jetstream_iroh jetstream_quic jetstream_websocket jetstream_ufs jetstream_radar jetstream; do
-            echo "Publishing $package..."
-            cargo publish -p $package --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --allow-dirty
-            # Wait a bit between publishes to allow crates.io to process
-            sleep 10
-          done
+          cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --allow-dirty

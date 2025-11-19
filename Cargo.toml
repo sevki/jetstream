@@ -118,7 +118,7 @@ jetstream_quic = { path = "components/jetstream_quic", version = "*" }
 jetstream_rpc = { path = "components/jetstream_rpc", version = "*" }
 jetstream_websocket = { path = "components/jetstream_websocket", version = "*" }
 jetstream_wireformat = { path = "components/jetstream_wireformat", version = "*", default-features = true }
-okid = "0.21.0"
+okid = "0.22.0"
 s2n-quic = "1.59.0"
 tokio-util = { version = "0.7.16", features = ["codec"] }
 turmoil = "0.6.5"
