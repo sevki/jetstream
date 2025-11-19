@@ -2379,11 +2379,11 @@ dependencies = [
  "jetstream_9p",
  "jetstream_cloudflare",
  "jetstream_iroh",
- "jetstream_macros",
+ "jetstream_macros 10.0.0",
  "jetstream_quic",
  "jetstream_rpc",
  "jetstream_websocket",
- "jetstream_wireformat",
+ "jetstream_wireformat 10.0.0",
  "lazy_static",
  "okstd",
  "s2n-quic",
@@ -2399,9 +2399,9 @@ name = "jetstream_9p"
 version = "10.0.0"
 dependencies = [
  "jetstream_libc",
- "jetstream_macros",
+ "jetstream_macros 10.0.0",
  "jetstream_rpc",
- "jetstream_wireformat",
+ "jetstream_wireformat 10.0.0",
  "trait-variant",
  "wasm-bindgen",
 ]
@@ -2414,7 +2414,7 @@ dependencies = [
  "async-trait",
  "futures",
  "jetstream_rpc",
- "jetstream_wireformat",
+ "jetstream_wireformat 10.0.0",
  "thiserror 2.0.17",
  "worker",
 ]
@@ -2438,6 +2438,20 @@ version = "10.0.0"
 dependencies = [
  "cfg_aliases",
  "libc",
+]
+
+[[package]]
+name = "jetstream_macros"
+version = "9.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0b4074414d66cc946821f472678112686a01dc34b99708cad85b55ccf5651337"
+dependencies = [
+ "convert_case",
+ "lazy_static",
+ "proc-macro2",
+ "quote",
+ "sha256",
+ "syn",
 ]
 
 [[package]]
@@ -2501,7 +2515,7 @@ dependencies = [
  "cfg_aliases",
  "futures",
  "iroh",
- "jetstream_wireformat",
+ "jetstream_wireformat 10.0.0",
  "okid",
  "s2n-quic",
  "serde",
@@ -2521,7 +2535,7 @@ dependencies = [
  "argh",
  "jetstream_9p",
  "jetstream_rpc",
- "jetstream_wireformat",
+ "jetstream_wireformat 10.0.0",
  "libc",
  "okstd",
  "serde",
@@ -2535,10 +2549,31 @@ version = "10.0.0"
 dependencies = [
  "futures",
  "jetstream_rpc",
- "jetstream_wireformat",
+ "jetstream_wireformat 10.0.0",
  "tokio",
  "tokio-tungstenite",
  "tracing",
+]
+
+[[package]]
+name = "jetstream_wireformat"
+version = "9.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "23908869225c9c5d94d54afe453c9dfe0b7a6cccaae3b1438e3f3a628fbdf6b0"
+dependencies = [
+ "bytes",
+ "getrandom 0.2.16",
+ "jetstream_macros 9.5.0",
+ "js-sys",
+ "libc",
+ "mio",
+ "okstd",
+ "paste",
+ "time",
+ "url",
+ "wasm-bindgen",
+ "web-sys",
+ "zerocopy",
 ]
 
 [[package]]
@@ -2548,7 +2583,7 @@ dependencies = [
  "bytes",
  "futures",
  "getrandom 0.2.16",
- "jetstream_macros",
+ "jetstream_macros 10.0.0",
  "js-sys",
  "libc",
  "mio",
@@ -3291,7 +3326,7 @@ dependencies = [
  "hex",
  "iroh",
  "iroh-base",
- "jetstream_wireformat",
+ "jetstream_wireformat 9.5.0",
  "okstd",
  "pkarr",
  "serde",
