@@ -1,12 +1,11 @@
 use std::{
-    io,
     pin::Pin,
     task::{Context, Poll},
 };
 
 use futures::{Sink, SinkExt, Stream, StreamExt};
 use iroh::endpoint::{RecvStream, SendStream};
-use jetstream_rpc::{client::ClientCodec, Protocol};
+use jetstream_rpc::{client::ClientCodec, Error, Protocol};
 use tokio_util::codec::{FramedRead, FramedWrite};
 
 pub struct IrohTransport<P: Protocol> {
@@ -30,7 +29,7 @@ impl<P: Protocol> Sink<jetstream_rpc::Frame<P::Request>> for IrohTransport<P>
 where
     Self: Unpin,
 {
-    type Error = io::Error;
+    type Error = Error;
 
     fn poll_ready(
         self: Pin<&mut Self>,
@@ -65,7 +64,7 @@ impl<P: Protocol> Stream for IrohTransport<P>
 where
     Self: Unpin,
 {
-    type Item = Result<jetstream_rpc::Frame<P::Response>, io::Error>;
+    type Item = Result<jetstream_rpc::Frame<P::Response>, Error>;
 
     fn poll_next(
         self: Pin<&mut Self>,

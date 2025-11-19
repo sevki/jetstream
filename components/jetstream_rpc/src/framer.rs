@@ -5,6 +5,7 @@ use std::io::Read;
 use std::io::Write;
 use std::mem;
 
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Frame<T: Framer> {
     pub tag: u16,
     pub msg: T,

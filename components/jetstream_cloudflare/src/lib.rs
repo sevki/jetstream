@@ -6,7 +6,7 @@ pub use error::JetstreamProtocolError;
 use askama::Template;
 use async_trait::async_trait;
 use futures::lock::Mutex;
-use jetstream_rpc::{context, Protocol};
+use jetstream_rpc::{context, Protocol, HEADER_KEY_JETSTREAM_PROTO};
 use jetstream_wireformat::wire_format_extensions::{
     bytes::Bytes, ConvertWireFormat,
 };
@@ -16,8 +16,6 @@ use worker::{wasm_bindgen_futures, Env, WebSocket, WebSocketPair};
 use crate::websocket_transport::WebSocketTransport;
 
 pub extern crate async_trait;
-
-pub const JETSTREAM_PROTO_HEADER_KEY: &str = "X-JetStream-Proto";
 
 #[async_trait]
 pub trait DynamicProtocol: Send + Sync {
@@ -136,7 +134,7 @@ impl<H: HtmlAssets> Router<H> {
         _env: Env,
         _ctx: worker::Context,
     ) -> worker::Result<worker::Response> {
-        let proto = req.headers().get(JETSTREAM_PROTO_HEADER_KEY)?;
+        let proto = req.headers().get(HEADER_KEY_JETSTREAM_PROTO)?;
         // Check for WebSocket upgrade request
         let upgrade_header = req.headers().get("Upgrade")?;
 

@@ -9,7 +9,10 @@
 //! Of note is the `Protocol` trait which is meant to be used with the `service` attribute macro.
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-use std::io::{self};
+use std::{
+    io::{self},
+    str::FromStr,
+};
 pub mod client;
 pub mod context;
 pub mod framer;
@@ -18,7 +21,37 @@ use jetstream_wireformat::WireFormat;
 // Re-export codecs
 extern crate tokio_util;
 pub use tokio_util::codec::{Decoder, Encoder, Framed};
+mod dynamic;
+pub use dynamic::*;
+mod constants;
+pub use constants::*;
 
+pub enum Encoding {
+    JetStream,
+    Json,
+    Xml,
+}
+
+#[derive(Debug, thiserror::Error)]
+pub enum EncodingError {
+    #[error("Invalid encoding")]
+    InvalidEncoding,
+}
+
+impl FromStr for Encoding {
+    type Err = EncodingError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            MIMETYPE_JSON => Ok(Encoding::Json),
+            MIMETYPE_XML => Ok(Encoding::Xml),
+            MIMETYPE_JETSTREAM => Ok(Encoding::JetStream),
+            _ => Err(EncodingError::InvalidEncoding),
+        }
+    }
+}
+
+pub use constants::HEADER_KEY_JETSTREAM_PROTO;
 pub use framer::*;
 
 /// A trait representing a message that can be encoded and decoded.
