@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [10.0.0](https://github.com/sevki/jetstream/compare/v9.5.0...v10.0.0) (2025-11-19)
+
+
+### ⚠ BREAKING CHANGES
+
+* make error types more isomorphic
+
+### Bug Fixes
+
+* make error types more isomorphic ([aee2fa2](https://github.com/sevki/jetstream/commit/aee2fa21a7c6879f5d77765d3ff96b22b98e0e86))
+
 ## [9.5.0](https://github.com/sevki/jetstream/compare/v9.4.2...v9.5.0) (2025-10-30)
 
 
