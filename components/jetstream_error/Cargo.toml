@@ -13,12 +13,12 @@ iroh = { workspace = true, optional = true }
 jetstream_wireformat.workspace = true
 miette = { version = "7.6.0", features = ["fancy"] }
 s2n-quic = { workspace = true, optional = true }
-term-transcript = "0.4.0"
 thiserror = "2.0.17"
 worker = { workspace = true, optional = true }
 
 [dev-dependencies]
 insta = "1.46.1"
+term-transcript = "0.4.0"
 
 
 [features]
