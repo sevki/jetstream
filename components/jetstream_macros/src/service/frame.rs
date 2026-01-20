@@ -1,6 +1,6 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Ident, Type};
+use syn::Ident;
 
 use crate::utils::case_conversion::IdentCased;
 

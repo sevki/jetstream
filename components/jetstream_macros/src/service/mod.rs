@@ -130,7 +130,6 @@ pub(crate) fn service_impl(
     let tmsg_definitions = tmsgs.iter().map(|(_ident, def)| quote! { #def });
     let rmsg_definitions = rmsgs.iter().map(|(_ident, def)| quote! { #def });
 
-    let ident = trait_name.clone();
     // r[impl jetstream.macro.source_span]
     quote! {
         #vis mod #proto_mod {

@@ -5,7 +5,6 @@
 
 use std::{ffi::CStr, io::Result, mem::size_of, os::unix::io::AsRawFd};
 
-use crate::syscall;
 
 #[repr(C, packed)]
 #[derive(Clone, Copy)]
