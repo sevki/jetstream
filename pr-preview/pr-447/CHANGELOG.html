@@ -1,0 +1,908 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>🆕 Changelog - JetStream Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="docs/styles-2410a0be.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-e1f92ed9.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-7bdf0ae6.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">JetStream Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="1000-2025-11-19"><a class="header" href="#1000-2025-11-19">10.0.0 (2025-11-19)</a></h2>
+<h3 id="-breaking-changes"><a class="header" href="#-breaking-changes">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>make error types more isomorphic</li>
+</ul>
+<h3 id="bug-fixes"><a class="header" href="#bug-fixes">Bug Fixes</a></h3>
+<ul>
+<li>make error types more isomorphic (<a href="https://github.com/sevki/jetstream/commit/aee2fa21a7c6879f5d77765d3ff96b22b98e0e86">aee2fa2</a>)</li>
+</ul>
+<h2 id="950-2025-10-30"><a class="header" href="#950-2025-10-30">9.5.0 (2025-10-30)</a></h2>
+<h3 id="features"><a class="header" href="#features">Features</a></h3>
+<ul>
+<li>add cleanup code serverside. add cloudflare docs to mdbook (<a href="https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b">91da99c</a>)</li>
+<li>introduce jetstream cloudflare module. (<a href="https://github.com/sevki/jetstream/commit/6e8cc015024d3066f9f3208e20bd4725c03b0ac2">6e8cc01</a>)</li>
+</ul>
+<h3 id="bug-fixes-1"><a class="header" href="#bug-fixes-1">Bug Fixes</a></h3>
+<ul>
+<li>add comment about cf exec model (<a href="https://github.com/sevki/jetstream/commit/c979856a7406e0f612fc26adbfa200471034fbeb">c979856</a>)</li>
+<li>remove tracing from sink and stream (<a href="https://github.com/sevki/jetstream/commit/97ac0a59b3c0cd8aefb2b0af2804b81316ea6acf">97ac0a5</a>)</li>
+<li>remove unsafe code (<a href="https://github.com/sevki/jetstream/commit/a286d93fddc7bf8329defe77b5d01c0b6dbabd17">a286d93</a>)</li>
+</ul>
+<h2 id="942-2025-10-28"><a class="header" href="#942-2025-10-28">9.4.2 (2025-10-28)</a></h2>
+<h3 id="bug-fixes-2"><a class="header" href="#bug-fixes-2">Bug Fixes</a></h3>
+<ul>
+<li>dependency sudoku (<a href="https://github.com/sevki/jetstream/commit/7df5f9bdce4a3a830609fe5f50bfc3cdd278b5d2">7df5f9b</a>)</li>
+</ul>
+<h2 id="941-2025-10-17"><a class="header" href="#941-2025-10-17">9.4.1 (2025-10-17)</a></h2>
+<h3 id="bug-fixes-3"><a class="header" href="#bug-fixes-3">Bug Fixes</a></h3>
+<ul>
+<li>remove redundant io imports and use fully qualified paths (<a href="https://github.com/sevki/jetstream/commit/7de4b9ea0cece01326cde4af027eae8a3120f1f9">7de4b9e</a>)</li>
+<li>target os cfg attrs (<a href="https://github.com/sevki/jetstream/commit/16e5c849b2c1b7b962590dfab779f4429cf06445">16e5c84</a>)</li>
+</ul>
+<h2 id="940-2025-10-15"><a class="header" href="#940-2025-10-15">9.4.0 (2025-10-15)</a></h2>
+<h3 id="features-1"><a class="header" href="#features-1">Features</a></h3>
+<ul>
+<li>add context (<a href="https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d">4771c84</a>)</li>
+</ul>
+<h3 id="bug-fixes-4"><a class="header" href="#bug-fixes-4">Bug Fixes</a></h3>
+<ul>
+<li>cargo toml version issues (<a href="https://github.com/sevki/jetstream/commit/3481015e9fd2ffb3fc881168bb38ee03c72144d5">3481015</a>)</li>
+<li>collections can only be u16::MAX (<a href="https://github.com/sevki/jetstream/commit/6ada71a7222d16b0e3035837c76b8e3bcb51f627">6ada71a</a>)</li>
+<li>recursive self call (<a href="https://github.com/sevki/jetstream/commit/c51d455ececd5ac461561b8bd44709a92a45b2b7">c51d455</a>)</li>
+<li>wasm32 feature gates (<a href="https://github.com/sevki/jetstream/commit/755f9c1c6628fc46b1d4d3df03441106de3abdfd">755f9c1</a>)</li>
+</ul>
+<h2 id="930-2025-10-14"><a class="header" href="#930-2025-10-14">9.3.0 (2025-10-14)</a></h2>
+<h3 id="features-2"><a class="header" href="#features-2">Features</a></h3>
+<ul>
+<li>add tracing feature (<a href="https://github.com/sevki/jetstream/commit/5cb290799dd251c6e04ab4c2fe52089e3f32336c">5cb2907</a>)</li>
+</ul>
+<h2 id="920-2025-10-05"><a class="header" href="#920-2025-10-05">9.2.0 (2025-10-05)</a></h2>
+<h3 id="features-3"><a class="header" href="#features-3">Features</a></h3>
+<ul>
+<li>dt features, remove rustdoc_to_md_book (<a href="https://github.com/sevki/jetstream/commit/039815903e127055ec494a3dc3e1780b7afb4fe2">0398159</a>)</li>
+</ul>
+<h3 id="bug-fixes-5"><a class="header" href="#bug-fixes-5">Bug Fixes</a></h3>
+<ul>
+<li>iroh example needs -F iroh (<a href="https://github.com/sevki/jetstream/commit/5246fb234453964ebf0e0f12ad0437f23780032d">5246fb2</a>)</li>
+<li>wasm-pack build error. rm rustdoc2mdbook (<a href="https://github.com/sevki/jetstream/commit/68076ccbcf88d18d1dadb30355d8358283864b54">68076cc</a>)</li>
+</ul>
+<h2 id="912-2025-10-05"><a class="header" href="#912-2025-10-05">9.1.2 (2025-10-05)</a></h2>
+<h3 id="bug-fixes-6"><a class="header" href="#bug-fixes-6">Bug Fixes</a></h3>
+<ul>
+<li>failing docs (<a href="https://github.com/sevki/jetstream/commit/232ddee45d616dc08ea7e6dcd072db2c7f2cbba6">232ddee</a>)</li>
+</ul>
+<h2 id="911-2025-10-05"><a class="header" href="#911-2025-10-05">9.1.1 (2025-10-05)</a></h2>
+<h3 id="bug-fixes-7"><a class="header" href="#bug-fixes-7">Bug Fixes</a></h3>
+<ul>
+<li>benchmarks and add iroh_benchmarks (<a href="https://github.com/sevki/jetstream/commit/56dbc12c0938ed5aa1b22d8e4867beaaf7b0d587">56dbc12</a>)</li>
+<li>hide documentation for iroh (<a href="https://github.com/sevki/jetstream/commit/47b104d73ece751924c1e41a77a92a8317c968f9">47b104d</a>)</li>
+</ul>
+<h2 id="910-2025-10-02"><a class="header" href="#910-2025-10-02">9.1.0 (2025-10-02)</a></h2>
+<h3 id="features-4"><a class="header" href="#features-4">Features</a></h3>
+<ul>
+<li>introduce iroh examples (<a href="https://github.com/sevki/jetstream/commit/86e001f9195a28429e34670597347d3148ea22d9">86e001f</a>)</li>
+</ul>
+<h3 id="bug-fixes-8"><a class="header" href="#bug-fixes-8">Bug Fixes</a></h3>
+<ul>
+<li>add support for libc in windows and mac (<a href="https://github.com/sevki/jetstream/commit/1fb3b5ba61c36372db24231f66753453a05b149a">1fb3b5b</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/828d6be26328a938417b976cb8c8f63ddc1a9bea">828d6be</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/7f44956f965d5c906812e91b138e5c21597e37df">7f44956</a>)</li>
+</ul>
+<h2 id="900-2025-09-29"><a class="header" href="#900-2025-09-29">9.0.0 (2025-09-29)</a></h2>
+<h3 id="-breaking-changes-1"><a class="header" href="#-breaking-changes-1">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>move quic and webocket to their own crates.</li>
+</ul>
+<h3 id="features-5"><a class="header" href="#features-5">Features</a></h3>
+<ul>
+<li>move quic and webocket to their own crates. (<a href="https://github.com/sevki/jetstream/commit/7d0ba9fae68f1e4995d9ea6d1adcaf95b8dc983a">7d0ba9f</a>)</li>
+</ul>
+<h3 id="bug-fixes-9"><a class="header" href="#bug-fixes-9">Bug Fixes</a></h3>
+<ul>
+<li>simpler workflows for github actions (<a href="https://github.com/sevki/jetstream/commit/17185ddd3337fff27131f96a26eabcb0d1961155">17185dd</a>)</li>
+</ul>
+<h2 id="831-2025-06-06"><a class="header" href="#831-2025-06-06">8.3.1 (2025-06-06)</a></h2>
+<h3 id="bug-fixes-10"><a class="header" href="#bug-fixes-10">Bug Fixes</a></h3>
+<ul>
+<li>update docs (<a href="https://github.com/sevki/jetstream/commit/74e2867864e46b441ed01193220c22842fcf67a8">74e2867</a>)</li>
+</ul>
+<h2 id="830-2025-05-31"><a class="header" href="#830-2025-05-31">8.3.0 (2025-05-31)</a></h2>
+<h3 id="features-6"><a class="header" href="#features-6">Features</a></h3>
+<ul>
+<li>jetstream_libc (<a href="https://github.com/sevki/jetstream/commit/aba123bb7a027a97cad4d8a9d7731d18bb4059ca">aba123b</a>)</li>
+</ul>
+<h2 id="821-2025-05-29"><a class="header" href="#821-2025-05-29">8.2.1 (2025-05-29)</a></h2>
+<h3 id="bug-fixes-11"><a class="header" href="#bug-fixes-11">Bug Fixes</a></h3>
+<ul>
+<li>rustdoc to mdbook (<a href="https://github.com/sevki/jetstream/commit/2098ad11072e31ec329b42ae7df6dd380d993ff7">2098ad1</a>)</li>
+</ul>
+<h2 id="820-2025-05-29"><a class="header" href="#820-2025-05-29">8.2.0 (2025-05-29)</a></h2>
+<h3 id="features-7"><a class="header" href="#features-7">Features</a></h3>
+<ul>
+<li>jetstream distributed features (<a href="https://github.com/sevki/jetstream/commit/52b5e89e64b1e5559e600bed5fd91499cd051934">52b5e89</a>)</li>
+</ul>
+<h3 id="bug-fixes-12"><a class="header" href="#bug-fixes-12">Bug Fixes</a></h3>
+<ul>
+<li>Update lib.rs for extern crates (<a href="https://github.com/sevki/jetstream/commit/ffb677744364c3d44274be2d5eb20c30ecabb6b5">ffb6777</a>)</li>
+</ul>
+<h2 id="815-2025-04-05"><a class="header" href="#815-2025-04-05">8.1.5 (2025-04-05)</a></h2>
+<h3 id="bug-fixes-13"><a class="header" href="#bug-fixes-13">Bug Fixes</a></h3>
+<ul>
+<li>rollback toasty (<a href="https://github.com/sevki/jetstream/commit/ae0790b473fa81e1c67ec25003bec0f0d6082450">ae0790b</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/ca861a7ac9797925d208c3b08e8d195607d4d388">ca861a7</a>)</li>
+</ul>
+<h2 id="814-2025-04-04"><a class="header" href="#814-2025-04-04">8.1.4 (2025-04-04)</a></h2>
+<h3 id="bug-fixes-14"><a class="header" href="#bug-fixes-14">Bug Fixes</a></h3>
+<ul>
+<li>add toasty types fix skip (<a href="https://github.com/sevki/jetstream/commit/0fe936abdda512235343a77ff29fed7c972d3f96">0fe936a</a>)</li>
+<li>ci-builds, drop 1.76 (<a href="https://github.com/sevki/jetstream/commit/5664e571b607eb8ed3b6f9ee3488994b4cd568b9">5664e57</a>)</li>
+<li>pin toasty (<a href="https://github.com/sevki/jetstream/commit/03b6b18c6cce3cf9cdb274040bf29da21e1e5dd2">03b6b18</a>)</li>
+</ul>
+<h2 id="813-2025-04-04"><a class="header" href="#813-2025-04-04">8.1.3 (2025-04-04)</a></h2>
+<h3 id="bug-fixes-15"><a class="header" href="#bug-fixes-15">Bug Fixes</a></h3>
+<ul>
+<li>extern async_trait and trait_variant and lazy_static (<a href="https://github.com/sevki/jetstream/commit/71e93e2db32236e01bfc2cc923a6db10a788a730">71e93e2</a>)</li>
+<li>extern_more (<a href="https://github.com/sevki/jetstream/commit/1bd58d8150031c1394f94e7074afd2c1c60928de">1bd58d8</a>)</li>
+</ul>
+<h2 id="812-2025-02-15"><a class="header" href="#812-2025-02-15">8.1.2 (2025-02-15)</a></h2>
+<h3 id="bug-fixes-16"><a class="header" href="#bug-fixes-16">Bug Fixes</a></h3>
+<ul>
+<li>make websocket pub again (<a href="https://github.com/sevki/jetstream/commit/21acf4bd6f9269ff9c0ce3b4c3654bbfa2ca6d98">21acf4b</a>)</li>
+</ul>
+<h2 id="811-2025-02-15"><a class="header" href="#811-2025-02-15">8.1.1 (2025-02-15)</a></h2>
+<h3 id="bug-fixes-17"><a class="header" href="#bug-fixes-17">Bug Fixes</a></h3>
+<ul>
+<li>make websocket pub (<a href="https://github.com/sevki/jetstream/commit/6096ff9815b3b15dac1cfdd124821dc9d40218b0">6096ff9</a>)</li>
+</ul>
+<h2 id="810-2025-02-15"><a class="header" href="#810-2025-02-15">8.1.0 (2025-02-15)</a></h2>
+<h3 id="features-8"><a class="header" href="#features-8">Features</a></h3>
+<ul>
+<li>add websocket transport (<a href="https://github.com/sevki/jetstream/commit/3f4054c9ebe2253c11a2096c4983c7d75073da9a">3f4054c</a>)</li>
+<li>channels can now be split (<a href="https://github.com/sevki/jetstream/commit/ef646a590a5af13adc2c97c4871f19bca2a1d6b6">ef646a5</a>)</li>
+</ul>
+<h2 id="8010-2025-02-14"><a class="header" href="#8010-2025-02-14">8.0.10 (2025-02-14)</a></h2>
+<h3 id="bug-fixes-18"><a class="header" href="#bug-fixes-18">Bug Fixes</a></h3>
+<ul>
+<li>broken lock file (<a href="https://github.com/sevki/jetstream/commit/6148cf776ac29ab9941574422aeda44ed01450ee">6148cf7</a>)</li>
+</ul>
+<h2 id="809-2025-02-14"><a class="header" href="#809-2025-02-14">8.0.9 (2025-02-14)</a></h2>
+<h3 id="bug-fixes-19"><a class="header" href="#bug-fixes-19">Bug Fixes</a></h3>
+<ul>
+<li>remove prost (<a href="https://github.com/sevki/jetstream/commit/5a5ff9b7904f1023f5bbed6c5a6236ef01644c17">5a5ff9b</a>)</li>
+</ul>
+<h2 id="808-2025-02-01"><a class="header" href="#808-2025-02-01">8.0.8 (2025-02-01)</a></h2>
+<h3 id="bug-fixes-20"><a class="header" href="#bug-fixes-20">Bug Fixes</a></h3>
+<ul>
+<li>remove expects (<a href="https://github.com/sevki/jetstream/commit/8a58cf565453d755100b5298c1c89ed478dff11e">8a58cf5</a>)</li>
+</ul>
+<h2 id="807-2025-01-30"><a class="header" href="#807-2025-01-30">8.0.7 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-21"><a class="header" href="#bug-fixes-21">Bug Fixes</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/53a698b53ad31d12cc068ba8e921779b710a448e">53a698b</a>)</li>
+</ul>
+<h2 id="806-2025-01-30"><a class="header" href="#806-2025-01-30">8.0.6 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-22"><a class="header" href="#bug-fixes-22">Bug Fixes</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/92eeee530c2be541a31a46d86dcd67fd68b0c8a5">92eeee5</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/3a2f4df4bbec17361295a2839ba10e521656f94f">3a2f4df</a>)</li>
+</ul>
+<h2 id="805-2025-01-30"><a class="header" href="#805-2025-01-30">8.0.5 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-23"><a class="header" href="#bug-fixes-23">Bug Fixes</a></h3>
+<ul>
+<li>use cargo publish workspace (<a href="https://github.com/sevki/jetstream/commit/e28a0f75bfa9fca9a990c6f2b5527be5e25a3d16">e28a0f7</a>)</li>
+</ul>
+<h2 id="804-2025-01-30"><a class="header" href="#804-2025-01-30">8.0.4 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-24"><a class="header" href="#bug-fixes-24">Bug Fixes</a></h3>
+<ul>
+<li>dependency order and cycle (<a href="https://github.com/sevki/jetstream/commit/6a6c99778f90f8481d5792d560a6e97e0c5926bc">6a6c997</a>)</li>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/049e58478f81be41983bdeef4a661f12eb21215a">049e584</a>)</li>
+<li>reexport tokio_util from rpc (<a href="https://github.com/sevki/jetstream/commit/cf28c40a3783379ac89295fef4a55bd4212d4891">cf28c40</a>)</li>
+<li>rust.yml workflow (<a href="https://github.com/sevki/jetstream/commit/9dc7bc09ad8a341e8bcf19f945b8efa478b0d67d">9dc7bc0</a>)</li>
+</ul>
+<h2 id="803-2025-01-30"><a class="header" href="#803-2025-01-30">8.0.3 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-25"><a class="header" href="#bug-fixes-25">Bug Fixes</a></h3>
+<ul>
+<li>cargo lock resolver (<a href="https://github.com/sevki/jetstream/commit/327d8bdfe9d11f3d4d99e245de100ffae9e5d94b">327d8bd</a>)</li>
+<li>dependency order (<a href="https://github.com/sevki/jetstream/commit/9a0e1f979c85a45780bf71f669da4cc91ecd3f5b">9a0e1f9</a>)</li>
+</ul>
+<h2 id="802-2025-01-30"><a class="header" href="#802-2025-01-30">8.0.2 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-26"><a class="header" href="#bug-fixes-26">Bug Fixes</a></h3>
+<ul>
+<li>criterion benchmark test, framed implementation (<a href="https://github.com/sevki/jetstream/commit/25b1611be97ffde52a1cb403ea4a55e3aa5f8e0b">25b1611</a>)</li>
+<li>failing serde tests (<a href="https://github.com/sevki/jetstream/commit/81db0ded08429489cf5d83d5540804b00fdb9802">81db0de</a>)</li>
+<li>reenable sccache (<a href="https://github.com/sevki/jetstream/commit/757bb7e248996a587ee13c2a8c21246d0e198a04">757bb7e</a>)</li>
+<li>service macro works correctly with client calls (<a href="https://github.com/sevki/jetstream/commit/eb1fd0f01bc899b7f0650dbfca29e2d77ec76720">eb1fd0f</a>)</li>
+<li>snapshots for macros (<a href="https://github.com/sevki/jetstream/commit/fab686df8c79710b5e9319519d8aa3d17b203847">fab686d</a>)</li>
+</ul>
+<h2 id="801-2025-01-28"><a class="header" href="#801-2025-01-28">8.0.1 (2025-01-28)</a></h2>
+<h3 id="bug-fixes-27"><a class="header" href="#bug-fixes-27">Bug Fixes</a></h3>
+<ul>
+<li>remove distributed (<a href="https://github.com/sevki/jetstream/commit/3aba1f6543493e107b079d35fa441d46611e637e">3aba1f6</a>)</li>
+</ul>
+<h2 id="800-2025-01-27"><a class="header" href="#800-2025-01-27">8.0.0 (2025-01-27)</a></h2>
+<h3 id="-breaking-changes-2"><a class="header" href="#-breaking-changes-2">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>use more futures</li>
+</ul>
+<h3 id="features-9"><a class="header" href="#features-9">Features</a></h3>
+<ul>
+<li>use more futures (<a href="https://github.com/sevki/jetstream/commit/467b6f56d0808e89f078c656f1e7c447738244ed">467b6f5</a>)</li>
+</ul>
+<h3 id="bug-fixes-28"><a class="header" href="#bug-fixes-28">Bug Fixes</a></h3>
+<ul>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/04aace42d2d1338e614081954e32448ac3e5ec30">04aace4</a>)</li>
+</ul>
+<h2 id="740-2025-01-18"><a class="header" href="#740-2025-01-18">7.4.0 (2025-01-18)</a></h2>
+<h3 id="features-10"><a class="header" href="#features-10">Features</a></h3>
+<ul>
+<li>jetstream_rpc supports wasm (<a href="https://github.com/sevki/jetstream/commit/e97e6ca6a94067551fb7a98c4e34fa2a774ebdfd">e97e6ca</a>)</li>
+</ul>
+<h2 id="730-2025-01-17"><a class="header" href="#730-2025-01-17">7.3.0 (2025-01-17)</a></h2>
+<h3 id="features-11"><a class="header" href="#features-11">Features</a></h3>
+<ul>
+<li>wasm-support (<a href="https://github.com/sevki/jetstream/issues/260">#260</a>) (<a href="https://github.com/sevki/jetstream/commit/5cbff0daf95c780cd5962252aaa975d6248b524b">5cbff0d</a>)</li>
+</ul>
+<h2 id="721-2024-12-10"><a class="header" href="#721-2024-12-10">7.2.1 (2024-12-10)</a></h2>
+<h3 id="bug-fixes-29"><a class="header" href="#bug-fixes-29">Bug Fixes</a></h3>
+<ul>
+<li>keep reciver types as is in generated code (<a href="https://github.com/sevki/jetstream/commit/7d956718c4e4c1564b1aeeb2d6af635eb44ae220">7d95671</a>)</li>
+</ul>
+<h2 id="720-2024-12-09"><a class="header" href="#720-2024-12-09">7.2.0 (2024-12-09)</a></h2>
+<h3 id="features-12"><a class="header" href="#features-12">Features</a></h3>
+<ul>
+<li>Ip primitives (<a href="https://github.com/sevki/jetstream/commit/1c263b59494e2699ec2347727f6cbf77bdac3b67">1c263b5</a>)</li>
+</ul>
+<h2 id="712-2024-12-06"><a class="header" href="#712-2024-12-06">7.1.2 (2024-12-06)</a></h2>
+<h3 id="bug-fixes-30"><a class="header" href="#bug-fixes-30">Bug Fixes</a></h3>
+<ul>
+<li>elide lifetimes in ufs (<a href="https://github.com/sevki/jetstream/commit/b778ff9481bf9c9d1cf35fc691903b80483e8cdb">b778ff9</a>)</li>
+</ul>
+<h2 id="711-2024-11-25"><a class="header" href="#711-2024-11-25">7.1.1 (2024-11-25)</a></h2>
+<h3 id="bug-fixes-31"><a class="header" href="#bug-fixes-31">Bug Fixes</a></h3>
+<ul>
+<li>broken use statement for async_trait (<a href="https://github.com/sevki/jetstream/commit/cce4df6a5a594f25fcf71eb63e51534bf8b85c3b">cce4df6</a>)</li>
+</ul>
+<h2 id="710-2024-11-25"><a class="header" href="#710-2024-11-25">7.1.0 (2024-11-25)</a></h2>
+<h3 id="features-13"><a class="header" href="#features-13">Features</a></h3>
+<ul>
+<li>added async_trait support service macro (<a href="https://github.com/sevki/jetstream/commit/9a86185b07eb02cd05933920f9ad02792992c71c">9a86185</a>)</li>
+</ul>
+<h2 id="704-2024-11-23"><a class="header" href="#704-2024-11-23">7.0.4 (2024-11-23)</a></h2>
+<h3 id="bug-fixes-32"><a class="header" href="#bug-fixes-32">Bug Fixes</a></h3>
+<ul>
+<li>fuzz target (<a href="https://github.com/sevki/jetstream/commit/a494e15fca5b0ee1e66399d2b50cf0e1158b070c">a494e15</a>)</li>
+</ul>
+<h2 id="703-2024-11-21"><a class="header" href="#703-2024-11-21">7.0.3 (2024-11-21)</a></h2>
+<h3 id="bug-fixes-33"><a class="header" href="#bug-fixes-33">Bug Fixes</a></h3>
+<ul>
+<li>Delete CHANGELOG.md (<a href="https://github.com/sevki/jetstream/commit/abcc79dc0511230f4725ea5da20c624352635b65">abcc79d</a>)</li>
+<li>mdbook changelog (<a href="https://github.com/sevki/jetstream/commit/5f03b6b7e2fe7b2fb56f082f8ff56105066b0998">5f03b6b</a>)</li>
+</ul>
+<h2 id="701-2024-11-21"><a class="header" href="#701-2024-11-21">7.0.1 (2024-11-21)</a></h2>
+<h3 id="bug-fixes-34"><a class="header" href="#bug-fixes-34">Bug Fixes</a></h3>
+<ul>
+<li>ci (<a href="https://github.com/sevki/jetstream/commit/e7418e584a5b45965666f85bbfbf9795fc1a5b7c">e7418e5</a>)</li>
+<li>docs (<a href="https://github.com/sevki/jetstream/commit/995da2f79e1fc42eeb8a87811d070094b6e9e4b1">995da2f</a>)</li>
+</ul>
+<h2 id="700-2024-11-21"><a class="header" href="#700-2024-11-21">7.0.0 (2024-11-21)</a></h2>
+<h3 id="-breaking-changes-3"><a class="header" href="#-breaking-changes-3">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>fix proken publish</li>
+</ul>
+<h3 id="features-14"><a class="header" href="#features-14">Features</a></h3>
+<ul>
+<li>fix proken publish (<a href="https://github.com/sevki/jetstream/commit/a7272c0f3dc25aa10e89c8b7e9ad070d919a369d">a7272c0</a>)</li>
+</ul>
+<h2 id="662-2024-11-21"><a class="header" href="#662-2024-11-21">6.6.2 (2024-11-21)</a></h2>
+<h3 id="bug-fixes-35"><a class="header" href="#bug-fixes-35">Bug Fixes</a></h3>
+<ul>
+<li>bump okid (<a href="https://github.com/sevki/jetstream/commit/7ed29402ed7a2c41d2f88696cefec4a42c09ec38">7ed2940</a>)</li>
+</ul>
+<h2 id="661-2024-11-20"><a class="header" href="#661-2024-11-20">6.6.1 (2024-11-20)</a></h2>
+<h3 id="bug-fixes-36"><a class="header" href="#bug-fixes-36">Bug Fixes</a></h3>
+<ul>
+<li>broken okid lockfile (<a href="https://github.com/sevki/jetstream/commit/63bae5e68e8707273b13dd06a74981f635556923">63bae5e</a>)</li>
+</ul>
+<h2 id="660-2024-11-20"><a class="header" href="#660-2024-11-20">6.6.0 (2024-11-20)</a></h2>
+<h3 id="features-15"><a class="header" href="#features-15">Features</a></h3>
+<ul>
+<li>distributes jetsream (<a href="https://github.com/sevki/jetstream/commit/d1477d56e574ca4c76b967a27c84ce7ccc4d9396">d1477d5</a>)</li>
+<li><strong>jetstream_distributed:</strong> placement (<a href="https://github.com/sevki/jetstream/commit/8a93788e51a98807466aa868b13685ba81aa1d3e">8a93788</a>)</li>
+</ul>
+<h3 id="bug-fixes-37"><a class="header" href="#bug-fixes-37">Bug Fixes</a></h3>
+<ul>
+<li>change service shape (<a href="https://github.com/sevki/jetstream/commit/194252db4e3a58509845692a09a77fd9d1ccac2f">194252d</a>)</li>
+<li>typo (<a href="https://github.com/sevki/jetstream/commit/901ffbdda65336060410f348fe57c0ddc01a9fc4">901ffbd</a>)</li>
+</ul>
+<h2 id="650-2024-11-20"><a class="header" href="#650-2024-11-20">6.5.0 (2024-11-20)</a></h2>
+<h3 id="features-16"><a class="header" href="#features-16">Features</a></h3>
+<ul>
+<li>jetstream cluster (<a href="https://github.com/sevki/jetstream/commit/80b5727722b1b44d522eb793c18e5bf117660d8b">80b5727</a>)</li>
+<li>rustdoc_to_mdbook (<a href="https://github.com/sevki/jetstream/commit/32deadf98614a9365e9991c3cd76620280c85b5d">32deadf</a>)</li>
+</ul>
+<h3 id="bug-fixes-38"><a class="header" href="#bug-fixes-38">Bug Fixes</a></h3>
+<ul>
+<li>only build docs in release (<a href="https://github.com/sevki/jetstream/commit/02b02bc6348a3ec537683d9b18047c02e8b7c502">02b02bc</a>)</li>
+<li>update doc links (<a href="https://github.com/sevki/jetstream/commit/80a5e1efc9b2a275b8d49be7eedc832602914c0c">80a5e1e</a>)</li>
+</ul>
+<h2 id="642-2024-11-18"><a class="header" href="#642-2024-11-18">6.4.2 (2024-11-18)</a></h2>
+<h3 id="bug-fixes-39"><a class="header" href="#bug-fixes-39">Bug Fixes</a></h3>
+<ul>
+<li>bump deps (<a href="https://github.com/sevki/jetstream/commit/0dbd81b248e3d34aee458116f7aa82cddc31d570">0dbd81b</a>)</li>
+</ul>
+<h2 id="641-2024-11-11"><a class="header" href="#641-2024-11-11">6.4.1 (2024-11-11)</a></h2>
+<h3 id="bug-fixes-40"><a class="header" href="#bug-fixes-40">Bug Fixes</a></h3>
+<ul>
+<li>make the proto mod same vis as trait (<a href="https://github.com/sevki/jetstream/commit/a43c0a2e3fbcb2991f6f3396eba9e30c96a47663">a43c0a2</a>)</li>
+</ul>
+<h2 id="640-2024-11-10"><a class="header" href="#640-2024-11-10">6.4.0 (2024-11-10)</a></h2>
+<h3 id="features-17"><a class="header" href="#features-17">Features</a></h3>
+<ul>
+<li>Add support for bool in WireFormat (<a href="https://github.com/sevki/jetstream/commit/640c6ca3e22d0ed1dc7ec9c58af998e96efab235">640c6ca</a>)</li>
+<li>Add tests for jetstream modules (<a href="https://github.com/sevki/jetstream/commit/18462d96f8dd71b528d49441dc257d2038f3e39f">18462d9</a>)</li>
+</ul>
+<h3 id="bug-fixes-41"><a class="header" href="#bug-fixes-41">Bug Fixes</a></h3>
+<ul>
+<li>benchmarks (<a href="https://github.com/sevki/jetstream/commit/94767ddfbd2b43f9562621dbbd679b3ec2215da6">94767dd</a>)</li>
+<li>more tests (<a href="https://github.com/sevki/jetstream/commit/9a5071fb22c4a63e0af4fb1af9c7133f00cbc26e">9a5071f</a>)</li>
+<li>some tests (<a href="https://github.com/sevki/jetstream/commit/c65ded107a254d283e165563b0b97fa735741399">c65ded1</a>)</li>
+</ul>
+<h2 id="634-2024-11-10"><a class="header" href="#634-2024-11-10">6.3.4 (2024-11-10)</a></h2>
+<h3 id="bug-fixes-42"><a class="header" href="#bug-fixes-42">Bug Fixes</a></h3>
+<ul>
+<li>make qid eq,hash (<a href="https://github.com/sevki/jetstream/commit/522de0d41e5cbda8d29ea6a20f1cb2cba7b5bb82">522de0d</a>)</li>
+</ul>
+<h2 id="633-2024-11-10"><a class="header" href="#633-2024-11-10">6.3.3 (2024-11-10)</a></h2>
+<h3 id="bug-fixes-43"><a class="header" href="#bug-fixes-43">Bug Fixes</a></h3>
+<ul>
+<li>update 9p to use trait_variant (<a href="https://github.com/sevki/jetstream/commit/96db410d8e5e04c4beb9100be2b58c271cdd7b8c">96db410</a>)</li>
+</ul>
+<h2 id="632-2024-11-10"><a class="header" href="#632-2024-11-10">6.3.2 (2024-11-10)</a></h2>
+<h3 id="bug-fixes-44"><a class="header" href="#bug-fixes-44">Bug Fixes</a></h3>
+<ul>
+<li>option&lt;T&gt; support (<a href="https://github.com/sevki/jetstream/commit/2e224cad47d775fb2c967c4d37d33b8aabeb7470">2e224ca</a>)</li>
+</ul>
+<h2 id="631-2024-11-09"><a class="header" href="#631-2024-11-09">6.3.1 (2024-11-09)</a></h2>
+<h3 id="bug-fixes-45"><a class="header" href="#bug-fixes-45">Bug Fixes</a></h3>
+<ul>
+<li>ci workflows (<a href="https://github.com/sevki/jetstream/commit/4c12f046e9ff9a5d39f4f0619f6ed68b25edcfe7">4c12f04</a>)</li>
+</ul>
+<h2 id="630-2024-11-09"><a class="header" href="#630-2024-11-09">6.3.0 (2024-11-09)</a></h2>
+<h3 id="features-18"><a class="header" href="#features-18">Features</a></h3>
+<ul>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/ba741bd0d2aed8d33d2b5589ca2a3da83b1abce8">ba741bd</a>)</li>
+<li>enum support (<a href="https://github.com/sevki/jetstream/commit/c4552d8bd056debdbb7845145f964defae6f90d2">c4552d8</a>)</li>
+</ul>
+<h3 id="bug-fixes-46"><a class="header" href="#bug-fixes-46">Bug Fixes</a></h3>
+<ul>
+<li>remove jj (<a href="https://github.com/sevki/jetstream/commit/02fefd9e82f0f260d54f703daa0eb4667cdbce5d">02fefd9</a>)</li>
+</ul>
+<h2 id="620-2024-11-08"><a class="header" href="#620-2024-11-08">6.2.0 (2024-11-08)</a></h2>
+<h3 id="features-19"><a class="header" href="#features-19">Features</a></h3>
+<ul>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/3f0751a8588bf0fb5d189865f65417a717f414c4">3f0751a</a>)</li>
+</ul>
+<h2 id="610-2024-11-08"><a class="header" href="#610-2024-11-08">6.1.0 (2024-11-08)</a></h2>
+<h3 id="features-20"><a class="header" href="#features-20">Features</a></h3>
+<ul>
+<li>start quic server with config (<a href="https://github.com/sevki/jetstream/issues/159">#159</a>) (<a href="https://github.com/sevki/jetstream/commit/34339819f26044e0a19c5c668c2fb710734af564">3433981</a>)</li>
+</ul>
+<h2 id="602-2024-11-08"><a class="header" href="#602-2024-11-08">6.0.2 (2024-11-08)</a></h2>
+<h3 id="bug-fixes-47"><a class="header" href="#bug-fixes-47">Bug Fixes</a></h3>
+<ul>
+<li>ci/cd (<a href="https://github.com/sevki/jetstream/issues/157">#157</a>) (<a href="https://github.com/sevki/jetstream/commit/3f7ff1ea0b561136bc51c65f1acc0f683cfafb01">3f7ff1e</a>)</li>
+</ul>
+<h2 id="601-2024-11-08"><a class="header" href="#601-2024-11-08">6.0.1 (2024-11-08)</a></h2>
+<h3 id="bug-fixes-48"><a class="header" href="#bug-fixes-48">Bug Fixes</a></h3>
+<ul>
+<li>trait_variant use (<a href="https://github.com/sevki/jetstream/issues/155">#155</a>) (<a href="https://github.com/sevki/jetstream/commit/3cd5665454bb42c3e38606c4a3dd9355ef63fc9b">3cd5665</a>)</li>
+</ul>
+<h2 id="600-2024-11-07"><a class="header" href="#600-2024-11-07">6.0.0 (2024-11-07)</a></h2>
+<h3 id="-breaking-changes-4"><a class="header" href="#-breaking-changes-4">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>splits up packages</li>
+<li>move modules to sensible parents</li>
+<li>protocol -&gt; coding</li>
+<li>merge all the creates</li>
+</ul>
+<h3 id="features-21"><a class="header" href="#features-21">Features</a></h3>
+<ul>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+<li>modularize components (<a href="https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a">7262a66</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+<li>revamp service (<a href="https://github.com/sevki/jetstream/issues/147">#147</a>) (<a href="https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706">6d96be8</a>)</li>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+<li>use sccache (<a href="https://github.com/sevki/jetstream/issues/142">#142</a>) (<a href="https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6">89f96ab</a>)</li>
+<li>use serde_bytes::ByteBuf instead of Bytes (<a href="https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b">a1101d9</a>)</li>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+<li><strong>wireformat:</strong> add u128 (<a href="https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab">c76f6c4</a>)</li>
+</ul>
+<h3 id="bug-fixes-49"><a class="header" href="#bug-fixes-49">Bug Fixes</a></h3>
+<ul>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+<li>bothced update (<a href="https://github.com/sevki/jetstream/commit/b3b7003f565fc833804a70519aeb0741d03f34be">b3b7003</a>)</li>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>bump zero copy (<a href="https://github.com/sevki/jetstream/issues/140">#140</a>) (<a href="https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454">4bb933f</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+<li>readme (<a href="https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820">dc77722</a>)</li>
+<li>release again (<a href="https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2">3a6e65e</a>)</li>
+<li>release workflow (<a href="https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094">4abeb24</a>)</li>
+<li>revert serde_bytes to bytes with serde (<a href="https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54">2e02460</a>)</li>
+<li>unused git (<a href="https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68">3fe908e</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+<li>update release flow (<a href="https://github.com/sevki/jetstream/issues/144">#144</a>) (<a href="https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489">36dd4af</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/commit/b058b38367db97630b91af82e6bb11e26728708e">b058b38</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/issues/122">#122</a>) (<a href="https://github.com/sevki/jetstream/commit/566fe1f64c6d6f25d157a227b261c69c9b3e83b5">566fe1f</a>)</li>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945">822bf0e</a>)</li>
+<li>warnings (<a href="https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83">62d8013</a>)</li>
+<li><strong>wireformat:</strong> from_bytes doesn’t require a mutable buf (<a href="https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725">437c35c</a>)</li>
+</ul>
+<h3 id="code-refactoring"><a class="header" href="#code-refactoring">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+<li>move modules to sensible parents (<a href="https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b">4eba5fb</a>)</li>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="542-2024-11-07"><a class="header" href="#542-2024-11-07">5.4.2 (2024-11-07)</a></h2>
+<h3 id="bug-fixes-50"><a class="header" href="#bug-fixes-50">Bug Fixes</a></h3>
+<ul>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+</ul>
+<h2 id="542-2024-11-07-1"><a class="header" href="#542-2024-11-07-1">5.4.2 (2024-11-07)</a></h2>
+<h3 id="bug-fixes-51"><a class="header" href="#bug-fixes-51">Bug Fixes</a></h3>
+<ul>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+</ul>
+<h2 id="541-2024-11-07"><a class="header" href="#541-2024-11-07">5.4.1 (2024-11-07)</a></h2>
+<h3 id="bug-fixes-52"><a class="header" href="#bug-fixes-52">Bug Fixes</a></h3>
+<ul>
+<li>readme (<a href="https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820">dc77722</a>)</li>
+</ul>
+<h2 id="540-2024-11-07"><a class="header" href="#540-2024-11-07">5.4.0 (2024-11-07)</a></h2>
+<h3 id="features-22"><a class="header" href="#features-22">Features</a></h3>
+<ul>
+<li>revamp service (<a href="https://github.com/sevki/jetstream/issues/147">#147</a>) (<a href="https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706">6d96be8</a>)</li>
+</ul>
+<h2 id="530-2024-10-23"><a class="header" href="#530-2024-10-23">5.3.0 (2024-10-23)</a></h2>
+<h3 id="features-23"><a class="header" href="#features-23">Features</a></h3>
+<ul>
+<li>use sccache (<a href="https://github.com/sevki/jetstream/issues/142">#142</a>) (<a href="https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6">89f96ab</a>)</li>
+</ul>
+<h3 id="bug-fixes-53"><a class="header" href="#bug-fixes-53">Bug Fixes</a></h3>
+<ul>
+<li>update release flow (<a href="https://github.com/sevki/jetstream/issues/144">#144</a>) (<a href="https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489">36dd4af</a>)</li>
+</ul>
+<h2 id="523-2024-10-10"><a class="header" href="#523-2024-10-10">5.2.3 (2024-10-10)</a></h2>
+<h3 id="bug-fixes-54"><a class="header" href="#bug-fixes-54">Bug Fixes</a></h3>
+<ul>
+<li>bump zero copy (<a href="https://github.com/sevki/jetstream/issues/140">#140</a>) (<a href="https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454">4bb933f</a>)</li>
+<li>unused git (<a href="https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68">3fe908e</a>)</li>
+</ul>
+<h2 id="522-2024-10-07"><a class="header" href="#522-2024-10-07">5.2.2 (2024-10-07)</a></h2>
+<h3 id="bug-fixes-55"><a class="header" href="#bug-fixes-55">Bug Fixes</a></h3>
+<ul>
+<li>revert serde_bytes to bytes with serde (<a href="https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54">2e02460</a>)</li>
+</ul>
+<h2 id="521-2024-10-06"><a class="header" href="#521-2024-10-06">5.2.1 (2024-10-06)</a></h2>
+<h3 id="bug-fixes-56"><a class="header" href="#bug-fixes-56">Bug Fixes</a></h3>
+<ul>
+<li><strong>wireformat:</strong> from_bytes doesn’t require a mutable buf (<a href="https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725">437c35c</a>)</li>
+</ul>
+<h2 id="520-2024-10-06"><a class="header" href="#520-2024-10-06">5.2.0 (2024-10-06)</a></h2>
+<h3 id="features-24"><a class="header" href="#features-24">Features</a></h3>
+<ul>
+<li>use serde_bytes::ByteBuf instead of Bytes (<a href="https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b">a1101d9</a>)</li>
+</ul>
+<h3 id="bug-fixes-57"><a class="header" href="#bug-fixes-57">Bug Fixes</a></h3>
+<ul>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+</ul>
+<h2 id="514-2024-10-03"><a class="header" href="#514-2024-10-03">5.1.4 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-58"><a class="header" href="#bug-fixes-58">Bug Fixes</a></h3>
+<ul>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+</ul>
+<h2 id="513-2024-10-03"><a class="header" href="#513-2024-10-03">5.1.3 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-59"><a class="header" href="#bug-fixes-59">Bug Fixes</a></h3>
+<ul>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/commit/b058b38367db97630b91af82e6bb11e26728708e">b058b38</a>)</li>
+</ul>
+<h2 id="512-2024-10-03"><a class="header" href="#512-2024-10-03">5.1.2 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-60"><a class="header" href="#bug-fixes-60">Bug Fixes</a></h3>
+<ul>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/issues/122">#122</a>) (<a href="https://github.com/sevki/jetstream/commit/566fe1f64c6d6f25d157a227b261c69c9b3e83b5">566fe1f</a>)</li>
+</ul>
+<h2 id="511-2024-10-03"><a class="header" href="#511-2024-10-03">5.1.1 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-61"><a class="header" href="#bug-fixes-61">Bug Fixes</a></h3>
+<ul>
+<li>release again (<a href="https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2">3a6e65e</a>)</li>
+<li>warnings (<a href="https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83">62d8013</a>)</li>
+</ul>
+<h2 id="510-2024-10-03"><a class="header" href="#510-2024-10-03">5.1.0 (2024-10-03)</a></h2>
+<h3 id="features-25"><a class="header" href="#features-25">Features</a></h3>
+<ul>
+<li><strong>wireformat:</strong> add u128 (<a href="https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab">c76f6c4</a>)</li>
+</ul>
+<h3 id="bug-fixes-62"><a class="header" href="#bug-fixes-62">Bug Fixes</a></h3>
+<ul>
+<li>release workflow (<a href="https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094">4abeb24</a>)</li>
+</ul>
+<h2 id="500-2024-10-03"><a class="header" href="#500-2024-10-03">5.0.0 (2024-10-03)</a></h2>
+<h3 id="-breaking-changes-5"><a class="header" href="#-breaking-changes-5">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>splits up packages</li>
+</ul>
+<h3 id="features-26"><a class="header" href="#features-26">Features</a></h3>
+<ul>
+<li>modularize components (<a href="https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a">7262a66</a>)</li>
+</ul>
+<h3 id="bug-fixes-63"><a class="header" href="#bug-fixes-63">Bug Fixes</a></h3>
+<ul>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945">822bf0e</a>)</li>
+</ul>
+<h2 id="400-2024-10-01"><a class="header" href="#400-2024-10-01">4.0.0 (2024-10-01)</a></h2>
+<h3 id="-breaking-changes-6"><a class="header" href="#-breaking-changes-6">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>move modules to sensible parents</li>
+</ul>
+<h3 id="code-refactoring-1"><a class="header" href="#code-refactoring-1">Code Refactoring</a></h3>
+<ul>
+<li>move modules to sensible parents (<a href="https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b">4eba5fb</a>)</li>
+</ul>
+<h2 id="300-2024-03-30"><a class="header" href="#300-2024-03-30">3.0.0 (2024-03-30)</a></h2>
+<h3 id="-breaking-changes-7"><a class="header" href="#-breaking-changes-7">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>protocol -&gt; coding</li>
+<li>merge all the creates</li>
+</ul>
+<h3 id="features-27"><a class="header" href="#features-27">Features</a></h3>
+<ul>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+</ul>
+<h3 id="bug-fixes-64"><a class="header" href="#bug-fixes-64">Bug Fixes</a></h3>
+<ul>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+<li>bothced update (<a href="https://github.com/sevki/jetstream/commit/b3b7003f565fc833804a70519aeb0741d03f34be">b3b7003</a>)</li>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+</ul>
+<h3 id="code-refactoring-2"><a class="header" href="#code-refactoring-2">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="202-2024-03-30"><a class="header" href="#202-2024-03-30">2.0.2 (2024-03-30)</a></h2>
+<h3 id="bug-fixes-65"><a class="header" href="#bug-fixes-65">Bug Fixes</a></h3>
+<ul>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+</ul>
+<h2 id="201-2024-03-29"><a class="header" href="#201-2024-03-29">2.0.1 (2024-03-29)</a></h2>
+<h3 id="bug-fixes-66"><a class="header" href="#bug-fixes-66">Bug Fixes</a></h3>
+<ul>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+</ul>
+<h2 id="200-2024-03-29"><a class="header" href="#200-2024-03-29">2.0.0 (2024-03-29)</a></h2>
+<h3 id="-breaking-changes-8"><a class="header" href="#-breaking-changes-8">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>protocol -&gt; coding</li>
+</ul>
+<h3 id="code-refactoring-3"><a class="header" href="#code-refactoring-3">Code Refactoring</a></h3>
+<ul>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="111-2024-03-29"><a class="header" href="#111-2024-03-29">1.1.1 (2024-03-29)</a></h2>
+<h3 id="bug-fixes-67"><a class="header" href="#bug-fixes-67">Bug Fixes</a></h3>
+<ul>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+</ul>
+<h2 id="110-2024-03-29"><a class="header" href="#110-2024-03-29">1.1.0 (2024-03-29)</a></h2>
+<h3 id="features-28"><a class="header" href="#features-28">Features</a></h3>
+<ul>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+</ul>
+<h2 id="100-2024-03-25"><a class="header" href="#100-2024-03-25">1.0.0 (2024-03-25)</a></h2>
+<h3 id="-breaking-changes-9"><a class="header" href="#-breaking-changes-9">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>merge all the creates</li>
+</ul>
+<h3 id="code-refactoring-4"><a class="header" href="#code-refactoring-4">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+</ul>
+<h2 id="060-2024-03-21"><a class="header" href="#060-2024-03-21">0.6.0 (2024-03-21)</a></h2>
+<h3 id="features-29"><a class="header" href="#features-29">Features</a></h3>
+<ul>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+</ul>
+<h2 id="051-2024-03-15"><a class="header" href="#051-2024-03-15">0.5.1 (2024-03-15)</a></h2>
+<h3 id="bug-fixes-68"><a class="header" href="#bug-fixes-68">Bug Fixes</a></h3>
+<ul>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+</ul>
+<h2 id="050-2024-03-15"><a class="header" href="#050-2024-03-15">0.5.0 (2024-03-15)</a></h2>
+<h3 id="features-30"><a class="header" href="#features-30">Features</a></h3>
+<ul>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+</ul>
+<h3 id="bug-fixes-69"><a class="header" href="#bug-fixes-69">Bug Fixes</a></h3>
+<ul>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+</ul>
+<h2 id="040-2024-03-14"><a class="header" href="#040-2024-03-14">0.4.0 (2024-03-14)</a></h2>
+<h3 id="features-31"><a class="header" href="#features-31">Features</a></h3>
+<ul>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+</ul>
+<h2 id="032-2024-03-14"><a class="header" href="#032-2024-03-14">0.3.2 (2024-03-14)</a></h2>
+<h3 id="bug-fixes-70"><a class="header" href="#bug-fixes-70">Bug Fixes</a></h3>
+<ul>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+</ul>
+<h2 id="031-2024-03-14"><a class="header" href="#031-2024-03-14">0.3.1 (2024-03-14)</a></h2>
+<h3 id="bug-fixes-71"><a class="header" href="#bug-fixes-71">Bug Fixes</a></h3>
+<ul>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+</ul>
+<h2 id="030-2024-03-14"><a class="header" href="#030-2024-03-14">0.3.0 (2024-03-14)</a></h2>
+<h3 id="features-32"><a class="header" href="#features-32">Features</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+</ul>
+<h2 id="020-2024-03-14"><a class="header" href="#020-2024-03-14">0.2.0 (2024-03-14)</a></h2>
+<h3 id="features-33"><a class="header" href="#features-33">Features</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+</ul>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="doc/jetstream_wireformat/index.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="doc/jetstream_wireformat/index.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Error handling for Jetstream"><title>jetstream_error - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-77263533.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="jetstream_error" data-themes="" data-resource-suffix="" data-rustdoc-version="1.95.0-nightly (d940e5684 2026-01-19)" data-channel="nightly" data-search-js="search-9e2438ea.js" data-stringdex-js="stringdex-b897f86f.js" data-settings-js="settings-c38705f0.js" ><script src="../static.files/storage-e2aeef58.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-7bab91a1.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-ffcac47a.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate jetstream_error</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../jetstream_error/index.html">jetstream_<wbr>error</a><span class="version">10.0.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#structs">Crate Items</a></h3><ul class="block"><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#traits" title="Traits">Traits</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content"><div class="main-heading"><h1>Crate <span>jetstream_<wbr>error</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/jetstream_error/lib.rs.html#1-242">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Error handling for Jetstream</p>
+<div><!-- Created with term-transcript v0.4.0 (https://github.com/slowli/term-transcript) -->
+<svg viewBox="0 0 720 120" width="720" height="120" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .container {
+      font: 14px SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+      line-height: 18px;
+    }
+    .input,.output,.output-bg {
+      white-space: pre;
+    }
+    .input-bg { fill: #fff; fill-opacity: 0.1; }
+    .output-bg { user-select: none; text-rendering: geometricPrecision; stroke-width: 0.1; }
+    .bold,.prompt { font-weight: 600; }
+    .italic { font-style: italic; }
+    .underline { text-decoration: underline; }
+    .dimmed { fill-opacity: 0.7; }
+    .hard-br { font-size: 16px; fill-opacity: 0.8; user-select: none; }
+    .fg0 { fill: #000000; } .output-bg .fg0 { stroke: #000000; }
+    .fg1 { fill: #cd0000; } .output-bg .fg1 { stroke: #cd0000; }
+    .fg2 { fill: #00cd00; } .output-bg .fg2 { stroke: #00cd00; }
+    .fg3 { fill: #cdcd00; } .output-bg .fg3 { stroke: #cdcd00; }
+    .fg4 { fill: #0000ee; } .output-bg .fg4 { stroke: #0000ee; }
+    .fg5 { fill: #cd00cd; } .output-bg .fg5 { stroke: #cd00cd; }
+    .fg6 { fill: #00cdcd; } .output-bg .fg6 { stroke: #00cdcd; }
+    .fg7 { fill: #e5e5e5; } .output-bg .fg7 { stroke: #e5e5e5; }
+    .fg8 { fill: #7f7f7f; } .output-bg .fg8 { stroke: #7f7f7f; }
+    .fg9 { fill: #ff0000; } .output-bg .fg9 { stroke: #ff0000; }
+    .fg10 { fill: #00ff00; } .output-bg .fg10 { stroke: #00ff00; }
+    .fg11 { fill: #ffff00; } .output-bg .fg11 { stroke: #ffff00; }
+    .fg12 { fill: #5c5cff; } .output-bg .fg12 { stroke: #5c5cff; }
+    .fg13 { fill: #ff00ff; } .output-bg .fg13 { stroke: #ff00ff; }
+    .fg14 { fill: #00ffff; } .output-bg .fg14 { stroke: #00ffff; }
+    .fg15 { fill: #ffffff; } .output-bg .fg15 { stroke: #ffffff; }
+  </style>
+  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #000000;" />
+    <svg x="0" y="10" width="720" height="100" viewBox="0 0 720 100">
+      <g class="input-bg"><rect x="0" y="0" width="100%" height="22"></rect></g>
+      <text class="container fg7"><tspan xml:space="preserve" x="10" y="16" class="input"><tspan x="10" y="16"><tspan class="prompt">$</tspan> # do some rpc
+</tspan></tspan><tspan xml:space="preserve" x="10" y="42" class="output">server::validation::E001 (link)
+</tspan><tspan xml:space="preserve" x="10" y="60" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="78" class="output">  x Server-side validation failed
+</tspan><tspan xml:space="preserve" x="10" y="96" class="output">  help: Check your input parameters
+</tspan></text>
+    </svg>
+</svg>
+</div></div></details><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Error.html" title="struct jetstream_error::Error">Error</a></dt><dd>Error represents a collection of errors that occurred during a Jetstream operation.</dd></dl><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><dl class="item-table"><dt><a class="trait" href="trait.IntoError.html" title="trait jetstream_error::IntoError">Into<wbr>Error</a></dt><dd>IntoError trait allows conversion of various error types into Jetstream Error.</dd></dl><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><dl class="item-table"><dt><a class="type" href="type.Result.html" title="type jetstream_error::Result">Result</a></dt><dd>Result is a type alias for a Result type that uses the Error type.</dd></dl></section></div></main></body></html>
