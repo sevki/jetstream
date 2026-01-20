@@ -45,7 +45,7 @@ jobs:
           VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           ./scripts/update-workspace-version.sh $VERSION
           cargo check
-          git diff --quiet || (git add . && git commit -m "Update workspace versions to $VERSION" && git push)
+          git diff --quiet || (git add . && git commit -m "Update workspace versions to $VERSION")
 
       - name: Tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
