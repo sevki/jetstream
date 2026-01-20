@@ -12,12 +12,10 @@ readme.workspace = true
 h3-quinn = { version = "0.0.10", features = ["datagram", "tracing"] }
 http = "1"
 quinn = { version = "0.11", default-features = false, features = [
-    "runtime-tokio",
-    "rustls",
+  "runtime-tokio",
+  "rustls",
 ] }
-rustls = { version = "0.23", default-features = false, features = [
-    "logging",
-] }
+rustls = { version = "0.23", default-features = false, features = ["logging"] }
 tokio = { version = "1.48", features = ["full"] }
 tracing = "0.1.37"
 

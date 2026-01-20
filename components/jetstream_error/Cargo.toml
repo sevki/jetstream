@@ -10,7 +10,7 @@ license.workspace = true
 
 [dependencies]
 iroh = { workspace = true, optional = true }
-jetstream_wireformat.workspace = true
+jetstream_wireformat = { path = "../jetstream_wireformat" }
 miette = { version = "7.6.0", features = ["fancy"] }
 s2n-quic = { workspace = true, optional = true }
 thiserror = "2.0.17"

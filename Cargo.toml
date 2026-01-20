@@ -40,29 +40,37 @@ name = "perf"
 [dependencies]
 async-trait = "0.1.89"
 futures = "0.3.31"
-jetstream_9p = { workspace = true, optional = true }
-jetstream_iroh = { workspace = true, optional = true }
-jetstream_macros = { workspace = true }
-jetstream_quic = { workspace = true, optional = true }
-jetstream_rpc = { workspace = true }
-jetstream_websocket = { workspace = true, optional = true }
-jetstream_cloudflare = { workspace = true, optional = true }
-jetstream_error = { workspace = true }
-jetstream_wireformat = { workspace = true }
+jetstream_9p = { path = "components/jetstream_9p", optional = true }
+jetstream_iroh = { path = "components/jetstream_iroh", optional = true }
+jetstream_macros = { path = "components/jetstream_macros" }
+jetstream_quic = { path = "components/jetstream_quic", optional = true }
+jetstream_rpc = { path = "components/jetstream_rpc" }
+jetstream_websocket = { path = "components/jetstream_websocket", optional = true }
+jetstream_cloudflare = { path = "components/jetstream_cloudflare", optional = true }
+jetstream_error = { path = "components/jetstream_error" }
+jetstream_wireformat = { path = "components/jetstream_wireformat" }
 lazy_static = "1.5.0"
 tracing = { version = "0.1.41", optional = true }
 tracing-subscriber = { version = "0.3.20", optional = true }
 trait-variant = "0.1.2"
 
 [build-dependencies]
-cfg_aliases = {workspace = true}
+cfg_aliases = { workspace = true }
 
 [dev-dependencies]
 criterion = { version = "0.7.0", features = ["async_tokio"] }
 insta = "1.46.1"
-jetstream_error = { workspace = true, features = ["s2n-quic", "test-paths"] }
-jetstream_rpc = { workspace = true, features = ["s2n-quic", "turmoil"] }
-jetstream_wireformat = { workspace = true, features = ["all"] }
+jetstream_error = { path = "components/jetstream_error", features = [
+  "s2n-quic",
+  "test-paths",
+] }
+jetstream_rpc = { path = "components/jetstream_rpc", features = [
+  "s2n-quic",
+  "turmoil",
+] }
+jetstream_wireformat = { path = "components/jetstream_wireformat", features = [
+  "all",
+] }
 miette = "7.6.0"
 okstd = { version = "1.0.2", features = ["macros"] }
 s2n-quic = { workspace = true }
@@ -75,12 +83,20 @@ default = ["tracing"]
 9p = ["dep:jetstream_9p"]
 all = ["9p", "iroh", "quic", "tracing", "websocket", "tokio", "wasm"]
 iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh", "jetstream_error/iroh"]
-quic = ["dep:jetstream_quic", "jetstream_rpc/s2n-quic", "jetstream_error/s2n-quic"]
+quic = [
+  "dep:jetstream_quic",
+  "jetstream_rpc/s2n-quic",
+  "jetstream_error/s2n-quic",
+]
 tokio = ["jetstream_wireformat/tokio"]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 wasm = ["jetstream_wireformat/tokio"]
 websocket = ["dep:jetstream_websocket"]
-cloudflare = ["dep:jetstream_cloudflare", "jetstream_rpc/cloudflare", "jetstream_error/worker"]
+cloudflare = [
+  "dep:jetstream_cloudflare",
+  "jetstream_rpc/cloudflare",
+  "jetstream_error/worker",
+]
 serde = ["jetstream_rpc/serde"]
 
 
@@ -98,11 +114,11 @@ members = [
   "components/jetstream_ufs",
   "components/jetstream_websocket",
   "components/jetstream_wireformat",
-  "components/jetstream_error", "tools/mdbook-changelog",
+  "components/jetstream_error",
+  "tools/mdbook-changelog",
 ]
 
 [workspace.package]
-version = "10.1.0"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 documentation = "https://jetstream.rs"
@@ -112,16 +128,6 @@ license = "BSD-3-Clause"
 
 [workspace.dependencies]
 iroh = { version = "0.93.2" }
-jetstream_9p = { path = "components/jetstream_9p", version = "10.1.0" }
-jetstream_cloudflare = { path = "components/jetstream_cloudflare", version = "10.1.0" }
-jetstream_iroh = { path = "components/jetstream_iroh", version = "10.1.0" }
-jetstream_libc = { path = "components/jetstream_libc", version = "10.1.0" }
-jetstream_macros = { path = "components/jetstream_macros", version = "10.1.0" }
-jetstream_quic = { path = "components/jetstream_quic", version = "10.1.0" }
-jetstream_rpc = { path = "components/jetstream_rpc", version = "10.1.0" }
-jetstream_websocket = { path = "components/jetstream_websocket", version = "10.1.0" }
-jetstream_wireformat = { path = "components/jetstream_wireformat", version = "10.1.0", default-features = true }
-jetstream_error = { path = "components/jetstream_error", version = "10.1.0" }
 okid = "0.21.0"
 s2n-quic = "1.67.0"
 worker = "0.7.4"

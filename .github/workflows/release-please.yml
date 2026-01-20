@@ -39,14 +39,6 @@ jobs:
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
 
-      - name: Update workspace versions
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
-          ./scripts/update-workspace-version.sh $VERSION
-          cargo check
-          git diff --quiet || (git add . && git commit -m "Update workspace versions to $VERSION")
-
       - name: Tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
         run: |
