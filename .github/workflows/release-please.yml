@@ -45,6 +45,12 @@ jobs:
         run: |
           sudo apt-get update -y
           sudo apt-get install -y libssl-dev pkg-config
+      - name: Update workspace versions
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
+          ./scripts/update-workspace-version.sh $VERSION
+          cargo check
       - name: publish to crates.io (dry-run)
         run: |
           export VERSION=v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
