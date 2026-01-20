@@ -98,7 +98,7 @@ members = [
   "components/jetstream_ufs",
   "components/jetstream_websocket",
   "components/jetstream_wireformat",
-  "components/jetstream_error",
+  "components/jetstream_error", "tools/mdbook-changelog",
 ]
 
 [workspace.package]
@@ -132,6 +132,5 @@ url = "2.5.7"
 cfg_aliases = "0.2.1"
 
 [patch.crates-io]
-okid = { git = "https://github.com/sevki/okid", branch = "main" }
 jetstream_macros = { path = "components/jetstream_macros" }
 jetstream_wireformat = { path = "components/jetstream_wireformat" }

@@ -1,11 +1,12 @@
 [book]
 authors = ["sevki"]
 language = "en"
-multilingual = false
 src = "docs"
 title = "JetStream Book"
 
+[preprocessor.changelog]
+command = "mdbook-changelog"
+after = ["links"]
+
 [output.html]
 additional-css = ["docs/styles.css"]
-no-section-label = false
-create-missing = false
