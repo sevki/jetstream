@@ -1,6 +1,23 @@
 # Changelog
 
 
+## [10.1.0](https://github.com/sevki/jetstream/compare/v10.0.0...v10.1.0) (2026-01-20)
+
+
+### Features
+
+* better error handling ([faae10a](https://github.com/sevki/jetstream/commit/faae10a704821d723be55e0e6d92e88def17591c))
+* update mdbook ([f213c71](https://github.com/sevki/jetstream/commit/f213c712bcc5395b048f83b2c352c163c11518e0))
+
+
+### Bug Fixes
+
+* benchmarks ([af695e2](https://github.com/sevki/jetstream/commit/af695e28faa054b8434a13ae963d2fc6abab5d3a))
+* cargo publish workspace ([8db9367](https://github.com/sevki/jetstream/commit/8db93673748a9b5684f746ab55a34c289df70554))
+* cleanup code and remove unused mermaid ([c8975d5](https://github.com/sevki/jetstream/commit/c8975d56c388470fb4305c569ee30b84fde30f81))
+* mdbook-changelog version issue ([ef08007](https://github.com/sevki/jetstream/commit/ef080071ee713e63e070e255ee6c33ae2adc82ef))
+* move term-transcript to dev, gate s2n windows ([5fa7f4c](https://github.com/sevki/jetstream/commit/5fa7f4ce55ef111c0a155416d556189fbc266b87))
+
 ## [10.0.0](https://github.com/sevki/jetstream/compare/v9.5.0...v10.0.0) (2025-11-19)
 
 
