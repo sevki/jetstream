@@ -1,6 +1,16 @@
 # Changelog
 
 
+## [11.0.1](https://github.com/sevki/jetstream/compare/v11.0.0...v11.0.1) (2026-01-20)
+
+
+### Bug Fixes
+
+* correct release workflow step ordering ([0c7bbcd](https://github.com/sevki/jetstream/commit/0c7bbcd0403718dd0f18432c699ee9defc54068b))
+* extract git config to separate step ([679d1a7](https://github.com/sevki/jetstream/commit/679d1a75fbe52ec995c01ad95a53afce994bc8fe))
+* release order ([0973046](https://github.com/sevki/jetstream/commit/0973046516c6703f7f3fb97d8732d4130ffaa729))
+* remove redundant push from version update step ([923d696](https://github.com/sevki/jetstream/commit/923d6969e1435d261a16bbe2e156be834304ed0f))
+
 ## [11.0.0](https://github.com/sevki/jetstream/compare/v10.1.0...v11.0.0) (2026-01-20)
 
 
