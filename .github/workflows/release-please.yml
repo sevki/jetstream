@@ -36,11 +36,34 @@ jobs:
           git commit -m "Update workspace versions to $VERSION"
 
       - uses: actions/checkout@v4
-      - name: tag major and minor versions
+
+      - name: Install Rust toolchain
+        if: ${{ steps.release.outputs.release_created }}
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libssl-dev pkg-config
+
+      - name: Configure git
         if: ${{ steps.release.outputs.release_created }}
         run: |
           git config user.name github-actions[bot]
           git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+
+      - name: Update workspace versions
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
+          ./scripts/update-workspace-version.sh $VERSION
+          cargo check
+          git diff --quiet || (git add . && git commit -m "Update workspace versions to $VERSION")
+
+      - name: Tag major and minor versions
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
           git remote add gh-token "https://${{ secrets.GITHUB_TOKEN }}@github.com/google-github-actions/release-please-action.git"
           git tag -d v${{ steps.release.outputs.major }} || true
           git tag -d v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} || true
