@@ -1,5 +1,6 @@
 - [JetStream](0intro.md)
 - [⛅ Cloudflare](cloudflare.md)
+- [🌐 Iroh](iroh.md)
 ---
 - [🦀 Crates](crates.md)
     - [📦 jetstream](doc/jetstream/index.html)
