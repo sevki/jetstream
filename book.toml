@@ -9,9 +9,3 @@ title = "JetStream Book"
 additional-css = ["docs/styles.css"]
 no-section-label = false
 create-missing = false
-additional-js = ["mermaid.min.js", "mermaid-init.js"]
-
-[preprocessor]
-
-[preprocessor.mermaid]
-command = "mdbook-mermaid"
