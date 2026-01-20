@@ -112,16 +112,16 @@ license = "BSD-3-Clause"
 
 [workspace.dependencies]
 iroh = { version = "0.93.2" }
-jetstream_9p = { path = "components/jetstream_9p", version = "10.0.0" }
-jetstream_cloudflare = { path = "components/jetstream_cloudflare", version = "10.0.0" }
-jetstream_iroh = { path = "components/jetstream_iroh", version = "10.0.0" }
-jetstream_libc = { path = "components/jetstream_libc", version = "10.0.0" }
-jetstream_macros = { path = "components/jetstream_macros", version = "10.0.0" }
-jetstream_quic = { path = "components/jetstream_quic", version = "10.0.0" }
-jetstream_rpc = { path = "components/jetstream_rpc", version = "10.0.0" }
-jetstream_websocket = { path = "components/jetstream_websocket", version = "10.0.0" }
-jetstream_wireformat = { path = "components/jetstream_wireformat", version = "10.0.0", default-features = true }
-jetstream_error = { path = "components/jetstream_error", version = "10.0.0" }
+jetstream_9p = { path = "components/jetstream_9p", version = "11.0.0" }
+jetstream_cloudflare = { path = "components/jetstream_cloudflare", version = "11.0.0" }
+jetstream_iroh = { path = "components/jetstream_iroh", version = "11.0.0" }
+jetstream_libc = { path = "components/jetstream_libc", version = "11.0.0" }
+jetstream_macros = { path = "components/jetstream_macros", version = "11.0.0" }
+jetstream_quic = { path = "components/jetstream_quic", version = "11.0.0" }
+jetstream_rpc = { path = "components/jetstream_rpc", version = "11.0.0" }
+jetstream_websocket = { path = "components/jetstream_websocket", version = "11.0.0" }
+jetstream_wireformat = { path = "components/jetstream_wireformat", version = "11.0.0", default-features = true }
+jetstream_error = { path = "components/jetstream_error", version = "11.0.0" }
 okid = "0.21.0"
 s2n-quic = "1.67.0"
 worker = "0.7.4"
