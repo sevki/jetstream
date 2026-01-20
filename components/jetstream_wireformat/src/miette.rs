@@ -31,11 +31,11 @@ use crate::WireFormat;
 /// r[impl jetstream.miette.wireformat.miette_diagnostic]
 /// MietteDiagnostic is encoded as:
 /// - message: String
-/// - code: Option<String>
-/// - severity: Option<Severity>
-/// - help: Option<String>
-/// - url: Option<String>
-/// - labels: Option<Vec<LabeledSpan>>
+/// - code: `Option<String>`
+/// - severity: `Option<Severity>`
+/// - help: `Option<String>`
+/// - url: `Option<String>`
+/// - labels: `Option<Vec<LabeledSpan>>`
 impl WireFormat for miette::MietteDiagnostic {
     fn byte_size(&self) -> u32 {
         self.message.byte_size()
@@ -137,7 +137,7 @@ impl WireFormat for Severity {
 
 /// r[impl jetstream.miette.wireformat.labeled_span]
 /// LabeledSpan is encoded as:
-/// - label: Option<String>
+/// - label: `Option<String>`
 /// - span: SourceSpan (offset + length as usize)
 /// - primary: bool
 impl WireFormat for miette::LabeledSpan {

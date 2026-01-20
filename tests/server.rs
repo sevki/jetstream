@@ -1,16 +1,10 @@
-use core::fmt;
 use std::net::{IpAddr, Ipv4Addr};
 
 use echo_protocol::EchoChannel;
-use insta::{assert_debug_snapshot, assert_snapshot};
 use jetstream::prelude::*;
 use jetstream_rpc::{client::ClientCodec, server::run, Framed};
 use miette::{
-    Diagnostic, LabeledSpan, MietteDiagnostic, MietteHandler, Severity,
-};
-use term_transcript::{
-    svg::{NamedPalette, Template, TemplateOptions},
-    Interaction, Transcript,
+    LabeledSpan, Severity,
 };
 use turmoil::{
     net::{TcpListener, TcpStream},
