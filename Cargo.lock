@@ -1522,7 +1522,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -2480,7 +2480,7 @@ checksum = "4a5f13b858c8d314ee3e8f639011f7ccefe71f97f96e50151fb991f267928e2c"
 
 [[package]]
 name = "jetstream"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "async-trait",
  "cfg_aliases",
@@ -2510,7 +2510,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros 10.1.0",
@@ -2522,7 +2522,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_cloudflare"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "askama",
  "async-trait",
@@ -2535,7 +2535,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_error"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "insta",
  "iroh",
@@ -2549,7 +2549,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "futures",
  "iroh",
@@ -2562,7 +2562,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2570,7 +2570,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "9.5.0"
+version = "11.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b4074414d66cc946821f472678112686a01dc34b99708cad85b55ccf5651337"
 dependencies = [
@@ -2584,7 +2584,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "convert_case",
  "futures",
@@ -2605,7 +2605,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "bytes",
  "h3",
@@ -2620,7 +2620,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_radar"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "argh",
  "jetstream",
@@ -2636,7 +2636,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2661,7 +2661,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -2676,7 +2676,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_websocket"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "futures",
  "jetstream_rpc",
@@ -2688,7 +2688,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "9.5.0"
+version = "11.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23908869225c9c5d94d54afe453c9dfe0b7a6cccaae3b1438e3f3a628fbdf6b0"
 dependencies = [
@@ -2709,7 +2709,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "bytes",
  "futures",
@@ -2911,7 +2911,7 @@ checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 
 [[package]]
 name = "mdbook-changelog"
-version = "10.1.0"
+version = "11.0.0"
 dependencies = [
  "anyhow",
  "mdbook-core",
