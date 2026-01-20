@@ -20,23 +20,30 @@ jobs:
           manifest-file: .release-please-manifest.json
           target-branch: ${{ github.ref_name }}
           release-type: rust
-      - name: checkout rs
-        uses: actions-rs/toolchain@v1
+
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
         if: ${{ steps.release.outputs.release_created }}
-        with:
-          toolchain: stable
-          override: true
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install system dependencies
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y libssl-dev pkg-config
+
       - name: Update workspace versions
         if: ${{ steps.release.outputs.release_created }}
         run: |
           VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           ./scripts/update-workspace-version.sh $VERSION
           cargo check
-          git add .
-          git commit -m "Update workspace versions to $VERSION"
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git diff --quiet || (git add . && git commit -m "Update workspace versions to $VERSION" && git push)
 
-      - uses: actions/checkout@v4
-      - name: tag major and minor versions
+      - name: Tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
         run: |
           git config user.name github-actions[bot]
@@ -50,17 +57,15 @@ jobs:
           git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
           git push origin v${{ steps.release.outputs.major }}
           git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
-      - name: Update and install dependencies
-        run: |
-          sudo apt-get update -y
-          sudo apt-get install -y libssl-dev pkg-config
-      - name: publish to crates.io (dry-run)
+
+      - name: Publish to crates.io (dry-run)
         run: |
           export VERSION=v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           echo $VERSION
           echo "CI_TAG=$VERSION" >> $GITHUB_ENV
           cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run
-      - name: publish to crates.io
+
+      - name: Publish to crates.io
         if: ${{ steps.release.outputs.release_created }}
         run: |
           cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
