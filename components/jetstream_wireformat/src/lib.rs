@@ -26,6 +26,8 @@ use std::{
 use bytes::Buf;
 pub use jetstream_macros::JetStreamWireFormat;
 use zerocopy::LittleEndian;
+
+pub mod miette;
 pub mod wire_format_extensions;
 
 #[cfg(target_arch = "wasm32")]

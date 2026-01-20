@@ -61,7 +61,7 @@ pub enum Peer {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
-pub struct NodeId(okid::OkId);
+pub struct NodeId(String);
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct NodeAddr {
@@ -73,18 +73,19 @@ pub struct NodeAddr {
 #[cfg(feature = "iroh")]
 impl From<iroh::PublicKey> for NodeId {
     fn from(value: iroh::PublicKey) -> Self {
-        NodeId(value.into())
+        NodeId(value.to_string())
     }
 }
 
 #[cfg(feature = "iroh")]
 impl From<NodeAddr> for iroh::NodeAddr {
     fn from(value: NodeAddr) -> Self {
+        use std::str::FromStr;
+
+        use iroh::PublicKey;
+
         iroh::NodeAddr {
-            node_id: value
-                .id
-                .0
-                .try_into()
+            node_id: PublicKey::from_str(&value.id.0)
                 .expect("Failed to convert NodeId to iroh::NodeId"),
             relay_url: if value.relay_url.is_some() {
                 use iroh::RelayUrl;
@@ -101,7 +102,7 @@ impl From<NodeAddr> for iroh::NodeAddr {
 impl From<iroh::NodeAddr> for NodeAddr {
     fn from(value: iroh::NodeAddr) -> Self {
         NodeAddr {
-            id: NodeId(value.node_id.into()),
+            id: NodeId(value.node_id.to_string()),
             relay_url: value.relay_url.map(|url| url.into()),
             direct_addresses: value.direct_addresses,
         }

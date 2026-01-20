@@ -18,4 +18,4 @@ futures = "0.3.31"
 jetstream_rpc ={workspace = true, features=["cloudflare"], default-features=false}
 jetstream_wireformat={workspace = true, default-features=false}
 thiserror = "2.0.17"
-worker = "0.6.7"
+worker = { workspace = true }

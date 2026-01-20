@@ -6,14 +6,14 @@ use okstd::prelude::*;
 
 #[service(tracing)]
 pub trait Echo {
-    async fn square(&mut self, ctx: Context, i: u32) -> Result<String, Error>;
+    async fn square(&mut self, ctx: Context, i: u32) -> Result<String>;
 }
 
 #[derive(Debug, Clone)]
 struct EchoServer;
 
 impl Echo for EchoServer {
-    async fn square(&mut self, _ctx: Context, i: u32) -> Result<String, Error> {
+    async fn square(&mut self, _ctx: Context, i: u32) -> Result<String> {
         Ok((i * i).to_string())
     }
 }

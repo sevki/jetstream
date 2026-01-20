@@ -3,3 +3,5 @@
 /docs/crates
 book/
 docs/doc/
+.tracey/*
+.direnv/*

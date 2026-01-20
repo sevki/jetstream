@@ -7,6 +7,8 @@ pub mod echo_protocol {
     use std::mem;
     use super::Echo;
     const MESSAGE_ID_START: u8 = 101;
+    /// Error response message type constant
+    pub const RERROR: u8 = 100;
     pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/NAME/VERSION-HASH";
     const DIGEST: &str = "DIGEST_HASH";
     pub const TPING: u8 = MESSAGE_ID_START + 0u8;
@@ -62,21 +64,25 @@ pub mod echo_protocol {
     #[repr(u8)]
     pub enum Rmessage {
         Ping(Rping) = RPING,
+        Error(jetstream::prelude::Error) = RERROR,
     }
     impl Framer for Rmessage {
         fn byte_size(&self) -> u32 {
             match &self {
                 Rmessage::Ping(msg) => msg.byte_size(),
+                Rmessage::Error(err) => err.byte_size(),
             }
         }
         fn message_type(&self) -> u8 {
             match self {
                 Rmessage::Ping(_) => RPING,
+                Rmessage::Error(_) => RERROR,
             }
         }
         fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
             match &self {
                 Rmessage::Ping(msg) => msg.encode(writer)?,
+                Rmessage::Error(err) => err.encode(writer)?,
             }
             Ok(())
         }
@@ -86,6 +92,7 @@ pub mod echo_protocol {
         ) -> std::io::Result<Rmessage> {
             match ty {
                 RPING => Ok(Rmessage::Ping(WireFormat::decode(reader)?)),
+                RERROR => Ok(Rmessage::Error(WireFormat::decode(reader)?)),
                 _ => {
                     Err(
                         std::io::Error::new(
@@ -114,7 +121,7 @@ pub mod echo_protocol {
             ctx: Context,
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
-            Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+            Output = Result<Frame<<Self as Protocol>::Response>>,
         > + Send + Sync {
             Box::pin(async move {
                 let _span = tracing::debug_span!(
@@ -122,16 +129,27 @@ pub mod echo_protocol {
                 );
                 let _enter = _span.enter();
                 let req: <Self as Protocol>::Request = frame.msg;
-                let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
+                let res: std::result::Result<
+                    <Self as Protocol>::Response,
+                    Self::Error,
+                > = match req {
                     Tmessage::Ping(msg) => {
-                        let result = self.ping(msg.message).await?;
-                        let ret = Rping(result);
-                        Ok(Rmessage::Ping(ret))
+                        match self.ping(msg.message).await {
+                            Ok(result) => {
+                                let ret = Rping(result);
+                                Ok(Rmessage::Ping(ret))
+                            }
+                            Err(err) => Err(err.into()),
+                        }
                     }
+                };
+                let response = match res {
+                    Ok(msg) => msg,
+                    Err(err) => Rmessage::Error(err),
                 };
                 let rframe: Frame<<Self as Protocol>::Response> = Frame::from((
                     frame.tag,
-                    res?,
+                    response,
                 ));
                 Ok(rframe)
             })
@@ -159,7 +177,7 @@ pub mod echo_protocol {
             _ctx: Context,
             frame: Frame<<Self as Protocol>::Request>,
         ) -> impl ::core::future::Future<
-            Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+            Output = Result<Frame<<Self as Protocol>::Response>>,
         > + Send + Sync {
             use futures::{SinkExt, StreamExt};
             Box::pin(async move {
@@ -188,6 +206,7 @@ pub mod echo_protocol {
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::Ping(msg) => Ok(msg.0),
+                Rmessage::Error(err) => Err(err),
                 _ => Err(Error::InvalidResponse),
             }
         }

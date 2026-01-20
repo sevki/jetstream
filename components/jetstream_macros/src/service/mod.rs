@@ -8,6 +8,7 @@ mod tracing;
 
 use proc_macro2::{Literal, TokenStream};
 use quote::{format_ident, quote, ToTokens};
+
 use syn::{ItemTrait, TraitItem};
 
 use crate::service::tracing::take_attributes;
@@ -129,6 +130,8 @@ pub(crate) fn service_impl(
     let tmsg_definitions = tmsgs.iter().map(|(_ident, def)| quote! { #def });
     let rmsg_definitions = rmsgs.iter().map(|(_ident, def)| quote! { #def });
 
+    let ident = trait_name.clone();
+    // r[impl jetstream.macro.source_span]
     quote! {
         #vis mod #proto_mod {
             use jetstream::prelude::*;
@@ -136,6 +139,8 @@ pub(crate) fn service_impl(
             use super::#trait_name;
 
             const MESSAGE_ID_START: u8 = 101;
+            /// Error response message type constant
+            pub const RERROR: u8 = 100;
             pub const PROTOCOL_VERSION: &str = #protocol_version;
             const DIGEST: &str = #digest_lit;
 

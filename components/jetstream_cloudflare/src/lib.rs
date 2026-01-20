@@ -6,6 +6,7 @@ pub use error::JetstreamProtocolError;
 use askama::Template;
 use async_trait::async_trait;
 use futures::lock::Mutex;
+use jetstream_rpc::IntoError;
 use jetstream_rpc::{context, Protocol, HEADER_KEY_JETSTREAM_PROTO};
 use jetstream_wireformat::wire_format_extensions::{
     bytes::Bytes, ConvertWireFormat,
@@ -44,7 +45,7 @@ impl<P: Protocol> DynamicProtocol for P {
         Ok(self
             .rpc(context, frame)
             .await
-            .map_err(|e| jetstream_rpc::Error::Generic(e.into()))?
+            .map_err(|e| e.into_error())?
             .as_bytes())
     }
 }
