@@ -9,7 +9,7 @@ readme = { workspace = true }
 documentation.workspace = true
 
 [lib]
-crate-type = [ "rlib"]
+crate-type = ["rlib"]
 bench = false
 
 [dependencies]

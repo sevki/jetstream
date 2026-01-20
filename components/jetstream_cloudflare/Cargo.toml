@@ -15,7 +15,9 @@ crate-type = ["cdylib", "rlib"]
 askama = "0.14.0"
 async-trait = "0.1.89"
 futures = "0.3.31"
-jetstream_rpc ={workspace = true, features=["cloudflare"], default-features=false}
-jetstream_wireformat={workspace = true, default-features=false}
+jetstream_rpc = { path = "../jetstream_rpc", features = [
+  "cloudflare",
+], default-features = false }
+jetstream_wireformat = { path = "../jetstream_wireformat", default-features = false }
 thiserror = "2.0.17"
 worker = { workspace = true }

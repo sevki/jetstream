@@ -11,10 +11,10 @@ documentation.workspace = true
 bench = false
 crate-type = ["cdylib", "rlib"]
 [dependencies]
-jetstream_macros = { workspace = true }
-jetstream_wireformat = { workspace = true }
-jetstream_rpc = { workspace = true }
-jetstream_libc = { workspace = true }
+jetstream_macros = { path = "../jetstream_macros" }
+jetstream_wireformat = { path = "../jetstream_wireformat" }
+jetstream_rpc = { path = "../jetstream_rpc" }
+jetstream_libc = { path = "../jetstream_libc" }
 trait-variant = "0.1.2"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
