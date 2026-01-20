@@ -1,0 +1,2 @@
+[workspace]
+release_commits = "^v[0-9]"
