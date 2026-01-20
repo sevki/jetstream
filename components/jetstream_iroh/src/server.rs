@@ -49,7 +49,7 @@ impl<P: Protocol + Debug + Clone + 'static> ProtocolHandler for IrohServer<P> {
                             eprintln!("Error processing request: {}", error);
                         }
                     },
-                    Err(err) => {}
+                    Err(_err) => {}
                 }
             }
         });

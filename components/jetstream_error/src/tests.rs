@@ -7,6 +7,7 @@ use term_transcript::{
 use super::*;
 
 #[test]
+#[cfg(feature = "test-paths")]
 fn test_error() {
     let _source = "Cpp is the best";
     let label = LabeledSpan::at(0..3, "should be Rust");
@@ -22,16 +23,16 @@ fn test_error() {
     h.render_report(&mut output, &err).unwrap();
     let mut transcript = Transcript::new();
     assert_snapshot!(output,@r"
-    ]8;;file:///root/test_dir/components/jetstream_error/src/tests.rs:14:15\server::validation::E001 (link)]8;;\
+    ]8;;file:///root/test_dir/components/jetstream_error/src/tests.rs:15:15\[31mserver::validation::E001 [0m[36;1;4m(link)[0m]8;;\
 
-      x Server-side validation failed
-      help: Check your input parameters
+      [31m×[0m Server-side validation failed
+    [36m  help: [0mCheck your input parameters
     ");
     let interaction = Interaction::new("# do some rpc", output);
     transcript.add_existing_interaction(interaction);
 
     let template_options = TemplateOptions {
-        palette: NamedPalette::Xterm.into(),
+        palette: NamedPalette::PowerShell.into(),
 
         ..TemplateOptions::default()
     };

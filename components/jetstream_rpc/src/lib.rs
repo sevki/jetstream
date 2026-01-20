@@ -9,10 +9,7 @@
 //! Of note is the `Protocol` trait which is meant to be used with the `service` attribute macro.
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-use std::{
-    io::{self},
-    str::FromStr,
-};
+use std::str::FromStr;
 pub mod client;
 pub mod context;
 pub mod framer;
