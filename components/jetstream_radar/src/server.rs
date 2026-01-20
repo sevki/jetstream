@@ -5,9 +5,7 @@ use crate::{radar_protocol, Radar};
 struct RadarWorker;
 
 impl Radar for RadarWorker {
-    async fn ping(
-        &mut self,
-    ) -> std::result::Result<(), jetstream::prelude::Error> {
+    async fn ping(&mut self) -> jetstream::prelude::Result<()> {
         Ok(())
     }
 }
@@ -17,7 +15,7 @@ async fn fetch(
     req: Request,
     env: Env,
     ctx: worker::Context,
-) -> Result<Response> {
+) -> worker::Result<Response> {
     let handler = radar_protocol::RadarService { inner: RadarWorker };
     let mut router =
         jetstream::cloudflare::Router::<DefaultHtmlFallback>::new([handler]);

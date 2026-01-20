@@ -9,13 +9,13 @@ use s2n_quic::{client::Connect, provider::tls, Client, Server};
 
 #[service]
 pub trait Echo {
-    async fn ping(&mut self) -> Result<(), Error>;
+    async fn ping(&mut self) -> Result<()>;
 }
 
 struct EchoImpl {}
 
 impl Echo for EchoImpl {
-    async fn ping(&mut self) -> Result<(), Error> {
+    async fn ping(&mut self) -> Result<()> {
         eprintln!("Ping received");
         eprintln!("Pong sent");
         Ok(())
@@ -34,7 +34,7 @@ pub static SERVER_KEY_PEM: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
 
 #[cfg(not(windows))]
-async fn server() -> Result<(), Box<dyn std::error::Error>> {
+async fn server() -> std::result::Result<(), Box<dyn std::error::Error>> {
     #[cfg(windows)]
     return Ok(());
 
@@ -85,7 +85,7 @@ async fn server() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 #[cfg(not(windows))]
-async fn client() -> Result<(), Box<dyn std::error::Error>> {
+async fn client() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let tls = tls::default::Client::builder()
         .with_certificate(Path::new(CA_CERT_PEM))?
         .with_client_identity(

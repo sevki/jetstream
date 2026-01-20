@@ -46,11 +46,12 @@ pub fn generate_client(
         {
             type Request = Tmessage;
             type Response = Rmessage;
+            // r[impl jetstream.macro.error_type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
 
             fn rpc(&mut self,_ctx: Context, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
-                Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+                Output = Result<Frame<<Self as Protocol>::Response>>,
             > + Send + Sync {
                 use futures::{SinkExt, StreamExt};
                 Box::pin(async move {
@@ -148,6 +149,9 @@ fn generate_client_calls(
                         let rmsg = rframe.msg;
                         match rmsg {
                             Rmessage::#variant_name(msg) => Ok(msg.0),
+                            // r[impl jetstream.macro.client_error]
+                            // When client receives an error frame, convert it to jetstream::prelude::Error
+                            Rmessage::Error(err) => Err(err),
                             _ => Err(Error::InvalidResponse),
                         }
                     }

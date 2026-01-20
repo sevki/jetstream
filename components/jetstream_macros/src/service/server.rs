@@ -52,9 +52,13 @@ pub fn generate_server(
 
                 Some(quote! {
                     {
-                        let result = self.#method_name(#(#params),*).await?;
-                        let ret = #return_struct_ident(result);
-                        Ok(Rmessage::#variant_name(ret))
+                        match self.#method_name(#(#params),*).await {
+                            Ok(result) => {
+                                let ret = #return_struct_ident(result);
+                                Ok(Rmessage::#variant_name(ret))
+                            }
+                            Err(err) => Err(err.into()),
+                        }
                     }
                 })
             }
@@ -95,19 +99,26 @@ pub fn generate_server(
         {
             type Request = Tmessage;
             type Response = Rmessage;
+            // r[impl jetstream.macro.error_type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
 
             fn rpc(&mut self, ctx: Context, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
-                Output = Result<Frame<<Self as Protocol>::Response>, Self::Error>,
+                Output = Result<Frame<<Self as Protocol>::Response>>,
             > + Send + Sync {
                 Box::pin(async move {
                     #rpc_span
                     let req: <Self as Protocol>::Request = frame.msg;
-                    let res: Result<<Self as Protocol>::Response, Self::Error> = match req {
+                    let res: std::result::Result<<Self as Protocol>::Response, Self::Error> = match req {
                         #(#matches)*
                     };
-                    let rframe: Frame<<Self as Protocol>::Response> = Frame::from((frame.tag, res?));
+                    // r[impl jetstream.macro.server_error]
+                    // When server inner returns an error, serialize it as an Error frame
+                    let response = match res {
+                        Ok(msg) => msg,
+                        Err(err) => Rmessage::Error(err),
+                    };
+                    let rframe: Frame<<Self as Protocol>::Response> = Frame::from((frame.tag, response));
                     Ok(rframe)
                 })
             }

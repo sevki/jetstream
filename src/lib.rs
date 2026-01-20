@@ -12,6 +12,7 @@
 pub mod prelude {
     pub extern crate async_trait;
     pub extern crate futures;
+    pub extern crate jetstream_error;
     pub extern crate jetstream_macros;
     pub extern crate jetstream_rpc;
     pub extern crate jetstream_wireformat;
@@ -19,6 +20,7 @@ pub mod prelude {
     pub extern crate trait_variant;
 
     pub use async_trait::async_trait;
+    pub use jetstream_error::*;
     pub use jetstream_macros::{service, JetStreamWireFormat};
     pub use jetstream_rpc::{
         client, client::ClientTransport, context::Context, server, Error,

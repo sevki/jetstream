@@ -28,10 +28,10 @@ pub trait Echo {
         &mut self,
         ctx: Context,
         message: String,
-    ) -> Result<String, Error>;
+    ) -> jetstream_error::Result<String>;
 
     /// This method uses default auto-instrumentation from #[service(tracing)]
-    async fn echo(&mut self, text: String) -> Result<String, Error>;
+    async fn echo(&mut self, text: String) -> jetstream_error::Result<String>;
 }
 
 struct EchoImpl {}
@@ -41,13 +41,13 @@ impl Echo for EchoImpl {
         &mut self,
         ctx: Context,
         message: String,
-    ) -> Result<String, Error> {
+    ) -> jetstream_error::Result<String> {
         tracing::info!("Ping received: {} {:?} ", message, ctx);
 
         Ok(format!("Pong: {}", message))
     }
 
-    async fn echo(&mut self, text: String) -> Result<String, Error> {
+    async fn echo(&mut self, text: String) -> jetstream_error::Result<String> {
         tracing::info!("Echo received: {}", text);
         Ok(text)
     }
@@ -65,7 +65,7 @@ pub static SERVER_KEY_PEM: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
 
 #[cfg(not(windows))]
-async fn server() -> Result<(), Box<dyn std::error::Error>> {
+async fn server() -> jetstream_error::Result<()> {
     let tls = tls::default::Server::builder()
         .with_trusted_certificate(Path::new(CA_CERT_PEM))?
         .with_certificate(
@@ -109,7 +109,7 @@ async fn server() -> Result<(), Box<dyn std::error::Error>> {
 }
 
 #[cfg(not(windows))]
-async fn client() -> Result<(), Box<dyn std::error::Error>> {
+async fn client() -> jetstream_error::Result<()> {
     let tls = tls::default::Client::builder()
         .with_certificate(Path::new(CA_CERT_PEM))?
         .with_client_identity(

@@ -6,14 +6,14 @@ use crate::echo_protocol::{EchoChannel, EchoService};
 
 #[service]
 pub trait Echo {
-    async fn ping(&mut self) -> Result<String, Error>;
+    async fn ping(&mut self) -> Result<String>;
 }
 
 #[derive(Debug, Clone)]
 struct EchoServer;
 
 impl Echo for EchoServer {
-    async fn ping(&mut self) -> Result<String, Error> {
+    async fn ping(&mut self) -> Result<String> {
         Ok("pong".to_string())
     }
 }

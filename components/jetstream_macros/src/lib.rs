@@ -41,6 +41,7 @@
 extern crate proc_macro;
 use proc_macro::TokenStream;
 use syn::parse_macro_input;
+mod error;
 
 mod service;
 #[cfg(test)]
@@ -62,5 +63,25 @@ pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {
         !attr.is_empty() && attr.to_string().contains("async_trait");
     let enable_tracing = attr.to_string().contains("tracing");
     let item = parse_macro_input!(item as syn::ItemTrait);
+
     service::service_impl(item, is_async_trait, enable_tracing).into()
+}
+
+/// Error macro for creating rich Jetstream errors
+///
+/// # Usage
+/// ```ignore
+/// err!(message: "simple error")
+///
+/// err!(
+///     code: "jetstream::rpc::timeout",
+///     severity: Error,
+///     help: "increase timeout value",
+///     message: "request timed out after {}ms", timeout_ms
+/// )
+/// ```
+#[proc_macro]
+pub fn err(input: TokenStream) -> TokenStream {
+    let error_macro: error::ErrorMacro = input.into();
+    error_macro.into()
 }

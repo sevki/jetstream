@@ -17,6 +17,7 @@ pub mod client;
 pub mod context;
 pub mod framer;
 pub mod server;
+pub use jetstream_error::IntoError;
 use jetstream_wireformat::WireFormat;
 // Re-export codecs
 extern crate tokio_util;
@@ -77,7 +78,9 @@ impl From<u16> for Tag {
 pub trait Protocol: Send + Sync {
     type Request: Framer;
     type Response: Framer;
-    type Error: std::error::Error + Send + Sync + 'static;
+    // r[impl jetstream.error.type]
+    // r[verify jetstream.error.type]
+    type Error: IntoError;
     const VERSION: &'static str;
     async fn rpc(
         &mut self,
@@ -86,14 +89,4 @@ pub trait Protocol: Send + Sync {
     ) -> Result<Frame<Self::Response>, Self::Error>;
 }
 
-#[derive(Debug, thiserror::Error)]
-pub enum Error {
-    #[error("io error: {0}")]
-    Io(#[from] io::Error),
-    #[error("generic error: {0}")]
-    Generic(#[from] Box<dyn std::error::Error + Send + Sync>),
-    #[error("{0}")]
-    Custom(String),
-    #[error("invalid response")]
-    InvalidResponse,
-}
+pub type Error = jetstream_error::Error;

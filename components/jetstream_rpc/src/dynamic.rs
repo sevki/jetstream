@@ -1,5 +1,6 @@
 use async_trait::async_trait;
 use bytes::Bytes;
+use jetstream_error::IntoError;
 use jetstream_wireformat::wire_format_extensions::ConvertWireFormat;
 
 use crate::{context, Frame, Protocol};
@@ -32,7 +33,7 @@ impl<P: Protocol> DynamicProtocol for P {
         Ok(self
             .rpc(context, frame)
             .await
-            .map_err(|e| Error::Generic(e.into()))?
+            .map_err(|e| e.into_error())?
             .as_bytes())
     }
 }

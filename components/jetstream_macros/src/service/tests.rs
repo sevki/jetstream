@@ -25,6 +25,11 @@ where
     });
 }
 
+/// r[verify jetstream.macro.source_span]
+/// r[verify jetstream.macro.error_type]
+/// r[verify jetstream.error_message_frame]
+/// r[verify jetstream.macro.client_error]
+/// r[verify jetstream.macro.server_error]
 #[test]
 fn test_simple_service() {
     let input: syn::ItemTrait = parse_quote! {
