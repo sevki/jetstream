@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_websocket"
-version = "11.0.0"
+version = "11.0.1"
 edition.workspace = true
 description.workspace = true
 license.workspace = true
@@ -10,8 +10,8 @@ readme.workspace = true
 
 [dependencies]
 futures = "0.3.31"
-jetstream_rpc = { path = "../jetstream_rpc" }
-jetstream_wireformat = { path = "../jetstream_wireformat" }
+jetstream_rpc = { version = "11.0.1", path = "../jetstream_rpc" }
+jetstream_wireformat = { version = "11.0.1", path = "../jetstream_wireformat" }
 tokio = { version = "1.48.0", features = ["io-std", "io-util", "net"] }
 tokio-tungstenite = { version = "0.28.0", features = [
   "rustls-tls-native-roots",

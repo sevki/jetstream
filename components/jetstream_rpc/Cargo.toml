@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_rpc"
-version = "11.0.0"
+version = "11.0.1"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -19,7 +19,6 @@ futures = "0.3.31"
 tokio-util = { workspace = true, features = ["codec"] }
 bytes = "1.10.0"
 thiserror = "2.0.17"
-okid = { workspace = true }
 url = { workspace = true }
 iroh = { workspace = true, optional = true }
 s2n-quic = { workspace = true, optional = true }
@@ -28,18 +27,18 @@ worker = { workspace = true, optional = true }
 tokio = { version = "1.47.1", features = ["full"], optional = true }
 async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"], optional = true }
-jetstream_error = { path = "../jetstream_error" }
+jetstream_error = { version = "11.0.1", path = "../jetstream_error" }
 miette = { version = "7.6.0", features = ["fancy"] }
 [build-dependencies]
 cfg_aliases = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-jetstream_wireformat = { path = "../jetstream_wireformat", default-features = false, features = [
+jetstream_wireformat = { version = "11.0.1", path = "../jetstream_wireformat", default-features = false, features = [
   "std",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-jetstream_wireformat = { path = "../jetstream_wireformat" }
+jetstream_wireformat = { version = "11.0.1", path = "../jetstream_wireformat" }
 
 [dev-dependencies]
 bytes = "1.10.0"
@@ -47,10 +46,10 @@ anyhow = "1.0.100"
 s2n-quic = { workspace = true }
 
 [features]
-iroh = ["dep:iroh", "okid/iroh", "okid/pkarr"]
+iroh = ["dep:iroh"]
 s2n-quic = ["dep:s2n-quic"]
 turmoil = ["dep:turmoil", "tokio"]
-pkarr = ["okid/pkarr"]
+pkarr = []
 tokio = ["dep:tokio"]
 cloudflare = ["dep:worker"]
 serde = ["dep:serde"]
