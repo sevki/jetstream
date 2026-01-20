@@ -4,7 +4,7 @@ use jetstream_macros::service;
 
 #[service]
 pub trait Echo {
-    async fn square(&mut self, i: u64) -> Result<String, Error>;
+    async fn square(&mut self, i: u64) -> Result<String>;
 }
 
 #[derive(Debug, Clone)]
@@ -12,7 +12,7 @@ pub trait Echo {
 struct EchoImpl;
 
 impl Echo for EchoImpl {
-    async fn square(&mut self, i: u64) -> Result<String, Error> {
+    async fn square(&mut self, i: u64) -> Result<String> {
         Ok((i * i).to_string())
     }
 }
@@ -41,8 +41,10 @@ mod quic_bench {
     pub static SERVER_KEY_PEM: &str =
         concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
 
-    pub async fn server(
-    ) -> Result<(), Box<dyn std::error::Error + Send + Sync + 'static>> {
+    pub async fn server() -> std::result::Result<
+        (),
+        Box<dyn std::error::Error + Send + Sync + 'static>,
+    > {
         let tls = tls::default::Server::builder()
             .with_trusted_certificate(Path::new(CA_CERT_PEM))?
             .with_certificate(
@@ -82,7 +84,7 @@ mod quic_bench {
 
     pub async fn client_square(
         iters: u64,
-    ) -> Result<Duration, Box<dyn std::error::Error>> {
+    ) -> std::result::Result<Duration, Box<dyn std::error::Error>> {
         let tls = tls::default::Client::builder()
             .with_certificate(Path::new(CA_CERT_PEM))?
             .with_client_identity(
