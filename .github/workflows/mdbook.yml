@@ -21,7 +21,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      MDBOOK_VERSION: 0.4.36
+      MDBOOK_VERSION: 0.5.2
       CARGO_TERM_COLOR: always
     steps:
       - uses: actions/checkout@v4
@@ -37,8 +37,8 @@ jobs:
       - name: Install Tools
         run: |
           cargo install --version ${MDBOOK_VERSION} mdbook
-          cargo install mdbook-mermaid
           cargo install grcov
+          cargo install --path tools/mdbook-changelog
 
       - name: Run Tests with Coverage
         env:
@@ -101,19 +101,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      
+
       - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: github-pages
           path: ./artifact
-      
+
       - name: Extract artifact
         run: |
           cd artifact
           tar -xf artifact.tar
           rm artifact.tar
-      
+
       - name: Deploy to PR preview
         uses: rossjrw/pr-preview-action@v1
         with:
