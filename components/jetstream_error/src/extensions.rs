@@ -1,4 +1,4 @@
-#[cfg(feature = "s2n-quic")]
+#[cfg(all(feature = "s2n-quic", not(target_os = "windows")))]
 impl From<s2n_quic::provider::tls::default::error::Error> for crate::Error {
     fn from(value: s2n_quic::provider::tls::default::error::Error) -> Self {
         crate::Error::from(

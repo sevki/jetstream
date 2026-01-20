@@ -53,7 +53,6 @@ lazy_static = "1.5.0"
 tracing = { version = "0.1.41", optional = true }
 tracing-subscriber = { version = "0.3.20", optional = true }
 trait-variant = "0.1.2"
-term-transcript = "0.4.0"
 
 [build-dependencies]
 cfg_aliases = {workspace = true}
@@ -68,6 +67,7 @@ miette = "7.6.0"
 okstd = { version = "1.0.2", features = ["macros"] }
 resvg = "0.46.0"
 s2n-quic = { workspace = true }
+term-transcript = "0.4.0"
 tokio = { version = "1.47.1", features = ["full"] }
 turmoil = { workspace = true }
 
@@ -83,6 +83,7 @@ wasm = ["jetstream_wireformat/tokio"]
 websocket = ["dep:jetstream_websocket"]
 cloudflare = ["dep:jetstream_cloudflare", "jetstream_rpc/cloudflare", "jetstream_error/worker"]
 serde = ["jetstream_rpc/serde"]
+
 
 [workspace]
 members = [
