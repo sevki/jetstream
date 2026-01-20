@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["client_builder"],"struct":["ClientBuilder","ClientCodec"],"trait":["Channel","ClientTransport"]};
