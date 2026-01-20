@@ -20,6 +20,21 @@ jobs:
           manifest-file: .release-please-manifest.json
           target-branch: ${{ github.ref_name }}
           release-type: rust
+      - name: checkout rs
+        uses: actions-rs/toolchain@v1
+        if: ${{ steps.release.outputs.release_created }}
+        with:
+          toolchain: stable
+          override: true
+      - name: Update workspace versions
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
+          ./scripts/update-workspace-version.sh $VERSION
+          cargo check
+          git add .
+          git commit -m "Update workspace versions to $VERSION"
+
       - uses: actions/checkout@v4
       - name: tag major and minor versions
         if: ${{ steps.release.outputs.release_created }}
@@ -35,29 +50,17 @@ jobs:
           git tag -a v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }} -m "Release v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}"
           git push origin v${{ steps.release.outputs.major }}
           git push origin v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}
-      - name: checkout rs
-        uses: actions-rs/toolchain@v1
-        if: ${{ steps.release.outputs.release_created }}
-        with:
-          toolchain: stable
-          override: true
       - name: Update and install dependencies
         run: |
           sudo apt-get update -y
           sudo apt-get install -y libssl-dev pkg-config
-      - name: Update workspace versions
-        if: ${{ steps.release.outputs.release_created }}
-        run: |
-          VERSION=${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
-          ./scripts/update-workspace-version.sh $VERSION
-          cargo check
       - name: publish to crates.io (dry-run)
         run: |
           export VERSION=v${{ steps.release.outputs.major }}.${{ steps.release.outputs.minor }}.${{ steps.release.outputs.patch }}
           echo $VERSION
           echo "CI_TAG=$VERSION" >> $GITHUB_ENV
-          cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run --allow-dirty
+          cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --dry-run
       - name: publish to crates.io
         if: ${{ steps.release.outputs.release_created }}
         run: |
-          cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }} --allow-dirty
+          cargo publish --workspace --token ${{ secrets.CARGO_REGISTRY_TOKEN }}
