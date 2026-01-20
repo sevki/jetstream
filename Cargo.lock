@@ -2491,11 +2491,11 @@ dependencies = [
  "jetstream_cloudflare",
  "jetstream_error",
  "jetstream_iroh",
- "jetstream_macros 10.0.0",
+ "jetstream_macros 10.1.0",
  "jetstream_quic",
  "jetstream_rpc",
  "jetstream_websocket",
- "jetstream_wireformat 10.0.0",
+ "jetstream_wireformat 10.1.0",
  "lazy_static",
  "miette",
  "okstd",
@@ -2513,9 +2513,9 @@ name = "jetstream_9p"
 version = "10.1.0"
 dependencies = [
  "jetstream_libc",
- "jetstream_macros 10.0.0",
+ "jetstream_macros 10.1.0",
  "jetstream_rpc",
- "jetstream_wireformat 10.0.0",
+ "jetstream_wireformat 10.1.0",
  "trait-variant",
  "wasm-bindgen",
 ]
@@ -2528,7 +2528,7 @@ dependencies = [
  "async-trait",
  "futures",
  "jetstream_rpc",
- "jetstream_wireformat 10.0.0",
+ "jetstream_wireformat 10.1.0",
  "thiserror 2.0.17",
  "worker",
 ]
@@ -2539,7 +2539,7 @@ version = "10.1.0"
 dependencies = [
  "insta",
  "iroh",
- "jetstream_wireformat 10.0.0",
+ "jetstream_wireformat 10.1.0",
  "miette",
  "s2n-quic",
  "term-transcript",
@@ -2570,7 +2570,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "10.1.0"
+version = "9.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0b4074414d66cc946821f472678112686a01dc34b99708cad85b55ccf5651337"
 dependencies = [
@@ -2645,7 +2645,7 @@ dependencies = [
  "futures",
  "iroh",
  "jetstream_error",
- "jetstream_wireformat 10.0.0",
+ "jetstream_wireformat 10.1.0",
  "miette",
  "okid",
  "s2n-quic",
@@ -2666,7 +2666,7 @@ dependencies = [
  "argh",
  "jetstream_9p",
  "jetstream_rpc",
- "jetstream_wireformat 10.0.0",
+ "jetstream_wireformat 10.1.0",
  "libc",
  "okstd",
  "serde",
@@ -2680,7 +2680,7 @@ version = "10.1.0"
 dependencies = [
  "futures",
  "jetstream_rpc",
- "jetstream_wireformat 10.0.0",
+ "jetstream_wireformat 10.1.0",
  "tokio",
  "tokio-tungstenite",
  "tracing",
@@ -2688,7 +2688,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "10.1.0"
+version = "9.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "23908869225c9c5d94d54afe453c9dfe0b7a6cccaae3b1438e3f3a628fbdf6b0"
 dependencies = [
@@ -2714,7 +2714,7 @@ dependencies = [
  "bytes",
  "futures",
  "getrandom 0.2.16",
- "jetstream_macros 10.0.0",
+ "jetstream_macros 10.1.0",
  "js-sys",
  "libc",
  "miette",
