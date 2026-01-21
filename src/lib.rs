@@ -96,13 +96,29 @@ pub mod cloudflare {
 ///
 /// // Crate-visible struct with public inner access
 /// prost_wireformat!(pub(crate) TestMessage as pub OurMessage);
+///
+/// // With derives - adds Clone and Debug to the wrapper
+/// prost_wireformat!(pub TestMessage as CloneableMessage, derive(Clone, Debug));
 /// ```
 #[macro_export]
 macro_rules! prost_wireformat {
-    ($wrapper_vis:vis $wrapped_type:ty as $vis:vis $new_type:ident) => {
-        #[derive(Debug, Clone)]
+    // With derives: prost_wireformat!(pub TestMessage as MyMessage, derives(Clone, Debug));
+    ($wrapper_vis:vis $wrapped_type:ty as $vis:vis $new_type:ident, derive($($derives:path),* $(,)?)) => {
+        #[derive($($derives),*)]
         $wrapper_vis struct $new_type($vis $wrapped_type);
 
+        $crate::prost_wireformat!(@impl $wrapped_type, $vis, $new_type);
+    };
+
+    // Without derives: prost_wireformat!(pub TestMessage as MyMessage);
+    ($wrapper_vis:vis $wrapped_type:ty as $vis:vis $new_type:ident) => {
+        $wrapper_vis struct $new_type($vis $wrapped_type);
+
+        $crate::prost_wireformat!(@impl $wrapped_type, $vis, $new_type);
+    };
+
+    // Internal: shared implementation
+    (@impl $wrapped_type:ty, $vis:vis, $new_type:ident) => {
         impl $new_type {
             $vis fn new(inner: $wrapped_type) -> Self {
                 Self(inner)
