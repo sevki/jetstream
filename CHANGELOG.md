@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [11.1.0](https://github.com/sevki/jetstream/compare/v11.0.0...v11.1.0) (2026-01-21)
+
+
+### Features
+
+* add prost_wireformat macro ([beeb947](https://github.com/sevki/jetstream/commit/beeb94747f66ba01ce98dec24bff83fda88f1a99))
+* add wireformat for SystemTime ([169f74a](https://github.com/sevki/jetstream/commit/169f74a162d477177ee81b07bb0315372644f2fd))
+* **prost_wireformat:** make derives optional ([12dfacb](https://github.com/sevki/jetstream/commit/12dfacbc0eb6287d90e50ed8ec2dcd11cf41d24b))
+
 ## [11.0.0](https://github.com/sevki/jetstream/compare/v10.1.0...v11.0.0) (2026-01-20)
 
 
