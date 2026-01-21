@@ -73,6 +73,7 @@ jetstream_wireformat = { version = "11.0.2", path = "components/jetstream_wirefo
 ] }
 miette = "7.6.0"
 okstd = { version = "1.0.2", features = ["macros"] }
+prost = "0.14.3"
 s2n-quic = { workspace = true }
 term-transcript = "0.4.0"
 tokio = { version = "1.47.1", features = ["full"] }

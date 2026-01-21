@@ -248,6 +248,7 @@ impl WireFormat for SocketAddr {
     }
 }
 
+/// Implement WireFormat for SystemTime, must be used with care as it can lead to overflow errors on Windows.
 impl WireFormat for SystemTime {
     fn byte_size(&self) -> u32 {
         // u64 for millis since epoch
@@ -269,6 +270,10 @@ impl WireFormat for SystemTime {
         Self: Sized,
     {
         let millis = u64::decode(reader)?;
-        Ok(SystemTime::UNIX_EPOCH + Duration::from_millis(millis))
+        SystemTime::UNIX_EPOCH
+            .checked_add(Duration::from_millis(millis))
+            .ok_or_else(|| {
+                io::Error::new(io::ErrorKind::InvalidData, "timestamp overflow")
+            })
     }
 }
