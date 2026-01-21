@@ -558,7 +558,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "117725a109d387c937a1533ce01b450cbde6b88abceea8473c4d7a85853cda3c"
 dependencies = [
  "lazy_static",
- "windows-sys 0.59.0",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -1208,7 +1208,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "39cab71617ae0d63f51a36d69f866391735b51691dbda63cf6f96d042b63efeb"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -1424,7 +1424,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -1441,7 +1441,7 @@ dependencies = [
  "libc",
  "log",
  "rustversion",
- "windows-link 0.2.1",
+ "windows-link 0.1.3",
  "windows-result 0.4.1",
 ]
 
@@ -1897,7 +1897,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.1",
+ "socket2 0.5.10",
  "system-configuration",
  "tokio",
  "tower-service",
@@ -2297,7 +2297,7 @@ dependencies = [
  "once_cell",
  "socket2 0.5.10",
  "tracing",
- "windows-sys 0.59.0",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -2373,7 +2373,7 @@ checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
 name = "jetstream"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "async-trait",
  "cfg_aliases",
@@ -2403,7 +2403,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros",
@@ -2415,7 +2415,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_cloudflare"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "askama",
  "async-trait",
@@ -2428,7 +2428,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_error"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "insta",
  "iroh",
@@ -2442,7 +2442,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "futures",
  "iroh",
@@ -2455,7 +2455,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2463,7 +2463,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "convert_case 0.6.0",
  "futures",
@@ -2484,7 +2484,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "bytes",
  "h3",
@@ -2499,7 +2499,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_radar"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "argh",
  "jetstream",
@@ -2515,7 +2515,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2539,7 +2539,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -2554,7 +2554,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_websocket"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "futures",
  "jetstream_rpc",
@@ -2566,7 +2566,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "bytes",
  "futures",
@@ -2743,7 +2743,7 @@ checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 
 [[package]]
 name = "mdbook-changelog"
-version = "11.0.1"
+version = "11.0.2"
 dependencies = [
  "anyhow",
  "mdbook-core",
@@ -3437,7 +3437,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d8fae84b431384b68627d0f9b3b1245fcf9f46f6c0e3dc902e9dce64edd1967"
 dependencies = [
  "libc",
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]
@@ -3890,7 +3890,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash",
  "rustls",
- "socket2 0.6.1",
+ "socket2 0.5.10",
  "thiserror 2.0.18",
  "tokio",
  "tracing",
@@ -3927,9 +3927,9 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2 0.6.1",
+ "socket2 0.5.10",
  "tracing",
- "windows-sys 0.60.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -4235,7 +4235,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5037,7 +5037,7 @@ dependencies = [
  "getrandom 0.3.4",
  "once_cell",
  "rustix",
- "windows-sys 0.61.2",
+ "windows-sys 0.52.0",
 ]
 
 [[package]]
@@ -5890,7 +5890,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.61.2",
+ "windows-sys 0.48.0",
 ]
 
 [[package]]

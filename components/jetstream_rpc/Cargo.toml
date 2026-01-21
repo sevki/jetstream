@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_rpc"
-version = "11.0.1"
+version = "11.0.2"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -27,18 +27,18 @@ worker = { workspace = true, optional = true }
 tokio = { version = "1.47.1", features = ["full"], optional = true }
 async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"], optional = true }
-jetstream_error = { version = "11.0.1", path = "../jetstream_error" }
+jetstream_error = { version = "11.0.2", path = "../jetstream_error" }
 miette = { version = "7.6.0", features = ["fancy"] }
 [build-dependencies]
 cfg_aliases = { workspace = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-jetstream_wireformat = { version = "11.0.1", path = "../jetstream_wireformat", default-features = false, features = [
+jetstream_wireformat = { version = "11.0.2", path = "../jetstream_wireformat", default-features = false, features = [
   "std",
 ] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-jetstream_wireformat = { version = "11.0.1", path = "../jetstream_wireformat" }
+jetstream_wireformat = { version = "11.0.2", path = "../jetstream_wireformat" }
 
 [dev-dependencies]
 bytes = "1.10.0"

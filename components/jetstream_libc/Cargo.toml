@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_libc"
-version = "11.0.1"
+version = "11.0.2"
 edition = { workspace = true }
 description = "Platform-specific libc bindings for jetstream"
 license = { workspace = true }

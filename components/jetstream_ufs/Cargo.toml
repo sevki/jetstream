@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_ufs"
-version = "11.0.1"
+version = "11.0.2"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -9,9 +9,9 @@ readme = { workspace = true }
 documentation.workspace = true
 
 [dependencies]
-jetstream_9p = { version = "11.0.1", path = "../jetstream_9p" }
-jetstream_wireformat = { version = "11.0.1", path = "../jetstream_wireformat" }
-jetstream_rpc = { version = "11.0.1", path = "../jetstream_rpc", features = [
+jetstream_9p = { version = "11.0.2", path = "../jetstream_9p" }
+jetstream_wireformat = { version = "11.0.2", path = "../jetstream_wireformat" }
+jetstream_rpc = { version = "11.0.2", path = "../jetstream_rpc", features = [
   "tokio",
 ] }
 serde = { version = "1.0.218", features = ["derive"] }
