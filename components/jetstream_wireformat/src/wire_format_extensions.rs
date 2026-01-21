@@ -2,7 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 use core::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
-use std::io::{self};
+use std::{
+    io::{self},
+    time::{Duration, SystemTime},
+};
 
 use bytes::Bytes;
 
@@ -242,5 +245,30 @@ impl WireFormat for SocketAddr {
                 "Invalid address type",
             )),
         }
+    }
+}
+
+impl WireFormat for SystemTime {
+    fn byte_size(&self) -> u32 {
+        // u64 for millis since epoch
+        8
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        let duration = self
+            .duration_since(SystemTime::UNIX_EPOCH)
+            .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))?;
+        (duration.as_millis() as u64).encode(writer)
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let millis = u64::decode(reader)?;
+        Ok(SystemTime::UNIX_EPOCH + Duration::from_millis(millis))
     }
 }
