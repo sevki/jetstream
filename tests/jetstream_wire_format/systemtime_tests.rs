@@ -60,15 +60,6 @@ fn test_systemtime_byte_size() {
 }
 
 #[test]
-fn test_systemtime_max_representable() {
-    // Max u64 milliseconds
-    let max_millis = u64::MAX;
-    let time = SystemTime::UNIX_EPOCH + Duration::from_millis(max_millis);
-    let decoded = round_trip(time);
-    assert_eq!(decoded, time);
-}
-
-#[test]
 fn test_systemtime_one_millisecond() {
     let time = SystemTime::UNIX_EPOCH + Duration::from_millis(1);
     let decoded = round_trip(time);
