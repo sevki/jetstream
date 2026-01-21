@@ -18,10 +18,10 @@ pub struct TestMessage {
 }
 
 // Public struct with private inner field and accessors
-prost_wireformat!(pub TestMessage as TestMessageWrapper);
+prost_wireformat!(pub TestMessage as TestMessageWrapper, derive(Debug));
 
 // Public struct with public inner field and accessors
-prost_wireformat!(pub TestMessage as pub PublicTestMessageWrapper);
+prost_wireformat!(pub TestMessage as pub PublicTestMessageWrapper, derive(Debug));
 
 // Helper function for round-trip testing
 fn round_trip<T: WireFormat + std::fmt::Debug>(value: T) -> T {
