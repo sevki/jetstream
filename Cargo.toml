@@ -37,6 +37,7 @@ bench = false
 harness = false
 name = "perf"
 
+
 [dependencies]
 async-trait = "0.1.89"
 futures = "0.3.31"
@@ -65,7 +66,7 @@ jetstream_error = { version = "11.1.0", path = "components/jetstream_error", fea
   "s2n-quic",
   "test-paths",
 ] }
-jetstream_rpc = { version = "11.1.0", path = "components/jetstream_rpc", features = [
+jetstream_rpc = { version = "11.1.0", path = "components/jetstream_rpc", default-features=false, features = [
   "s2n-quic",
   "turmoil",
 ] }
@@ -81,7 +82,7 @@ tokio = { version = "1.47.1", features = ["full"] }
 turmoil = { workspace = true }
 
 [features]
-default = ["tracing","iroh"]
+default = ["tracing"]
 9p = ["dep:jetstream_9p"]
 all = ["9p", "iroh", "quic", "tracing", "websocket",  "wasm"]
 iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh", "jetstream_error/iroh"]
@@ -90,7 +91,6 @@ quic = [
   "jetstream_rpc/s2n-quic",
   "jetstream_error/s2n-quic",
 ]
-
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 wasm = []
 websocket = ["dep:jetstream_websocket"]

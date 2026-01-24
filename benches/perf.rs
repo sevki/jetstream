@@ -128,11 +128,12 @@ fn benchmarks(#[allow(unused)] c: &mut Criterion) {
 
     #[cfg(feature = "quic")]
     {
+        rt.block_on(async {
+            tokio::spawn(quic_bench::server());
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        });
         group.bench_function("quic", |b| {
             b.to_async(&rt).iter_custom(|iters| async move {
-                tokio::spawn(quic_bench::server());
-                tokio::time::sleep(tokio::time::Duration::from_millis(100))
-                    .await;
                 quic_bench::client_square(iters).await.unwrap()
             })
         });

@@ -31,6 +31,7 @@
               perl
               # For ring crate
               clang
+              gnuplot
               llvmPackages.libclang
             ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
               pkgs.darwin.apple_sdk.frameworks.Security
