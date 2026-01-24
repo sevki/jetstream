@@ -30,10 +30,10 @@ impl TagPool {
         }
         // This can return an error if the semaphore is closed, but we
         // never close it, so this error can never happen.
-        let _permit = self.semaphore.acquire().await.unwrap();
+        let permit = self.semaphore.acquire().await.unwrap();
         // To avoid releasing the permit back to the semaphore, we use
         // the `SemaphorePermit::forget` method.
-        std::mem::forget(_permit);
+        permit.forget();
 
         // Otherwise recycle
         self.freed
