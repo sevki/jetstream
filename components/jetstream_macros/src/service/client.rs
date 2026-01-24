@@ -1,4 +1,4 @@
-use proc_macro2::{Literal, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Attribute, Ident, TraitItem};
 
@@ -16,7 +16,7 @@ pub fn generate_client(
         generate_client_calls(trait_items, tmsgs, method_attrs, enable_tracing);
 
     // Add RPC-level tracing span if tracing is enabled
-    let rpc_span = if enable_tracing {
+    let _rpc_span = if enable_tracing {
         quote! {
             let _span = tracing::debug_span!(
                 "rpc_client",

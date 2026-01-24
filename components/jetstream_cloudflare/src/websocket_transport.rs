@@ -1,6 +1,9 @@
-use crate::{DynamicProtocol, Shutdown};
+use crate::Shutdown;
 use futures::StreamExt;
-use jetstream_rpc::context::{Context, Contextual, RemoteAddr};
+use jetstream_rpc::{
+    context::{Context, Contextual, RemoteAddr},
+    AnyServer,
+};
 use std::{net::IpAddr, str::FromStr};
 use worker::{Error, WebSocket};
 
@@ -38,7 +41,7 @@ impl WebSocketTransport {
 }
 
 impl WebSocketTransport {
-    pub async fn handle(&mut self, handler: &mut Box<dyn DynamicProtocol>) {
+    pub async fn handle(&mut self, handler: &mut Box<dyn AnyServer>) {
         let mut events = self.websocket.events().unwrap();
 
         while let Some(event) = events.next().await {

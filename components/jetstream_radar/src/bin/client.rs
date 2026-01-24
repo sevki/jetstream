@@ -64,7 +64,7 @@ async fn main() {
                 response.status()
             );
 
-            let mut ws_transport = jetstream::websocket::WebSocketTransport::<
+            let ws_transport = jetstream::websocket::WebSocketTransport::<
                 RadarChannel,
             >::from(ws_stream);
 
