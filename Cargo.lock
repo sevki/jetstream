@@ -2394,6 +2394,7 @@ dependencies = [
  "cfg_aliases",
  "criterion",
  "futures",
+ "getrandom 0.3.4",
  "insta",
  "jetstream_9p",
  "jetstream_cloudflare",
