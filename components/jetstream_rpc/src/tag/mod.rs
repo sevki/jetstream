@@ -1,48 +1,50 @@
-use std::sync::{self, Arc, Mutex};
+use std::sync::{
+    atomic::{AtomicU16, Ordering},
+    Arc,
+};
+use tokio::sync::{Mutex, Semaphore};
 
-use jetstream_error::Result;
-
-#[derive(Clone)]
 pub struct TagPool {
-    next_tag: Arc<sync::atomic::AtomicU16>,
+    next_tag: AtomicU16,
+    semaphore: Arc<Semaphore>,
     freed: Arc<Mutex<Vec<u16>>>,
-    exhausted: bool,
+    size: u16,
 }
 
-impl Default for TagPool {
-    fn default() -> Self {
+/// https://docs.rs/tokio/latest/tokio/sync/struct.Semaphore.html#rate-limiting-using-a-token-bucket
+impl TagPool {
+    pub fn new(size: u16) -> Self {
         Self {
-            next_tag: Arc::new(sync::atomic::AtomicU16::new(0)),
+            next_tag: AtomicU16::new(1),
+            semaphore: Arc::new(Semaphore::new(size as usize)),
             freed: Arc::new(Mutex::new(Vec::new())),
-            exhausted: false,
-        }
-    }
-}
-
-impl<'a> TagPool {
-    pub fn get_tag(&'a mut self) -> Result<u16> {
-        // first check if we have a released slot.
-        let mut free = self.freed.lock().unwrap();
-
-        if let Some(tag) = free.pop() {
-            Ok(tag)
-        } else if !self.exhausted {
-            let tag =
-                self.next_tag.fetch_add(1, sync::atomic::Ordering::Relaxed);
-            if tag == u16::MAX {
-                self.exhausted = true;
-            }
-            Ok(tag)
-        } else {
-            Err(jetstream_error::Error::new("too many requests inflight"))
+            size,
         }
     }
 
-    pub(crate) fn release_tag(&mut self, tag: u16) {
-        let mut free = self.freed.lock().unwrap();
-        free.push(tag);
+    pub async fn acquire_tag(&self) -> u16 {
+        // Try fresh tag first
+        let tag = self.next_tag.fetch_add(1, Ordering::Relaxed);
+        if tag <= self.size {
+            return tag;
+        }
+        // This can return an error if the semaphore is closed, but we
+        // never close it, so this error can never happen.
+        let _permit = self.semaphore.acquire().await.unwrap();
+        // To avoid releasing the permit back to the semaphore, we use
+        // the `SemaphorePermit::forget` method.
+        std::mem::forget(_permit);
+
+        // Otherwise recycle
+        self.freed
+            .lock()
+            .await
+            .pop()
+            .expect("semaphore guarantees availability")
+    }
+
+    pub async fn release_tag(&self, tag: u16) {
+        self.freed.lock().await.push(tag);
+        self.semaphore.add_permits(1);
     }
 }
-
-#[cfg(test)]
-mod tests;
