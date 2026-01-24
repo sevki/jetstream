@@ -109,7 +109,7 @@ async fn client() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let client_codec: jetstream_rpc::client::ClientCodec<EchoChannel> =
         Default::default();
     let framed = Framed::new(stream, client_codec);
-    let mut chan = EchoChannel::new(10, Box::new(framed));
+    let mut chan = EchoChannel::new(1, Box::new(framed));
     for _ in 0..100 {
         if let Err(e) = chan.ping().await {
             eprintln!("Ping error: {:?}", e);
