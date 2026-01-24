@@ -1,13 +1,11 @@
 mod error;
 mod websocket_transport;
-
-pub use error::JetstreamProtocolError;
-
 use askama::Template;
+pub use error::JetstreamProtocolError;
 use futures::lock::Mutex;
-use jetstream_rpc::{Protocol, HEADER_KEY_JETSTREAM_PROTO};
-use jetstream_rpc::{AnyServer, IntoError};
-use jetstream_wireformat::wire_format_extensions::ConvertWireFormat;
+use jetstream_rpc::AnyServer;
+use jetstream_rpc::HEADER_KEY_JETSTREAM_PROTO;
+
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use worker::{wasm_bindgen_futures, Env, WebSocket, WebSocketPair};
 

@@ -2,49 +2,44 @@ use std::sync::{
     atomic::{AtomicU16, Ordering},
     Arc,
 };
-use tokio::sync::{Mutex, Semaphore};
+use tokio::sync::mpsc;
 
+#[derive(Clone)]
 pub struct TagPool {
-    next_tag: AtomicU16,
-    semaphore: Arc<Semaphore>,
-    freed: Arc<Mutex<Vec<u16>>>,
+    next_tag: Arc<AtomicU16>,
     size: u16,
+    recycled: Arc<tokio::sync::Mutex<mpsc::Receiver<u16>>>,
+    recycle_tx: mpsc::Sender<u16>,
 }
 
-/// https://docs.rs/tokio/latest/tokio/sync/struct.Semaphore.html#rate-limiting-using-a-token-bucket
 impl TagPool {
     pub fn new(size: u16) -> Self {
+        let (tx, rx) = mpsc::channel(size as usize);
         Self {
-            next_tag: AtomicU16::new(1),
-            semaphore: Arc::new(Semaphore::new(size as usize)),
-            freed: Arc::new(Mutex::new(Vec::new())),
+            next_tag: Arc::new(AtomicU16::new(1)),
             size,
+            recycled: Arc::new(tokio::sync::Mutex::new(rx)),
+            recycle_tx: tx,
         }
     }
 
     pub async fn acquire_tag(&self) -> u16 {
-        // Try fresh tag first
+        // Try fresh first
         let tag = self.next_tag.fetch_add(1, Ordering::Relaxed);
         if tag <= self.size {
             return tag;
         }
-        // This can return an error if the semaphore is closed, but we
-        // never close it, so this error can never happen.
-        let _permit = self.semaphore.acquire().await.unwrap();
-        // To avoid releasing the permit back to the semaphore, we use
-        // the `SemaphorePermit::forget` method.
-        std::mem::forget(_permit);
 
-        // Otherwise recycle
-        self.freed
+        // Wait for recycled
+        self.recycled
             .lock()
             .await
-            .pop()
-            .expect("semaphore guarantees availability")
+            .recv()
+            .await
+            .expect("pool not dropped")
     }
 
     pub async fn release_tag(&self, tag: u16) {
-        self.freed.lock().await.push(tag);
-        self.semaphore.add_permits(1);
+        self.recycle_tx.send(tag).await.ok();
     }
 }
