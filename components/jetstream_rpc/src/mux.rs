@@ -53,17 +53,18 @@ where
         while let Some(Ok(frame)) = rx.next().await {
             let frame: Frame<P::Response> = frame;
             let tag = frame.tag;
-            in_flight
+            let result = in_flight
                 .lock()
                 .await
                 .remove(&frame.tag)
                 .unwrap()
-                .send(Ok(frame))
-                .map_err(|_| {
-                    jetstream_error::Error::new(
-                        "Failed to send response".to_string(),
-                    )
-                })?;
+                .send(Ok(frame));
+            match result {
+                Ok(_) => {}
+                Err(err) => {
+                    tracing::error!("couldn't send response frame");
+                }
+            };
             tag_pool.release_tag(tag).await;
         }
 
@@ -82,11 +83,17 @@ where
     }
 
     pub async fn rpc(&self, _ctx: Context, request: P::Request) -> RpcCall<P> {
+        #[cfg(any(notify, channel, semaphor))]
+        let tag = self.tag_pool.acquire_tag().await;
+        #[cfg(not(any(notify, channel, semaphor)))]
+        compile_error!(
+            "must set tag_pool_backend cfg to notify, channel, or semaphor"
+        );
+
         let (tx, rx) = oneshot::channel();
         let in_flight = self.in_flight.clone();
         let send_queue = self.send_queue.clone();
 
-        let tag = self.tag_pool.acquire_tag().await;
         tokio::spawn(async move {
             in_flight.lock().await.insert(tag, tx);
             send_queue.send(Frame { tag, msg: request }).await.unwrap();
