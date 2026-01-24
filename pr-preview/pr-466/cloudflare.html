@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3cd924c2.js";
+            window.path_to_searchindex_js = "searchindex-4b34410a.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-739a84d4.js"></script>
@@ -279,7 +279,7 @@ async fn main() {
                 response.status()
             );
 
-            let mut ws_transport = jetstream::websocket::WebSocketTransport::&lt;
+            let ws_transport = jetstream::websocket::WebSocketTransport::&lt;
                 RadarChannel,
             &gt;::from(ws_stream);
 

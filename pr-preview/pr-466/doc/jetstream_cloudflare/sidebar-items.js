@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["JetstreamProtocolError"],"externcrate":["async_trait"],"struct":["DefaultHtmlFallback","Router"],"trait":["DynamicProtocol","HtmlAssets"]};
+window.SIDEBAR_ITEMS = {"enum":["JetstreamProtocolError"],"externcrate":["async_trait"],"struct":["DefaultHtmlFallback","Router"],"trait":["HtmlAssets"]};
