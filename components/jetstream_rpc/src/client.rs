@@ -1,11 +1,12 @@
-use std::{io, marker::PhantomData};
+use std::future::Future;
 
-use crate::{context::NodeAddr, Error, Frame, Protocol};
+use crate::{Error, Frame, Protocol};
 use futures::{
     stream::{SplitSink, SplitStream},
-    Sink, Stream, StreamExt,
+    FutureExt, Sink, Stream, StreamExt,
 };
 use jetstream_wireformat::WireFormat;
+
 use tokio_util::{
     bytes::{self, Buf, BufMut},
     codec::{Decoder, Encoder},
@@ -105,61 +106,5 @@ where
         SplitStream<Self>,
     ) {
         StreamExt::split(self)
-    }
-}
-
-#[derive(Debug)]
-pub struct ClientBuilder<P: Protocol> {
-    node_addr: NodeAddr,
-    _phantom: PhantomData<P>,
-}
-
-impl<P: Protocol> WireFormat for ClientBuilder<P> {
-    fn byte_size(&self) -> u32 {
-        P::VERSION.to_string().byte_size() + self.node_addr.byte_size()
-    }
-
-    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()>
-    where
-        Self: Sized,
-    {
-        P::VERSION.to_string().encode(writer)?;
-        self.node_addr.encode(writer)
-    }
-
-    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self>
-    where
-        Self: Sized,
-    {
-        let version = String::decode(reader)?;
-        if version != P::VERSION {
-            return Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                "version mismatch",
-            ));
-        }
-        let node_addr = NodeAddr::decode(reader)?;
-        Ok(ClientBuilder {
-            node_addr,
-            _phantom: PhantomData,
-        })
-    }
-}
-
-pub fn client_builder<P: Protocol>(
-    addr: impl Into<NodeAddr>,
-) -> ClientBuilder<P> {
-    ClientBuilder {
-        node_addr: addr.into(),
-        _phantom: PhantomData,
-    }
-}
-
-impl<P: Protocol> From<(P, NodeAddr)> for ClientBuilder<P> {
-    fn from(value: (P, NodeAddr)) -> Self {
-        ClientBuilder {
-            node_addr: value.1,
-            _phantom: PhantomData,
-        }
     }
 }

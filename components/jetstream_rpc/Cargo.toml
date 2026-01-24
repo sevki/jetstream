@@ -24,11 +24,14 @@ iroh = { workspace = true, optional = true }
 s2n-quic = { workspace = true, optional = true }
 turmoil = { workspace = true, optional = true }
 worker = { workspace = true, optional = true }
-tokio = { version = "1.47.1", features = ["full"], optional = true }
+tokio = { version = "1.47.1", features = ["sync","rt"] }
 async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 jetstream_error = { version = "11.1.0", path = "../jetstream_error" }
 miette = { version = "7.6.0", features = ["fancy"] }
+[target.'cfg(loom)'.dependencies]
+loom = "0.7.2"
+
 [build-dependencies]
 cfg_aliases = { workspace = true }
 
@@ -44,12 +47,14 @@ jetstream_wireformat = { version = "11.1.0", path = "../jetstream_wireformat" }
 bytes = "1.10.0"
 anyhow = "1.0.100"
 s2n-quic = { workspace = true }
+proptest = "1.9.0"
+
 
 [features]
 iroh = ["dep:iroh"]
 s2n-quic = ["dep:s2n-quic"]
-turmoil = ["dep:turmoil", "tokio"]
+turmoil = ["dep:turmoil"]
 pkarr = []
-tokio = ["dep:tokio"]
+
 cloudflare = ["dep:worker"]
 serde = ["dep:serde"]

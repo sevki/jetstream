@@ -109,10 +109,8 @@ async fn client() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // open a new stream and split the receiving and sending sides
     let stream = connection.open_bidirectional_stream().await?;
     let client_codec: ClientCodec<EchoChannel> = Default::default();
-    let mut framed = Framed::new(stream, client_codec);
-    let mut chan = EchoChannel {
-        inner: Box::new(&mut framed),
-    };
+    let framed = Framed::new(stream, client_codec);
+    let mut chan = EchoChannel::new(10, Box::new(framed));
     eprintln!("Ping sent");
     chan.ping().await?;
     eprintln!("Pong received");

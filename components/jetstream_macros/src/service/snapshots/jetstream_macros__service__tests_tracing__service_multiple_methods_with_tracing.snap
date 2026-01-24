@@ -153,6 +153,11 @@ pub mod complexservice_protocol {
         type Response = Rmessage;
         type Error = Error;
         const VERSION: &'static str = PROTOCOL_VERSION;
+    }
+    impl<T> Server for ComplexServiceService<T>
+    where
+        T: ComplexService + Send + Sync + Sized,
+    {
         fn rpc(
             &mut self,
             ctx: Context,
@@ -231,50 +236,35 @@ pub mod complexservice_protocol {
             self.inner.get_status().await
         }
     }
-    pub struct ComplexServiceChannel<'a> {
-        pub inner: Box<&'a mut dyn ClientTransport<Self>>,
+    pub struct ComplexServiceChannel {
+        mux: Mux<Self>,
     }
-    impl<'a> Protocol for ComplexServiceChannel<'a> {
+    impl ComplexServiceChannel {
+        pub fn new(
+            max_concurrent_requests: u16,
+            inner: Box<dyn ClientTransport<Self>>,
+        ) -> Self {
+            Self {
+                mux: Mux::new(max_concurrent_requests, inner),
+            }
+        }
+    }
+    impl Protocol for ComplexServiceChannel {
         type Request = Tmessage;
         type Response = Rmessage;
         type Error = Error;
         const VERSION: &'static str = PROTOCOL_VERSION;
-        fn rpc(
-            &mut self,
-            _ctx: Context,
-            frame: Frame<<Self as Protocol>::Request>,
-        ) -> impl ::core::future::Future<
-            Output = Result<Frame<<Self as Protocol>::Response>>,
-        > + Send + Sync {
-            use futures::{SinkExt, StreamExt};
-            Box::pin(async move {
-                let _span = tracing::debug_span!(
-                    "rpc_client", service = stringify!(ComplexService), tag = frame.tag
-                );
-                let _enter = _span.enter();
-                self.inner.send(frame).await?;
-                let frame = self.inner.next().await.unwrap()?;
-                Ok(frame)
-            })
-        }
     }
-    lazy_static::lazy_static! {
-        static ref COMPLEXSERVICE_TAG : std::sync::atomic::AtomicU16 =
-        std::sync::atomic::AtomicU16::new(0);
-    }
-    impl<'a> ComplexService for ComplexServiceChannel<'a> {
+    impl ComplexService for ComplexServiceChannel {
         #[instrument(skip(self, password))]
         async fn login(
             &mut self,
             username: String,
             password: String,
         ) -> Result<String, std::io::Error> {
-            let tag = COMPLEXSERVICE_TAG
-                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             let req = Tmessage::Login(Tlogin { username, password });
-            let tframe = Frame::from((tag, req));
             let context = Context::default();
-            let rframe = self.rpc(context, tframe).await?;
+            let rframe = self.mux.rpc(context, req).await.await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::Login(msg) => Ok(msg.0),
@@ -284,12 +274,9 @@ pub mod complexservice_protocol {
         }
         #[tracing::instrument(skip(self))]
         async fn logout(&mut self) -> Result<(), std::io::Error> {
-            let tag = COMPLEXSERVICE_TAG
-                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
             let req = Tmessage::Logout(Tlogout {});
-            let tframe = Frame::from((tag, req));
             let context = Context::default();
-            let rframe = self.rpc(context, tframe).await?;
+            let rframe = self.mux.rpc(context, req).await.await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::Logout(msg) => Ok(msg.0),
@@ -298,13 +285,10 @@ pub mod complexservice_protocol {
             }
         }
         #[instrument(level = "debug")]
-        async fn get_status(&mut self) -> Result<String, std::io::Error> {
-            let tag = COMPLEXSERVICE_TAG
-                .fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+        async fn get_status(&self) -> Result<String, std::io::Error> {
             let req = Tmessage::GetStatus(Tget_status {});
-            let tframe = Frame::from((tag, req));
             let context = Context::default();
-            let rframe = self.rpc(context, tframe).await?;
+            let rframe = self.mux.rpc(context, req).await.await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::GetStatus(msg) => Ok(msg.0),

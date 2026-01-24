@@ -347,7 +347,10 @@ const fn proc_string() -> &'static CStr {
     unsafe { CStr::from_bytes_with_nul_unchecked(b"/proc\0") }
 }
 
-impl Server {
+impl Server
+where
+    Self: Protocol,
+{
     pub fn new<P: Into<Box<Path>>>(
         root: P,
         uid_map: ServerUidMap,
@@ -442,8 +445,8 @@ impl Server {
 
         Ok(Rversion {
             msize: self.cfg.msize,
-            version: if version.version == "9P2000.L" {
-                String::from("9P2000.L")
+            version: if version.version == Self::VERSION {
+                String::from(Self::VERSION)
             } else {
                 String::from("unknown")
             },
@@ -1055,7 +1058,9 @@ impl Protocol for Server {
     type Response = crate::ufs::Rmessage;
 
     const VERSION: &'static str = "9P2000.L";
+}
 
+impl jetstream_rpc::server::Server for Server {
     async fn rpc(
         &mut self,
         _context: Context,

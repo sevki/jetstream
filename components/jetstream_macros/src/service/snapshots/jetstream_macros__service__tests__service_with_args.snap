@@ -116,6 +116,11 @@ pub mod echo_protocol {
         type Response = Rmessage;
         type Error = Error;
         const VERSION: &'static str = PROTOCOL_VERSION;
+    }
+    impl<T> Server for EchoService<T>
+    where
+        T: Echo + Send + Sync + Sized,
+    {
         fn rpc(
             &mut self,
             ctx: Context,
@@ -159,40 +164,30 @@ pub mod echo_protocol {
             self.inner.ping(message).await
         }
     }
-    pub struct EchoChannel<'a> {
-        pub inner: Box<&'a mut dyn ClientTransport<Self>>,
+    pub struct EchoChannel {
+        mux: Mux<Self>,
     }
-    impl<'a> Protocol for EchoChannel<'a> {
+    impl EchoChannel {
+        pub fn new(
+            max_concurrent_requests: u16,
+            inner: Box<dyn ClientTransport<Self>>,
+        ) -> Self {
+            Self {
+                mux: Mux::new(max_concurrent_requests, inner),
+            }
+        }
+    }
+    impl Protocol for EchoChannel {
         type Request = Tmessage;
         type Response = Rmessage;
         type Error = Error;
         const VERSION: &'static str = PROTOCOL_VERSION;
-        fn rpc(
-            &mut self,
-            _ctx: Context,
-            frame: Frame<<Self as Protocol>::Request>,
-        ) -> impl ::core::future::Future<
-            Output = Result<Frame<<Self as Protocol>::Response>>,
-        > + Send + Sync {
-            use futures::{SinkExt, StreamExt};
-            Box::pin(async move {
-                self.inner.send(frame).await?;
-                let frame = self.inner.next().await.unwrap()?;
-                Ok(frame)
-            })
-        }
     }
-    lazy_static::lazy_static! {
-        static ref ECHO_TAG : std::sync::atomic::AtomicU16 =
-        std::sync::atomic::AtomicU16::new(0);
-    }
-    impl<'a> Echo for EchoChannel<'a> {
-        async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
-            let tag = ECHO_TAG.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+    impl Echo for EchoChannel {
+        async fn ping(&self, message: String) -> Result<String, std::io::Error> {
             let req = Tmessage::Ping(Tping { message });
-            let tframe = Frame::from((tag, req));
             let context = Context::default();
-            let rframe = self.rpc(context, tframe).await?;
+            let rframe = self.mux.rpc(context, req).await.await?;
             let rmsg = rframe.msg;
             match rmsg {
                 Rmessage::Ping(msg) => Ok(msg.0),

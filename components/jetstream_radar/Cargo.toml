@@ -25,7 +25,6 @@ server = ["jetstream/cloudflare"]
 client = [
   "jetstream/websocket",
   "jetstream/tracing",
-  "jetstream/tokio",
   "url",
   "tokio",
   "argh",

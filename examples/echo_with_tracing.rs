@@ -131,10 +131,8 @@ async fn client() -> jetstream_error::Result<()> {
 
     let stream = connection.open_bidirectional_stream().await?;
     let client_codec: ClientCodec<EchoChannel> = Default::default();
-    let mut framed = Framed::new(stream, client_codec);
-    let mut chan = EchoChannel {
-        inner: Box::new(&mut framed),
-    };
+    let framed = Framed::new(stream, client_codec);
+    let mut chan = EchoChannel::new(10, Box::new(framed));
 
     tracing::info!("Sending ping...");
     let response = chan

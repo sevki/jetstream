@@ -102,7 +102,12 @@ pub fn generate_server(
             // r[impl jetstream.macro.error_type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
+        }
 
+        impl<T> Server for #service_name<T>
+        where
+            T: #trait_name + Send + Sync + Sized
+        {
             fn rpc(&mut self, ctx: Context, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
                 Output = Result<Frame<<Self as Protocol>::Response>>,
             > + Send + Sync {

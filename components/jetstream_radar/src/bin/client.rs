@@ -68,9 +68,8 @@ async fn main() {
                 RadarChannel,
             >::from(ws_stream);
 
-            let mut client = radar_protocol::RadarChannel {
-                inner: Box::new(&mut ws_transport),
-            };
+            let mut client =
+                radar_protocol::RadarChannel::new(100, Box::new(ws_transport));
 
             tracing::info!("Sending ping...");
             let now = Instant::now();

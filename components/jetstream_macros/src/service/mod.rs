@@ -48,9 +48,6 @@ pub(crate) fn service_impl(
     );
     let protocol_version = Literal::string(protocol_version.as_str());
 
-    let tag_name =
-        format_ident!("{}_TAG", trait_name.to_string().to_uppercase());
-
     // Generate message structs and collect metadata
     let mut tmsgs = Vec::new();
     let mut rmsgs = Vec::new();
@@ -108,9 +105,6 @@ pub(crate) fn service_impl(
         trait_name,
         &item.items,
         &tmsgs,
-        &rmsgs,
-        &protocol_version,
-        &tag_name,
         &method_attrs,
         enable_tracing,
     );

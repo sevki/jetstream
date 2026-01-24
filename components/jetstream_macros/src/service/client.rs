@@ -9,19 +9,11 @@ pub fn generate_client(
     trait_name: &Ident,
     trait_items: &[TraitItem],
     tmsgs: &[(Ident, TokenStream)],
-    _rmsgs: &[(Ident, TokenStream)],
-    _protocol_version: &Literal,
-    tag_name: &Ident,
     method_attrs: &[Vec<Attribute>],
     enable_tracing: bool,
 ) -> TokenStream {
-    let client_calls = generate_client_calls(
-        trait_items,
-        tmsgs,
-        tag_name,
-        method_attrs,
-        enable_tracing,
-    );
+    let client_calls =
+        generate_client_calls(trait_items, tmsgs, method_attrs, enable_tracing);
 
     // Add RPC-level tracing span if tracing is enabled
     let rpc_span = if enable_tracing {
@@ -38,38 +30,25 @@ pub fn generate_client(
     };
 
     quote! {
-        pub struct #channel_name<'a> {
-            pub inner: Box<&'a mut dyn ClientTransport<Self>>,
+        pub struct #channel_name {
+            mux: Mux<Self>,
         }
 
-        impl<'a> Protocol for #channel_name<'a>
-        {
+        impl #channel_name {
+            pub fn new(max_concurrent_requests:u16,inner: Box<dyn ClientTransport<Self>>) -> Self {
+                Self { mux: Mux::new(max_concurrent_requests,inner) }
+            }
+        }
+
+        impl Protocol for #channel_name {
             type Request = Tmessage;
             type Response = Rmessage;
             // r[impl jetstream.macro.error_type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
-
-            fn rpc(&mut self,_ctx: Context, frame: Frame<<Self as Protocol>::Request>) -> impl ::core::future::Future<
-                Output = Result<Frame<<Self as Protocol>::Response>>,
-            > + Send + Sync {
-                use futures::{SinkExt, StreamExt};
-                Box::pin(async move {
-                    #rpc_span
-                    self.inner
-                        .send(frame)
-                        .await?;
-                    let frame = self.inner.next().await.unwrap()?;
-                    Ok(frame)
-                })
-            }
         }
 
-        lazy_static::lazy_static! {
-            static ref #tag_name: std::sync::atomic::AtomicU16 = std::sync::atomic::AtomicU16::new(0);
-        }
-
-        impl<'a> #trait_name for #channel_name<'a>
+        impl #trait_name for #channel_name
         {
             #(#client_calls)*
         }
@@ -79,7 +58,6 @@ pub fn generate_client(
 fn generate_client_calls(
     trait_items: &[TraitItem],
     tmsgs: &[(Ident, TokenStream)],
-    tag_name: &Ident,
     method_attrs: &[Vec<Attribute>],
     enable_tracing: bool,
 ) -> Vec<TokenStream> {
@@ -89,6 +67,16 @@ fn generate_client_calls(
         .filter_map(|(index, item)| {
             if let TraitItem::Fn(method) = item {
                 let method_name = &method.sig.ident;
+                let reciever = match &method.sig.receiver(){
+                    Some(recv) => {
+                        if recv.mutability.is_some() {
+                            quote! {&mut self}
+                        } else {
+                            quote! { &self }
+                        }
+                    },
+                    None => quote!{},
+                };
                 let variant_name: Ident = IdentCased(method_name.clone()).to_pascal_case().into();
                 let retn = &method.sig.output;
                 let is_async = method.sig.asyncness.is_some();
@@ -136,20 +124,18 @@ fn generate_client_calls(
                     attrs.iter().map(|attr| quote! { #attr }).collect()
                 };
 
+                // r[impl jetstream.macro.client_error]
                 Some(quote! {
                     #(#tracing_attrs)*
-                    #maybe_async fn #method_name(&mut self, #(#inputs)*) #retn {
-                        let tag = #tag_name.fetch_add(1, std::sync::atomic::Ordering::SeqCst);
+                    #maybe_async fn #method_name(#reciever, #(#inputs)*) #retn {
                         let req = Tmessage::#variant_name(#request_struct_ident {
                             #(#args)*
                         });
-                        let tframe = Frame::from((tag, req));
                         let context = Context::default();
-                        let rframe = self.rpc(context, tframe).await?;
+                        let rframe = self.mux.rpc(context, req).await.await?;
                         let rmsg = rframe.msg;
                         match rmsg {
                             Rmessage::#variant_name(msg) => Ok(msg.0),
-                            // r[impl jetstream.macro.client_error]
                             // When client receives an error frame, convert it to jetstream::prelude::Error
                             Rmessage::Error(err) => Err(err),
                             _ => Err(Error::InvalidResponse),

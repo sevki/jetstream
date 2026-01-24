@@ -108,10 +108,8 @@ async fn client() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let stream = connection.open_bidirectional_stream().await?;
     let client_codec: jetstream_rpc::client::ClientCodec<EchoChannel> =
         Default::default();
-    let mut framed = Framed::new(stream, client_codec);
-    let mut chan = EchoChannel {
-        inner: Box::new(&mut framed),
-    };
+    let framed = Framed::new(stream, client_codec);
+    let mut chan = EchoChannel::new(10, Box::new(framed));
     for _ in 0..100 {
         if let Err(e) = chan.ping().await {
             eprintln!("Ping error: {:?}", e);
