@@ -4,7 +4,7 @@ use jetstream_macros::service;
 
 #[service]
 pub trait Echo {
-    async fn square(&mut self, i: u64) -> Result<String>;
+    async fn square(&self, i: u64) -> Result<String>;
 }
 
 #[derive(Debug, Clone)]
@@ -12,7 +12,7 @@ pub trait Echo {
 struct EchoImpl;
 
 impl Echo for EchoImpl {
-    async fn square(&mut self, i: u64) -> Result<String> {
+    async fn square(&self, i: u64) -> Result<String> {
         Ok((i * i).to_string())
     }
 }
@@ -106,9 +106,7 @@ mod quic_bench {
         let stream = connection.open_bidirectional_stream().await?;
         let client_codec: ClientCodec<EchoChannel> = Default::default();
         let mut framed = Framed::new(stream, client_codec);
-        let mut chan = EchoChannel {
-            inner: Box::new(&mut framed),
-        };
+        let mut chan = EchoChannel::new(u16::MAX, Box::new(framed));
 
         let start = Instant::now();
         for i in 0..iters {
@@ -143,27 +141,24 @@ fn benchmarks(#[allow(unused)] c: &mut Criterion) {
     #[cfg(feature = "iroh")]
     {
         use echo_protocol::{EchoChannel, EchoService};
+        let (_router, chan) = rt.block_on(async {
+            let router = jetstream_iroh::server_builder(EchoService {
+                inner: EchoImpl {},
+            })
+            .await
+            .unwrap();
+
+            let addr = router.endpoint().node_addr();
+            let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
+                .await
+                .unwrap();
+
+            let chan = EchoChannel::new(u16::MAX, Box::new(transport));
+            (router, chan)
+        });
 
         group.bench_function("iroh", |b| {
             b.to_async(&rt).iter(|| async {
-                let (_router, mut transport) = {
-                    let router = jetstream_iroh::server_builder(EchoService {
-                        inner: EchoImpl {},
-                    })
-                    .await
-                    .unwrap();
-
-                    let addr = router.endpoint().node_addr();
-                    let transport =
-                        jetstream_iroh::client_builder::<EchoChannel>(addr)
-                            .await
-                            .unwrap();
-
-                    (router, transport)
-                };
-
-                let mut chan = EchoChannel::new(u16::MAX, Box::new(transport));
-
                 chan.square(2).await.unwrap();
             });
         });
