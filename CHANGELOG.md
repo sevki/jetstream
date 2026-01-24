@@ -1,6 +1,28 @@
 # Changelog
 
 
+## [12.0.0](https://github.com/sevki/jetstream/compare/v11.1.0...v12.0.0) (2026-01-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* add multiplexing ability to client.
+
+### Features
+
+* add multiple tag pool backends ([c85aafb](https://github.com/sevki/jetstream/commit/c85aafbb6606c9b89937cf1c3d6d1e2149fa3eae))
+* add multiplexing ability to client. ([91a238e](https://github.com/sevki/jetstream/commit/91a238e30eff6b20a8d2b2f8bbce67e4bc865068))
+* use tag pool in mux ([cd5dd5d](https://github.com/sevki/jetstream/commit/cd5dd5db7be347b586becd64e3113c5f34d3bd09))
+
+
+### Bug Fixes
+
+* benchmarks code ([c0d0f59](https://github.com/sevki/jetstream/commit/c0d0f5948757ef9a7e6a0a803a51163710154ba1))
+* delete release-plz ([a7e3199](https://github.com/sevki/jetstream/commit/a7e319947a95b0915d01896688a13c86b77fc440))
+* lint errors and rm unnecessary compiler_error ([27aed1e](https://github.com/sevki/jetstream/commit/27aed1ef8263e4750f6a19dcd971d5b438dd1668))
+* make TagPool use a channel ([beb6209](https://github.com/sevki/jetstream/commit/beb6209632a2a8abe283387eea531d8728c55ce2))
+* semaphor should use permit.forget() ([340323c](https://github.com/sevki/jetstream/commit/340323c9039fce8b6d60cf39d9e7ceca2b1b322e))
+
 ## [11.1.0](https://github.com/sevki/jetstream/compare/v11.0.0...v11.1.0) (2026-01-21)
 
 
