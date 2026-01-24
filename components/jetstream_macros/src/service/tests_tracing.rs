@@ -44,7 +44,7 @@ fn test_service_with_instrument_attribute() {
 fn test_service_with_tracing_enabled() {
     let input: syn::ItemTrait = parse_quote! {
         pub trait Echo {
-            async fn ping(&mut self, message: String) -> Result<String, std::io::Error>;
+            async fn ping(&mut self, message: String) -> Result<String>;
         }
     };
     let output = service_impl(input, false, true);

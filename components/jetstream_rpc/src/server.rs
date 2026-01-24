@@ -100,10 +100,19 @@ where
     }
 }
 
+#[trait_variant::make(Send + Sync + Sized)]
+pub trait Server: Protocol + Send + Sync {
+    async fn rpc(
+        &mut self,
+        context: Context,
+        frame: Frame<Self::Request>,
+    ) -> Result<Frame<Self::Response>, Self::Error>;
+}
+
 pub async fn run<T, P>(p: &mut P, mut stream: T) -> Result<(), P::Error>
 where
     T: ServiceTransport<P>,
-    P: Protocol,
+    P: Server,
 {
     use futures::{SinkExt, StreamExt};
     let mut a = pin!(p);

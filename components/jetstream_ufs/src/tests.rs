@@ -227,7 +227,7 @@ fn check_attr(server: &mut Server, fid: u32, md: &fs::Metadata) {
     assert_eq!(rgetattr.ctime_nsec, md.ctime_nsec() as u64);
     assert_eq!(rgetattr.btime_sec, 0);
     assert_eq!(rgetattr.btime_nsec, 0);
-    assert_eq!(rgetattr.gen, 0);
+    assert_eq!(rgetattr.r#gen, 0);
     assert_eq!(rgetattr.data_version, 0);
 }
 

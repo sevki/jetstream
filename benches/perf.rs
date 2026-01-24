@@ -162,9 +162,7 @@ fn benchmarks(#[allow(unused)] c: &mut Criterion) {
                     (router, transport)
                 };
 
-                let mut chan = EchoChannel {
-                    inner: Box::new(&mut transport),
-                };
+                let mut chan = EchoChannel::new(u16::MAX, Box::new(transport));
 
                 chan.square(2).await.unwrap();
             });

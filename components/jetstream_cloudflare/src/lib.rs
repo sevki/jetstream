@@ -29,7 +29,7 @@ pub trait DynamicProtocol: Send + Sync {
 }
 
 #[async_trait]
-impl<P: Protocol> DynamicProtocol for P {
+impl<P: jetstream_rpc::server::Server> DynamicProtocol for P {
     fn protocol_version(&self) -> &'static str {
         P::VERSION
     }
@@ -42,8 +42,7 @@ impl<P: Protocol> DynamicProtocol for P {
         let frame = jetstream_rpc::Frame::<P::Request>::from_bytes(
             &Bytes::copy_from_slice(data),
         )?;
-        Ok(self
-            .rpc(context, frame)
+        Ok(jetstream_rpc::server::Server::rpc(self, context, frame)
             .await
             .map_err(|e| e.into_error())?
             .as_bytes())

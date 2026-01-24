@@ -3,9 +3,7 @@ use std::net::{IpAddr, Ipv4Addr};
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_rpc::{client::ClientCodec, server::run, Framed};
-use miette::{
-    LabeledSpan, Severity,
-};
+use miette::{LabeledSpan, Severity};
 use turmoil::{
     net::{TcpListener, TcpStream},
     Builder,
@@ -78,10 +76,8 @@ fn network_partitions_during_connect() -> turmoil::Result {
     sim.client("client", async {
         let stream = TcpStream::connect(("server", PORT)).await?;
         let client_codec: ClientCodec<EchoChannel> = Default::default();
-        let mut framed = Framed::new(stream, client_codec);
-        let mut chan = EchoChannel {
-            inner: Box::new(&mut framed),
-        };
+        let framed = Framed::new(stream, client_codec);
+        let mut chan = EchoChannel::new(10, Box::new(framed));
         chan.ping().await.expect("ping failed");
         Ok(())
     });
@@ -120,10 +116,8 @@ fn error_propagation_e2e() -> turmoil::Result {
     sim.client("client", async {
         let stream = TcpStream::connect(("server", PORT)).await?;
         let client_codec: ClientCodec<EchoChannel> = Default::default();
-        let mut framed = Framed::new(stream, client_codec);
-        let mut chan = EchoChannel {
-            inner: Box::new(&mut framed),
-        };
+        let framed = Framed::new(stream, client_codec);
+        let mut chan = EchoChannel::new(10, Box::new(framed));
 
         // Call the method that returns an error
         let result = chan.fail_with_error().await;

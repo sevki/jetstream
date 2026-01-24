@@ -16,10 +16,11 @@ use iroh::{
         pkarr::{PkarrPublisher, PkarrResolver},
         IntoDiscovery,
     },
+    net_report::QuicConfig,
     protocol::Router,
-    NodeAddr, RelayMap,
+    NodeAddr, RelayMap, RelayNode, RelayUrl,
 };
-use jetstream_rpc::Protocol;
+use jetstream_rpc::{server::Server, Protocol};
 pub use server::IrohServer;
 
 pub extern crate iroh;
@@ -37,9 +38,16 @@ fn dt_publisher_builder() -> impl IntoDiscovery {
     )
 }
 
+lazy_static::lazy_static!(
+    static ref RELAY_URL: RelayUrl = RelayUrl::from(url::Url::parse("https://relay.jetstream.rs").unwrap());
+);
+
 pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
     iroh::Endpoint::builder()
-        .relay_mode(iroh::RelayMode::Custom(RelayMap::empty()))
+        .relay_mode(iroh::RelayMode::Custom(RelayMap::from_iter([RelayNode {
+            url: RELAY_URL.clone(),
+            quic: None,
+        }])))
         .alpns(vec![P::VERSION.as_bytes().to_vec()])
         .add_discovery(dt_publisher_builder())
         .add_discovery(dt_resolver())
@@ -56,7 +64,7 @@ pub async fn client_builder<P: Protocol>(
     Ok(IrohTransport::from(conn.open_bi().await?))
 }
 
-pub async fn server_builder<P: Protocol + Debug + Clone + 'static>(
+pub async fn server_builder<P: Server + Protocol + Debug + Clone + 'static>(
     inner: P,
 ) -> Result<Router, Box<dyn std::error::Error + 'static>> {
     let endpoint = endpoint_builder::<P>().bind().await.map_err(Box::new)?;

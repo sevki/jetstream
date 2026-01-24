@@ -32,13 +32,11 @@ async fn test_iroh_echo_service() {
     let addr = router.endpoint().node_addr();
 
     // Build client transport and connect
-    let mut transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
+    let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
         .await
         .unwrap();
 
-    let mut ec = EchoChannel {
-        inner: Box::new(&mut transport),
-    };
+    let mut ec = EchoChannel::new(10, Box::new(transport));
     for _ in 0..10 {
         let b = ec.ping().await.unwrap();
         println!("Ping response: {:?}", b);

@@ -41,13 +41,11 @@ async fn main() {
     let addr = router.endpoint().node_addr();
 
     // Build client transport and connect
-    let mut transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
+    let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
         .await
         .unwrap();
 
-    let mut ec = EchoChannel {
-        inner: Box::new(&mut transport),
-    };
+    let mut ec = EchoChannel::new(10, Box::new(transport));
     for i in 0..10 {
         let b = ec.square(Context::default(), i).await.unwrap();
         println!("square response: {i} * {i} = {b}");

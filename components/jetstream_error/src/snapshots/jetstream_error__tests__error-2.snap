@@ -1,6 +1,6 @@
 ---
 source: components/jetstream_error/src/tests.rs
-expression: svg_content
+expression: svg_data
 ---
 <!-- Created with term-transcript v0.4.0 (https://github.com/slowli/term-transcript) -->
 <svg viewBox="0 0 720 120" width="720" height="120" xmlns="http://www.w3.org/2000/svg">
@@ -19,31 +19,31 @@ expression: svg_content
     .underline { text-decoration: underline; }
     .dimmed { fill-opacity: 0.7; }
     .hard-br { font-size: 16px; fill-opacity: 0.8; user-select: none; }
-    .fg0 { fill: #000000; } .output-bg .fg0 { stroke: #000000; }
-    .fg1 { fill: #cd0000; } .output-bg .fg1 { stroke: #cd0000; }
-    .fg2 { fill: #00cd00; } .output-bg .fg2 { stroke: #00cd00; }
-    .fg3 { fill: #cdcd00; } .output-bg .fg3 { stroke: #cdcd00; }
-    .fg4 { fill: #0000ee; } .output-bg .fg4 { stroke: #0000ee; }
-    .fg5 { fill: #cd00cd; } .output-bg .fg5 { stroke: #cd00cd; }
-    .fg6 { fill: #00cdcd; } .output-bg .fg6 { stroke: #00cdcd; }
-    .fg7 { fill: #e5e5e5; } .output-bg .fg7 { stroke: #e5e5e5; }
-    .fg8 { fill: #7f7f7f; } .output-bg .fg8 { stroke: #7f7f7f; }
-    .fg9 { fill: #ff0000; } .output-bg .fg9 { stroke: #ff0000; }
-    .fg10 { fill: #00ff00; } .output-bg .fg10 { stroke: #00ff00; }
-    .fg11 { fill: #ffff00; } .output-bg .fg11 { stroke: #ffff00; }
-    .fg12 { fill: #5c5cff; } .output-bg .fg12 { stroke: #5c5cff; }
-    .fg13 { fill: #ff00ff; } .output-bg .fg13 { stroke: #ff00ff; }
-    .fg14 { fill: #00ffff; } .output-bg .fg14 { stroke: #00ffff; }
-    .fg15 { fill: #ffffff; } .output-bg .fg15 { stroke: #ffffff; }
+    .fg0 { fill: #0c0c0c; } .output-bg .fg0 { stroke: #0c0c0c; }
+    .fg1 { fill: #c50f1f; } .output-bg .fg1 { stroke: #c50f1f; }
+    .fg2 { fill: #13a10e; } .output-bg .fg2 { stroke: #13a10e; }
+    .fg3 { fill: #c19c00; } .output-bg .fg3 { stroke: #c19c00; }
+    .fg4 { fill: #0037da; } .output-bg .fg4 { stroke: #0037da; }
+    .fg5 { fill: #881798; } .output-bg .fg5 { stroke: #881798; }
+    .fg6 { fill: #3a96dd; } .output-bg .fg6 { stroke: #3a96dd; }
+    .fg7 { fill: #cccccc; } .output-bg .fg7 { stroke: #cccccc; }
+    .fg8 { fill: #767676; } .output-bg .fg8 { stroke: #767676; }
+    .fg9 { fill: #e74856; } .output-bg .fg9 { stroke: #e74856; }
+    .fg10 { fill: #16c60c; } .output-bg .fg10 { stroke: #16c60c; }
+    .fg11 { fill: #f9f1a5; } .output-bg .fg11 { stroke: #f9f1a5; }
+    .fg12 { fill: #3b78ff; } .output-bg .fg12 { stroke: #3b78ff; }
+    .fg13 { fill: #b4009e; } .output-bg .fg13 { stroke: #b4009e; }
+    .fg14 { fill: #61d6d6; } .output-bg .fg14 { stroke: #61d6d6; }
+    .fg15 { fill: #f2f2f2; } .output-bg .fg15 { stroke: #f2f2f2; }
   </style>
-  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #000000;" />
+  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #0c0c0c;" />
     <svg x="0" y="10" width="720" height="100" viewBox="0 0 720 100">
       <g class="input-bg"><rect x="0" y="0" width="100%" height="22"></rect></g>
       <text class="container fg7"><tspan xml:space="preserve" x="10" y="16" class="input"><tspan x="10" y="16"><tspan class="prompt">$</tspan> # do some rpc
-</tspan></tspan><tspan xml:space="preserve" x="10" y="42" class="output">server::validation::E001 (link)
+</tspan></tspan><tspan xml:space="preserve" x="10" y="42" class="output"><tspan class="fg1">server::validation::E001 </tspan><tspan class="bold underline fg6">(link)</tspan>
 </tspan><tspan xml:space="preserve" x="10" y="60" class="output">
-</tspan><tspan xml:space="preserve" x="10" y="78" class="output">  x Server-side validation failed
-</tspan><tspan xml:space="preserve" x="10" y="96" class="output">  help: Check your input parameters
+</tspan><tspan xml:space="preserve" x="10" y="78" class="output">  <tspan class="fg1">×</tspan> Server-side validation failed
+</tspan><tspan xml:space="preserve" x="10" y="96" class="output"><tspan class="fg6">  help: </tspan>Check your input parameters
 </tspan></text>
     </svg>
 </svg>

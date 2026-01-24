@@ -23,7 +23,12 @@ mod dynamic;
 pub use dynamic::*;
 mod constants;
 pub use constants::*;
-
+mod tag;
+pub use tag::*;
+mod call;
+pub use call::*;
+mod mux;
+pub use mux::*;
 pub enum Encoding {
     JetStream,
     Json,
@@ -61,15 +66,6 @@ pub trait Message: WireFormat + Sync {}
 #[cfg(target_arch = "wasm32")]
 pub trait Message: WireFormat {}
 
-#[repr(transparent)]
-pub struct Tag(u16);
-
-impl From<u16> for Tag {
-    fn from(tag: u16) -> Self {
-        Self(tag)
-    }
-}
-
 /// Defines the request and response types for the JetStream protocol.
 #[trait_variant::make(Send + Sync + Sized)]
 pub trait Protocol: Send + Sync {
@@ -79,11 +75,11 @@ pub trait Protocol: Send + Sync {
     // r[verify jetstream.error.type]
     type Error: IntoError;
     const VERSION: &'static str;
-    async fn rpc(
-        &mut self,
-        context: context::Context,
-        frame: Frame<Self::Request>,
-    ) -> Result<Frame<Self::Response>, Self::Error>;
+    // async fn rpc(
+    //     &mut self,
+    //     context: context::Context,
+    //     frame: Frame<Self::Request>,
+    // ) -> Result<Frame<Self::Response>, Self::Error>;
 }
 
 pub type Error = jetstream_error::Error;
