@@ -20,7 +20,7 @@ use jetstream_wireformat::WireFormat;
 extern crate tokio_util;
 pub use tokio_util::codec::{Decoder, Encoder, Framed};
 mod dynamic;
-pub use dynamic::*;
+pub use dynamic::AnyServer;
 mod constants;
 pub use constants::*;
 mod tag;

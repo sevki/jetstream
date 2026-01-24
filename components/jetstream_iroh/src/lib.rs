@@ -16,7 +16,6 @@ use iroh::{
         pkarr::{PkarrPublisher, PkarrResolver},
         IntoDiscovery,
     },
-    net_report::QuicConfig,
     protocol::Router,
     NodeAddr, RelayMap, RelayNode, RelayUrl,
 };

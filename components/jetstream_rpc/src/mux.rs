@@ -81,7 +81,7 @@ where
         Ok(())
     }
 
-    pub async fn rpc(&self, ctx: Context, request: P::Request) -> RpcCall<P> {
+    pub async fn rpc(&self, _ctx: Context, request: P::Request) -> RpcCall<P> {
         let (tx, rx) = oneshot::channel();
         let in_flight = self.in_flight.clone();
         let send_queue = self.send_queue.clone();

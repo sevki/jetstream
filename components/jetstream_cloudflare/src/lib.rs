@@ -4,50 +4,16 @@ mod websocket_transport;
 pub use error::JetstreamProtocolError;
 
 use askama::Template;
-use async_trait::async_trait;
 use futures::lock::Mutex;
-use jetstream_rpc::IntoError;
-use jetstream_rpc::{context, Protocol, HEADER_KEY_JETSTREAM_PROTO};
-use jetstream_wireformat::wire_format_extensions::{
-    bytes::Bytes, ConvertWireFormat,
-};
+use jetstream_rpc::{Protocol, HEADER_KEY_JETSTREAM_PROTO};
+use jetstream_rpc::{AnyServer, IntoError};
+use jetstream_wireformat::wire_format_extensions::ConvertWireFormat;
 use std::{collections::HashMap, marker::PhantomData, sync::Arc};
 use worker::{wasm_bindgen_futures, Env, WebSocket, WebSocketPair};
 
 use crate::websocket_transport::WebSocketTransport;
 
 pub extern crate async_trait;
-
-#[async_trait]
-pub trait DynamicProtocol: Send + Sync {
-    fn protocol_version(&self) -> &'static str;
-    async fn rpc(
-        &mut self,
-        context: context::Context,
-        data: &[u8],
-    ) -> Result<Vec<u8>, jetstream_rpc::Error>;
-}
-
-#[async_trait]
-impl<P: jetstream_rpc::server::Server> DynamicProtocol for P {
-    fn protocol_version(&self) -> &'static str {
-        P::VERSION
-    }
-
-    async fn rpc(
-        &mut self,
-        context: context::Context,
-        data: &[u8],
-    ) -> Result<Vec<u8>, jetstream_rpc::Error> {
-        let frame = jetstream_rpc::Frame::<P::Request>::from_bytes(
-            &Bytes::copy_from_slice(data),
-        )?;
-        Ok(jetstream_rpc::server::Server::rpc(self, context, frame)
-            .await
-            .map_err(|e| e.into_error())?
-            .as_bytes())
-    }
-}
 
 pub trait HtmlAssets {
     fn fallback_html() -> worker::Result<worker::Response>;
@@ -91,7 +57,7 @@ pub struct Router<H: HtmlAssets> {
     // can still be in-flight on the executor. Because we await on handler RPC
     // calls, we need an async-aware lock to queue those borrows instead of
     // panicking on a re-entrant `RefCell` borrow.
-    handlers: Arc<Mutex<HashMap<String, Box<dyn DynamicProtocol>>>>,
+    handlers: Arc<Mutex<HashMap<String, Box<dyn AnyServer>>>>,
 }
 
 #[derive(Template)]
@@ -114,12 +80,12 @@ impl<H: HtmlAssets> Router<H> {
     pub fn new<I, P>(handlers: I) -> Self
     where
         I: IntoIterator<Item = P>,
-        P: DynamicProtocol + 'static,
+        P: AnyServer + 'static,
     {
         let mut map = HashMap::new();
         for handler in handlers.into_iter() {
             let version = handler.protocol_version().to_string();
-            map.insert(version, Box::new(handler) as Box<dyn DynamicProtocol>);
+            map.insert(version, Box::new(handler) as Box<dyn AnyServer>);
         }
         Self {
             html_fallbacks: PhantomData,
