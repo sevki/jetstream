@@ -61,7 +61,7 @@ where
                 .send(Ok(frame));
             match result {
                 Ok(_) => {}
-                Err(err) => {
+                Err(_) => {
                     tracing::error!("couldn't send response frame");
                 }
             };
@@ -83,13 +83,7 @@ where
     }
 
     pub async fn rpc(&self, _ctx: Context, request: P::Request) -> RpcCall<P> {
-        #[cfg(any(notify, channel, semaphor))]
         let tag = self.tag_pool.acquire_tag().await;
-        #[cfg(not(any(notify, channel, semaphor)))]
-        compile_error!(
-            "must set tag_pool_backend cfg to notify, channel, or semaphor"
-        );
-
         let (tx, rx) = oneshot::channel();
         let in_flight = self.in_flight.clone();
         let send_queue = self.send_queue.clone();
