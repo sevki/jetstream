@@ -10,8 +10,8 @@ where
     let filters = vec![
         // Filter for protocol version strings
         (
-            r"dev\.branch\.jetstream\.proto/\w+/\d+\.\d+\.\d+-[a-f0-9]{8}",
-            "dev.branch.jetstream.proto/NAME/VERSION-HASH",
+            r"rs\.jetstream\.proto/\w+/\d+\.\d+\.\d+-[a-f0-9]{8}",
+            "rs.jetstream.proto/NAME/VERSION-HASH",
         ),
         // Filter for digest strings
         (r"[a-f0-9]{64}", "DIGEST_HASH"),

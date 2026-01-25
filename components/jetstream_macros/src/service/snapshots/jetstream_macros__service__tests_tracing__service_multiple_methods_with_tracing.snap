@@ -9,7 +9,7 @@ pub mod complexservice_protocol {
     const MESSAGE_ID_START: u8 = 101;
     /// Error response message type constant
     pub const RERROR: u8 = 100;
-    pub const PROTOCOL_VERSION: &str = "dev.branch.jetstream.proto/NAME/VERSION-HASH";
+    pub const PROTOCOL_VERSION: &str = "rs.jetstream.proto/NAME/VERSION-HASH";
     const DIGEST: &str = "DIGEST_HASH";
     pub const TLOGIN: u8 = MESSAGE_ID_START + 0u8;
     pub const RLOGIN: u8 = MESSAGE_ID_START + 0u8 + 1;
