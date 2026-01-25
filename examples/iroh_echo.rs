@@ -1,19 +1,20 @@
 #![cfg(feature = "iroh")]
-use crate::echo_protocol::{EchoChannel, EchoService};
+use crate::square_protocol::{SquareChannel, SquareService};
+use futures::stream::FuturesUnordered;
 use jetstream::prelude::*;
 use jetstream_macros::service;
 use okstd::prelude::*;
 
 #[service(tracing)]
-pub trait Echo {
-    async fn square(&mut self, ctx: Context, i: u32) -> Result<String>;
+pub trait Square {
+    async fn square(&self, ctx: Context, i: u32) -> Result<String>;
 }
 
 #[derive(Debug, Clone)]
-struct EchoServer;
+struct SquareServer;
 
-impl Echo for EchoServer {
-    async fn square(&mut self, _ctx: Context, i: u32) -> Result<String> {
+impl Square for SquareServer {
+    async fn square(&self, _ctx: Context, i: u32) -> Result<String> {
         Ok((i * i).to_string())
     }
 }
@@ -30,8 +31,8 @@ async fn main() {
         )
         .init();
     // Build the server router with the echo service
-    let router = jetstream_iroh::server_builder(EchoService {
-        inner: EchoServer {},
+    let router = jetstream_iroh::server_builder(SquareService {
+        inner: SquareServer {},
     })
     .await
     .unwrap();
@@ -41,15 +42,19 @@ async fn main() {
     let addr = router.endpoint().node_addr();
 
     // Build client transport and connect
-    let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
+    let transport = jetstream_iroh::client_builder::<SquareChannel>(addr)
         .await
         .unwrap();
 
-    let mut ec = EchoChannel::new(10, Box::new(transport));
-    for i in 0..10 {
-        let b = ec.square(Context::default(), i).await.unwrap();
-        println!("square response: {i} * {i} = {b}");
+    let ec = SquareChannel::new(10, Box::new(transport));
+    let mut futures = FuturesUnordered::new();
+    for i in 0..1000 {
+        futures.push(ec.square(Context::default(), i));
     }
 
+    while let Some(result) = futures.next().await {
+        let response = result.unwrap();
+        println!("Response: {}", response);
+    }
     router.shutdown().await.unwrap();
 }

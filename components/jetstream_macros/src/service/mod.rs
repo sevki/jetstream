@@ -39,7 +39,7 @@ pub(crate) fn service_impl(
 
     #[allow(clippy::to_string_in_format_args)]
     let protocol_version = format!(
-        "dev.branch.jetstream.proto/{}/{}.{}.{}-{}",
+        "rs.jetstream.proto/{}/{}.{}.{}-{}",
         trait_name.to_string().to_lowercase(),
         env!("CARGO_PKG_VERSION_MAJOR"),
         env!("CARGO_PKG_VERSION_MINOR"),
