@@ -1439,7 +1439,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -2388,7 +2388,7 @@ checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
 name = "jetstream"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "async-trait",
  "cfg_aliases",
@@ -2421,7 +2421,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros",
@@ -2433,7 +2433,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_cloudflare"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "askama",
  "async-trait",
@@ -2446,7 +2446,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_error"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "insta",
  "iroh",
@@ -2460,7 +2460,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "futures",
  "iroh",
@@ -2474,7 +2474,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2482,7 +2482,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "convert_case 0.6.0",
  "futures",
@@ -2503,7 +2503,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "bytes",
  "h3",
@@ -2518,7 +2518,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_radar"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "argh",
  "jetstream",
@@ -2534,7 +2534,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2561,7 +2561,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -2576,7 +2576,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_websocket"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "futures",
  "jetstream_rpc",
@@ -2588,7 +2588,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "bytes",
  "futures",
@@ -2765,7 +2765,7 @@ checksum = "490cc448043f947bae3cbee9c203358d62dbee0db12107a74be5c30ccfd09771"
 
 [[package]]
 name = "mdbook-changelog"
-version = "12.1.0"
+version = "13.0.0"
 dependencies = [
  "anyhow",
  "mdbook-core",

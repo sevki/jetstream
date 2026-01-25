@@ -1,6 +1,6 @@
 [package]
 name = "jetstream"
-version = "12.1.0"
+version = "13.0.0"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 documentation = "https://jetstream.rs"
@@ -41,15 +41,15 @@ name = "perf"
 [dependencies]
 async-trait = "0.1.89"
 futures = "0.3.31"
-jetstream_9p = { version = "12.1.0", path = "components/jetstream_9p", optional = true }
-jetstream_iroh = { version = "12.1.0", path = "components/jetstream_iroh", optional = true }
-jetstream_macros = { version = "12.1.0", path = "components/jetstream_macros" }
-jetstream_quic = { version = "12.1.0", path = "components/jetstream_quic", optional = true }
-jetstream_rpc = { version = "12.1.0", path = "components/jetstream_rpc" }
-jetstream_websocket = { version = "12.1.0", path = "components/jetstream_websocket", optional = true }
-jetstream_cloudflare = { version = "12.1.0", path = "components/jetstream_cloudflare", optional = true }
-jetstream_error = { version = "12.1.0", path = "components/jetstream_error" }
-jetstream_wireformat = { version = "12.1.0", path = "components/jetstream_wireformat" }
+jetstream_9p = { version = "13.0.0", path = "components/jetstream_9p", optional = true }
+jetstream_iroh = { version = "13.0.0", path = "components/jetstream_iroh", optional = true }
+jetstream_macros = { version = "13.0.0", path = "components/jetstream_macros" }
+jetstream_quic = { version = "13.0.0", path = "components/jetstream_quic", optional = true }
+jetstream_rpc = { version = "13.0.0", path = "components/jetstream_rpc" }
+jetstream_websocket = { version = "13.0.0", path = "components/jetstream_websocket", optional = true }
+jetstream_cloudflare = { version = "13.0.0", path = "components/jetstream_cloudflare", optional = true }
+jetstream_error = { version = "13.0.0", path = "components/jetstream_error" }
+jetstream_wireformat = { version = "13.0.0", path = "components/jetstream_wireformat" }
 lazy_static = "1.5.0"
 tracing = { version = "0.1.41", optional = true }
 tracing-subscriber = { version = "0.3.20", optional = true }
@@ -65,15 +65,15 @@ cfg_aliases = { workspace = true }
 [dev-dependencies]
 criterion = { version = "0.7.0", features = ["async_tokio"] }
 insta = "1.46.1"
-jetstream_error = { version = "12.1.0", path = "components/jetstream_error", features = [
+jetstream_error = { version = "13.0.0", path = "components/jetstream_error", features = [
   "s2n-quic",
   "test-paths",
 ] }
-jetstream_rpc = { version = "12.1.0", path = "components/jetstream_rpc", default-features=false, features = [
+jetstream_rpc = { version = "13.0.0", path = "components/jetstream_rpc", default-features=false, features = [
   "s2n-quic",
   "turmoil",
 ] }
-jetstream_wireformat = { version = "12.1.0", path = "components/jetstream_wireformat", features = [
+jetstream_wireformat = { version = "13.0.0", path = "components/jetstream_wireformat", features = [
   "all",
 ] }
 miette = "7.6.0"
