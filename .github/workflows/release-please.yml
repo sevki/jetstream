@@ -48,9 +48,9 @@ jobs:
         if: ${{ steps.release.outputs.pr }}
         run: |
           cd pkg
+          echo "@sevki:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.BOT_PAT }}" >> .npmrc
           npm publish --dry-run
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.BOT_PAT }}
 
       - name: Enable auto-merge
         if: ${{ steps.release.outputs.pr }}
@@ -90,6 +90,6 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         run: |
           cd pkg
+          echo "@sevki:registry=https://npm.pkg.github.com" > .npmrc
+          echo "//npm.pkg.github.com/:_authToken=${{ secrets.BOT_PAT }}" >> .npmrc
           npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.BOT_PAT }}
