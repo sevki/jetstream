@@ -1,6 +1,19 @@
 # Changelog
 
 
+## [12.1.0](https://github.com/sevki/jetstream/compare/v12.0.0...v12.1.0) (2026-01-25)
+
+
+### Features
+
+* publish npm package to gh ([9b332b9](https://github.com/sevki/jetstream/commit/9b332b9f5a26a73ce72ec07e3e4e6315cc1d47c1))
+
+
+### Bug Fixes
+
+* Change git user configuration in workflow ([c3d92c1](https://github.com/sevki/jetstream/commit/c3d92c19a876d5d433e15ce47cb5977b23eff7a9))
+* npm scoping issue ([0d06884](https://github.com/sevki/jetstream/commit/0d0688482a692a7766e1dca5764ff4189532cd59))
+
 ## [12.0.0](https://github.com/sevki/jetstream/compare/v11.1.0...v12.0.0) (2026-01-24)
 
 
