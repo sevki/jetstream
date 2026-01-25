@@ -42,15 +42,15 @@ jobs:
 
       - name: Build wasm package (dry-run)
         if: ${{ steps.release.outputs.pr }}
-        run: wasm-pack build --target web --features wasm
+        run: wasm-pack build --scope sevki --target web -- --features wasm
 
       - name: npm publish (dry-run)
         if: ${{ steps.release.outputs.pr }}
         run: |
-          echo "@sevki:registry=https://npm.pkg.github.com" >> ~/.npmrc
-          echo "//npm.pkg.github.com/:_authToken=${{ secrets.BOT_PAT }}" >> ~/.npmrc
           cd pkg
           npm publish --dry-run
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.BOT_PAT }}
 
       - name: Enable auto-merge
         if: ${{ steps.release.outputs.pr }}
@@ -86,10 +86,12 @@ jobs:
 
       - name: Build wasm package
         if: ${{ steps.release.outputs.release_created }}
-        run: wasm-pack build --target web --features wasm
+        run: wasm-pack build --scope sevki --target web -- --features wasm
 
       - name: Publish to GitHub Packages
         if: ${{ steps.release.outputs.release_created }}
         run: |
           cd pkg
           npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.BOT_PAT }}
