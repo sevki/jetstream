@@ -1,19 +1,20 @@
 #![cfg(feature = "iroh")]
 
+use futures::{stream::FuturesUnordered, StreamExt};
 use jetstream::prelude::*;
 
 use crate::echo_protocol::{EchoChannel, EchoService};
 
 #[service]
 pub trait Echo {
-    async fn ping(&mut self) -> Result<String>;
+    async fn ping(&self) -> Result<String>;
 }
 
 #[derive(Debug, Clone)]
 struct EchoServer;
 
 impl Echo for EchoServer {
-    async fn ping(&mut self) -> Result<String> {
+    async fn ping(&self) -> Result<String> {
         Ok("pong".to_string())
     }
 }
@@ -36,10 +37,15 @@ async fn test_iroh_echo_service() {
         .await
         .unwrap();
 
-    let mut ec = EchoChannel::new(10, Box::new(transport));
+    let ec = EchoChannel::new(10, Box::new(transport));
+    let mut futures = FuturesUnordered::new();
     for _ in 0..10 {
-        let b = ec.ping().await.unwrap();
-        println!("Ping response: {:?}", b);
+        futures.push(ec.ping());
+    }
+
+    while let Some(result) = futures.next().await {
+        let response = result.unwrap();
+        assert_eq!(response, "pong".to_string());
     }
 
     // sleeep
