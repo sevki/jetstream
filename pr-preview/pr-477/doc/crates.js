@@ -1,2 +1,2 @@
-window.ALL_CRATES = ["jetstream","jetstream_9p","jetstream_cloudflare","jetstream_error","jetstream_iroh","jetstream_libc","jetstream_macros","jetstream_quic","jetstream_radar","jetstream_rpc","jetstream_ufs","jetstream_websocket","jetstream_wireformat","mdbook_changelog","radar"];
-//{"start":21,"fragment_lengths":[11,15,23,18,17,17,19,17,18,16,16,22,23,19,8]}
+window.ALL_CRATES = ["jetstream","jetstream_9p","jetstream_cloudflare","jetstream_error","jetstream_http","jetstream_iroh","jetstream_libc","jetstream_macros","jetstream_quic","jetstream_radar","jetstream_rpc","jetstream_ufs","jetstream_websocket","jetstream_wireformat","mdbook_changelog","radar"];
+//{"start":21,"fragment_lengths":[11,15,23,18,17,17,17,19,17,18,16,16,22,23,19,8]}

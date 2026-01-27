@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6c9377ae.js";
+            window.path_to_searchindex_js = "searchindex-8e39bd0e.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-2d58fd34.js"></script>
+        <script src="toc-de8b6e67.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -176,12 +176,10 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="jetstream-quic"><a class="header" href="#jetstream-quic">JetStream QUIC</a></h1>
-<p><a href="https://www.rfc-editor.org/rfc/rfc9000.html">QUIC</a> is a modern transport protocol that provides multiplexed connections over UDP with built-in TLS 1.3 encryption. JetStream QUIC provides an HTTP/3 server implementation using <a href="https://crates.io/crates/quinn">quinn</a> and <a href="https://crates.io/crates/h3">h3</a>.</p>
+<p><a href="https://www.rfc-editor.org/rfc/rfc9000.html">QUIC</a> is a modern transport protocol that provides multiplexed connections over UDP with built-in TLS 1.3 encryption. JetStream QUIC provides the transport layer using <a href="https://crates.io/crates/quinn">quinn</a>.</p>
 <h2 id="features"><a class="header" href="#features">Features</a></h2>
 <ul>
-<li><strong>HTTP/3 Support</strong>: Full HTTP/3 server implementation over QUIC</li>
 <li><strong>ALPN-based Routing</strong>: Route connections to different handlers based on ALPN protocol negotiation</li>
-<li><strong>Async Request Handling</strong>: Handle requests concurrently with async/await</li>
 <li><strong>TLS 1.3</strong>: Built-in secure transport with rustls</li>
 <li><strong>0-RTT</strong>: Support for zero round-trip connection resumption</li>
 <li><strong>mTLS Support</strong>: Mutual TLS authentication for client certificate verification</li>
@@ -192,349 +190,245 @@
 <ul>
 <li><strong><code>Server</code></strong>: The main QUIC server that accepts incoming connections</li>
 <li><strong><code>Router</code></strong>: Routes connections to protocol handlers based on ALPN</li>
-<li><strong><code>H3Handler</code></strong>: HTTP/3 protocol handler</li>
-<li><strong><code>HttpRequestHandler</code></strong>: Trait for implementing custom HTTP request handlers</li>
 <li><strong><code>ProtocolHandler</code></strong>: Trait for implementing custom protocol handlers</li>
+<li><strong><code>Client</code></strong>: QUIC client for connecting to servers</li>
 </ul>
+<p>For HTTP/3 support, see <a href="http.html">jetstream_http</a>.</p>
 <h2 id="example"><a class="header" href="#example">Example</a></h2>
-<p>Here’s a complete example of an HTTP/3 server:</p>
-<pre><code class="language-rs">use std::fs;
-use std::net::SocketAddr;
-use std::path::Path;
-use std::sync::Arc;
+<p>Here’s a complete echo service example:</p>
+<pre class="playground"><code class="language-rust">use std::{net::SocketAddr, path::Path, sync::Arc};
 
-use askama::Template;
-use async_trait::async_trait;
-use bytes::Bytes;
-use http::header;
-use jetstream_quic::{H3Handler, HttpRequestHandler, Router};
-use jetstream_rpc::context::{Context, Peer, RemoteAddr};
+use echo_protocol::EchoChannel;
+use jetstream::prelude::*;
+use jetstream_macros::service;
+use jetstream_quic::{Client, QuicTransport, Router, Server};
+use jetstream_rpc::Protocol;
 
-#[derive(Template)]
-#[template(path = "template.html")]
-struct JetStreamTemplate&lt;'a&gt; {
-    body: &amp;'a str,
-    version: &amp;'static str,
-    year: u16,
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+
+#[service]
+pub trait Echo {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt;;
 }
 
-impl Default for JetStreamTemplate&lt;'_&gt; {
-    fn default() -&gt; Self {
-        Self {
-            body: env!("CARGO_PKG_DESCRIPTION"),
-            version: env!("CARGO_PKG_VERSION"),
-            year: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| 1970 + (d.as_secs() / 31_536_000) as u16)
-                .unwrap_or(2026),
-        }
+#[derive(Clone)]
+struct EchoImpl {}
+
+impl Echo for EchoImpl {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt; {
+        eprintln!("Ping received");
+        eprintln!("Pong sent");
+        Ok(())
     }
 }
 
-#[derive(Template)]
-#[template(path = "context.html")]
-struct ContextTemplate&lt;'a&gt; {
-    remote_addr: &amp;'a str,
-    has_peer_cert: bool,
-    common_name: Option&lt;&amp;'a str&gt;,
-    fingerprint: &amp;'a str,
-    dns_names: Vec&lt;&amp;'a str&gt;,
-    ip_addresses: Vec&lt;String&gt;,
-    emails: Vec&lt;&amp;'a str&gt;,
-    uris: Vec&lt;String&gt;,
-    method: &amp;'a str,
-    path: &amp;'a str,
+pub static CA_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
+pub static CLIENT_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.pem");
+pub static CLIENT_KEY_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.key");
+pub static SERVER_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.pem");
+pub static SERVER_KEY_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.key");
+
+fn load_certs(path: &amp;str) -&gt; Vec&lt;CertificateDer&lt;'static&gt;&gt; {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read cert");
+    rustls_pemfile::certs(&amp;mut &amp;*data)
+        .filter_map(|r| r.ok())
+        .collect()
 }
 
-struct TemplateHandler;
-
-#[async_trait]
-impl HttpRequestHandler&lt;Bytes, Bytes&gt; for TemplateHandler {
-    async fn handle_request(
-        &amp;self,
-        ctx: Context,
-        req: http::Request&lt;Bytes&gt;,
-    ) -&gt; http::Response&lt;Bytes&gt; {
-        // Log the peer context
-        println!("Request from peer: {}", ctx);
-
-        // Get remote address
-        let remote_addr = match ctx.remote() {
-            Some(RemoteAddr::IpAddr(ip)) =&gt; ip.to_string(),
-            _ =&gt; "unknown".to_string(),
-        };
-
-        // Extract peer cert info
-        let (
-            has_peer_cert,
-            common_name,
-            fingerprint,
-            dns_names,
-            ip_addresses,
-            emails,
-            uris,
-        ) = match ctx.peer() {
-            Some(Peer::Tls(tls_peer)) =&gt; {
-                if let Some(leaf) = tls_peer.leaf() {
-                    (
-                        true,
-                        leaf.common_name.clone(),
-                        leaf.fingerprint.clone(),
-                        leaf.dns_names.clone(),
-                        leaf.ip_addresses
-                            .iter()
-                            .map(|ip| ip.to_string())
-                            .collect(),
-                        leaf.emails.clone(),
-                        leaf.uris.iter().map(|u| u.to_string()).collect(),
-                    )
-                } else {
-                    (false, None, String::new(), vec![], vec![], vec![], vec![])
-                }
-            }
-            _ =&gt; (false, None, String::new(), vec![], vec![], vec![], vec![]),
-        };
-
-        let method = req.method().as_str();
-        let path = req.uri().path();
-
-        let context_html = ContextTemplate {
-            remote_addr: &amp;remote_addr,
-            has_peer_cert,
-            common_name: common_name.as_deref(),
-            fingerprint: &amp;fingerprint,
-            dns_names: dns_names.iter().map(|s| s.as_str()).collect(),
-            ip_addresses,
-            emails: emails.iter().map(|s| s.as_str()).collect(),
-            uris,
-            method,
-            path,
-        }
-        .render()
-        .unwrap_or_else(|_| "Error rendering context".to_string());
-
-        let template = JetStreamTemplate {
-            body: &amp;context_html,
-            ..Default::default()
-        };
-        let body = template.render().unwrap_or_else(|_| "Error".to_string());
-
-        http::Response::builder()
-            .status(200)
-            .header(header::CONTENT_TYPE, "text/html; charset=utf-8")
-            .header(header::CONTENT_LENGTH, body.len().to_string())
-            .body(Bytes::from(body))
-            .unwrap()
-    }
+fn load_key(path: &amp;str) -&gt; PrivateKeyDer&lt;'static&gt; {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read key");
+    rustls_pemfile::private_key(&amp;mut &amp;*data)
+        .expect("Failed to parse key")
+        .expect("No key found")
 }
 
-#[tokio::main]
-async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
-    // Check for --mtls flag
-    let mtls_enabled = std::env::args().any(|arg| arg == "--mtls");
+async fn server(
+    addr: SocketAddr,
+) -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
+    let server_cert = load_certs(SERVER_CERT_PEM).pop().unwrap();
+    let server_key = load_key(SERVER_KEY_PEM);
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
 
-    let cert_path =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/examples/localhost.pem");
-    let key_path =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/examples/localhost.key");
-    let ca_path = concat!(env!("CARGO_MANIFEST_DIR"), "/examples/ca.pem");
+    // Register the EchoService as a protocol handler
+    // jetstream_quic's ProtocolHandler is auto-implemented for jetstream_rpc::Server
+    let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
 
-    // Load server certificate
-    let cert_chain = fs::read(Path::new(cert_path))?;
-    let cert = rustls_pemfile::certs(&amp;mut &amp;*cert_chain)
-        .collect::&lt;Result&lt;Vec&lt;_&gt;, _&gt;&gt;()?
-        .pop()
-        .ok_or("No certificate found")?;
-
-    // Load server private key
-    let key_data = fs::read(Path::new(key_path))?;
-    let key = rustls_pemfile::private_key(&amp;mut &amp;*key_data)?
-        .ok_or("No private key found")?;
-
-    // Create the H3 handler with our template handler
-    let h3_handler = Arc::new(H3Handler::new(TemplateHandler));
-
-    // Create router and register the H3 handler
     let mut router = Router::new();
-    router.register(h3_handler);
+    router.register(Arc::new(echo_service));
 
-    let addr: SocketAddr = "127.0.0.1:4433".parse()?;
+    let server =
+        Server::new_with_mtls(server_cert, server_key, ca_cert, addr, router);
 
-    // Create server with or without mTLS
-    let server = if mtls_enabled {
-        // Load CA certificate for client verification
-        let ca_data = fs::read(Path::new(ca_path))?;
-        let ca_cert = rustls_pemfile::certs(&amp;mut &amp;*ca_data)
-            .collect::&lt;Result&lt;Vec&lt;_&gt;, _&gt;&gt;()?
-            .pop()
-            .ok_or("No CA certificate found")?;
-
-        println!("QUIC server with mTLS listening on {}", addr);
-        println!(
-            "Client certificates will be required and verified against ca.pem"
-        );
-        jetstream_quic::Server::new_with_mtls(cert, key, ca_cert, addr, router)
-    } else {
-        println!("QUIC server listening on {}", addr);
-        println!("No client auth (use --mtls to enable)");
-        jetstream_quic::Server::new_with_addr(cert, key, addr, router)
-    };
-
-    println!("You can now run ./launch_chrome.sh to connect with Chrome");
+    eprintln!("Server listening on {}", addr);
     server.run().await;
 
     Ok(())
 }
-</code></pre>
+
+async fn client(
+    addr: SocketAddr,
+) -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
+    // Wait for server to start
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
+    let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
+    let client_key = load_key(CLIENT_KEY_PEM);
+
+    // Use the protocol version as ALPN
+    let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
+    let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
+
+    let connection = client.connect(addr, "localhost").await?;
+
+    // Open a bidirectional stream and wrap it in QuicTransport
+    let (send, recv) = connection.open_bi().await?;
+    let transport: QuicTransport&lt;EchoChannel&gt; = (send, recv).into();
+    let mut chan = EchoChannel::new(10, Box::new(transport));
+
+    eprintln!("Ping sent");
+    chan.ping().await?;
+    eprintln!("Pong received");
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    // Install the ring crypto provider for rustls
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
+
+    let addr: SocketAddr = "127.0.0.1:4433".parse().unwrap();
+    tokio::select! {
+      _ = server(addr) =&gt; {},
+      _ = client(addr) =&gt; {},
+    }
+}</code></pre>
+<h2 id="defining-a-service"><a class="header" href="#defining-a-service">Defining a Service</a></h2>
+<p>Use the <code>#[service]</code> macro to define an RPC service:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+use jetstream_macros::service;
+
+#[service]
+pub trait Echo {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt;;
+    async fn echo(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+}
+<span class="boring">}</span></code></pre>
+<p>The macro generates:</p>
+<ul>
+<li><code>EchoChannel</code> - Client-side channel for calling methods</li>
+<li><code>EchoService</code> - Server-side wrapper for your implementation</li>
+</ul>
+<h2 id="implementing-the-service"><a class="header" href="#implementing-the-service">Implementing the Service</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Clone)]
+struct EchoImpl;
+
+impl Echo for EchoImpl {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt; {
+        Ok(())
+    }
+
+    async fn echo(&amp;mut self, message: String) -&gt; Result&lt;String&gt; {
+        Ok(message)
+    }
+}
+<span class="boring">}</span></code></pre>
 <h2 id="server-setup"><a class="header" href="#server-setup">Server Setup</a></h2>
-<p>To create a QUIC server, you need:</p>
-<ol>
-<li>TLS certificates (certificate and private key)</li>
-<li>A router with registered protocol handlers</li>
-<li>A bind address</li>
-</ol>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>use std::sync::Arc;
-use jetstream_quic::{Server, Router, H3Handler, HttpRequestHandler};
+use jetstream_quic::{Server, Router};
 
-// Create your request handler
-let h3_handler = Arc::new(H3Handler::new(MyHandler));
+// Create the service
+let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
 
-// Create and configure the router
+// Register with router
 let mut router = Router::new();
-router.register("h3", h3_handler);
+router.register(Arc::new(echo_service));
 
-// Create and run the server
-let server = Server::new_with_addr(cert, key, "127.0.0.1:4433", router);
+// Create and run server
+let server = Server::new_with_addr(cert, key, addr, router);
 server.run().await;
 <span class="boring">}</span></code></pre>
-<h2 id="implementing-a-request-handler"><a class="header" href="#implementing-a-request-handler">Implementing a Request Handler</a></h2>
-<p>Implement the <code>HttpRequestHandler</code> trait to handle HTTP requests:</p>
+<h2 id="client-setup"><a class="header" href="#client-setup">Client Setup</a></h2>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use async_trait::async_trait;
-use bytes::Bytes;
-use jetstream_quic::HttpRequestHandler;
+</span>use jetstream_quic::{Client, QuicTransport};
+use jetstream_rpc::Protocol;
 
-struct MyHandler;
+// Create client
+let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
+let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
 
-#[async_trait]
-impl HttpRequestHandler&lt;Bytes, Bytes&gt; for MyHandler {
-    async fn handle_request(
-        &amp;self,
-        req: http::Request&lt;Bytes&gt;,
-    ) -&gt; http::Response&lt;Bytes&gt; {
-        http::Response::builder()
-            .status(200)
-            .header("content-type", "text/plain")
-            .body(Bytes::from("Hello, QUIC!"))
-            .unwrap()
-    }
-}
-<span class="boring">}</span></code></pre>
-<h2 id="custom-protocol-handlers"><a class="header" href="#custom-protocol-handlers">Custom Protocol Handlers</a></h2>
-<p>For protocols other than HTTP/3, implement the <code>ProtocolHandler</code> trait:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use async_trait::async_trait;
-use quinn::Connection;
-use jetstream_quic::ProtocolHandler;
+// Connect
+let connection = client.connect(addr, "localhost").await?;
 
-struct MyProtocolHandler;
+// Open stream and create channel
+let (send, recv) = connection.open_bi().await?;
+let transport: QuicTransport&lt;EchoChannel&gt; = (send, recv).into();
+let mut chan = EchoChannel::new(10, Box::new(transport));
 
-#[async_trait]
-impl ProtocolHandler for MyProtocolHandler {
-    async fn accept(&amp;self, conn: Connection) {
-        // Handle the QUIC connection
-    }
-}
-<span class="boring">}</span></code></pre>
-<p>Then register it with a custom ALPN:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>router.register("my-protocol", Arc::new(MyProtocolHandler));
+// Call methods
+chan.ping().await?;
+let response = chan.echo("Hello".to_string()).await?;
 <span class="boring">}</span></code></pre>
 <h2 id="tls-certificates"><a class="header" href="#tls-certificates">TLS Certificates</a></h2>
-<p>For development, you can generate self-signed certificates. The example includes localhost certificates for testing with browsers like Chrome.</p>
-<p>For production, use certificates from a trusted CA or Let’s Encrypt.</p>
-<h2 id="mutual-tls-mtls"><a class="header" href="#mutual-tls-mtls">Mutual TLS (mTLS)</a></h2>
-<p>JetStream QUIC supports mutual TLS authentication, where both the server and client present certificates. This is useful for:</p>
-<ul>
-<li><strong>Client Authentication</strong>: Verify client identity using X.509 certificates</li>
-<li><strong>Zero-Trust Architecture</strong>: Every connection is authenticated</li>
-<li><strong>Service-to-Service Communication</strong>: Secure communication between microservices</li>
-</ul>
-<h3 id="setting-up-mtls"><a class="header" href="#setting-up-mtls">Setting up mTLS</a></h3>
-<p>Use <code>Server::new_with_mtls</code> to create a server that requires client certificates:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use jetstream_quic::Server;
-
-let server = Server::new_with_mtls(
-    server_cert,
-    server_key,
-    ca_cert,      // CA that signed client certificates
-    "0.0.0.0:4433",
-    router,
-);
-server.run().await;
-<span class="boring">}</span></code></pre>
-<h3 id="generating-certificates-for-mtls"><a class="header" href="#generating-certificates-for-mtls">Generating Certificates for mTLS</a></h3>
-<p>The example includes a certificate generation script that creates:</p>
-<ol>
-<li>A Certificate Authority (CA)</li>
-<li>A server certificate signed by the CA</li>
-<li>A client certificate signed by the CA</li>
-</ol>
-<pre><code class="language-bash">cd components/jetstream_quic/examples
-./generate_localhost_cert.sh
+<p>Generate development certificates:</p>
+<pre><code class="language-bash">cd certs
+./generate_certs.sh
 </code></pre>
 <p>This generates:</p>
 <ul>
-<li><code>ca.pem</code> / <code>ca-key.pem</code> - Certificate Authority</li>
-<li><code>localhost.pem</code> / <code>localhost-key.pem</code> - Server certificate</li>
-<li><code>client.pem</code> / <code>client-key.pem</code> - Client certificate</li>
+<li><code>ca.pem</code> / <code>ca.key</code> - Certificate Authority</li>
+<li><code>server.pem</code> / <code>server.key</code> - Server certificate</li>
+<li><code>client.pem</code> / <code>client.key</code> - Client certificate</li>
+<li><code>client.p12</code> - PKCS12 bundle for browser import</li>
 </ul>
-<h3 id="accessing-peer-certificate-info"><a class="header" href="#accessing-peer-certificate-info">Accessing Peer Certificate Info</a></h3>
-<p>In your request handler, access the peer’s certificate information through the <code>Context</code>:</p>
+<p>For production, use certificates from a trusted CA or Let’s Encrypt.</p>
+<h2 id="mutual-tls-mtls"><a class="header" href="#mutual-tls-mtls">Mutual TLS (mTLS)</a></h2>
+<p>JetStream QUIC supports mutual TLS authentication:</p>
 <pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
-</span>use jetstream_rpc::context::Context;
+</span>let server = Server::new_with_mtls(
+    server_cert,
+    server_key,
+    ca_cert,      // CA that signed client certificates
+    addr,
+    router,
+);
+<span class="boring">}</span></code></pre>
+<h3 id="accessing-peer-certificate-info"><a class="header" href="#accessing-peer-certificate-info">Accessing Peer Certificate Info</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_rpc::context::{Context, Peer};
 
-async fn handle_request(&amp;self, ctx: &amp;Context, req: Request) -&gt; Response {
-    if let Some(Peer::Tls(tls_peer)) = ctx.peer() {
-        if let Some(leaf) = tls_peer.chain.first() {
-            println!("Client CN: {:?}", leaf.common_name);
-            println!("Fingerprint: {}", leaf.fingerprint);
-            println!("DNS SANs: {:?}", leaf.dns_names);
-            println!("IP SANs: {:?}", leaf.ip_addresses);
-            println!("URI SANs: {:?}", leaf.uris);
-            println!("Email SANs: {:?}", leaf.emails);
-        }
+// In your service implementation or handler
+if let Some(Peer::Tls(tls_peer)) = ctx.peer() {
+    if let Some(leaf) = tls_peer.leaf() {
+        println!("Client CN: {:?}", leaf.common_name);
+        println!("Fingerprint: {}", leaf.fingerprint);
+        println!("DNS SANs: {:?}", leaf.dns_names);
     }
-    // ...
 }
 <span class="boring">}</span></code></pre>
-<h3 id="testing-mtls"><a class="header" href="#testing-mtls">Testing mTLS</a></h3>
-<p>Run the example server with mTLS enabled:</p>
-<pre><code class="language-bash">cargo run --example server -- --mtls
-</code></pre>
-<p>Test with curl using the client certificate:</p>
-<pre><code class="language-bash">curl --http3 \
-  --cacert ca.pem \
-  --cert client.pem \
-  --key client-key.pem \
-  https://localhost:4433/
-</code></pre>
-<p>Or use a browser with the client certificate imported (Chrome example included).</p>
 <h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
 <p>Add to your <code>Cargo.toml</code>:</p>
 <pre><code class="language-toml">[dependencies]
+jetstream = "13"
 jetstream_quic = "13"
-async-trait = "0.1"
-bytes = "1"
-http = "1"
+jetstream_macros = "13"
 tokio = { version = "1", features = ["full"] }
 </code></pre>
 <p>For more details, see the <a href="doc/jetstream_quic/index.html">jetstream_quic API documentation</a>.</p>
@@ -547,7 +441,7 @@ tokio = { version = "1", features = ["full"] }
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="crates.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="http.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -561,7 +455,7 @@ tokio = { version = "1", features = ["full"] }
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="crates.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="http.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

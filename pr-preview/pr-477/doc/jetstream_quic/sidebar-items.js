@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Client","H3Handler","QuicTransport","Router","Server"],"trait":["HttpRequestHandler","ProtocolHandler"]};
+window.SIDEBAR_ITEMS = {"struct":["Client","QuicTransport","Router","Server"],"trait":["ProtocolHandler"]};
