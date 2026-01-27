@@ -1,0 +1,46 @@
+<section>
+    <h2>Connection Info</h2>
+    <p>HTTP/3 over QUIC</p>
+</section>
+
+<section>
+    <h3>Remote Address</h3>
+    <code>{{ remote_addr }}</code>
+</section>
+
+{% if has_peer_cert %}
+<section>
+    <h3>TLS Client Certificate</h3>
+    <dl>
+        {% if common_name.is_some() %}
+        <dt>CN</dt>
+        <dd><code>{{ common_name.as_ref().unwrap() }}</code></dd>
+        {% endif %}
+        <dt>Fingerprint</dt>
+        <dd><code>{{ fingerprint }}</code></dd>
+        {% if !dns_names.is_empty() %}
+        <dt>DNS</dt>
+        <dd><code>{{ dns_names.join(", ") }}</code></dd>
+        {% endif %} {% if !ip_addresses.is_empty() %}
+        <dt>IPs</dt>
+        <dd><code>{{ ip_addresses.join(", ") }}</code></dd>
+        {% endif %} {% if !emails.is_empty() %}
+        <dt>Emails</dt>
+        <dd><code>{{ emails.join(", ") }}</code></dd>
+        {% endif %} {% if !uris.is_empty() %}
+        <dt>URIs</dt>
+        <dd><code>{{ uris.join(", ") }}</code></dd>
+        {% endif %}
+    </dl>
+</section>
+{% else %}
+<section>
+    <h3>No Client Certificate</h3>
+    <p>mTLS not configured or client did not provide a certificate.</p>
+</section>
+{% endif %}
+
+<section>
+    <h3>Request</h3>
+    <code>{{ method }} {{ path }}</code>
+</section>

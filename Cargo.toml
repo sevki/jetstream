@@ -18,6 +18,12 @@ crate-type = ["cdylib", "rlib"]
 [[example]]
 bench = false
 name = "echo"
+required-features = ["quic"]
+
+[[example]]
+bench = false
+name = "echo_with_tracing"
+required-features = ["quic"]
 
 [[example]]
 name = "iroh_echo"
@@ -66,20 +72,20 @@ cfg_aliases = { workspace = true }
 criterion = { version = "0.7.0", features = ["async_tokio"] }
 insta = "1.46.1"
 jetstream_error = { version = "13.0.0", path = "components/jetstream_error", features = [
-  "s2n-quic",
+  "quinn",
   "test-paths",
 ] }
 jetstream_rpc = { version = "13.0.0", path = "components/jetstream_rpc", default-features=false, features = [
-  "s2n-quic",
+  "quinn",
   "turmoil",
 ] }
 jetstream_wireformat = { version = "13.0.0", path = "components/jetstream_wireformat", features = [
   "all",
 ] }
 miette = "7.6.0"
-okstd = { version = "1.0.2", features = ["macros"] }
 prost = "0.14.3"
-s2n-quic = { workspace = true }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+rustls-pemfile = "2.2.0"
 term-transcript = "0.4.0"
 tokio = { version = "1.47.1", features = ["full"] }
 turmoil = { workspace = true }
@@ -91,8 +97,8 @@ all = ["9p", "iroh", "quic", "tracing", "websocket",  "wasm"]
 iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh", "jetstream_error/iroh"]
 quic = [
   "dep:jetstream_quic",
-  "jetstream_rpc/s2n-quic",
-  "jetstream_error/s2n-quic",
+  "jetstream_rpc/quinn",
+  "jetstream_error/quinn",
 ]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 wasm = []
@@ -133,7 +139,6 @@ license = "BSD-3-Clause"
 
 [workspace.dependencies]
 iroh = { version = "0.93.2" }
-s2n-quic = "1.67.0"
 worker = "0.7.4"
 worker-macros = "0.7.4"
 tokio-util = { version = "0.7.16", features = ["codec"] }

@@ -32,7 +32,7 @@ miette = "7.6.0"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 libc = "0.2.177"
-okstd = { version = "1.0.2" }
+
 futures = { version = "0.3.31", optional = true }
 tokio-util = { version = "0.7.16", features = [
   "full",

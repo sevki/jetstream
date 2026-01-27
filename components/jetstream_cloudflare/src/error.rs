@@ -91,7 +91,7 @@ impl From<JetstreamProtocolError>
         // Wrap it in the main JetStream template
         let full_template = super::JetStreamTemplate {
             body: &error_html,
-            version: env!("CARGO_PKG_VERSION"),
+            ..Default::default()
         };
 
         let html = full_template

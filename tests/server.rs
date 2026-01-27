@@ -85,7 +85,6 @@ fn network_partitions_during_connect() -> turmoil::Result {
     sim.run()
 }
 
-#[okstd::test]
 fn e2e() {
     network_partitions_during_connect()
         .expect("network partitions during connect failed");
@@ -131,7 +130,6 @@ fn error_propagation_e2e() -> turmoil::Result {
     sim.run()
 }
 
-#[okstd::test]
 fn e2e_error_propagation() {
     error_propagation_e2e().expect("error propagation e2e failed");
 }

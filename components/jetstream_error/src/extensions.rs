@@ -1,29 +1,39 @@
-#[cfg(all(feature = "s2n-quic", not(target_os = "windows")))]
-impl From<s2n_quic::provider::tls::default::error::Error> for crate::Error {
-    fn from(value: s2n_quic::provider::tls::default::error::Error) -> Self {
+#[cfg(feature = "quinn")]
+impl From<quinn::ConnectionError> for crate::Error {
+    fn from(value: quinn::ConnectionError) -> Self {
         crate::Error::from(
             miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::s2n_quic::tls_error"),
+                .with_code("jetstream::quinn::connection_error"),
         )
     }
 }
 
-#[cfg(feature = "s2n-quic")]
-impl From<s2n_quic::connection::Error> for crate::Error {
-    fn from(value: s2n_quic::connection::Error) -> Self {
+#[cfg(feature = "quinn")]
+impl From<quinn::WriteError> for crate::Error {
+    fn from(value: quinn::WriteError) -> Self {
         crate::Error::from(
             miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::s2n_quic::connection_error"),
+                .with_code("jetstream::quinn::write_error"),
         )
     }
 }
 
-#[cfg(feature = "s2n-quic")]
-impl From<s2n_quic::provider::StartError> for crate::Error {
-    fn from(value: s2n_quic::provider::StartError) -> Self {
+#[cfg(feature = "quinn")]
+impl From<quinn::ReadError> for crate::Error {
+    fn from(value: quinn::ReadError) -> Self {
         crate::Error::from(
             miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::s2n_quic::start_error"),
+                .with_code("jetstream::quinn::read_error"),
+        )
+    }
+}
+
+#[cfg(feature = "quinn")]
+impl From<quinn::ClosedStream> for crate::Error {
+    fn from(value: quinn::ClosedStream) -> Self {
+        crate::Error::from(
+            miette::MietteDiagnostic::new(value.to_string())
+                .with_code("jetstream::quinn::closed_stream"),
         )
     }
 }

@@ -1,0 +1,16 @@
+<section>
+    <h2>{{ error_type }}</h2>
+    <p>{{ message }}</p>
+</section>
+
+{% if !details.is_empty() %}
+<section>
+    <h3>Details</h3>
+    <pre><code>{{ details }}</code></pre>
+</section>
+{% endif %}
+
+<nav>
+    <a href="/">Go Home</a> |
+    <a href="https://github.com/sevki/jetstream/issues">Report Issue</a>
+</nav>

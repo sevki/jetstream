@@ -63,6 +63,7 @@ pub struct Router<H: HtmlAssets> {
 struct JetStreamTemplate<'a> {
     body: &'a str,
     version: &'static str,
+    year: u16,
 }
 
 impl Default for JetStreamTemplate<'_> {
@@ -70,6 +71,10 @@ impl Default for JetStreamTemplate<'_> {
         Self {
             body: env!("CARGO_PKG_DESCRIPTION"),
             version: env!("CARGO_PKG_VERSION"),
+            year: std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .map(|d| 1970 + (d.as_secs() / 31_536_000) as u16)
+                .unwrap_or(2026),
         }
     }
 }

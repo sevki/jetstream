@@ -1,17 +1,19 @@
-use std::{net::SocketAddr, path::Path};
+use std::{net::SocketAddr, path::Path, sync::Arc};
 
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_macros::service;
-use jetstream_rpc::{client::ClientCodec, server::run, Framed};
-use okstd::prelude::*;
-use s2n_quic::{client::Connect, provider::tls, Client, Server};
+use jetstream_quic::{Client, QuicTransport, Router, Server};
+use jetstream_rpc::Protocol;
+
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
 #[service]
 pub trait Echo {
     async fn ping(&mut self) -> Result<()>;
 }
 
+#[derive(Clone)]
 struct EchoImpl {}
 
 impl Echo for EchoImpl {
@@ -33,98 +35,81 @@ pub static SERVER_CERT_PEM: &str =
 pub static SERVER_KEY_PEM: &str =
     concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
 
-#[cfg(not(windows))]
-async fn server() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    #[cfg(windows)]
-    return Ok(());
+fn load_certs(path: &str) -> Vec<CertificateDer<'static>> {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read cert");
+    rustls_pemfile::certs(&mut &*data)
+        .filter_map(|r| r.ok())
+        .collect()
+}
 
-    #[cfg(not(windows))]
-    let tls = tls::default::Server::builder()
-        .with_trusted_certificate(Path::new(CA_CERT_PEM))?
-        .with_certificate(
-            Path::new(SERVER_CERT_PEM),
-            Path::new(SERVER_KEY_PEM),
-        )?
-        .with_client_authentication()?
-        .build()?;
+fn load_key(path: &str) -> PrivateKeyDer<'static> {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read key");
+    rustls_pemfile::private_key(&mut &*data)
+        .expect("Failed to parse key")
+        .expect("No key found")
+}
 
-    let mut server = Server::builder()
-        .with_tls(tls)?
-        .with_io("127.0.0.1:4433")?
-        .start()?;
+async fn server(
+    addr: SocketAddr,
+) -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let server_cert = load_certs(SERVER_CERT_PEM).pop().unwrap();
+    let server_key = load_key(SERVER_KEY_PEM);
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
 
-    while let Some(mut connection) = server.accept().await {
-        // spawn a new task for the connection
-        tokio::spawn(async move {
-            eprintln!(
-                "Connection accepted from {:?}",
-                connection.remote_addr()
-            );
+    // Register the EchoService as a protocol handler
+    // jetstream_quic's ProtocolHandler is auto-implemented for jetstream_rpc::Server
+    let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
 
-            while let Ok(Some(stream)) =
-                connection.accept_bidirectional_stream().await
-            {
-                // spawn a new task for the stream
-                tokio::spawn(async move {
-                    eprintln!(
-                        "Stream opened from {:?}",
-                        &stream.connection().remote_addr()
-                    );
-                    let echo = EchoImpl {};
-                    let servercodec: jetstream::prelude::server::ServerCodec<
-                        echo_protocol::EchoService<EchoImpl>,
-                    > = Default::default();
-                    let framed = Framed::new(stream, servercodec);
-                    let mut serv = echo_protocol::EchoService { inner: echo };
-                    run(&mut serv, framed).await.unwrap();
-                });
-            }
-        });
-    }
+    let mut router = Router::new();
+    router.register(Arc::new(echo_service));
+
+    let server =
+        Server::new_with_mtls(server_cert, server_key, ca_cert, addr, router);
+
+    eprintln!("Server listening on {}", addr);
+    server.run().await;
 
     Ok(())
 }
-#[cfg(not(windows))]
-async fn client() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let tls = tls::default::Client::builder()
-        .with_certificate(Path::new(CA_CERT_PEM))?
-        .with_client_identity(
-            Path::new(CLIENT_CERT_PEM),
-            Path::new(CLIENT_KEY_PEM),
-        )?
-        .build()?;
 
-    let client = Client::builder()
-        .with_tls(tls)?
-        .with_io("0.0.0.0:0")?
-        .start()?;
+async fn client(
+    addr: SocketAddr,
+) -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    // Wait for server to start
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
-    let addr: SocketAddr = "127.0.0.1:4433".parse()?;
-    let connect = Connect::new(addr).with_server_name("localhost");
-    let mut connection = client.connect(connect).await?;
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
+    let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
+    let client_key = load_key(CLIENT_KEY_PEM);
 
-    // ensure the connection doesn't time out with inactivity
-    connection.keep_alive(true)?;
+    // Use the protocol version as ALPN
+    let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
+    let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
 
-    // open a new stream and split the receiving and sending sides
-    let stream = connection.open_bidirectional_stream().await?;
-    let client_codec: ClientCodec<EchoChannel> = Default::default();
-    let framed = Framed::new(stream, client_codec);
-    let mut chan = EchoChannel::new(10, Box::new(framed));
+    let connection = client.connect(addr, "localhost").await?;
+
+    // Open a bidirectional stream and wrap it in QuicTransport
+    let (send, recv) = connection.open_bi().await?;
+    let transport: QuicTransport<EchoChannel> = (send, recv).into();
+    let mut chan = EchoChannel::new(10, Box::new(transport));
+
     eprintln!("Ping sent");
     chan.ping().await?;
     eprintln!("Pong received");
+
     Ok(())
 }
 
-#[okstd::main]
-#[cfg(not(windows))]
+#[tokio::main]
 async fn main() {
+    // Install the ring crypto provider for rustls
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
+
+    let addr: SocketAddr = "127.0.0.1:4433".parse().unwrap();
     tokio::select! {
-      _ = server() => {},
-      _ = client() => {},
+      _ = server(addr) => {},
+      _ = client(addr) => {},
     }
 }
-
-#[cfg(windows)]
-fn main() {}
