@@ -1,0 +1,26 @@
+[package]
+name = "jetstream_http"
+version = "0.1.0"
+edition.workspace = true
+description.workspace = true
+documentation.workspace = true
+readme.workspace = true
+repository.workspace = true
+license.workspace = true
+
+[dependencies]
+async-trait = "0.1.89"
+axum = { version = "0.8.8", features = ["http2", "ws"] }
+bytes = "1.11.0"
+futures ="0.3.31"
+h3 = "0.0.8"
+h3-quinn = "0.0.10"
+http = "1.4.0"
+jetstream_quic = { version = "13.0.0", path = "../jetstream_quic" }
+jetstream_rpc = { version = "13.0.0", path = "../jetstream_rpc", features = ["quinn", "x509"] }
+pin-project = "1.1.10"
+quinn = "0.11.9"
+tokio = { version = "1.49.0", features = ["rt", "tracing"] }
+tower-layer = "0.3.3"
+tower-service = "0.3.3"
+tracing = "0.1.44"

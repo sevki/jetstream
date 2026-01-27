@@ -33,15 +33,15 @@ mod quic_bench {
     };
 
     pub static CA_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
     pub static CLIENT_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client-cert.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.pem");
     pub static CLIENT_KEY_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client-key.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.key");
     pub static SERVER_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.pem");
     pub static SERVER_KEY_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.key");
 
     fn load_certs(path: &str) -> Vec<CertificateDer<'static>> {
         let data = std::fs::read(Path::new(path)).expect("Failed to read cert");
