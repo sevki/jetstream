@@ -1,24 +1,30 @@
 [req]
 distinguished_name = server_distinguished_name
 prompt = no
-
-# these fields are used to force x509 to v3 certificates
-# rustls will complain otherwise
 x509_extensions = v3_req
 req_extensions = req_ext
 
 [server_distinguished_name]
-countryName = US
-stateOrProvinceName = Washington
-localityName = Seattle
-organizationName = server
-commonName = server.localhost
+C = US
+ST = Test
+L = Test
+O = JetStream
+CN = localhost
 
 [v3_req]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
+authorityKeyIdentifier = keyid,issuer
 
 [req_ext]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = serverAuth
 subjectAltName = @alt_names
 
 [alt_names]
-DNS = localhost
+DNS.1 = localhost
+IP.1 = 127.0.0.1
+IP.2 = ::1

@@ -22,91 +22,88 @@ impl Echo for EchoImpl {
 mod quic_bench {
     use super::*;
     use echo_protocol::EchoChannel;
-    use jetstream_rpc::{client::ClientCodec, server::run, Framed};
-    use s2n_quic::{client::Connect, provider::tls, Client, Server};
+    use jetstream_quic::{Client, QuicTransport, Router, Server};
+    use jetstream_rpc::Protocol;
+    use rustls::pki_types::{CertificateDer, PrivateKeyDer};
     use std::{
         net::SocketAddr,
         path::Path,
+        sync::Arc,
         time::{Duration, Instant},
     };
 
     pub static CA_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
     pub static CLIENT_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client-cert.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.pem");
     pub static CLIENT_KEY_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client-key.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.key");
     pub static SERVER_CERT_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.pem");
     pub static SERVER_KEY_PEM: &str =
-        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
+        concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.key");
 
-    pub async fn server() -> std::result::Result<
+    fn load_certs(path: &str) -> Vec<CertificateDer<'static>> {
+        let data = std::fs::read(Path::new(path)).expect("Failed to read cert");
+        rustls_pemfile::certs(&mut &*data)
+            .filter_map(|r| r.ok())
+            .collect()
+    }
+
+    fn load_key(path: &str) -> PrivateKeyDer<'static> {
+        let data = std::fs::read(Path::new(path)).expect("Failed to read key");
+        rustls_pemfile::private_key(&mut &*data)
+            .expect("Failed to parse key")
+            .expect("No key found")
+    }
+
+    pub async fn server(
+        addr: SocketAddr,
+    ) -> std::result::Result<
         (),
         Box<dyn std::error::Error + Send + Sync + 'static>,
     > {
-        let tls = tls::default::Server::builder()
-            .with_trusted_certificate(Path::new(CA_CERT_PEM))?
-            .with_certificate(
-                Path::new(SERVER_CERT_PEM),
-                Path::new(SERVER_KEY_PEM),
-            )?
-            .with_client_authentication()?
-            .build()?;
+        let server_cert = load_certs(SERVER_CERT_PEM).pop().unwrap();
+        let server_key = load_key(SERVER_KEY_PEM);
+        let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
 
-        let mut server = Server::builder()
-            .with_tls(tls)?
-            .with_io("127.0.0.1:4433")?
-            .start()?;
+        let echo_service = echo_protocol::EchoService {
+            inner: super::EchoImpl {},
+        };
 
-        while let Some(mut connection) = server.accept().await {
-            tokio::spawn(async move {
-                while let Ok(Some(stream)) =
-                    connection.accept_bidirectional_stream().await
-                {
-                    tokio::spawn(async move {
-                        let echo = super::EchoImpl {};
-                        let servercodec: jetstream::prelude::server::ServerCodec<
-                            echo_protocol::EchoService<super::EchoImpl>,
-                        > = Default::default();
-                        let framed = Framed::new(stream, servercodec);
-                        let mut serv =
-                            echo_protocol::EchoService { inner: echo };
-                        if let Err(e) = run(&mut serv, framed).await {
-                            eprintln!("QUIC server stream error: {:?}", e);
-                        }
-                    });
-                }
-            });
-        }
+        let mut router = Router::new();
+        router.register(Arc::new(echo_service));
+
+        let server = Server::new_with_mtls(
+            server_cert,
+            server_key,
+            ca_cert,
+            addr,
+            router,
+        );
+
+        server.run().await;
         Ok(())
     }
 
     pub async fn client_square(
+        addr: SocketAddr,
         iters: u64,
-    ) -> std::result::Result<Duration, Box<dyn std::error::Error>> {
-        let tls = tls::default::Client::builder()
-            .with_certificate(Path::new(CA_CERT_PEM))?
-            .with_client_identity(
-                Path::new(CLIENT_CERT_PEM),
-                Path::new(CLIENT_KEY_PEM),
-            )?
-            .build()?;
+    ) -> std::result::Result<Duration, Box<dyn std::error::Error + Send + Sync>>
+    {
+        let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
+        let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
+        let client_key = load_key(CLIENT_KEY_PEM);
 
-        let client = Client::builder()
-            .with_tls(tls)?
-            .with_io("0.0.0.0:0")?
-            .start()?;
+        let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
+        let client =
+            Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
 
-        let addr: SocketAddr = "127.0.0.1:4433".parse()?;
-        let connect = Connect::new(addr).with_server_name("localhost");
-        let mut connection = client.connect(connect).await?;
-        connection.keep_alive(true)?;
+        let connection = client.connect(addr, "localhost").await?;
 
-        let stream = connection.open_bidirectional_stream().await?;
-        let client_codec: ClientCodec<EchoChannel> = Default::default();
-        let mut framed = Framed::new(stream, client_codec);
-        let mut chan = EchoChannel::new(u16::MAX, Box::new(framed));
+        let (send, recv) = connection.open_bi().await?;
+        let transport: QuicTransport<EchoChannel> = (send, recv).into();
+        let mut chan = EchoChannel::new(u16::MAX, Box::new(transport));
 
         let start = Instant::now();
         for i in 0..iters {
@@ -121,6 +118,12 @@ mod quic_bench {
 }
 
 fn benchmarks(#[allow(unused)] c: &mut Criterion) {
+    // Install the ring crypto provider for rustls
+    #[cfg(feature = "quic")]
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
+
     #[cfg(any(feature = "quic", feature = "iroh"))]
     let mut group = c.benchmark_group("transport_comparison");
     #[cfg(any(feature = "quic", feature = "iroh"))]
@@ -128,13 +131,15 @@ fn benchmarks(#[allow(unused)] c: &mut Criterion) {
 
     #[cfg(feature = "quic")]
     {
+        use std::net::SocketAddr;
+        let addr: SocketAddr = "127.0.0.1:4436".parse().unwrap();
         rt.block_on(async {
-            tokio::spawn(quic_bench::server());
+            tokio::spawn(quic_bench::server(addr));
             tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
         });
         group.bench_function("quic", |b| {
             b.to_async(&rt).iter_custom(|iters| async move {
-                quic_bench::client_square(iters).await.unwrap()
+                quic_bench::client_square(addr, iters).await.unwrap()
             })
         });
     }

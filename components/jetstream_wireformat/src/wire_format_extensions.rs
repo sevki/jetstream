@@ -1,7 +1,9 @@
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-use core::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
+use core::net::{
+    IpAddr, Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6,
+};
 use std::{
     io::{self},
     time::{Duration, SystemTime},
@@ -173,6 +175,41 @@ impl WireFormat for Ipv6Addr {
     }
 }
 
+impl WireFormat for IpAddr {
+    fn byte_size(&self) -> u32 {
+        1 + match self {
+            IpAddr::V4(ip) => ip.byte_size(),
+            IpAddr::V6(ip) => ip.byte_size(),
+        }
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()> {
+        match self {
+            IpAddr::V4(ip) => {
+                writer.write_all(&[4])?;
+                ip.encode(writer)
+            }
+            IpAddr::V6(ip) => {
+                writer.write_all(&[6])?;
+                ip.encode(writer)
+            }
+        }
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self> {
+        let mut buf = [0u8; 1];
+        reader.read_exact(&mut buf)?;
+        match buf[0] {
+            4 => Ok(IpAddr::V4(Ipv4Addr::decode(reader)?)),
+            6 => Ok(IpAddr::V6(Ipv6Addr::decode(reader)?)),
+            _ => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Invalid IP address type",
+            )),
+        }
+    }
+}
+
 impl WireFormat for SocketAddrV4 {
     fn byte_size(&self) -> u32 {
         self.ip().byte_size() + 2
@@ -221,11 +258,11 @@ impl WireFormat for SocketAddr {
     {
         match self {
             SocketAddr::V4(socket_addr_v4) => {
-                writer.write_all(&[0])?;
+                writer.write_all(&[4])?;
                 socket_addr_v4.encode(writer)
             }
             SocketAddr::V6(socket_addr_v6) => {
-                writer.write_all(&[1])?;
+                writer.write_all(&[6])?;
                 socket_addr_v6.encode(writer)
             }
         }
@@ -238,8 +275,8 @@ impl WireFormat for SocketAddr {
         let mut buf = [0u8; 1];
         reader.read_exact(&mut buf)?;
         match buf[0] {
-            0 => Ok(SocketAddr::V4(SocketAddrV4::decode(reader)?)),
-            1 => Ok(SocketAddr::V6(SocketAddrV6::decode(reader)?)),
+            4 => Ok(SocketAddr::V4(SocketAddrV4::decode(reader)?)),
+            6 => Ok(SocketAddr::V6(SocketAddrV6::decode(reader)?)),
             _ => Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
                 "Invalid address type",

@@ -1,11 +1,12 @@
-use std::{net::SocketAddr, path::Path};
+use std::{net::SocketAddr, path::Path, sync::Arc};
 
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_macros::service;
-use jetstream_rpc::{client::ClientCodec, server::run, Framed};
-use okstd::prelude::*;
-use s2n_quic::{client::Connect, provider::tls, Client, Server};
+use jetstream_quic::{Client, QuicTransport, Router, Server};
+use jetstream_rpc::Protocol;
+
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
 /// Example service demonstrating tracing support.
 ///
@@ -34,6 +35,7 @@ pub trait Echo {
     async fn echo(&mut self, text: String) -> jetstream_error::Result<String>;
 }
 
+#[derive(Clone)]
 struct EchoImpl {}
 
 impl Echo for EchoImpl {
@@ -54,85 +56,72 @@ impl Echo for EchoImpl {
 }
 
 pub static CA_CERT_PEM: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca-cert.pem");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
 pub static CLIENT_CERT_PEM: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client-cert.pem");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.pem");
 pub static CLIENT_KEY_PEM: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client-key.pem");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.key");
 pub static SERVER_CERT_PEM: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-cert.pem");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.pem");
 pub static SERVER_KEY_PEM: &str =
-    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server-key.pem");
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.key");
 
-#[cfg(not(windows))]
-async fn server() -> jetstream_error::Result<()> {
-    let tls = tls::default::Server::builder()
-        .with_trusted_certificate(Path::new(CA_CERT_PEM))?
-        .with_certificate(
-            Path::new(SERVER_CERT_PEM),
-            Path::new(SERVER_KEY_PEM),
-        )?
-        .with_client_authentication()?
-        .build()?;
+fn load_certs(path: &str) -> Vec<CertificateDer<'static>> {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read cert");
+    rustls_pemfile::certs(&mut &*data)
+        .filter_map(|r| r.ok())
+        .collect()
+}
 
-    let mut server = Server::builder()
-        .with_tls(tls)?
-        .with_io("127.0.0.1:4434")?
-        .start()?;
+fn load_key(path: &str) -> PrivateKeyDer<'static> {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read key");
+    rustls_pemfile::private_key(&mut &*data)
+        .expect("Failed to parse key")
+        .expect("No key found")
+}
 
-    tracing::info!("Server listening on 127.0.0.1:4434");
+async fn server(
+    addr: SocketAddr,
+) -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    let server_cert = load_certs(SERVER_CERT_PEM).pop().unwrap();
+    let server_key = load_key(SERVER_KEY_PEM);
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
 
-    while let Some(mut connection) = server.accept().await {
-        tokio::spawn(async move {
-            tracing::info!(
-                remote_addr = ?connection.remote_addr(),
-                "Connection accepted"
-            );
+    // Register the EchoService as a protocol handler
+    let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
 
-            while let Ok(Some(stream)) =
-                connection.accept_bidirectional_stream().await
-            {
-                tokio::spawn(async move {
-                    let echo = EchoImpl {};
-                    let servercodec: jetstream::prelude::server::ServerCodec<
-                        echo_protocol::EchoService<EchoImpl>,
-                    > = Default::default();
-                    let framed = Framed::new(stream, servercodec);
-                    let mut serv = echo_protocol::EchoService { inner: echo };
-                    run(&mut serv, framed).await.unwrap();
-                });
-            }
-        });
-    }
+    let mut router = Router::new();
+    router.register(Arc::new(echo_service));
+
+    let server =
+        Server::new_with_mtls(server_cert, server_key, ca_cert, addr, router);
+
+    tracing::info!("Server listening on {}", addr);
+    server.run().await;
 
     Ok(())
 }
 
-#[cfg(not(windows))]
-async fn client() -> jetstream_error::Result<()> {
-    let tls = tls::default::Client::builder()
-        .with_certificate(Path::new(CA_CERT_PEM))?
-        .with_client_identity(
-            Path::new(CLIENT_CERT_PEM),
-            Path::new(CLIENT_KEY_PEM),
-        )?
-        .build()?;
+async fn client(
+    addr: SocketAddr,
+) -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    // Wait for server to start
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
 
-    let client = Client::builder()
-        .with_tls(tls)?
-        .with_io("0.0.0.0:0")?
-        .start()?;
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
+    let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
+    let client_key = load_key(CLIENT_KEY_PEM);
 
-    let addr: SocketAddr = "127.0.0.1:4434".parse()?;
-    let connect = Connect::new(addr).with_server_name("localhost");
-    let mut connection = client.connect(connect).await?;
+    // Use the protocol version as ALPN
+    let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
+    let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
 
-    connection.keep_alive(true)?;
+    let connection = client.connect(addr, "localhost").await?;
 
-    let stream = connection.open_bidirectional_stream().await?;
-    let client_codec: ClientCodec<EchoChannel> = Default::default();
-    let framed = Framed::new(stream, client_codec);
-    let mut chan = EchoChannel::new(10, Box::new(framed));
+    // Open a bidirectional stream and wrap it in QuicTransport
+    let (send, recv) = connection.open_bi().await?;
+    let transport: QuicTransport<EchoChannel> = (send, recv).into();
+    let mut chan = EchoChannel::new(10, Box::new(transport));
 
     tracing::info!("Sending ping...");
     let response = chan
@@ -147,9 +136,13 @@ async fn client() -> jetstream_error::Result<()> {
     Ok(())
 }
 
-#[okstd::main]
-#[cfg(not(windows))]
+#[tokio::main]
 async fn main() {
+    // Install the ring crypto provider for rustls
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
+
     // Initialize tracing subscriber
     tracing_subscriber::fmt()
         .with_max_level(tracing::Level::DEBUG)
@@ -162,15 +155,13 @@ async fn main() {
 
     tracing::info!("Starting echo service with tracing example");
 
+    let addr: SocketAddr = "127.0.0.1:4434".parse().unwrap();
     tokio::select! {
-      _ = server() => {
+      _ = server(addr) => {
           tracing::info!("Server exited");
       },
-      _ = client() => {
+      _ = client(addr) => {
           tracing::info!("Client exited");
       },
     }
 }
-
-#[cfg(windows)]
-fn main() {}

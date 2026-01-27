@@ -18,6 +18,17 @@ crate-type = ["cdylib", "rlib"]
 [[example]]
 bench = false
 name = "echo"
+required-features = ["quic"]
+
+[[example]]
+bench = false
+name = "echo_with_tracing"
+required-features = ["quic"]
+
+[[example]]
+bench = false
+name = "http"
+required-features = ["quic"]
 
 [[example]]
 name = "iroh_echo"
@@ -55,6 +66,7 @@ tracing = { version = "0.1.41", optional = true }
 tracing-subscriber = { version = "0.3.20", optional = true }
 trait-variant = "0.1.2"
 rand = "0.9.2"
+jetstream_http = { version = "0.1.0", path = "components/jetstream_http", optional = true }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.3.4", features = ["wasm_js"] }
@@ -63,36 +75,44 @@ getrandom = { version = "0.3.4", features = ["wasm_js"] }
 cfg_aliases = { workspace = true }
 
 [dev-dependencies]
+askama = "0.15.1"
+axum = "0.8.8"
 criterion = { version = "0.7.0", features = ["async_tokio"] }
+hyper = { version = "1.8.1", features = ["full"] }
+hyper-util = { version = "0.1.19", features = ["full"] }
 insta = "1.46.1"
 jetstream_error = { version = "13.0.0", path = "components/jetstream_error", features = [
-  "s2n-quic",
+  "quinn",
   "test-paths",
 ] }
+jetstream_http = { path = "components/jetstream_http" }
 jetstream_rpc = { version = "13.0.0", path = "components/jetstream_rpc", default-features=false, features = [
-  "s2n-quic",
+  "quinn",
   "turmoil",
 ] }
 jetstream_wireformat = { version = "13.0.0", path = "components/jetstream_wireformat", features = [
   "all",
 ] }
 miette = "7.6.0"
-okstd = { version = "1.0.2", features = ["macros"] }
 prost = "0.14.3"
-s2n-quic = { workspace = true }
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+rustls-pemfile = "2.2.0"
 term-transcript = "0.4.0"
 tokio = { version = "1.47.1", features = ["full"] }
+tokio-rustls = "0.26.4"
+tower = { version = "0.5.3", features = ["util"] }
+tower-service = "0.3.3"
 turmoil = { workspace = true }
 
 [features]
 default = ["tracing"]
 9p = ["dep:jetstream_9p"]
-all = ["9p", "iroh", "quic", "tracing", "websocket",  "wasm"]
+all = ["9p", "http", "iroh", "quic", "tracing", "websocket", "wasm"]
 iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh", "jetstream_error/iroh"]
 quic = [
   "dep:jetstream_quic",
-  "jetstream_rpc/s2n-quic",
-  "jetstream_error/s2n-quic",
+  "jetstream_rpc/quinn",
+  "jetstream_error/quinn",
 ]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 wasm = []
@@ -103,11 +123,13 @@ cloudflare = [
   "jetstream_error/worker",
 ]
 serde = ["jetstream_rpc/serde"]
+http = ["dep:jetstream_http", "quic"]
 
 
 [workspace]
 members = [
   "fuzz",
+  "tools/mdbook-changelog",
   "components/jetstream_9p",
   "components/jetstream_cloudflare",
   "components/jetstream_radar",
@@ -120,7 +142,7 @@ members = [
   "components/jetstream_websocket",
   "components/jetstream_wireformat",
   "components/jetstream_error",
-  "tools/mdbook-changelog",
+  "components/jetstream_http",
 ]
 
 [workspace.package]
@@ -133,7 +155,6 @@ license = "BSD-3-Clause"
 
 [workspace.dependencies]
 iroh = { version = "0.93.2" }
-s2n-quic = "1.67.0"
 worker = "0.7.4"
 worker-macros = "0.7.4"
 tokio-util = { version = "0.7.16", features = ["codec"] }

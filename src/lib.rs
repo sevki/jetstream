@@ -57,6 +57,12 @@ pub mod quic {
     pub use jetstream_quic::*;
 }
 
+#[cfg(feature = "http")]
+pub mod http {
+    extern crate jetstream_http;
+    pub use jetstream_http::*;
+}
+
 #[cfg(feature = "iroh")]
 pub mod iroh {
     extern crate jetstream_iroh;

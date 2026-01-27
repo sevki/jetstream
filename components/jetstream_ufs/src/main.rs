@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
+use argh::FromArgs;
 use jetstream_rpc::server::{run, ServerCodec};
-use okstd::prelude::*;
 use tokio::net::UnixListener;
 use tokio_util::codec::Framed;
 
@@ -16,7 +16,7 @@ struct Ufs {
     socket: PathBuf,
 }
 
-#[okstd::main]
+#[tokio::main]
 async fn main() {
     let args: Ufs = argh::from_env();
     let unix_listener = UnixListener::bind(&args.socket).unwrap();

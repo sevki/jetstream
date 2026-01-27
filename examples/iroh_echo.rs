@@ -1,9 +1,9 @@
 #![cfg(feature = "iroh")]
 use crate::square_protocol::{SquareChannel, SquareService};
 use futures::stream::FuturesUnordered;
+use futures::StreamExt;
 use jetstream::prelude::*;
 use jetstream_macros::service;
-use okstd::prelude::*;
 
 #[service(tracing)]
 pub trait Square {
@@ -19,7 +19,7 @@ impl Square for SquareServer {
     }
 }
 
-#[okstd::main]
+#[tokio::main]
 async fn main() {
     // Initialize tracing subscriber
     tracing_subscriber::fmt()

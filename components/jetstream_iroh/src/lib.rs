@@ -24,14 +24,14 @@ pub use server::IrohServer;
 
 pub extern crate iroh;
 
-fn dt_resolver() -> impl IntoDiscovery {
+fn jetstream_resolver() -> impl IntoDiscovery {
     PkarrResolver::builder(
         url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
     .build()
 }
 
-fn dt_publisher_builder() -> impl IntoDiscovery {
+fn jetstream_publisher_builder() -> impl IntoDiscovery {
     PkarrPublisher::builder(
         url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
@@ -48,8 +48,8 @@ pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
             quic: None,
         }])))
         .alpns(vec![P::VERSION.as_bytes().to_vec()])
-        .add_discovery(dt_publisher_builder())
-        .add_discovery(dt_resolver())
+        .add_discovery(jetstream_publisher_builder())
+        .add_discovery(jetstream_resolver())
 }
 
 pub async fn client_builder<P: Protocol>(
