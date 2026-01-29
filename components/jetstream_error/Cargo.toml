@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_error"
-version = "13.0.0"
+version = "14.0.0"
 edition.workspace = true
 description.workspace = true
 documentation.workspace = true
@@ -12,7 +12,7 @@ license.workspace = true
 askama = { version = "0.15.3", optional = true }
 axum = { version = "0.8.8", default-features = false, optional = true }
 iroh = { workspace = true, optional = true }
-jetstream_wireformat = { version = "13.0.0", path = "../jetstream_wireformat" }
+jetstream_wireformat = { version = "14.0.0", path = "../jetstream_wireformat" }
 miette = { version = "7.6.0", features = ["fancy"] }
 quinn = { version = "0.11", optional = true }
 thiserror = "2.0.17"
