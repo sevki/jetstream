@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>⛅ Cloudflare - JetStream Book</title>
+        <title>Cloudflare (DEPRECATED) - JetStream Book</title>
 
 
         <!-- Custom HTML head -->
@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3b93754e.js";
+            window.path_to_searchindex_js = "searchindex-21d25cfc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-de8b6e67.js"></script>
+        <script src="toc-bd0508ba.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -177,146 +177,23 @@
                     <main>
                         <h1 id="jetstream-cloudflare"><a class="header" href="#jetstream-cloudflare">JetStream Cloudflare</a></h1>
 <p>Let’s say you’ve defined a service like so</p>
-<pre><code class="language-rs">use jetstream::prelude::*;
-
-#[cfg(feature = "server")]
-mod server;
-
-#[service]
-pub trait Radar {
-    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt;;
-}
+<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/lib.rs}}
 </code></pre>
 <p>The glue code for running it on Cloudflare Workers is</p>
-<pre><code class="language-rs">use jetstream::cloudflare::DefaultHtmlFallback;
-use worker::{event, *};
-
-use crate::{radar_protocol, Radar};
-struct RadarWorker;
-
-impl Radar for RadarWorker {
-    async fn ping(&amp;mut self) -&gt; jetstream::prelude::Result&lt;()&gt; {
-        Ok(())
-    }
-}
-
-#[event(fetch)]
-async fn fetch(
-    req: Request,
-    env: Env,
-    ctx: worker::Context,
-) -&gt; worker::Result&lt;Response&gt; {
-    let handler = radar_protocol::RadarService { inner: RadarWorker };
-    let mut router =
-        jetstream::cloudflare::Router::&lt;DefaultHtmlFallback&gt;::new([handler]);
-    router.fetch(req, env, ctx).await
-}
+<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/server.rs}}
 </code></pre>
 <p>The code for connecting to it is as follows:</p>
-<pre><code class="language-rs">#![cfg(feature = "client")]
-use std::time::Instant;
-
-use argh::FromArgs;
-use jetstream::{
-    prelude::{jetstream_rpc::HEADER_KEY_JETSTREAM_PROTO, tracing},
-    websocket::tokio_tungstenite::{
-        connect_async, tungstenite::client::IntoClientRequest,
-    },
-};
-use jetstream_radar::{
-    radar_protocol::{self, RadarChannel},
-    Radar,
-};
-use reqwest::header::HeaderValue;
-use url::Url;
-
-#[derive(FromArgs, PartialEq, Debug)]
-/// Top-level command.
-struct Client {
-    #[argh(subcommand)]
-    nested: Nested,
-}
-
-#[derive(FromArgs, PartialEq, Debug)]
-#[argh(subcommand)]
-enum Nested {
-    Ping(Ping),
-}
-
-#[derive(FromArgs, PartialEq, Debug)]
-/// First subcommand.
-#[argh(subcommand, name = "ping")]
-struct Ping {
-    #[argh(
-        option,
-        default = "Url::parse(\"wss://radar.jetstream.rs\").unwrap()"
-    )]
-    /// url to call
-    url: Url,
-}
-
-#[tokio::main]
-async fn main() {
-    rustls::crypto::ring::default_provider()
-        .install_default()
-        .expect("Failed to install rustls crypto provider");
-
-    let args: Client = argh::from_env();
-    match args.nested {
-        Nested::Ping(web_socket) =&gt; {
-            tracing::info!("Connecting to {}", web_socket.url);
-            let mut req = web_socket.url.clone().into_client_request().unwrap();
-            // this is a custom header, doesn't have anything to do with websocket handshake
-            req.headers_mut().insert(
-                HEADER_KEY_JETSTREAM_PROTO,
-                HeaderValue::from_static(radar_protocol::PROTOCOL_VERSION),
-            );
-
-            tracing::info!("Attempting websocket connection...");
-            let (ws_stream, response) = connect_async(req).await.unwrap();
-            tracing::info!(
-                "Connected! Response status: {:?}",
-                response.status()
-            );
-
-            let ws_transport = jetstream::websocket::WebSocketTransport::&lt;
-                RadarChannel,
-            &gt;::from(ws_stream);
-
-            let mut client =
-                radar_protocol::RadarChannel::new(100, Box::new(ws_transport));
-
-            tracing::info!("Sending ping...");
-            let now = Instant::now();
-            match tokio::time::timeout(
-                std::time::Duration::from_secs(5),
-                client.ping(),
-            )
-            .await
-            {
-                Ok(Ok(_)) =&gt; {
-                    println!("pong {}ms", now.elapsed().as_millis());
-                }
-                Ok(Err(e)) =&gt; tracing::error!("Ping failed: {:?}", e),
-                Err(_) =&gt; tracing::error!("Ping timed out after 5 seconds"),
-            }
-            tracing::info!("Client completed");
-        }
-    };
-}
+<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/bin/client.rs}}
 </code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="0intro.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="CHANGELOG.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="iroh.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -324,13 +201,10 @@ async fn main() {
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="0intro.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="CHANGELOG.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="iroh.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
-                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
-                    </a>
             </nav>
 
         </div>

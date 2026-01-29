@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["AltSvcLayer","AltSvcService","H3Service","JetStreamContext"]};
+window.SIDEBAR_ITEMS = {"fn":["new_jetsream_router"],"struct":["AltSvcLayer","AltSvcService","H3Service","JetStreamContext","JetStreamTemplate","ProtocolService"]};

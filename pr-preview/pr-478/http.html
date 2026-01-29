@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3b93754e.js";
+            window.path_to_searchindex_js = "searchindex-21d25cfc.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-de8b6e67.js"></script>
+        <script src="toc-bd0508ba.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -205,7 +205,9 @@ use axum::{routing::get, Router};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as HttpBuilder;
 use hyper_util::service::TowerToHyperService;
-use jetstream_http::{AltSvcLayer, H3Service, JetStreamContext};
+use jetstream_http::{
+    AltSvcLayer, H3Service, JetStreamContext, JetStreamTemplate,
+};
 use jetstream_rpc::context::{Peer, RemoteAddr};
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
@@ -231,27 +233,6 @@ fn load_key(path: &amp;str) -&gt; PrivateKeyDer&lt;'static&gt; {
     rustls_pemfile::private_key(&amp;mut &amp;*data)
         .expect("Failed to parse key")
         .expect("No key found")
-}
-
-#[derive(Template)]
-#[template(path = "template.html")]
-struct JetStreamTemplate&lt;'a&gt; {
-    body: &amp;'a str,
-    version: &amp;'static str,
-    year: u16,
-}
-
-impl Default for JetStreamTemplate&lt;'_&gt; {
-    fn default() -&gt; Self {
-        Self {
-            body: env!("CARGO_PKG_DESCRIPTION"),
-            version: env!("CARGO_PKG_VERSION"),
-            year: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| 1970 + (d.as_secs() / 31_536_000) as u16)
-                .unwrap_or(2026),
-        }
-    }
 }
 
 #[derive(Template)]

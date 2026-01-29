@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"externcrate":["tokio_tungstenite"],"struct":["WebSocketTransport"]};
