@@ -25,7 +25,7 @@ pub mod prelude {
     pub use jetstream_rpc::{
         client, client::ClientTransport, context::Context, server,
         server::Server, Error, Frame, Framed, Framer, Message, Mux, Protocol,
-        RpcCall, TagPool,
+        RpcCall, TagPool, RJETSTREAMERROR,
     };
     pub use jetstream_wireformat::{Data, WireFormat};
     pub use lazy_static::*;
@@ -43,12 +43,6 @@ pub mod prelude {
 pub mod p9 {
     extern crate jetstream_9p;
     pub use jetstream_9p::*;
-}
-
-#[cfg(feature = "websocket")]
-pub mod websocket {
-    extern crate jetstream_websocket;
-    pub use jetstream_websocket::*;
 }
 
 #[cfg(feature = "quic")]
@@ -69,9 +63,4 @@ pub mod iroh {
     pub use jetstream_iroh::*;
 }
 
-#[cfg(feature = "cloudflare")]
-pub mod cloudflare {
-    extern crate jetstream_cloudflare;
-    pub use jetstream_cloudflare::*;
-}
 pub mod macros;

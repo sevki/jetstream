@@ -22,7 +22,6 @@ thiserror = "2.0.17"
 url = { workspace = true }
 iroh = { workspace = true, optional = true }
 turmoil = { workspace = true, optional = true }
-worker = { workspace = true, optional = true }
 tokio = { version = "1.47.1", features = ["sync", "rt"] }
 async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"], optional = true }
@@ -62,7 +61,6 @@ default = []
 iroh = ["dep:iroh"]
 turmoil = ["dep:turmoil"]
 pkarr = []
-cloudflare = ["dep:worker"]
 serde = ["dep:serde"]
 quinn = ["dep:quinn"]
 x509 = ["dep:x509-certificate", "dep:bcder"]

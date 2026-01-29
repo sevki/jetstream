@@ -133,7 +133,7 @@ pub(crate) fn service_impl(
 
             const MESSAGE_ID_START: u8 = 101;
             /// Error response message type constant
-            pub const RERROR: u8 = 100;
+            pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
             pub const PROTOCOL_VERSION: &str = #protocol_version;
             const DIGEST: &str = #digest_lit;
 

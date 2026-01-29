@@ -1,0 +1,37 @@
+<section>
+    {% match severity %} {% when Some with (sev) %}
+    <h2>{{ sev }}</h2>
+    {% when None %}
+    <h2>Error</h2>
+    {% endmatch %} {% match code %} {% when Some with (c) %}
+    <code>{{ c }}</code>
+    {% when None %} {% endmatch %}
+
+    <p>{{ message }}</p>
+</section>
+
+{% match help %} {% when Some with (h) %}
+<section>
+    <h3>Help</h3>
+    <p>{{ h }}</p>
+</section>
+{% when None %} {% endmatch %} {% match url %} {% when Some with (u) %}
+<section>
+    <a href="{{ u }}">More information</a>
+</section>
+{% when None %} {% endmatch %} {% match labels %} {% when Some with (lbls) %} {%
+if !lbls.is_empty() %}
+<section>
+    <h3>Labels</h3>
+    <ul>
+        {% for label in lbls %}
+        <li>{{ label }}</li>
+        {% endfor %}
+    </ul>
+</section>
+{% endif %} {% when None %} {% endmatch %}
+
+<nav>
+    <a href="/">Go Home</a> |
+    <a href="https://github.com/sevki/jetstream/issues">Report Issue</a>
+</nav>

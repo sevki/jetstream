@@ -34,17 +34,6 @@ impl Error {
 
 /// Common error constants for RPC operations.
 impl Error {
-    /// Error returned when an invalid response is received.
-    #[allow(non_upper_case_globals)]
-    pub const InvalidResponse: Error = Error(MietteDiagnostic {
-        message: String::new(),
-        code: None,
-        severity: None,
-        help: None,
-        url: None,
-        labels: None,
-    });
-
     /// Creates a new Error from a string.
     #[track_caller]
     pub fn new(message: impl Into<String>) -> Self {

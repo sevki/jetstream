@@ -1,5 +1,4 @@
 - [JetStream](0intro.md)
-- [⛅ Cloudflare](cloudflare.md)
 - [🌐 Iroh](iroh.md)
 - [🚀 QUIC](quic.md)
 - [🌍 HTTP](http.md)
@@ -7,7 +6,6 @@
 - [🦀 Crates](crates.md)
     - [📦 jetstream](doc/jetstream/index.html)
     - [📦 jetstream_9p](doc/jetstream_9p/index.html)
-    - [📦 jetstream_cloudflare](doc/jetstream_cloudflare/index.html)
     - [📦 jetstream_error](doc/jetstream_error/index.html)
     - [📦 jetstream_http](doc/jetstream_http/index.html)
     - [📦 jetstream_iroh](doc/jetstream_iroh/index.html)
@@ -16,7 +14,8 @@
     - [📦 jetstream_quic](doc/jetstream_quic/index.html)
     - [📦 jetstream_rpc](doc/jetstream_rpc/index.html)
     - [📦 jetstream_ufs](doc/jetstream_ufs/index.html)
-    - [📦 jetstream_websocket](doc/jetstream_websocket/index.html)
     - [📦 jetstream_wireformat](doc/jetstream_wireformat/index.html)
 ---
 - [🆕 Changelog](CHANGELOG.md)
+---
+- [Cloudflare (DEPRECATED)](cloudflare.md)
