@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [14.0.0](https://github.com/sevki/jetstream/compare/v13.0.0...v14.0.0) (2026-01-29)
+
+
+### ⚠ BREAKING CHANGES
+
+* fully implenent jetstream_quic, introduced related traits
+
+### Features
+
+* fully implenent jetstream_quic, introduced related traits ([2b1e4a6](https://github.com/sevki/jetstream/commit/2b1e4a6fb4fdbfbf0d4247997c79b3300807350d))
+* introduce jetstream_http, supports http1.1,http2 and h3 ([10c203b](https://github.com/sevki/jetstream/commit/10c203b8d76f8a6b17045576fd5107dd746ca86b))
+
 ## [13.0.0](https://github.com/sevki/jetstream/compare/v12.1.0...v13.0.0) (2026-01-25)
 
 
