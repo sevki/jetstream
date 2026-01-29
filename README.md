@@ -15,8 +15,6 @@ JetStream supports multiple transport backends:
 
 - **[quinn](https://crates.io/crates/quinn)** - QUIC transport with TLS/mTLS support
 - **[iroh](https://crates.io/crates/iroh)** - P2P transport with built-in NAT traversal
-- **WebSocket** - Browser-compatible transport
-- **Cloudflare Workers** - Edge computing support
 
 ## Features
 

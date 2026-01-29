@@ -1,14 +1,13 @@
-use insta::assert_snapshot;
-use term_transcript::{
-    svg::{NamedPalette, Template, TemplateOptions},
-    Interaction, Transcript,
-};
-
 use super::*;
 
 #[test]
 #[cfg(feature = "test-paths")]
 fn test_error() {
+    use insta::assert_snapshot;
+    use term_transcript::{
+        svg::{NamedPalette, Template, TemplateOptions},
+        Interaction, Transcript,
+    };
     let _source = "Cpp is the best";
     let label = LabeledSpan::at(0..3, "should be Rust");
     // Return an error with full diagnostic information
@@ -23,7 +22,7 @@ fn test_error() {
     h.render_report(&mut output, &err).unwrap();
     let mut transcript = Transcript::new();
     assert_snapshot!(output,@r"
-    ]8;;file:///root/test_dir/components/jetstream_error/src/tests.rs:15:15\[31mserver::validation::E001 [0m[36;1;4m(link)[0m]8;;\
+    ]8;;file:///root/test_dir/components/jetstream_error/src/tests.rs:14:15\[31mserver::validation::E001 [0m[36;1;4m(link)[0m]8;;\
 
       [31m×[0m Server-side validation failed
     [36m  help: [0mCheck your input parameters

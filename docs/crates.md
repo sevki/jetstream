@@ -5,7 +5,6 @@ For detailed API documentation of all crates in this repository, please see the 
 The main crates include:
 - [**jetstream**](doc/jetstream/index.html) - The main crate with the `jetstream::prelude` module
 - [**jetstream_9p**](doc/jetstream_9p/index.html) - 9P protocol implementation
-- [**jetstream_cloudflare**](doc/jetstream_cloudflare/index.html) - Cloudflare Workers support
 - [**jetstream_error**](doc/jetstream_error/index.html) - Error types and handling
 - [**jetstream_iroh**](doc/jetstream_iroh/index.html) - Iroh peer-to-peer transport
 - [**jetstream_libc**](doc/jetstream_libc/index.html) - libc bindings

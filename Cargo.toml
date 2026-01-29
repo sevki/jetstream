@@ -57,8 +57,6 @@ jetstream_iroh = { version = "13.0.0", path = "components/jetstream_iroh", optio
 jetstream_macros = { version = "13.0.0", path = "components/jetstream_macros" }
 jetstream_quic = { version = "13.0.0", path = "components/jetstream_quic", optional = true }
 jetstream_rpc = { version = "13.0.0", path = "components/jetstream_rpc" }
-jetstream_websocket = { version = "13.0.0", path = "components/jetstream_websocket", optional = true }
-jetstream_cloudflare = { version = "13.0.0", path = "components/jetstream_cloudflare", optional = true }
 jetstream_error = { version = "13.0.0", path = "components/jetstream_error" }
 jetstream_wireformat = { version = "13.0.0", path = "components/jetstream_wireformat" }
 lazy_static = "1.5.0"
@@ -107,7 +105,7 @@ turmoil = { workspace = true }
 [features]
 default = ["tracing"]
 9p = ["dep:jetstream_9p"]
-all = ["9p", "http", "iroh", "quic", "tracing", "websocket", "wasm"]
+all = ["9p", "http", "iroh", "quic", "tracing", "wasm"]
 iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh", "jetstream_error/iroh"]
 quic = [
   "dep:jetstream_quic",
@@ -116,12 +114,6 @@ quic = [
 ]
 tracing = ["dep:tracing", "dep:tracing-subscriber"]
 wasm = []
-websocket = ["dep:jetstream_websocket"]
-cloudflare = [
-  "dep:jetstream_cloudflare",
-  "jetstream_rpc/cloudflare",
-  "jetstream_error/worker",
-]
 serde = ["jetstream_rpc/serde"]
 http = ["dep:jetstream_http", "quic"]
 
@@ -131,15 +123,12 @@ members = [
   "fuzz",
   "tools/mdbook-changelog",
   "components/jetstream_9p",
-  "components/jetstream_cloudflare",
-  "components/jetstream_radar",
   "components/jetstream_iroh",
   "components/jetstream_libc",
   "components/jetstream_macros",
   "components/jetstream_quic",
   "components/jetstream_rpc",
   "components/jetstream_ufs",
-  "components/jetstream_websocket",
   "components/jetstream_wireformat",
   "components/jetstream_error",
   "components/jetstream_http",
@@ -155,13 +144,8 @@ license = "BSD-3-Clause"
 
 [workspace.dependencies]
 iroh = { version = "0.93.2" }
-worker = "0.7.4"
 worker-macros = "0.7.4"
 tokio-util = { version = "0.7.16", features = ["codec"] }
 turmoil = "0.6.5"
 url = "2.5.7"
 cfg_aliases = "0.2.1"
-
-[patch.crates-io]
-jetstream_macros = { path = "components/jetstream_macros" }
-jetstream_wireformat = { path = "components/jetstream_wireformat" }

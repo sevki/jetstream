@@ -9,7 +9,9 @@ use axum::{routing::get, Router};
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as HttpBuilder;
 use hyper_util::service::TowerToHyperService;
-use jetstream_http::{AltSvcLayer, H3Service, JetStreamContext};
+use jetstream_http::{
+    AltSvcLayer, H3Service, JetStreamContext, JetStreamTemplate,
+};
 use jetstream_rpc::context::{Peer, RemoteAddr};
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
@@ -35,27 +37,6 @@ fn load_key(path: &str) -> PrivateKeyDer<'static> {
     rustls_pemfile::private_key(&mut &*data)
         .expect("Failed to parse key")
         .expect("No key found")
-}
-
-#[derive(Template)]
-#[template(path = "template.html")]
-struct JetStreamTemplate<'a> {
-    body: &'a str,
-    version: &'static str,
-    year: u16,
-}
-
-impl Default for JetStreamTemplate<'_> {
-    fn default() -> Self {
-        Self {
-            body: env!("CARGO_PKG_DESCRIPTION"),
-            version: env!("CARGO_PKG_VERSION"),
-            year: std::time::SystemTime::now()
-                .duration_since(std::time::UNIX_EPOCH)
-                .map(|d| 1970 + (d.as_secs() / 31_536_000) as u16)
-                .unwrap_or(2026),
-        }
-    }
 }
 
 #[derive(Template)]

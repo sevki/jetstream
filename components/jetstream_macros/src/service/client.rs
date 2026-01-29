@@ -138,7 +138,7 @@ fn generate_client_calls(
                             Rmessage::#variant_name(msg) => Ok(msg.0),
                             // When client receives an error frame, convert it to jetstream::prelude::Error
                             Rmessage::Error(err) => Err(err),
-                            _ => Err(Error::InvalidResponse),
+                            _ => Err(Error::new("invalid reposne")),
                         }
                     }
                 })

@@ -8,7 +8,7 @@ pub mod echo_protocol {
     use super::Echo;
     const MESSAGE_ID_START: u8 = 101;
     /// Error response message type constant
-    pub const RERROR: u8 = 100;
+    pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
     pub const PROTOCOL_VERSION: &str = "rs.jetstream.proto/NAME/VERSION-HASH";
     const DIGEST: &str = "DIGEST_HASH";
     pub const TPING: u8 = MESSAGE_ID_START + 0u8;
@@ -192,7 +192,7 @@ pub mod echo_protocol {
             match rmsg {
                 Rmessage::Ping(msg) => Ok(msg.0),
                 Rmessage::Error(err) => Err(err),
-                _ => Err(Error::InvalidResponse),
+                _ => Err(Error::new("invalid reposne")),
             }
         }
     }
