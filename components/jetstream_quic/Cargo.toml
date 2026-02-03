@@ -19,7 +19,7 @@ rustls = { version = "0.23", default-features = false, features = ["logging"] }
 tokio = { version = "1.48", features = ["full"] }
 tracing = "0.1.37"
 h3 = { version = "0.0.8", features = ["tracing"] }
-bytes = "1.10.1"
+bytes = "1.11.1"
 async-trait = "0.1.89"
 askama = "0.15.1"
 jetstream_rpc = { version = "14.0.0", path = "../jetstream_rpc", features = ["x509"] }
