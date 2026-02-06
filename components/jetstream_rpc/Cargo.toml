@@ -17,7 +17,7 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 trait-variant = "0.1.2"
 futures = "0.3.31"
 tokio-util.workspace = true
-bytes = "1.10.0"
+bytes = "1.11.1"
 thiserror = "2.0.17"
 url = { workspace = true }
 iroh = { workspace = true, optional = true }
@@ -51,7 +51,7 @@ jetstream_wireformat = { version = "14.0.0", path = "../jetstream_wireformat" }
 tokio = { version = "1.47.1", features = ["net"] }
 
 [dev-dependencies]
-bytes = "1.10.0"
+bytes = "1.11.1"
 anyhow = "1.0.100"
 proptest = "1.9.0"
 
