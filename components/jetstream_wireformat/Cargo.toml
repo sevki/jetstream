@@ -39,7 +39,7 @@ tokio-util = { version = "0.7.16", features = [
   "io",
   "time",
 ], optional = true }
-time = "0.3.44"
+time = "0.3.47"
 serde = { version = "1.0.218", features = ["derive"], optional = true }
 jetstream_macros = { version = "14.0.0", path = "../jetstream_macros" }
 mio = "1.0.3"
