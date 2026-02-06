@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [14.1.0](https://github.com/sevki/jetstream/compare/v14.0.0...v14.1.0) (2026-02-06)
+
+
+### Features
+
+* version is devived in crate ([0a2a1ea](https://github.com/sevki/jetstream/commit/0a2a1ea7aa3031e517deaa545a56ec69c3298773))
+* version is fixed, service now has a uses attribute ([3c9e03d](https://github.com/sevki/jetstream/commit/3c9e03d1bc59917c9fedded28f1d116109a1302c))
+
 ## [14.0.0](https://github.com/sevki/jetstream/compare/v13.0.0...v14.0.0) (2026-01-29)
 
 
