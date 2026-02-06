@@ -1,4 +1,4 @@
-use proc_macro2::{Literal, TokenStream};
+use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Attribute, Ident, TraitItem};
 
@@ -11,7 +11,6 @@ pub fn generate_server(
     trait_items: &[TraitItem],
     tmsgs: &[(Ident, TokenStream)],
     rmsgs: &[(Ident, TokenStream)],
-    _protocol_version: &Literal,
     method_attrs: &[Vec<Attribute>],
     enable_tracing: bool,
 ) -> TokenStream {

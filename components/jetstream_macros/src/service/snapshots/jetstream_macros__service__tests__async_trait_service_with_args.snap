@@ -9,7 +9,12 @@ pub mod echo_protocol {
     const MESSAGE_ID_START: u8 = 101;
     /// Error response message type constant
     pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
-    pub const PROTOCOL_VERSION: &str = "rs.jetstream.proto/NAME/VERSION-HASH";
+    /// Protocol version string constructed from the generated crate's version
+    pub const PROTOCOL_VERSION: &str = concat!(
+        "rs.jetstream.proto/", "echo", "/", env!("CARGO_PKG_VERSION_MAJOR"), ".",
+        env!("CARGO_PKG_VERSION_MINOR"), ".", env!("CARGO_PKG_VERSION_PATCH"), "-",
+        "4847711e"
+    );
     const DIGEST: &str = "DIGEST_HASH";
     pub const TPING: u8 = MESSAGE_ID_START + 0u8;
     pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;

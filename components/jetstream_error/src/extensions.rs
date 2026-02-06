@@ -48,16 +48,6 @@ impl From<iroh::endpoint::ConnectionError> for crate::Error {
     }
 }
 
-#[cfg(feature = "worker")]
-impl From<worker::Error> for crate::Error {
-    fn from(value: worker::Error) -> Self {
-        crate::Error::from(
-            miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::worker::error"),
-        )
-    }
-}
-
 impl From<std::convert::Infallible> for crate::Error {
     fn from(value: std::convert::Infallible) -> Self {
         match value {}

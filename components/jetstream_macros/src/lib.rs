@@ -57,14 +57,28 @@ pub fn jetstream_wire_format(input: TokenStream) -> TokenStream {
 }
 
 /// Service attribute macro for creating RPC services
+///
+/// ## Attributes
+///
+/// - `async_trait` - Use async_trait instead of the default make(Send + Sync)
+/// - `tracing` - Enable auto-instrumentation for all methods
+/// - `uses(path::to::mod::*)` - Add use statements to the generated protocol module.
+///   Multiple paths can be specified: `uses(some::mod::*, other::mod::Type)`
+///
+/// ## Example
+///
+/// ```ignore
+/// #[service(uses(some::mod::*, other::mod::Type))]
+/// pub trait Backend {
+///     async fn read_commit(&mut self, id: CommitId) -> Result<Commit>;
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn service(attr: TokenStream, item: TokenStream) -> TokenStream {
-    let is_async_trait =
-        !attr.is_empty() && attr.to_string().contains("async_trait");
-    let enable_tracing = attr.to_string().contains("tracing");
+    let attr = service::parse_service_attr(attr.into());
     let item = parse_macro_input!(item as syn::ItemTrait);
 
-    service::service_impl(item, is_async_trait, enable_tracing).into()
+    service::service_impl(item, attr).into()
 }
 
 /// Error macro for creating rich Jetstream errors

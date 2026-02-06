@@ -13,11 +13,67 @@ use syn::{ItemTrait, TraitItem};
 
 use crate::service::tracing::take_attributes;
 
-pub(crate) fn service_impl(
-    item: ItemTrait,
-    is_async_trait: bool,
-    enable_tracing: bool,
-) -> TokenStream {
+mod kw {
+    syn::custom_keyword!(uses);
+    syn::custom_keyword!(tracing);
+    syn::custom_keyword!(async_trait);
+}
+
+/// Parsed service attribute arguments
+#[derive(Default)]
+pub(crate) struct ServiceAttr {
+    pub use_paths: Vec<syn::UseTree>,
+    pub enable_tracing: bool,
+    pub is_async_trait: bool,
+}
+
+impl syn::parse::Parse for ServiceAttr {
+    fn parse(input: syn::parse::ParseStream) -> syn::Result<Self> {
+        let mut attr = ServiceAttr::default();
+
+        while !input.is_empty() {
+            let lookahead = input.lookahead1();
+            if lookahead.peek(kw::uses) {
+                input.parse::<kw::uses>()?;
+                let content;
+                syn::parenthesized!(content in input);
+                let trees = content
+                    .parse_terminated(syn::UseTree::parse, syn::Token![,])?;
+                attr.use_paths.extend(trees);
+            } else if lookahead.peek(kw::tracing) {
+                input.parse::<kw::tracing>()?;
+                attr.enable_tracing = true;
+            } else if lookahead.peek(kw::async_trait) {
+                input.parse::<kw::async_trait>()?;
+                attr.is_async_trait = true;
+            } else {
+                return Err(lookahead.error());
+            }
+            // Trailing comma is optional
+            if input.peek(syn::Token![,]) {
+                input.parse::<syn::Token![,]>()?;
+            }
+        }
+
+        Ok(attr)
+    }
+}
+
+/// Parses service attribute arguments
+pub(crate) fn parse_service_attr(attr: TokenStream) -> ServiceAttr {
+    if attr.is_empty() {
+        return ServiceAttr::default();
+    }
+
+    syn::parse2::<ServiceAttr>(attr).unwrap_or_default()
+}
+
+pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
+    let ServiceAttr {
+        use_paths,
+        enable_tracing,
+        is_async_trait,
+    } = attr;
     let trait_name = &item.ident;
     let maps = take_attributes(
         item.items
@@ -35,18 +91,9 @@ pub(crate) fn service_impl(
     // Generate protocol metadata
     let service_name = format_ident!("{}Service", trait_name);
     let channel_name = format_ident!("{}Channel", trait_name);
-    let digest = sha256::digest(item.to_token_stream().to_string());
-
-    #[allow(clippy::to_string_in_format_args)]
-    let protocol_version = format!(
-        "rs.jetstream.proto/{}/{}.{}.{}-{}",
-        trait_name.to_string().to_lowercase(),
-        env!("CARGO_PKG_VERSION_MAJOR"),
-        env!("CARGO_PKG_VERSION_MINOR"),
-        env!("CARGO_PKG_VERSION_PATCH"),
-        digest[0..8].to_string()
+    let digest = Literal::string(
+        sha256::digest(item.to_token_stream().to_string()).as_str(),
     );
-    let protocol_version = Literal::string(protocol_version.as_str());
 
     // Generate message structs and collect metadata
     let mut tmsgs = Vec::new();
@@ -94,7 +141,6 @@ pub(crate) fn service_impl(
         &item.items,
         &tmsgs,
         &rmsgs,
-        &protocol_version,
         &method_attrs,
         enable_tracing,
     );
@@ -118,11 +164,19 @@ pub(crate) fn service_impl(
 
     let proto_mod =
         format_ident!("{}_protocol", trait_name.to_string().to_lowercase());
-    let digest_lit = Literal::string(digest.as_str());
+    let digest_lit = digest.clone();
+    let trait_name_lower =
+        Literal::string(&trait_name.to_string().to_lowercase());
+    let digest_prefix = Literal::string(
+        &sha256::digest(item.to_token_stream().to_string())[0..8],
+    );
 
     // Generate message definitions
     let tmsg_definitions = tmsgs.iter().map(|(_ident, def)| quote! { #def });
     let rmsg_definitions = rmsgs.iter().map(|(_ident, def)| quote! { #def });
+
+    // Generate additional use statements
+    let additional_uses = use_paths.iter().map(|tree| quote! { use #tree; });
 
     // r[impl jetstream.macro.source_span]
     quote! {
@@ -130,11 +184,24 @@ pub(crate) fn service_impl(
             use jetstream::prelude::*;
             use std::mem;
             use super::#trait_name;
+            #(#additional_uses)*
 
             const MESSAGE_ID_START: u8 = 101;
             /// Error response message type constant
             pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
-            pub const PROTOCOL_VERSION: &str = #protocol_version;
+            /// Protocol version string constructed from the generated crate's version
+            pub const PROTOCOL_VERSION: &str = concat!(
+                "rs.jetstream.proto/",
+                #trait_name_lower,
+                "/",
+                env!("CARGO_PKG_VERSION_MAJOR"),
+                ".",
+                env!("CARGO_PKG_VERSION_MINOR"),
+                ".",
+                env!("CARGO_PKG_VERSION_PATCH"),
+                "-",
+                #digest_prefix
+            );
             const DIGEST: &str = #digest_lit;
 
             #(#msg_ids)*
