@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use super::service_impl;
+use super::{service_impl, ServiceAttr};
 use syn::parse_quote;
 
 fn run_test_with_filters<F>(test_fn: F)
@@ -32,7 +32,7 @@ fn test_service_with_instrument_attribute() {
             async fn ping(&mut self, message: String) -> Result<String, std::io::Error>;
         }
     };
-    let output = service_impl(input, false, false);
+    let output = service_impl(input, ServiceAttr::default());
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {
@@ -47,7 +47,13 @@ fn test_service_with_tracing_enabled() {
             async fn ping(&mut self, message: String) -> Result<String>;
         }
     };
-    let output = service_impl(input, false, true);
+    let output = service_impl(
+        input,
+        ServiceAttr {
+            enable_tracing: true,
+            ..Default::default()
+        },
+    );
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {
@@ -68,7 +74,7 @@ fn test_service_with_custom_instrument() {
             async fn ping(&mut self, message: String) -> Result<String, std::io::Error>;
         }
     };
-    let output = service_impl(input, false, false);
+    let output = service_impl(input, ServiceAttr::default());
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {
@@ -86,7 +92,13 @@ fn test_service_with_tracing_and_manual_override() {
             async fn pong(&mut self) -> Result<(), std::io::Error>;
         }
     };
-    let output = service_impl(input, false, true);
+    let output = service_impl(
+        input,
+        ServiceAttr {
+            enable_tracing: true,
+            ..Default::default()
+        },
+    );
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {
@@ -107,7 +119,13 @@ fn test_service_multiple_methods_with_tracing() {
             async fn get_status(&self) -> Result<String, std::io::Error>;
         }
     };
-    let output = service_impl(input, false, true);
+    let output = service_impl(
+        input,
+        ServiceAttr {
+            enable_tracing: true,
+            ..Default::default()
+        },
+    );
     let syntax_tree: syn::File = syn::parse2(output).unwrap();
     let output_str = prettyplease::unparse(&syntax_tree);
     run_test_with_filters(|| {

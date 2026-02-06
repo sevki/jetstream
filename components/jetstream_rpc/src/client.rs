@@ -1,7 +1,7 @@
-
-use crate::{Error, Frame, Protocol};
+use crate::{error::Error, Frame, Protocol};
 use futures::{
-    stream::{SplitSink, SplitStream}, Sink, Stream, StreamExt,
+    stream::{SplitSink, SplitStream},
+    Sink, Stream, StreamExt,
 };
 use jetstream_wireformat::WireFormat;
 

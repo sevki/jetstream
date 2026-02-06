@@ -1,11 +1,13 @@
 ---
-source: components/jetstream_macros/src/service/tests_tracing.rs
+source: components/jetstream_macros/src/service/tests.rs
 expression: output_str
 ---
 pub mod echo_protocol {
     use jetstream::prelude::*;
     use std::mem;
     use super::Echo;
+    use some::module::*;
+    use other::Type;
     const MESSAGE_ID_START: u8 = 101;
     /// Error response message type constant
     pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
@@ -13,19 +15,17 @@ pub mod echo_protocol {
     pub const PROTOCOL_VERSION: &str = concat!(
         "rs.jetstream.proto/", "echo", "/", env!("CARGO_PKG_VERSION_MAJOR"), ".",
         env!("CARGO_PKG_VERSION_MINOR"), ".", env!("CARGO_PKG_VERSION_PATCH"), "-",
-        "de046e85"
+        "8d935c22"
     );
     const DIGEST: &str = "DIGEST_HASH";
     pub const TPING: u8 = MESSAGE_ID_START + 0u8;
     pub const RPING: u8 = MESSAGE_ID_START + 0u8 + 1;
     #[allow(non_camel_case_types)]
     #[derive(Debug, JetStreamWireFormat)]
-    pub struct Tping {
-        pub message: String,
-    }
+    pub struct Tping {}
     #[allow(non_camel_case_types)]
     #[derive(Debug, JetStreamWireFormat)]
-    pub struct Rping(pub String);
+    pub struct Rping(pub ());
     #[derive(Debug)]
     #[repr(u8)]
     pub enum Tmessage {
@@ -134,17 +134,13 @@ pub mod echo_protocol {
             Output = Result<Frame<<Self as Protocol>::Response>>,
         > + Send + Sync {
             Box::pin(async move {
-                let _span = tracing::debug_span!(
-                    "rpc_server", service = stringify!(Echo), tag = frame.tag
-                );
-                let _enter = _span.enter();
                 let req: <Self as Protocol>::Request = frame.msg;
                 let res: std::result::Result<
                     <Self as Protocol>::Response,
                     Self::Error,
                 > = match req {
                     Tmessage::Ping(msg) => {
-                        match self.ping(msg.message).await {
+                        match self.ping().await {
                             Ok(result) => {
                                 let ret = Rping(result);
                                 Ok(Rmessage::Ping(ret))
@@ -169,9 +165,8 @@ pub mod echo_protocol {
     where
         T: Echo + Send + Sync + Sized,
     {
-        #[tracing::instrument(skip(self))]
-        async fn ping(&mut self, message: String) -> Result<String> {
-            self.inner.ping(message).await
+        async fn ping(&self) -> Result<(), std::io::Error> {
+            self.inner.ping().await
         }
     }
     pub struct EchoChannel {
@@ -194,9 +189,8 @@ pub mod echo_protocol {
         const VERSION: &'static str = PROTOCOL_VERSION;
     }
     impl Echo for EchoChannel {
-        #[tracing::instrument(skip(self))]
-        async fn ping(&mut self, message: String) -> Result<String> {
-            let req = Tmessage::Ping(Tping { message });
+        async fn ping(&self) -> Result<(), std::io::Error> {
+            let req = Tmessage::Ping(Tping {});
             let context = Context::default();
             let rframe = self.mux.rpc(context, req).await.await?;
             let rmsg = rframe.msg;
@@ -210,5 +204,5 @@ pub mod echo_protocol {
 }
 #[jetstream::prelude::make(Send+Sync)]
 pub trait Echo {
-    async fn ping(&mut self, message: String) -> Result<String>;
+    async fn ping(&self) -> Result<(), std::io::Error>;
 }
