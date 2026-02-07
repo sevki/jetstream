@@ -70,16 +70,37 @@ openssl pkcs12 -export \
     -certfile ca.pem \
     -passout pass:changeit
 
+# --- 3b. Generate Second Client Certificate (for rejection testing) ---
+echo ""
+echo "3b. Generating second client certificate (unauthorized)..."
+openssl req -new -nodes \
+    -newkey ec -pkeyopt ec_paramgen_curve:secp384r1 \
+    -keyout client2.key \
+    -out client2.csr \
+    -config config/client2.cnf
+
+openssl x509 -req \
+    -in client2.csr \
+    -CA ca.pem \
+    -CAkey ca.key \
+    -CAcreateserial \
+    -out client2.pem \
+    -days 365 \
+    -sha256 \
+    -extensions req_ext \
+    -extfile config/client2.cnf
+
 # --- 4. Verify certificates ---
 echo ""
 echo "4. Verifying certificates..."
 openssl verify -CAfile ca.pem server.pem
 openssl verify -CAfile ca.pem client.pem
+openssl verify -CAfile ca.pem client2.pem
 
 # --- 5. Clean up ---
 echo ""
 echo "5. Cleaning up temporary files..."
-rm -f server.csr client.csr ca.srl
+rm -f server.csr client.csr client2.csr ca.srl
 
 # --- Summary ---
 echo ""

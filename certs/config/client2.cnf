@@ -1,0 +1,29 @@
+[req]
+distinguished_name = client_distinguished_name
+prompt = no
+x509_extensions = v3_req
+req_extensions = req_ext
+
+[client_distinguished_name]
+C = US
+ST = Test
+L = Test
+O = JetStream Client
+CN = unauthorized-client
+
+[v3_req]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth
+subjectAltName = @alt_names
+authorityKeyIdentifier = keyid,issuer
+
+[req_ext]
+basicConstraints = CA:FALSE
+keyUsage = digitalSignature, keyEncipherment
+extendedKeyUsage = clientAuth
+subjectAltName = @alt_names
+
+[alt_names]
+email.1 = unauthorized@example.com
+URI.1 = spiffe://jetstream.rs/client/unauthorized-client

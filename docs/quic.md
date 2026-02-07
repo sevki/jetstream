@@ -128,10 +128,19 @@ For production, use certificates from a trusted CA or Let's Encrypt.
 JetStream QUIC supports mutual TLS authentication:
 
 ```rust
+// Build a client certificate verifier from a CA cert
+let mut root_store = rustls::RootCertStore::empty();
+root_store.add(ca_cert).expect("Failed to add CA cert");
+let client_verifier =
+    rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
+        .allow_unauthenticated()
+        .build()
+        .expect("Failed to build client verifier");
+
 let server = Server::new_with_mtls(
     server_cert,
     server_key,
-    ca_cert,      // CA that signed client certificates
+    client_verifier,  // any Arc<dyn ClientCertVerifier>
     addr,
     router,
 );

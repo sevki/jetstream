@@ -7,9 +7,7 @@ use quinn::crypto::rustls::QuicServerConfig;
 
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
-use rustls::server::WebPkiClientVerifier;
-
-use rustls::RootCertStore;
+use rustls::server::danger::ClientCertVerifier;
 
 use tracing::trace_span;
 
@@ -55,25 +53,16 @@ impl Server {
     /// # Arguments
     /// * `cert` - Server certificate
     /// * `key` - Server private key
-    /// * `ca_cert` - CA certificate to verify client certificates
+    /// * `client_verifier` - Client certificate verifier (e.g. `WebPkiClientVerifier` or a custom implementation)
     /// * `addr` - Socket address to bind to
     /// * `router` - Router for handling connections
     pub fn new_with_mtls(
         cert: CertificateDer<'static>,
         key: PrivateKeyDer<'static>,
-        ca_cert: CertificateDer<'static>,
+        client_verifier: Arc<dyn ClientCertVerifier>,
         addr: SocketAddr,
         router: Router,
     ) -> Self {
-        let mut root_store = RootCertStore::empty();
-        root_store.add(ca_cert).expect("Failed to add CA cert");
-
-        let client_verifier =
-            WebPkiClientVerifier::builder(Arc::new(root_store))
-                .allow_unauthenticated() // for browser compatibility
-                .build()
-                .expect("Failed to build client verifier");
-
         let mut tls_config = rustls::ServerConfig::builder()
             .with_client_cert_verifier(client_verifier)
             .with_single_cert(vec![cert], key)

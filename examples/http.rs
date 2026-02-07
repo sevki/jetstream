@@ -175,10 +175,17 @@ async fn run_http3_server(
     quic_router.register(h3_service);
 
     let server = if let Some(ca) = ca_cert {
+        let mut root_store = rustls::RootCertStore::empty();
+        root_store.add(ca).expect("Failed to add CA cert");
+        let client_verifier =
+            rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
+                .allow_unauthenticated()
+                .build()
+                .expect("Failed to build client verifier");
         jetstream_quic::Server::new_with_mtls(
             server_cert,
             server_key,
-            ca,
+            client_verifier,
             addr,
             quic_router,
         )
