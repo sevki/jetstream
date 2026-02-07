@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_quic"
-version = "14.1.0"
+version = "15.0.0"
 edition.workspace = true
 description.workspace = true
 license.workspace = true
@@ -22,7 +22,7 @@ h3 = { version = "0.0.8", features = ["tracing"] }
 bytes = "1.11.1"
 async-trait = "0.1.89"
 askama = "0.15.1"
-jetstream_rpc = { version = "14.1.0", path = "../jetstream_rpc", features = ["x509"] }
+jetstream_rpc = { version = "15.0.0", path = "../jetstream_rpc", features = ["x509"] }
 tokio-util.workspace = true
 futures = "0.3.31"
 
