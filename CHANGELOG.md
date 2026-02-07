@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [15.0.0](https://github.com/sevki/jetstream/compare/v14.1.0...v15.0.0) (2026-02-07)
+
+
+### ⚠ BREAKING CHANGES
+
+* mtls now accepts a client verifier
+
+### Features
+
+* mtls now accepts a client verifier ([3b8fe8c](https://github.com/sevki/jetstream/commit/3b8fe8c771e6d09aca5d85e771041d07db80b7b0))
+
 ## [14.1.0](https://github.com/sevki/jetstream/compare/v14.0.0...v14.1.0) (2026-02-06)
 
 
