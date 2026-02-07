@@ -87,14 +87,27 @@ async fn server(
     let server_key = load_key(SERVER_KEY_PEM);
     let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
 
+    let mut root_store = rustls::RootCertStore::empty();
+    root_store.add(ca_cert).expect("Failed to add CA cert");
+    let client_verifier =
+        rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
+            .allow_unauthenticated()
+            .build()
+            .expect("Failed to build client verifier");
+
     // Register the EchoService as a protocol handler
     let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
 
     let mut router = Router::new();
     router.register(Arc::new(echo_service));
 
-    let server =
-        Server::new_with_mtls(server_cert, server_key, ca_cert, addr, router);
+    let server = Server::new_with_mtls(
+        server_cert,
+        server_key,
+        client_verifier,
+        addr,
+        router,
+    );
 
     tracing::info!("Server listening on {}", addr);
     server.run().await;
