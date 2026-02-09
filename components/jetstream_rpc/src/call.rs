@@ -4,7 +4,6 @@ use futures::FutureExt;
 
 use crate::Frame;
 
-
 use crate::Protocol;
 
 pub struct RpcCall<P: Protocol> {
@@ -25,10 +24,12 @@ impl<P: Protocol> Future for RpcCall<P> {
             std::task::Poll::Ready(Ok(result)) => {
                 std::task::Poll::Ready(result)
             }
-            std::task::Poll::Ready(Err(err)) => std::task::Poll::Ready(Err(
-                jetstream_error::Error::new(err.to_string())
-                    .with_code("jetstream::mux::error"),
-            )),
+            std::task::Poll::Ready(Err(err)) => {
+                std::task::Poll::Ready(Err(jetstream_error::Error::with_code(
+                    err.to_string(),
+                    "jetstream::mux::error",
+                )))
+            }
             std::task::Poll::Pending => std::task::Poll::Pending,
         }
     }

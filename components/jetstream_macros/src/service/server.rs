@@ -98,7 +98,7 @@ pub fn generate_server(
         {
             type Request = Tmessage;
             type Response = Rmessage;
-            // r[impl jetstream.macro.error_type]
+            // r[impl jetstream.macro.error-type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
         }
@@ -116,7 +116,7 @@ pub fn generate_server(
                     let res: std::result::Result<<Self as Protocol>::Response, Self::Error> = match req {
                         #(#matches)*
                     };
-                    // r[impl jetstream.macro.server_error]
+                    // r[impl jetstream.macro.server-error]
                     // When server inner returns an error, serialize it as an Error frame
                     let response = match res {
                         Ok(msg) => msg,
@@ -171,6 +171,7 @@ fn generate_trait_methods(
                 // Get tracing attributes for this method
                 let attrs = &method_attrs[index];
 
+                // r[impl jetstream.macro.tracing-instrument]
                 // If enable_tracing is true and no explicit attributes, add default
                 let tracing_attrs: Vec<TokenStream> =
                     if enable_tracing && attrs.is_empty() {

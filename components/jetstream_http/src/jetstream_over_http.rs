@@ -67,8 +67,10 @@ where
                 Ok(bytes) => bytes,
                 Err(err) => {
                     return Ok(error_to_response(
-                        jetstream_error::Error::new(err.to_string())
-                            .with_code("jetstream_http::E0001"),
+                        jetstream_error::Error::with_code(
+                            err.to_string(),
+                            "jetstream_http::E0001",
+                        ),
                     ));
                 }
             };
@@ -77,8 +79,10 @@ where
                     Ok(frame) => frame,
                     Err(err) => {
                         return Ok(error_to_response(
-                            jetstream_error::Error::new(err.to_string())
-                                .with_code("jetstream_http::E0002"),
+                            jetstream_error::Error::with_code(
+                                err.to_string(),
+                                "jetstream_http::E0002",
+                            ),
                         ));
                     }
                 };

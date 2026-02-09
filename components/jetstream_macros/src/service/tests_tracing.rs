@@ -40,6 +40,7 @@ fn test_service_with_instrument_attribute() {
     })
 }
 
+/// r[verify jetstream.macro.tracing-instrument]
 #[test]
 fn test_service_with_tracing_enabled() {
     let input: syn::ItemTrait = parse_quote! {

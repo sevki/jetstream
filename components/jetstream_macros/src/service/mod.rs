@@ -178,7 +178,7 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
     // Generate additional use statements
     let additional_uses = use_paths.iter().map(|tree| quote! { use #tree; });
 
-    // r[impl jetstream.macro.source_span]
+    // r[impl jetstream.macro.source-span]
     quote! {
         #vis mod #proto_mod {
             use jetstream::prelude::*;
