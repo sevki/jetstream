@@ -3,7 +3,7 @@ use std::net::{IpAddr, Ipv4Addr};
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_rpc::{client::ClientCodec, server::run, Framed};
-use miette::{LabeledSpan, Severity};
+
 use turmoil::{
     net::{TcpListener, TcpStream},
     Builder,
@@ -28,16 +28,11 @@ impl Echo for EchoImpl {
     }
 
     async fn fail_with_error(&mut self) -> Result<String> {
-        let label = LabeledSpan::new_primary_with_span(
-            Some("label".to_string()),
-            (1, 2),
+        // Return an error with diagnostic information
+        let err = Error::with_code(
+            "Server-side validation failed",
+            "server::validation::E001",
         );
-        // Return an error with full diagnostic information
-        let err = Error::new("Server-side validation failed")
-            .with_code("server::validation::E001")
-            .with_severity(Severity::Error)
-            .with_help("Check your input parameters")
-            .with_label(label);
 
         Err(err)
     }
@@ -91,8 +86,8 @@ fn e2e() {
         .expect("network partitions during connect failed");
 }
 
-/// r[impl jetstream.test.error_propagation.e2e]
-/// r[verify jetstream.test.error_propagation.e2e]
+/// r[impl jetstream.test.error-propagation.e2e]
+/// r[verify jetstream.test.error-propagation.e2e]
 /// End-to-end test that verifies error propagation from server to client
 /// with all diagnostic information preserved.
 fn error_propagation_e2e() -> turmoil::Result {

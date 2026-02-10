@@ -1,9 +1,9 @@
 #[cfg(feature = "quinn")]
 impl From<quinn::ConnectionError> for crate::Error {
     fn from(value: quinn::ConnectionError) -> Self {
-        crate::Error::from(
-            miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::quinn::connection_error"),
+        crate::Error::with_code(
+            value.to_string(),
+            "jetstream::quinn::connection_error",
         )
     }
 }
@@ -11,9 +11,9 @@ impl From<quinn::ConnectionError> for crate::Error {
 #[cfg(feature = "quinn")]
 impl From<quinn::WriteError> for crate::Error {
     fn from(value: quinn::WriteError) -> Self {
-        crate::Error::from(
-            miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::quinn::write_error"),
+        crate::Error::with_code(
+            value.to_string(),
+            "jetstream::quinn::write_error",
         )
     }
 }
@@ -21,9 +21,9 @@ impl From<quinn::WriteError> for crate::Error {
 #[cfg(feature = "quinn")]
 impl From<quinn::ReadError> for crate::Error {
     fn from(value: quinn::ReadError) -> Self {
-        crate::Error::from(
-            miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::quinn::read_error"),
+        crate::Error::with_code(
+            value.to_string(),
+            "jetstream::quinn::read_error",
         )
     }
 }
@@ -31,9 +31,9 @@ impl From<quinn::ReadError> for crate::Error {
 #[cfg(feature = "quinn")]
 impl From<quinn::ClosedStream> for crate::Error {
     fn from(value: quinn::ClosedStream) -> Self {
-        crate::Error::from(
-            miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::quinn::closed_stream"),
+        crate::Error::with_code(
+            value.to_string(),
+            "jetstream::quinn::closed_stream",
         )
     }
 }
@@ -41,9 +41,9 @@ impl From<quinn::ClosedStream> for crate::Error {
 #[cfg(feature = "iroh")]
 impl From<iroh::endpoint::ConnectionError> for crate::Error {
     fn from(value: iroh::endpoint::ConnectionError) -> Self {
-        crate::Error::from(
-            miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::iroh::connection_error"),
+        crate::Error::with_code(
+            value.to_string(),
+            "jetstream::iroh::connection_error",
         )
     }
 }
@@ -56,9 +56,9 @@ impl From<std::convert::Infallible> for crate::Error {
 
 impl From<std::net::AddrParseError> for crate::Error {
     fn from(value: std::net::AddrParseError) -> Self {
-        crate::Error::from(
-            miette::MietteDiagnostic::new(value.to_string())
-                .with_code("jetstream::addr_parse_error"),
+        crate::Error::with_code(
+            value.to_string(),
+            "jetstream::addr_parse_error",
         )
     }
 }

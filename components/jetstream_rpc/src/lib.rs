@@ -73,8 +73,7 @@ pub trait Message: WireFormat {}
 pub trait Protocol: Send + Sync {
     type Request: Framer;
     type Response: Framer;
-    // r[impl jetstream.error.type]
-    // r[verify jetstream.error.type]
+    // r[impl jetstream.error.v2.into-error]
     type Error: IntoError;
     const VERSION: &'static str;
 }

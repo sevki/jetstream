@@ -1,9 +1,9 @@
 ---
 source: components/jetstream_error/src/tests.rs
-expression: svg_data
+expression: svg_content
 ---
 <!-- Created with term-transcript v0.4.0 (https://github.com/slowli/term-transcript) -->
-<svg viewBox="0 0 720 120" width="720" height="120" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 720 642" width="720" height="642" xmlns="http://www.w3.org/2000/svg">
   <style>
     .container {
       font: 14px SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
@@ -19,31 +19,60 @@ expression: svg_data
     .underline { text-decoration: underline; }
     .dimmed { fill-opacity: 0.7; }
     .hard-br { font-size: 16px; fill-opacity: 0.8; user-select: none; }
-    .fg0 { fill: #0c0c0c; } .output-bg .fg0 { stroke: #0c0c0c; }
-    .fg1 { fill: #c50f1f; } .output-bg .fg1 { stroke: #c50f1f; }
-    .fg2 { fill: #13a10e; } .output-bg .fg2 { stroke: #13a10e; }
-    .fg3 { fill: #c19c00; } .output-bg .fg3 { stroke: #c19c00; }
-    .fg4 { fill: #0037da; } .output-bg .fg4 { stroke: #0037da; }
-    .fg5 { fill: #881798; } .output-bg .fg5 { stroke: #881798; }
-    .fg6 { fill: #3a96dd; } .output-bg .fg6 { stroke: #3a96dd; }
-    .fg7 { fill: #cccccc; } .output-bg .fg7 { stroke: #cccccc; }
-    .fg8 { fill: #767676; } .output-bg .fg8 { stroke: #767676; }
-    .fg9 { fill: #e74856; } .output-bg .fg9 { stroke: #e74856; }
-    .fg10 { fill: #16c60c; } .output-bg .fg10 { stroke: #16c60c; }
-    .fg11 { fill: #f9f1a5; } .output-bg .fg11 { stroke: #f9f1a5; }
-    .fg12 { fill: #3b78ff; } .output-bg .fg12 { stroke: #3b78ff; }
-    .fg13 { fill: #b4009e; } .output-bg .fg13 { stroke: #b4009e; }
-    .fg14 { fill: #61d6d6; } .output-bg .fg14 { stroke: #61d6d6; }
-    .fg15 { fill: #f2f2f2; } .output-bg .fg15 { stroke: #f2f2f2; }
+    .fg0 { fill: #282936; } .output-bg .fg0 { stroke: #282936; }
+    .fg1 { fill: #ea51b2; } .output-bg .fg1 { stroke: #ea51b2; }
+    .fg2 { fill: #ebff87; } .output-bg .fg2 { stroke: #ebff87; }
+    .fg3 { fill: #00f769; } .output-bg .fg3 { stroke: #00f769; }
+    .fg4 { fill: #62d6e8; } .output-bg .fg4 { stroke: #62d6e8; }
+    .fg5 { fill: #b45bcf; } .output-bg .fg5 { stroke: #b45bcf; }
+    .fg6 { fill: #a1efe4; } .output-bg .fg6 { stroke: #a1efe4; }
+    .fg7 { fill: #e9e9f4; } .output-bg .fg7 { stroke: #e9e9f4; }
+    .fg8 { fill: #626483; } .output-bg .fg8 { stroke: #626483; }
+    .fg9 { fill: #b45bcf; } .output-bg .fg9 { stroke: #b45bcf; }
+    .fg10 { fill: #3a3c4e; } .output-bg .fg10 { stroke: #3a3c4e; }
+    .fg11 { fill: #4d4f68; } .output-bg .fg11 { stroke: #4d4f68; }
+    .fg12 { fill: #62d6e8; } .output-bg .fg12 { stroke: #62d6e8; }
+    .fg13 { fill: #f1f2f8; } .output-bg .fg13 { stroke: #f1f2f8; }
+    .fg14 { fill: #00f769; } .output-bg .fg14 { stroke: #00f769; }
+    .fg15 { fill: #f7f7fb; } .output-bg .fg15 { stroke: #f7f7fb; }
   </style>
-  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #0c0c0c;" />
-    <svg x="0" y="10" width="720" height="100" viewBox="0 0 720 100">
+  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #282936;" />
+    <svg x="0" y="10" width="720" height="622" viewBox="0 0 720 622">
       <g class="input-bg"><rect x="0" y="0" width="100%" height="22"></rect></g>
       <text class="container fg7"><tspan xml:space="preserve" x="10" y="16" class="input"><tspan x="10" y="16"><tspan class="prompt">$</tspan> # do some rpc
-</tspan></tspan><tspan xml:space="preserve" x="10" y="42" class="output"><tspan class="fg1">server::validation::E001 </tspan><tspan class="bold underline fg6">(link)</tspan>
+</tspan></tspan><tspan xml:space="preserve" x="10" y="42" class="output"><tspan class="fg1">server::validation::E001</tspan>
 </tspan><tspan xml:space="preserve" x="10" y="60" class="output">
-</tspan><tspan xml:space="preserve" x="10" y="78" class="output">  <tspan class="fg1">×</tspan> Server-side validation failed
-</tspan><tspan xml:space="preserve" x="10" y="96" class="output"><tspan class="fg6">  help: </tspan>Check your input parameters
+</tspan><tspan xml:space="preserve" x="10" y="78" class="output">  <tspan class="fg1">×</tspan> [server::validation::E001] Server-side validation failed
+</tspan><tspan xml:space="preserve" x="10" y="96" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="114" class="output">Error: 
+</tspan><tspan xml:space="preserve" x="10" y="132" class="output">  <tspan class="fg1">×</tspan> validate_request
+</tspan><tspan xml:space="preserve" x="10" y="150" class="output">   ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:3:4</tspan>]
+</tspan><tspan xml:space="preserve" x="10" y="168" class="output"> <tspan class="dimmed">2</tspan> │ #[tracing::instrument]
+</tspan><tspan xml:space="preserve" x="10" y="186" class="output"> <tspan class="dimmed">3</tspan> │ fn validate_request(user_id: u64, email: &amp;str) -&gt; super::Error {
+</tspan><tspan xml:space="preserve" x="10" y="204" class="output">   · <tspan class="bold fg5">   ────────┬───────</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="222" class="output">   ·            <tspan class="bold fg5">╰── validate_request(user_id: 42, email: "user@example.com")</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="240" class="output"> <tspan class="dimmed">4</tspan> │     super::Error::with_code(
+</tspan><tspan xml:space="preserve" x="10" y="258" class="output">   ╰────
+</tspan><tspan xml:space="preserve" x="10" y="276" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="294" class="output">Error: 
+</tspan><tspan xml:space="preserve" x="10" y="312" class="output">  <tspan class="fg1">×</tspan> handle_request
+</tspan><tspan xml:space="preserve" x="10" y="330" class="output">    ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:12:4</tspan>]
+</tspan><tspan xml:space="preserve" x="10" y="348" class="output"> <tspan class="dimmed">11</tspan> │ #[tracing::instrument]
+</tspan><tspan xml:space="preserve" x="10" y="366" class="output"> <tspan class="dimmed">12</tspan> │ fn handle_request(endpoint: &amp;str) -&gt; super::Error {
+</tspan><tspan xml:space="preserve" x="10" y="384" class="output">    · <tspan class="bold fg5">   ───────┬──────</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="402" class="output">    ·           <tspan class="bold fg5">╰── handle_request(endpoint: "/api/v1/submit")</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="420" class="output"> <tspan class="dimmed">13</tspan> │     validate_request(42, "user@example.com")
+</tspan><tspan xml:space="preserve" x="10" y="438" class="output">    ╰────
+</tspan><tspan xml:space="preserve" x="10" y="456" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="474" class="output">Error: 
+</tspan><tspan xml:space="preserve" x="10" y="492" class="output">  <tspan class="fg1">×</tspan> make_error
+</tspan><tspan xml:space="preserve" x="10" y="510" class="output">    ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:18:4</tspan>]
+</tspan><tspan xml:space="preserve" x="10" y="528" class="output"> <tspan class="dimmed">17</tspan> │ #[tracing::instrument]
+</tspan><tspan xml:space="preserve" x="10" y="546" class="output"> <tspan class="dimmed">18</tspan> │ fn make_error() -&gt; super::Error {
+</tspan><tspan xml:space="preserve" x="10" y="564" class="output">    · <tspan class="bold fg5">   ─────┬────</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="582" class="output">    ·         <tspan class="bold fg5">╰── make_error()</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="600" class="output"> <tspan class="dimmed">19</tspan> │     handle_request("/api/v1/submit")
+</tspan><tspan xml:space="preserve" x="10" y="618" class="output">    ╰────
 </tspan></text>
     </svg>
 </svg>

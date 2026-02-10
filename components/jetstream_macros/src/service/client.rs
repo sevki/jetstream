@@ -43,7 +43,7 @@ pub fn generate_client(
         impl Protocol for #channel_name {
             type Request = Tmessage;
             type Response = Rmessage;
-            // r[impl jetstream.macro.error_type]
+            // r[impl jetstream.macro.error-type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
         }
@@ -124,7 +124,7 @@ fn generate_client_calls(
                     attrs.iter().map(|attr| quote! { #attr }).collect()
                 };
 
-                // r[impl jetstream.macro.client_error]
+                // r[impl jetstream.macro.client-error]
                 Some(quote! {
                     #(#tracing_attrs)*
                     #maybe_async fn #method_name(#reciever, #(#inputs)*) #retn {

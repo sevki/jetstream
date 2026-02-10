@@ -10,6 +10,7 @@ pub const RLERROR: u8 = TLERROR + 1;
 
 pub const RJETSTREAMERROR: u8 = TLERROR - 1;
 
+// r[impl jetstream.error.v2.wireformat.error-frame]
 pub struct ErrorFrame(Error);
 
 impl Framer for ErrorFrame {

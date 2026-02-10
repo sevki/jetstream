@@ -117,7 +117,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         }
     });
 
-    // r[impl jetstream.error_message_frame]
+    // r[impl jetstream.error-message-frame]
     // Add error variant for RERROR handling - this is the error message type
     // for serializing errors across requests
     let error_variant = quote! {

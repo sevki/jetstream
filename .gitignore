@@ -5,3 +5,4 @@ book/
 docs/doc/
 .tracey/*
 .direnv/*
+.tracey/

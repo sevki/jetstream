@@ -26,7 +26,6 @@ tokio = { version = "1.47.1", features = ["sync", "rt"] }
 async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 jetstream_error = { version = "15.0.0", path = "../jetstream_error" }
-miette = { version = "7.6.0", features = ["fancy"] }
 tracing = "0.1.44"
 quinn = { version = "0.11.9", optional = true }
 

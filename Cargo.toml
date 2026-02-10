@@ -112,6 +112,8 @@ turmoil = { workspace = true }
 
 [features]
 default = ["tracing"]
+miette = ["jetstream_error/miette"]
+source-info = ["jetstream_error/source-info"]
 9p = ["dep:jetstream_9p"]
 all = ["9p", "http", "iroh", "quic", "tracing", "wasm"]
 iroh = ["dep:jetstream_iroh", "jetstream_rpc/iroh", "jetstream_error/iroh"]
@@ -120,7 +122,7 @@ quic = [
   "jetstream_rpc/quinn",
   "jetstream_error/quinn",
 ]
-tracing = ["dep:tracing", "dep:tracing-subscriber"]
+tracing = ["dep:tracing", "dep:tracing-subscriber", "miette", "source-info"]
 wasm = []
 serde = ["jetstream_rpc/serde"]
 http = ["dep:jetstream_http", "quic"]
