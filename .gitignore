@@ -6,3 +6,6 @@ docs/doc/
 .tracey/*
 .direnv/*
 .tracey/
+node_modules/
+dist/
+.build/

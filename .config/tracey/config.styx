@@ -13,12 +13,22 @@ specs (
                     components/**/src/*.rs
                     tests/**/*.rs
                     src/**/*.rs
+                    src/ts/*.ts
+                    src/ts/**/*.ts
+                    Sources/**/*.swift
+                    Tests/**/*.swift
+                    Package.swift
                 )
                 exclude (
                     target/**
                     .direnv/**/*
+                    node_modules/**
                 )
-                test_include ()
+                test_include (
+                    Tests/**/*.swift
+                    src/ts/*.test.ts
+                    src/ts/**/*.test.ts
+                )
             }
         )
     }
