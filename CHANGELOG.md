@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [15.1.0](https://github.com/sevki/jetstream/compare/v15.0.0...v15.1.0) (2026-02-10)
+
+
+### Features
+
+* implement backtrace for error ([ac9d388](https://github.com/sevki/jetstream/commit/ac9d388044bd753dc26111f9b77bef4e7248cec2))
+* implement backtrace for error ([bc85295](https://github.com/sevki/jetstream/commit/bc85295c37f946c58c99b69b98f84e8a2e04dce8))
+
 ## [15.0.0](https://github.com/sevki/jetstream/compare/v14.1.0...v15.0.0) (2026-02-07)
 
 
