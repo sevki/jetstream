@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Error"],"trait":["IntoError"],"type":["Result"]};
+window.SIDEBAR_ITEMS = {"mod":["coding"],"struct":["Error"],"trait":["IntoError"],"type":["Result"]};
