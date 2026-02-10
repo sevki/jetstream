@@ -23,7 +23,7 @@ serde = ["dep:serde"]
 tokio = ["dep:tokio", "dep:tokio-util"]
 
 [dependencies]
-zerocopy = "0.8.27"
+zerocopy = "0.8.39"
 paste = "1.0.15"
 bytes = { version = "1.11.1", features = ["serde"] }
 jetstream_macros = { version = "15.1.0", path = "../jetstream_macros" }
