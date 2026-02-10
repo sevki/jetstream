@@ -5,7 +5,7 @@ edition = "2021"
 publish = false
 
 [dependencies]
-anyhow = "1.0.100"
+anyhow = "1.0.101"
 mdbook-core = "0.5.2"
 mdbook-preprocessor = "0.5.2"
 regex = "1.12.2"
