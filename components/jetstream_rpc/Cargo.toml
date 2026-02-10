@@ -52,7 +52,7 @@ tokio = { version = "1.47.1", features = ["net"] }
 [dev-dependencies]
 bytes = "1.11.1"
 anyhow = "1.0.101"
-proptest = "1.9.0"
+proptest = "1.10.0"
 
 
 [features]
