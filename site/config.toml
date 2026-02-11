@@ -1,0 +1,8 @@
+[site]
+title = "JetStream Documentation"
+description = "A high performance, low latency, secure, and reliable RPC framework"
+base_url = "https://jetstream.rs"
+
+[build]
+content_dir = "content"
+output_dir = "public"
