@@ -43,11 +43,11 @@ JetStream is not ready for production use. It's still in the early stages of dev
 
 ## Examples
 
-- [echo](examples/echo.rs) - Basic QUIC-based echo service example
-- [iroh_echo](examples/iroh_echo.rs) - Echo service using iroh transport
-- [wasm_example](examples/wasm_example.rs) - WebAssembly example
-- [wasm_example_bindings](examples/wasm_example_bindings.rs) - WebAssembly bindings example
+- [echo](https://github.com/sevki/jetstream/blob/main/examples/echo.rs) - Basic QUIC-based echo service example
+- [iroh_echo](https://github.com/sevki/jetstream/blob/main/examples/iroh_echo.rs) - Echo service using iroh transport
+- [wasm_example](https://github.com/sevki/jetstream/blob/main/examples/wasm_example.rs) - WebAssembly example
+- [wasm_example_bindings](https://github.com/sevki/jetstream/blob/main/examples/wasm_example_bindings.rs) - WebAssembly bindings example
 
-## [License](./LICENSE)
+## [License](https://github.com/sevki/jetstream/blob/main/LICENSE)
 
 BSD-3-Clause

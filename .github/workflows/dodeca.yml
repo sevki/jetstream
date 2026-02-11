@@ -8,10 +8,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
-  pull-requests: write
 
 concurrency:
   group: "pages"
@@ -27,7 +26,8 @@ jobs:
 
       - name: Install Rust
         run: |
-          curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf -y | sh
+          curl --proto '=https' --tlsv1.2 https://sh.rustup.rs -sSf | sh -s -- -y
+          . "$HOME/.cargo/env"
           rustup toolchain install stable
           rustup default stable
           rustup target add wasm32-unknown-unknown
@@ -42,6 +42,7 @@ jobs:
       - name: Install Dodeca
         if: steps.cache-dodeca.outputs.cache-hit != 'true'
         run: |
+          . "$HOME/.cargo/env"
           # Clone and build dodeca
           git clone --depth 1 https://github.com/bearcove/dodeca.git /tmp/dodeca
           cd /tmp/dodeca
@@ -51,17 +52,18 @@ jobs:
           
       - name: Build Site with Dodeca
         run: |
+          . "$HOME/.cargo/env"
           cd site
-          if command -v ddc &> /dev/null; then
-            ddc build
-          else
-            echo "Warning: dodeca not available, creating placeholder"
-            mkdir -p public
-            echo "<html><body><h1>JetStream Documentation</h1><p>Building with dodeca...</p></body></html>" > public/index.html
+          if ! command -v ddc &> /dev/null; then
+            echo "ERROR: dodeca (ddc) not found in PATH"
+            echo "Dodeca installation failed or binary not in ~/.cargo/bin"
+            exit 1
           fi
+          ddc build
 
       - name: Run Cargo Doc (for API docs)
         run: |
+          . "$HOME/.cargo/env"
           cargo doc --workspace --no-deps --release --all-features
 
       - name: Copy Documentation

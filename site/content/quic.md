@@ -172,9 +172,9 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-jetstream = "13"
-jetstream_quic = "13"
-jetstream_macros = "13"
+jetstream = "15.1"
+jetstream_quic = "15.1"
+jetstream_macros = "15.1"
 tokio = { version = "1", features = ["full"] }
 ```
 

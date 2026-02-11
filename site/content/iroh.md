@@ -65,7 +65,7 @@ To use Iroh transport, enable the `iroh` feature in your `Cargo.toml`:
 
 ```toml
 [dependencies]
-jetstream = { version = "10", features = ["iroh"] }
+jetstream = { version = "15.1", features = ["iroh"] }
 ```
 
 For more details, see the [jetstream_iroh API documentation](doc/jetstream_iroh/index.html).

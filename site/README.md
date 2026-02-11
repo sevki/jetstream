@@ -11,7 +11,7 @@ site/
 │   ├── quic.md      # QUIC transport documentation
 │   ├── iroh.md      # Iroh transport documentation
 │   └── http.md      # HTTP documentation
-├── templates/        # HTML templates (to be added)
+├── templates/        # HTML templates (base.html, page.html)
 ├── static/           # Static assets (images, CSS, JS)
 └── config.toml       # Site configuration
 ```
@@ -41,7 +41,7 @@ This structure follows dodeca's conventions:
 ## TODO
 
 - [ ] Install dodeca (`cargo install dodeca` or use releases)
-- [ ] Create HTML templates
-- [ ] Migrate remaining documentation
-- [ ] Update CI/CD pipeline
-- [ ] Copy static assets (logos, styles)
+- [ ] Customize templates for different page types
+- [ ] Migrate remaining documentation (changelog, crates)
+- [ ] Copy static assets (logos)
+- [ ] Set up syntax highlighting

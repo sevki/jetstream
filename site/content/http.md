@@ -191,8 +191,8 @@ Add to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-jetstream_http = "0.1"
-jetstream_quic = "13"
+jetstream_http = "15.1"
+jetstream_quic = "15.1"
 axum = "0.8"
 hyper-util = { version = "0.1", features = ["full"] }
 tokio-rustls = "0.26"
