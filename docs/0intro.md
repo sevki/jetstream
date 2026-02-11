@@ -25,6 +25,7 @@ JetStream supports multiple transport backends:
 - [mTLS](https://docs.rs/jetstream_quic/latest/jetstream_quic/struct.Server.html#method.new_with_mtls)
 - [Binary encoding](https://docs.rs/jetstream_wireformat/latest/jetstream_wireformat/)
 - Cross-platform (Linux, macOS, Windows, WebAssembly)
+- Cross-language — [TypeScript](typescript.md) and [Swift](swift.md) clients with wire-compatible codegen
 
 For detailed API documentation, see the [rustdoc documentation](doc/jetstream/index.html).
 

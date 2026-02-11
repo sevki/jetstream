@@ -1,0 +1,8 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc fa401dce2d86e7d908f90e6476e28fe43f3e8431959cd5588e28ff15cc79c26a # shrinks to m = Message { id: 2110848004, tags: [], payload: None }
+cc 3feb5e956344d972c4a61e1c9be4c2b5dd59ad69a88c3055c6e9bc420be7141e # shrinks to s = Rectangle { width: 2596926294, height: 755576677 }

@@ -1058,6 +1058,8 @@ impl Protocol for Server {
     type Response = crate::ufs::Rmessage;
 
     const VERSION: &'static str = "9P2000.L";
+
+    const NAME: &'static str = "9p";
 }
 
 impl jetstream_rpc::server::Server for Server {

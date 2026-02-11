@@ -2,6 +2,9 @@
 - [🌐 Iroh](iroh.md)
 - [🚀 QUIC](quic.md)
 - [🌍 HTTP](http.md)
+- [TypeScript](typescript.md)
+- [React](react.md)
+- [Swift](swift.md)
 ---
 - [🦀 Crates](crates.md)
     - [📦 jetstream](doc/jetstream/index.html)

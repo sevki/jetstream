@@ -68,6 +68,26 @@ pub fn generate_server(
     let matches = std::iter::zip(match_arms, match_arm_bodies.iter())
         .map(|(arm, body)| quote! { #arm => #body });
 
+    // r[impl jetstream.version.framer.server-dispatch]
+    // Version negotiation match arm — handles Tversion before service methods
+    let version_match_arm = quote! {
+        Tmessage::Version(tversion) => {
+            use std::str::FromStr;
+            let client_version = jetstream::prelude::Version::from_str(&tversion.version)
+                .map_err(|e| Error::new(e))?;
+            match Self::version(client_version) {
+                Ok(negotiated) => Ok(Rmessage::Version(jetstream::prelude::Rversion {
+                    msize: tversion.msize,
+                    version: negotiated.to_string(),
+                })),
+                Err(_) => Ok(Rmessage::Version(jetstream::prelude::Rversion {
+                    msize: 0,
+                    version: "unknown".to_string(),
+                })),
+            }
+        }
+    };
+
     // Add RPC-level tracing span if tracing is enabled
     let rpc_span = if enable_tracing {
         quote! {
@@ -101,6 +121,7 @@ pub fn generate_server(
             // r[impl jetstream.macro.error-type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
+            const NAME: &'static str = PROTOCOL_NAME;
         }
 
         impl<T> Server for #service_name<T>
@@ -114,6 +135,7 @@ pub fn generate_server(
                     #rpc_span
                     let req: <Self as Protocol>::Request = frame.msg;
                     let res: std::result::Result<<Self as Protocol>::Response, Self::Error> = match req {
+                        #version_match_arm
                         #(#matches)*
                     };
                     // r[impl jetstream.macro.server-error]

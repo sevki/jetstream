@@ -25,7 +25,8 @@ pub mod prelude {
     pub use jetstream_rpc::{
         client, client::ClientTransport, context::Context, server,
         server::Server, Error, Frame, Framed, Framer, Message, Mux, Protocol,
-        RpcCall, TagPool, RJETSTREAMERROR,
+        RpcCall, Rversion, TagPool, Tversion, Version, RJETSTREAMERROR,
+        RVERSION, TVERSION,
     };
     pub use jetstream_wireformat::{Data, WireFormat};
     pub use lazy_static::*;

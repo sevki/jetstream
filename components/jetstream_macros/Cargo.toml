@@ -16,6 +16,7 @@ sha256 = "1.5.0"
 lazy_static = "1.5.0"
 prettyplease = "0.2.34"
 ident_case = "1.0.1"
+jetstream_codegen = { version = "15.0.0", path = "../jetstream_codegen" }
 
 [lib]
 proc-macro = true

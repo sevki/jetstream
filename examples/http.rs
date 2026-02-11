@@ -3,21 +3,38 @@ use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
 
-use askama::Template;
-use axum::http::header;
-use axum::{routing::get, Router};
+use axum::Router;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as HttpBuilder;
 use hyper_util::service::TowerToHyperService;
-use jetstream_http::{
-    AltSvcLayer, H3Service, JetStreamContext, JetStreamTemplate,
-};
-use jetstream_rpc::context::{Peer, RemoteAddr};
+use jetstream::prelude::*;
+use jetstream_http::{AltSvcLayer, H3Service};
+use jetstream_macros::service;
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
+use tower_http::services::ServeDir;
 use tracing::{error, info};
 
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+
+// r[impl jetstream.webtransport.http-example]
+#[service]
+pub trait EchoHttp {
+    async fn ping(&mut self, message: String) -> Result<String>;
+    async fn add(&mut self, a: i32, b: i32) -> Result<i32>;
+}
+
+#[derive(Clone)]
+struct EchoHttpImpl;
+
+impl EchoHttp for EchoHttpImpl {
+    async fn ping(&mut self, message: String) -> Result<String> {
+        Ok(message)
+    }
+    async fn add(&mut self, a: i32, b: i32) -> Result<i32> {
+        Ok(a + b)
+    }
+}
 
 pub static CA_PEM: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
 pub static SERVER_PEM: &str =
@@ -39,99 +56,15 @@ fn load_key(path: &str) -> PrivateKeyDer<'static> {
         .expect("No key found")
 }
 
-#[derive(Template)]
-#[template(path = "context.html")]
-struct ContextTemplate<'a> {
-    remote_addr: &'a str,
-    has_peer_cert: bool,
-    common_name: Option<&'a str>,
-    fingerprint: &'a str,
-    dns_names: Vec<&'a str>,
-    ip_addresses: Vec<String>,
-    emails: Vec<&'a str>,
-    uris: Vec<String>,
-    method: &'a str,
-    path: &'a str,
-    protocol: &'a str,
-}
-
-async fn handle_request(
-    ctx: JetStreamContext,
-    req: axum::extract::Request,
-) -> impl axum::response::IntoResponse {
-    // Log the peer context
-    info!("Request from peer: {}", *ctx);
-
-    // Get remote address
-    let remote_addr = match ctx.remote() {
-        Some(RemoteAddr::IpAddr(ip)) => ip.to_string(),
-        _ => "unknown".to_string(),
-    };
-
-    // Determine protocol version
-    let protocol = format!("{:?}", req.version());
-    // Extract peer cert info
-    let (
-        has_peer_cert,
-        common_name,
-        fingerprint,
-        dns_names,
-        ip_addresses,
-        emails,
-        uris,
-    ) = match ctx.peer() {
-        Some(Peer::Tls(tls_peer)) => {
-            if let Some(leaf) = tls_peer.leaf() {
-                (
-                    true,
-                    leaf.common_name.clone(),
-                    leaf.fingerprint.clone(),
-                    leaf.dns_names.clone(),
-                    leaf.ip_addresses.iter().map(|ip| ip.to_string()).collect(),
-                    leaf.emails.clone(),
-                    leaf.uris.iter().map(|u| u.to_string()).collect(),
-                )
-            } else {
-                (false, None, String::new(), vec![], vec![], vec![], vec![])
-            }
-        }
-        _ => (false, None, String::new(), vec![], vec![], vec![], vec![]),
-    };
-
-    let method = req.method().as_str();
-    let path = req.uri().path();
-
-    let context_html = ContextTemplate {
-        remote_addr: &remote_addr,
-        has_peer_cert,
-        common_name: common_name.as_deref(),
-        fingerprint: &fingerprint,
-        dns_names: dns_names.iter().map(|s| s.as_str()).collect(),
-        ip_addresses,
-        emails: emails.iter().map(|s| s.as_str()).collect(),
-        uris,
-        method,
-        path,
-        protocol: &protocol,
-    }
-    .render()
-    .unwrap_or_else(|_| "Error rendering context".to_string());
-
-    let template = JetStreamTemplate {
-        body: &context_html,
-        ..Default::default()
-    };
-    let body = template.render().unwrap_or_else(|_| "Error".to_string());
-
-    ([(header::CONTENT_TYPE, "text/html; charset=utf-8")], body)
-}
+pub static APP_DIST: &str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/examples/app/dist");
 
 /// Run HTTP/2 server with TLS
 async fn run_http2_server(
     addr: SocketAddr,
     router: Router,
     tls_acceptor: TlsAcceptor,
-) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+) -> std::result::Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let listener = TcpListener::bind(addr).await?;
 
     loop {
@@ -161,7 +94,7 @@ async fn run_http2_server(
     }
 }
 
-/// Run HTTP/3 server with QUIC
+/// Run HTTP/3 server with QUIC + WebTransport
 async fn run_http3_server(
     addr: SocketAddr,
     router: Router,
@@ -169,7 +102,14 @@ async fn run_http3_server(
     server_key: PrivateKeyDer<'static>,
     ca_cert: Option<CertificateDer<'static>>,
 ) {
-    let h3_service = Arc::new(H3Service::new(router));
+    // Register the EchoHttp service as a WebTransport handler
+    let echo = echohttp_protocol::EchoHttpService {
+        inner: EchoHttpImpl,
+    };
+    let h3_service = Arc::new(
+        H3Service::new(router)
+            .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
+    );
 
     let mut quic_router = jetstream_quic::Router::new();
     quic_router.register(h3_service);
@@ -202,7 +142,7 @@ async fn run_http3_server(
 }
 
 #[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
+async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // Initialize tracing
     tracing_subscriber::fmt::init();
 
@@ -222,9 +162,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         None
     };
 
-    // Create shared Axum router with Alt-Svc layer to advertise HTTP/3
+    // Create shared Axum router serving React app build + Alt-Svc header
     let router = Router::new()
-        .fallback(get(handle_request))
+        .fallback_service(ServeDir::new(APP_DIST))
         .layer(AltSvcLayer::new(4433));
 
     // Setup TLS config for HTTP/2
@@ -236,16 +176,19 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let addr: SocketAddr = "127.0.0.1:4433".parse()?;
 
-    info!("=== JetStream HTTP Server ===");
+    info!("=== JetStream HTTP + WebTransport Server ===");
     info!("Listening on https://{}", addr);
     info!("  - HTTP/2 over TLS (TCP)");
-    info!("  - HTTP/3 over QUIC (UDP)");
+    info!("  - HTTP/3 + WebTransport over QUIC (UDP)");
+    info!(
+        "  - WebTransport protocol: {}",
+        echohttp_protocol::PROTOCOL_VERSION
+    );
     if mtls_enabled {
         info!("mTLS enabled - client certificates required");
     } else {
         info!("No client auth (use --mtls to enable)");
     }
-    info!("You can now run ./examples/launch_chrome.sh to connect with Chrome");
 
     // Run both servers concurrently on the same port (TCP for HTTP/2, UDP for HTTP/3)
     tokio::select! {

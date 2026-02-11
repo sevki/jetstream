@@ -18,6 +18,7 @@ pub struct Options {
     pub as_: Option<syn::Path>,
 }
 
+/// r[jetstream.codegen.skip]
 pub fn has_skip_attr(field: &syn::Field) -> bool {
     field.attrs.iter().any(|attr| {
         if attr.path().is_ident("jetstream") {

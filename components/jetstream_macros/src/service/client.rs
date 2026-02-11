@@ -38,6 +38,29 @@ pub fn generate_client(
             pub fn new(max_concurrent_requests:u16,inner: Box<dyn ClientTransport<Self>>) -> Self {
                 Self { mux: Mux::new(max_concurrent_requests,inner) }
             }
+
+            // r[impl jetstream.version.framer.client-handshake]
+            /// Perform Tversion/Rversion handshake with the server.
+            /// Must be called after `new()` and before any RPC calls.
+            pub async fn negotiate_version(&self, msize: u32) -> std::result::Result<jetstream::prelude::Rversion, Error> {
+                let req = Tmessage::Version(jetstream::prelude::Tversion {
+                    msize,
+                    version: PROTOCOL_VERSION.to_string(),
+                });
+                let context = Context::default();
+                let rframe = self.mux.rpc(context, req).await.await?;
+                match rframe.msg {
+                    Rmessage::Version(rversion) => {
+                        if rversion.version == "unknown" {
+                            Err(Error::new("server rejected version negotiation"))
+                        } else {
+                            Ok(rversion)
+                        }
+                    }
+                    Rmessage::Error(err) => Err(err),
+                    _ => Err(Error::new("unexpected response to Tversion")),
+                }
+            }
         }
 
         impl Protocol for #channel_name {
@@ -46,6 +69,7 @@ pub fn generate_client(
             // r[impl jetstream.macro.error-type]
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
+            const NAME: &'static str = PROTOCOL_NAME;
         }
 
         impl #trait_name for #channel_name

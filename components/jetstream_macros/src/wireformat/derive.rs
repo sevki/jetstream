@@ -2,7 +2,7 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{DeriveInput, Generics, WherePredicate, Type, TypeParamBound, TraitBound, Path, PathSegment, GenericParam, TypeParam, punctuated::Punctuated};
 
-use super::attributes::extract_jetstream_type;
+use jetstream_codegen::attributes::extract_jetstream_type;
 use super::codegen::{byte_size_sum, decode_wire_format, encode_wire_format};
 
 // Add WireFormat bounds to generic type parameters

@@ -6,13 +6,19 @@ pub mod complexservice_protocol {
     use jetstream::prelude::*;
     use std::mem;
     use super::ComplexService;
-    const MESSAGE_ID_START: u8 = 101;
+    const MESSAGE_ID_START: u8 = 102;
     /// Error response message type constant
     pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
+    /// Version request message type constant
+    pub const TVERSION: u8 = jetstream::prelude::TVERSION;
+    /// Version response message type constant
+    pub const RVERSION: u8 = jetstream::prelude::RVERSION;
+    /// Protocol name — used for routing
+    pub const PROTOCOL_NAME: &str = concat!("rs.jetstream.proto/", "complexservice");
     /// Protocol version string constructed from the generated crate's version
     pub const PROTOCOL_VERSION: &str = concat!(
         "rs.jetstream.proto/", "complexservice", "/", env!("CARGO_PKG_VERSION_MAJOR"),
-        ".", env!("CARGO_PKG_VERSION_MINOR"), ".", env!("CARGO_PKG_VERSION_PATCH"), "-",
+        ".", env!("CARGO_PKG_VERSION_MINOR"), ".", env!("CARGO_PKG_VERSION_PATCH"), "+",
         "29bad371"
     );
     const DIGEST: &str = "DIGEST_HASH";
@@ -49,6 +55,7 @@ pub mod complexservice_protocol {
         Login(Tlogin) = TLOGIN,
         Logout(Tlogout) = TLOGOUT,
         GetStatus(Tget_status) = TGET_STATUS,
+        Version(jetstream::prelude::Tversion) = TVERSION,
     }
     impl Framer for Tmessage {
         fn byte_size(&self) -> u32 {
@@ -56,6 +63,7 @@ pub mod complexservice_protocol {
                 Tmessage::Login(msg) => msg.byte_size(),
                 Tmessage::Logout(msg) => msg.byte_size(),
                 Tmessage::GetStatus(msg) => msg.byte_size(),
+                Tmessage::Version(v) => v.byte_size(),
             }
         }
         fn message_type(&self) -> u8 {
@@ -63,6 +71,7 @@ pub mod complexservice_protocol {
                 Tmessage::Login(_) => TLOGIN,
                 Tmessage::Logout(_) => TLOGOUT,
                 Tmessage::GetStatus(_) => TGET_STATUS,
+                Tmessage::Version(_) => TVERSION,
             }
         }
         fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
@@ -70,6 +79,7 @@ pub mod complexservice_protocol {
                 Tmessage::Login(msg) => msg.encode(writer)?,
                 Tmessage::Logout(msg) => msg.encode(writer)?,
                 Tmessage::GetStatus(msg) => msg.encode(writer)?,
+                Tmessage::Version(v) => v.encode(writer)?,
             }
             Ok(())
         }
@@ -81,6 +91,7 @@ pub mod complexservice_protocol {
                 TLOGIN => Ok(Tmessage::Login(WireFormat::decode(reader)?)),
                 TLOGOUT => Ok(Tmessage::Logout(WireFormat::decode(reader)?)),
                 TGET_STATUS => Ok(Tmessage::GetStatus(WireFormat::decode(reader)?)),
+                TVERSION => Ok(Tmessage::Version(WireFormat::decode(reader)?)),
                 _ => {
                     Err(
                         std::io::Error::new(
@@ -99,6 +110,7 @@ pub mod complexservice_protocol {
         Logout(Rlogout) = RLOGOUT,
         GetStatus(Rget_status) = RGET_STATUS,
         Error(jetstream::prelude::Error) = RERROR,
+        Version(jetstream::prelude::Rversion) = RVERSION,
     }
     impl Framer for Rmessage {
         fn byte_size(&self) -> u32 {
@@ -107,6 +119,7 @@ pub mod complexservice_protocol {
                 Rmessage::Logout(msg) => msg.byte_size(),
                 Rmessage::GetStatus(msg) => msg.byte_size(),
                 Rmessage::Error(err) => err.byte_size(),
+                Rmessage::Version(v) => v.byte_size(),
             }
         }
         fn message_type(&self) -> u8 {
@@ -115,6 +128,7 @@ pub mod complexservice_protocol {
                 Rmessage::Logout(_) => RLOGOUT,
                 Rmessage::GetStatus(_) => RGET_STATUS,
                 Rmessage::Error(_) => RERROR,
+                Rmessage::Version(_) => RVERSION,
             }
         }
         fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
@@ -123,6 +137,7 @@ pub mod complexservice_protocol {
                 Rmessage::Logout(msg) => msg.encode(writer)?,
                 Rmessage::GetStatus(msg) => msg.encode(writer)?,
                 Rmessage::Error(err) => err.encode(writer)?,
+                Rmessage::Version(v) => v.encode(writer)?,
             }
             Ok(())
         }
@@ -135,6 +150,7 @@ pub mod complexservice_protocol {
                 RLOGOUT => Ok(Rmessage::Logout(WireFormat::decode(reader)?)),
                 RGET_STATUS => Ok(Rmessage::GetStatus(WireFormat::decode(reader)?)),
                 RERROR => Ok(Rmessage::Error(WireFormat::decode(reader)?)),
+                RVERSION => Ok(Rmessage::Version(WireFormat::decode(reader)?)),
                 _ => {
                     Err(
                         std::io::Error::new(
@@ -158,6 +174,7 @@ pub mod complexservice_protocol {
         type Response = Rmessage;
         type Error = Error;
         const VERSION: &'static str = PROTOCOL_VERSION;
+        const NAME: &'static str = PROTOCOL_NAME;
     }
     impl<T> Server for ComplexServiceService<T>
     where
@@ -180,6 +197,31 @@ pub mod complexservice_protocol {
                     <Self as Protocol>::Response,
                     Self::Error,
                 > = match req {
+                    Tmessage::Version(tversion) => {
+                        use std::str::FromStr;
+                        let client_version = jetstream::prelude::Version::from_str(
+                                &tversion.version,
+                            )
+                            .map_err(|e| Error::new(e))?;
+                        match Self::version(client_version) {
+                            Ok(negotiated) => {
+                                Ok(
+                                    Rmessage::Version(jetstream::prelude::Rversion {
+                                        msize: tversion.msize,
+                                        version: negotiated.to_string(),
+                                    }),
+                                )
+                            }
+                            Err(_) => {
+                                Ok(
+                                    Rmessage::Version(jetstream::prelude::Rversion {
+                                        msize: 0,
+                                        version: "unknown".to_string(),
+                                    }),
+                                )
+                            }
+                        }
+                    }
                     Tmessage::Login(msg) => {
                         match self.login(msg.username, msg.password).await {
                             Ok(result) => {
@@ -253,12 +295,37 @@ pub mod complexservice_protocol {
                 mux: Mux::new(max_concurrent_requests, inner),
             }
         }
+        /// Perform Tversion/Rversion handshake with the server.
+        /// Must be called after `new()` and before any RPC calls.
+        pub async fn negotiate_version(
+            &self,
+            msize: u32,
+        ) -> std::result::Result<jetstream::prelude::Rversion, Error> {
+            let req = Tmessage::Version(jetstream::prelude::Tversion {
+                msize,
+                version: PROTOCOL_VERSION.to_string(),
+            });
+            let context = Context::default();
+            let rframe = self.mux.rpc(context, req).await.await?;
+            match rframe.msg {
+                Rmessage::Version(rversion) => {
+                    if rversion.version == "unknown" {
+                        Err(Error::new("server rejected version negotiation"))
+                    } else {
+                        Ok(rversion)
+                    }
+                }
+                Rmessage::Error(err) => Err(err),
+                _ => Err(Error::new("unexpected response to Tversion")),
+            }
+        }
     }
     impl Protocol for ComplexServiceChannel {
         type Request = Tmessage;
         type Response = Rmessage;
         type Error = Error;
         const VERSION: &'static str = PROTOCOL_VERSION;
+        const NAME: &'static str = PROTOCOL_NAME;
     }
     impl ComplexService for ComplexServiceChannel {
         #[instrument(skip(self, password))]

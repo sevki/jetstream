@@ -12,9 +12,9 @@ specs (
                 include (
                     components/**/src/*.rs
                     tests/**/*.rs
+                    tests/**/*.ts
                     src/**/*.rs
-                    src/ts/*.ts
-                    src/ts/**/*.ts
+                    packages/**/*.ts
                     Sources/**/*.swift
                     Tests/**/*.swift
                     Package.swift
@@ -26,8 +26,8 @@ specs (
                 )
                 test_include (
                     Tests/**/*.swift
-                    src/ts/*.test.ts
-                    src/ts/**/*.test.ts
+                    packages/**/*.test.ts
+                    tests/**/tests/*.rs
                 )
             }
         )

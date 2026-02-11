@@ -70,6 +70,7 @@ tracing-subscriber = { version = "0.3.20", optional = true }
 trait-variant = "0.1.2"
 rand = "0.9.2"
 jetstream_http = { version = "15.1.0", path = "components/jetstream_http", optional = true }
+tower-http = { version = "0.6.8", features = ["fs"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
 getrandom = { version = "0.3.4", features = ["wasm_js"] }
@@ -141,7 +142,7 @@ members = [
   "components/jetstream_ufs",
   "components/jetstream_wireformat",
   "components/jetstream_error",
-  "components/jetstream_http",
+  "components/jetstream_http", "components/jetstream_codegen", "tests/jetstream_interop",
 ]
 
 [workspace.package]

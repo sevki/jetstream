@@ -34,13 +34,20 @@ openssl x509 -req \
     -CAkey ca.key \
     -CAcreateserial \
     -out server.pem \
-    -days 365 \
+    -days 14 \
     -sha256 \
     -extensions req_ext \
     -extfile config/server.cnf
 
 # Convert to DER format for Chrome
 openssl x509 -in server.pem -outform der -out server.crt
+
+# Compute certificate hash for WebTransport serverCertificateHashes
+# (requires cert validity <= 14 days)
+SERVER_CERT_HASH=$(openssl x509 -in server.pem -outform der | openssl dgst -sha256 -binary | openssl enc -base64)
+echo "  Server cert SHA-256 hash (for serverCertificateHashes): $SERVER_CERT_HASH"
+# Write hash to file for compile-time embedding (used by examples/http.rs)
+echo -n "$SERVER_CERT_HASH" > server.hash
 
 # --- 3. Generate Client Certificate ---
 echo ""
@@ -97,9 +104,22 @@ openssl verify -CAfile ca.pem server.pem
 openssl verify -CAfile ca.pem client.pem
 openssl verify -CAfile ca.pem client2.pem
 
-# --- 5. Clean up ---
+# --- 5. Inject SPKI hash into .playwright-mcp.json ---
 echo ""
-echo "5. Cleaning up temporary files..."
+echo "5. Updating .playwright-mcp.json with SPKI hash..."
+SPKI=$(openssl x509 -inform der -in server.crt -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64)
+echo "  SPKI hash: $SPKI"
+PLAYWRIGHT_CONFIG="$SCRIPT_DIR/../.playwright-mcp.json"
+if [ -f "$PLAYWRIGHT_CONFIG" ]; then
+    sed -i "s|--ignore-certificate-errors-spki-list=.*\"|--ignore-certificate-errors-spki-list=$SPKI\"|" "$PLAYWRIGHT_CONFIG"
+    echo "  Updated $PLAYWRIGHT_CONFIG"
+else
+    echo "  Warning: $PLAYWRIGHT_CONFIG not found, skipping"
+fi
+
+# --- 6. Clean up ---
+echo ""
+echo "6. Cleaning up temporary files..."
 rm -f server.csr client.csr client2.csr ca.srl
 
 # --- Summary ---

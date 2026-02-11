@@ -4,15 +4,13 @@
     "module": "ES2022",
     "moduleResolution": "bundler",
     "lib": ["ES2022"],
-    "outDir": "dist",
-    "rootDir": "src/ts",
     "strict": true,
     "esModuleInterop": true,
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
     "skipLibCheck": true
   },
-  "include": ["src/ts/**/*.ts"],
-  "exclude": ["node_modules", "dist", "src/ts/**/*.test.ts"]
+  "references": [
+    { "path": "packages/jetstream_wireformat" },
+    { "path": "packages/jetstream_rpc" }
+  ],
+  "include": []
 }

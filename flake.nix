@@ -29,6 +29,7 @@
               libiconv
               cmake
               perl
+              jq
               # For ring crate
               clang
               gnuplot

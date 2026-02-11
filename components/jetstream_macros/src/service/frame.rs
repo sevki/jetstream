@@ -56,11 +56,34 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         }
     });
 
+    // r[impl jetstream.version.framer.tmessage]
+    // Add version variant for TVERSION handling
+    let version_variant = quote! {
+        Version(jetstream::prelude::Tversion) = TVERSION,
+    };
+
+    let version_byte_size = quote! {
+        #enum_name::Version(v) => v.byte_size()
+    };
+
+    let version_message_type = quote! {
+        #enum_name::Version(_) => TVERSION
+    };
+
+    let version_encode = quote! {
+        #enum_name::Version(v) => v.encode(writer)?,
+    };
+
+    let version_decode = quote! {
+        TVERSION => Ok(#enum_name::Version(WireFormat::decode(reader)?)),
+    };
+
     quote! {
         #[derive(Debug)]
         #[repr(u8)]
         pub enum #enum_name {
             #( #msg_variants )*
+            #version_variant
         }
 
         impl Framer for #enum_name {
@@ -69,6 +92,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                     #(
                         #cloned_byte_sizes,
                      )*
+                    #version_byte_size,
                 }
             }
 
@@ -77,6 +101,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                     #(
                         #message_type_match_arms,
                      )*
+                    #version_message_type,
                 }
             }
 
@@ -85,6 +110,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                     #(
                         #encode_match_arms
                      )*
+                    #version_encode
                 }
                 Ok(())
             }
@@ -94,6 +120,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                     #(
                         #decode_bodies
                      )*
+                    #version_decode
                     _ => Err(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
                         format!("unknown message type: {}", ty),
@@ -124,6 +151,12 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         Error(jetstream::prelude::Error) = RERROR,
     };
 
+    // r[impl jetstream.version.framer.rmessage]
+    // Add version variant for RVERSION handling
+    let rversion_variant = quote! {
+        Version(jetstream::prelude::Rversion) = RVERSION,
+    };
+
     let cloned_byte_sizes = rmsgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
         let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
@@ -137,6 +170,10 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         #enum_name::Error(err) => err.byte_size()
     };
 
+    let rversion_byte_size = quote! {
+        #enum_name::Version(v) => v.byte_size()
+    };
+
     let match_arms = rmsgs.iter().map(|(ident, _)| {
         let name: IdentCased = ident.into();
         let variant_name: Ident = name.remove_prefix().to_pascal_case().into();
@@ -147,6 +184,10 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
 
     let error_match_arm = quote! {
         #enum_name::Error(err)
+    };
+
+    let rversion_match_arm = quote! {
+        #enum_name::Version(v)
     };
 
     let decode_bodies = rmsgs.iter().map(|(ident, _)| {
@@ -163,6 +204,10 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         RERROR => Ok(#enum_name::Error(WireFormat::decode(reader)?)),
     };
 
+    let rversion_decode = quote! {
+        RVERSION => Ok(#enum_name::Version(WireFormat::decode(reader)?)),
+    };
+
     let encode_match_arms = match_arms.clone().map(|arm| {
         quote! {
             #arm => msg.encode(writer)?,
@@ -172,6 +217,10 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
     // Add error encode handling
     let error_encode = quote! {
         #error_match_arm => err.encode(writer)?,
+    };
+
+    let rversion_encode = quote! {
+        #rversion_match_arm => v.encode(writer)?,
     };
 
     let message_type_match_arms = rmsgs.iter().map(|(ident, _)| {
@@ -188,12 +237,17 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         #enum_name::Error(_) => RERROR
     };
 
+    let rversion_message_type = quote! {
+        #enum_name::Version(_) => RVERSION
+    };
+
     quote! {
         #[derive(Debug)]
         #[repr(u8)]
         pub enum #enum_name {
             #( #msg_variants )*
             #error_variant
+            #rversion_variant
         }
 
         impl Framer for #enum_name {
@@ -204,6 +258,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #cloned_byte_sizes,
                      )*
                     #error_byte_size,
+                    #rversion_byte_size,
                 }
             }
 
@@ -213,6 +268,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #message_type_match_arms,
                      )*
                     #error_message_type,
+                    #rversion_message_type,
                 }
             }
 
@@ -222,6 +278,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #encode_match_arms
                      )*
                     #error_encode
+                    #rversion_encode
                 }
                 Ok(())
             }
@@ -232,6 +289,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #decode_bodies
                      )*
                     #error_decode
+                    #rversion_decode
                     _ => Err(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
                         format!("unknown message type: {}", ty),
