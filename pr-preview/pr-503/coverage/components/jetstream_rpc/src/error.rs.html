@@ -15,7 +15,7 @@
         <div>
             <p class="heading">Lines</p>
             <p class="title has-text-danger">
-                <abbr title="0 / 63">0 %</abbr></p>
+                <abbr title="0 / 62">0 %</abbr></p>
         </div>
     </div>
 
@@ -1701,7 +1701,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        jetstream_libc::EIO =&gt; std::io::ErrorKind::WriteZero,</pre>
+                <pre class="has-background-danger-light py-0 px-2">        jetstream_libc::EINTR =&gt; std::io::ErrorKind::Interrupted,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1717,7 +1717,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        jetstream_libc::EINTR =&gt; std::io::ErrorKind::Interrupted,</pre>
+                <pre class="has-background-danger-light py-0 px-2">        _ =&gt; std::io::ErrorKind::Other,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1727,13 +1727,13 @@
                 <a href="#106">106</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        _ =&gt; std::io::ErrorKind::Other,</pre>
+                <pre class="has-background-white py-0 px-2">    };</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1743,13 +1743,13 @@
                 <a href="#107">107</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    };</pre>
+                <pre class="has-background-danger-light py-0 px-2">    std::io::Error::new(kind, &quot;rlerror&quot;.to_string()).into()</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1765,7 +1765,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    std::io::Error::new(kind, &quot;rlerror&quot;.to_string()).into()</pre>
+                <pre class="has-background-danger-light py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1775,13 +1775,13 @@
                 <a href="#109">109</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">}</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1797,7 +1797,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">impl From&lt;ErrorFrame&gt; for Error {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1807,13 +1807,13 @@
                 <a href="#111">111</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">impl From&lt;ErrorFrame&gt; for Error {</pre>
+                <pre class="has-background-danger-light py-0 px-2">    fn from(frame: ErrorFrame) -&gt; Self {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1829,7 +1829,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    fn from(frame: ErrorFrame) -&gt; Self {</pre>
+                <pre class="has-background-danger-light py-0 px-2">        match frame {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1845,7 +1845,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        match frame {</pre>
+                <pre class="has-background-danger-light py-0 px-2">            ErrorFrame::JetStreamError(error) =&gt; error,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1861,7 +1861,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            ErrorFrame::JetStreamError(error) =&gt; error,</pre>
+                <pre class="has-background-danger-light py-0 px-2">            ErrorFrame::RlError(rlerror) =&gt; error_to_rmessage(&amp;rlerror),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1877,7 +1877,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            ErrorFrame::RlError(rlerror) =&gt; error_to_rmessage(&amp;rlerror),</pre>
+                <pre class="has-background-danger-light py-0 px-2">            ErrorFrame::RError(rerror) =&gt; Error::new(rerror.ename),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1885,22 +1885,6 @@
                 id="116"
                 role="cell">
                 <a href="#116">116</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
-                
-            </div>
-            <div class="column has-background-danger-light p-0"
-                 role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            ErrorFrame::RError(rerror) =&gt; Error::new(rerror.ename),</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="117"
-                role="cell">
-                <a href="#117">117</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
@@ -1914,9 +1898,9 @@
         </div><div class="columns p-0 m-0" role="row">
             <div
                 class="column is-1 is-narrow p-0 has-text-centered"
-                id="118"
+                id="117"
                 role="cell">
-                <a href="#118">118</a>
+                <a href="#117">117</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
@@ -1930,9 +1914,9 @@
         </div><div class="columns p-0 m-0" role="row">
             <div
                 class="column is-1 is-narrow p-0 has-text-centered"
-                id="119"
+                id="118"
                 role="cell">
-                <a href="#119">119</a>
+                <a href="#118">118</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
@@ -1948,7 +1932,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-02-11 14:39</p>
+                    <p class="heading">Date: 2026-02-12 07:04</p>
                 </div>
             
         </footer>
