@@ -21,8 +21,6 @@ import { Mux } from "./mux.js";
 import { MESSAGE_ID_START, RJETSTREAMERROR } from "./constants.js";
 import type { Protocol } from "./protocol.js";
 
-// --- Test helpers ---
-
 /** A simple Framer that carries a single u32 payload. */
 class SimpleMsg implements Framer {
   constructor(
@@ -50,8 +48,6 @@ const simpleDecode: FramerDecode<SimpleMsg> = (
   const value = u32Codec.decode(reader);
   return new SimpleMsg(type, value);
 };
-
-// --- TagPool tests ---
 
 describe("TagPool", () => {
   test("acquire returns tags starting from 1", () => {
@@ -88,8 +84,6 @@ describe("TagPool", () => {
     expect(new Set(tags).size).toBe(256);
   });
 });
-
-// --- frameCodec tests ---
 
 describe("frameCodec", () => {
   const codec = frameCodec(simpleDecode);
@@ -171,8 +165,6 @@ describe("frameCodec", () => {
     expect(f2.msg.value).toBe(200);
   });
 });
-
-// --- Mux tests ---
 
 describe("Mux", () => {
   /** Create a mock transport that echoes frames back with type + 1. */
@@ -289,8 +281,6 @@ describe("Mux", () => {
   });
 });
 
-// --- Constants tests ---
-
 describe("constants", () => {
   test("MESSAGE_ID_START is 102", () => {
     expect(MESSAGE_ID_START).toBe(102);
@@ -300,8 +290,6 @@ describe("constants", () => {
     expect(RJETSTREAMERROR).toBe(5);
   });
 });
-
-// --- Protocol tests ---
 
 describe("Protocol", () => {
   test("can implement Protocol interface", () => {

@@ -26,6 +26,10 @@ jobs:
         run: pnpm --filter @sevki/jetstream-wireformat test
       - name: Test RPC
         run: pnpm --filter @sevki/jetstream-rpc test
+      - name: Test HTTP
+        run: pnpm --filter @sevki/jetstream-http test
+      - name: Test React
+        run: pnpm --filter @sevki/jetstream-react test
 
   ts-interop:
     runs-on: ubuntu-latest
