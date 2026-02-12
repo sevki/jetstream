@@ -4,11 +4,11 @@
  * r[impl jetstream.react.use-handler.type-safety]
  * r[impl jetstream.react.use-handler.lifecycle]
  */
-import { useContext, useEffect, useRef, useState } from 'react';
-import type { FramerCodec, ServerCodec } from '@sevki/jetstream-rpc';
-import { ServerCodec as ServerCodecClass } from '@sevki/jetstream-rpc';
-import type { Context } from '@sevki/jetstream-rpc';
-import { JetStreamContext } from './provider.js';
+import { useContext, useEffect, useRef, useState } from "react";
+import type { FramerCodec, ServerCodec } from "@sevki/jetstream-rpc";
+import { ServerCodec as ServerCodecClass } from "@sevki/jetstream-rpc";
+import type { Context } from "@sevki/jetstream-rpc";
+import { JetStreamContext } from "./provider.js";
 
 export interface HandlerEvent {
   method: string;
@@ -23,10 +23,14 @@ export interface UseHandlerResult {
 }
 
 interface HandlerRegistration<TReq, TRes> {
+  protocolName: string;
   requestCodec: FramerCodec<TReq>;
   responseCodec: FramerCodec<TRes>;
   dispatch: (
-    handler: Record<string, (ctx: Context, ...args: unknown[]) => Promise<unknown>>,
+    handler: Record<
+      string,
+      (ctx: Context, ...args: unknown[]) => Promise<unknown>
+    >,
     ctx: Context,
     frame: { tag: number; msg: TReq },
   ) => Promise<{ tag: number; msg: TRes }>;
@@ -45,7 +49,7 @@ export function useHandler<
   impl: THandler,
 ): UseHandlerResult {
   const ctx = useContext(JetStreamContext);
-  if (!ctx) throw new Error('useHandler must be used within JetStreamProvider');
+  if (!ctx) throw new Error("useHandler must be used within JetStreamProvider");
 
   const [events, setEvents] = useState<HandlerEvent[]>([]);
   const [error, setError] = useState<Error | undefined>(undefined);
@@ -53,10 +57,7 @@ export function useHandler<
   implRef.current = impl;
 
   useEffect(() => {
-    const key = JSON.stringify({
-      // Use codec identity as handler key
-      codec: registration.requestCodec,
-    });
+    const key = registration.protocolName;
 
     const createCodec = () =>
       new ServerCodecClass(
@@ -68,7 +69,10 @@ export function useHandler<
       try {
         const rpcCtx: Context = {};
         const result = await registration.dispatch(
-          implRef.current as Record<string, (ctx: Context, ...args: unknown[]) => Promise<unknown>>,
+          implRef.current as Record<
+            string,
+            (ctx: Context, ...args: unknown[]) => Promise<unknown>
+          >,
           rpcCtx,
           frame as { tag: number; msg: any },
         );
@@ -78,7 +82,7 @@ export function useHandler<
         setEvents((prev) => [
           ...prev,
           {
-            method: msgObj.type ?? 'unknown',
+            method: msgObj.type ?? "unknown",
             args: [],
             result,
             timestamp: Date.now(),
@@ -87,9 +91,7 @@ export function useHandler<
 
         return result;
       } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error(String(err)),
-        );
+        setError(err instanceof Error ? err : new Error(String(err)));
         throw err;
       }
     };

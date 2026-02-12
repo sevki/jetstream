@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useRef, useState } from "react";
 import type { ReactNode } from "react";
 import type { FramerCodec, ServerCodec } from "@sevki/jetstream-rpc";
 import type { DispatchFn } from "@sevki/jetstream-rpc";
-import { serverLoop } from "@sevki/jetstream-rpc";
+import { serverLoop, acceptVersion } from "@sevki/jetstream-rpc";
 
 export type ConnectionState =
   | "connecting"
@@ -108,17 +108,35 @@ async function acceptIncoming(
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
-      // For each incoming stream, find matching handler and run server loop
-      for (const { createCodec, dispatch } of handlers.values()) {
-        const codec = createCodec();
-        serverLoop(codec, dispatch, value.readable, value.writable).catch(
-          () => {},
-        );
-      }
+      // Each incoming stream: read Tversion, dispatch to the one matching handler
+      handleStream(value, handlers).catch(() => {});
     }
   } finally {
     reader.releaseLock();
   }
+}
+
+async function handleStream(
+  stream: {
+    readable: ReadableStream<Uint8Array>;
+    writable: WritableStream<Uint8Array>;
+  },
+  handlers: JetStreamContextValue["handlers"],
+) {
+  // Perform server-side version negotiation to identify the protocol
+  const knownProtocols = new Set(handlers.keys());
+  const accepted = await acceptVersion(
+    stream.readable,
+    stream.writable,
+    knownProtocols,
+  );
+
+  // Look up the handler for this protocol
+  const handler = handlers.get(accepted.protocolName);
+  if (!handler) return;
+
+  const codec = handler.createCodec();
+  await serverLoop(codec, handler.dispatch, stream.readable, stream.writable);
 }
 
 export function useJetStreamStatus(): ConnectionState {

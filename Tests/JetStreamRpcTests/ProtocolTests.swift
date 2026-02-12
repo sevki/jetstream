@@ -43,6 +43,7 @@ struct EchoService: JetStreamProtocol {
     typealias Response = EchoResponse
     typealias Error = EchoError
     static let VERSION = "1.0.0"
+    static let NAME = "echo"
 }
 
 // MARK: - Tests
@@ -51,6 +52,10 @@ final class ProtocolTests: XCTestCase {
 
     func testProtocolVersion() {
         XCTAssertEqual(EchoService.VERSION, "1.0.0")
+    }
+
+    func testProtocolName() {
+        XCTAssertEqual(EchoService.NAME, "echo")
     }
 
     func testProtocolAssociatedTypes() {

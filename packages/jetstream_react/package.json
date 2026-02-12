@@ -6,9 +6,10 @@
   "types": "dist/index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "vitest run"
+    "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "@sevki/jetstream-http": "workspace:*",
     "@sevki/jetstream-rpc": "workspace:*",
     "@sevki/jetstream-wireformat": "workspace:*"
   },

@@ -1,5 +1,5 @@
 /**
- * r[impl jetstream.react.webtransport.stream]
+ * r[impl jetstream.webtransport.stream]
  */
 import type { Frame, Framer, FramerDecode } from '@sevki/jetstream-rpc';
 import type { Transport } from '@sevki/jetstream-rpc';

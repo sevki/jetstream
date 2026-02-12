@@ -1,13 +1,16 @@
 /**
  * r[impl jetstream.rpc.ts.mux]
  */
-import type { Frame, Framer } from './frame.js';
-import type { Transport } from './transport.js';
-import { TagPool } from './tag-pool.js';
+import type { Frame, Framer } from "./frame.js";
+import type { Transport } from "./transport.js";
+import { TagPool } from "./tag-pool.js";
 
 export class Mux<TReq extends Framer, TRes extends Framer> {
   private tagPool: TagPool;
-  private pending: Map<number, { resolve: (frame: Frame<TRes>) => void; reject: (err: Error) => void }> = new Map();
+  private pending: Map<
+    number,
+    { resolve: (frame: Frame<TRes>) => void; reject: (err: Error) => void }
+  > = new Map();
   private transport: Transport<TReq, TRes>;
   private running = false;
 
@@ -32,11 +35,15 @@ export class Mux<TReq extends Framer, TRes extends Framer> {
 
   async rpc(msg: TReq): Promise<Frame<TRes>> {
     const tag = this.tagPool.acquire();
-    if (tag === null) throw new Error('no tags available');
+    if (tag === null) throw new Error("no tags available");
 
     return new Promise((resolve, reject) => {
       this.pending.set(tag, { resolve, reject });
-      this.transport.send({ tag, msg }).catch(reject);
+      this.transport.send({ tag, msg }).catch((err) => {
+        this.pending.delete(tag);
+        this.tagPool.release(tag);
+        reject(err);
+      });
     });
   }
 

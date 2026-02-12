@@ -9,7 +9,7 @@ import { Mux } from "@sevki/jetstream-rpc";
 import type { Framer, FramerDecode } from "@sevki/jetstream-rpc";
 import { negotiateVersion } from "@sevki/jetstream-rpc";
 import { JetStreamContext } from "./provider.js";
-import { WebTransportTransport } from "./webtransport-transport.js";
+import { WebTransportTransport } from "@sevki/jetstream-http";
 
 type ClientConstructor<TReq extends Framer, TRes extends Framer, C> = new (
   mux: Mux<TReq, TRes>,

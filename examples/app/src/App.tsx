@@ -13,6 +13,7 @@ import {
   PROTOCOL_VERSION,
   PROTOCOL_NAME,
 } from "./generated/echohttp_rpc.js";
+import JetStreamLogo from "../../../logo/JetStream.png";
 
 const SERVER_URL = `https://127.0.0.1:4433/${PROTOCOL_NAME}`;
 
@@ -29,6 +30,7 @@ function EchoDemo() {
 
   return (
     <div>
+      <img src={JetStreamLogo} alt="JetStream Logo" width={200} />
       <h1>JetStream Echo Demo</h1>
       <div data-testid="connection-status" className={`status ${status}`}>
         {status}

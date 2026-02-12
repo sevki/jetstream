@@ -101,7 +101,6 @@ pub fn error_to_rmessage(err: &Rlerror) -> Error {
         jetstream_libc::EWOULDBLOCK => std::io::ErrorKind::WouldBlock,
         jetstream_libc::EINVAL => std::io::ErrorKind::InvalidInput,
         jetstream_libc::ETIMEDOUT => std::io::ErrorKind::TimedOut,
-        jetstream_libc::EIO => std::io::ErrorKind::WriteZero,
         jetstream_libc::EINTR => std::io::ErrorKind::Interrupted,
         _ => std::io::ErrorKind::Other,
     };

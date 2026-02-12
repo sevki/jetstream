@@ -1,6 +1,6 @@
 /**
  * r[impl jetstream.react.webtransport]
- * Minimal WebTransport type declarations for the JetStream React hooks.
+ * Minimal WebTransport type declarations for the JetStream HTTP package.
  */
 declare class WebTransport {
   constructor(url: string, options?: WebTransportOptions);
