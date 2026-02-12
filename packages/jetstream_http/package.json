@@ -1,0 +1,19 @@
+{
+  "name": "@sevki/jetstream-http",
+  "version": "15.0.0",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@sevki/jetstream-rpc": "workspace:*",
+    "@sevki/jetstream-wireformat": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

@@ -1,8 +1,8 @@
-use std::pin::pin;
+use std::{pin::pin, str::FromStr};
 
 use crate::{
     context::{Context, Contextual},
-    Error, Frame, Protocol,
+    Error, Frame, Protocol, Version,
 };
 use futures::{Sink, Stream};
 use jetstream_wireformat::WireFormat;
@@ -102,6 +102,45 @@ where
 
 #[trait_variant::make(Send + Sync + Sized)]
 pub trait Server: Protocol + Send + Sync {
+    /// Negotiate the protocol version to use.
+    fn version(client_version: Version) -> jetstream_error::Result<Version> {
+        // By default, accept any version that matches the major version of the server's protocol version.
+        let server_version =
+            Version::from_str(Self::VERSION).unwrap_or_else(|_| {
+                panic!(
+                    "Invalid version format for JetStream protocol: {}",
+                    Self::VERSION
+                )
+            });
+        match (client_version, server_version) {
+            (Version::V9P2000L, Version::V9P2000L) => Ok(Version::V9P2000L),
+            (Version::V9P2000, Version::V9P2000) => Ok(Version::V9P2000),
+            (
+                Version::JetStream {
+                    name: client_name,
+                    version: client_version,
+                },
+                Version::JetStream {
+                    name: server_name,
+                    version: server_version,
+                },
+            ) => {
+                // compare versions of client and server and send the lowest version
+                if client_name != server_name {
+                    return Err(Error::new(format!(
+                        "Incompatible protocol names: client={}, server={}",
+                        client_name, server_name
+                    )));
+                }
+                Ok(Version::JetStream {
+                    name: server_name,
+                    version: client_version.min(server_version),
+                })
+            }
+            _ => Err(Error::new("Incompatible protocols".to_string())),
+        }
+    }
+    /// The main RPC method that handles incoming requests and produces responses.
     async fn rpc(
         &mut self,
         context: Context,

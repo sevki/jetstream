@@ -1,0 +1,50 @@
+name: "TypeScript Build & Test"
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "packages/**"
+      - "pnpm-workspace.yaml"
+      - "tests/jetstream_interop/**"
+      - ".github/workflows/typescript.yml"
+
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Test wireformat
+        run: pnpm --filter @sevki/jetstream-wireformat test
+      - name: Test RPC
+        run: pnpm --filter @sevki/jetstream-rpc test
+      - name: Test HTTP
+        run: pnpm --filter @sevki/jetstream-http test
+      - name: Test React
+        run: pnpm --filter @sevki/jetstream-react test
+
+  ts-interop:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - uses: pnpm/action-setup@v4
+        with:
+          version: latest
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "pnpm"
+      - name: Install dependencies
+        run: pnpm install
+      - name: Run TS interop tests
+        run: cargo test -p jetstream_interop --test ts_interop

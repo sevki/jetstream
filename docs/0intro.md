@@ -15,8 +15,7 @@ JetStream supports multiple transport backends:
 
 - **[quinn](https://crates.io/crates/quinn)** - QUIC transport with TLS/mTLS support
 - **[iroh](https://crates.io/crates/iroh)** - P2P transport with built-in NAT traversal
-- **WebSocket** - Browser-compatible transport
-- **Cloudflare Workers** - Edge computing support
+- **[webtransport](https://developer.mozilla.org/en-US/docs/Web/API/WebTransport)** - WebTransport transport for browser and server environments
 
 ## Features
 
@@ -25,6 +24,7 @@ JetStream supports multiple transport backends:
 - [mTLS](https://docs.rs/jetstream_quic/latest/jetstream_quic/struct.Server.html#method.new_with_mtls)
 - [Binary encoding](https://docs.rs/jetstream_wireformat/latest/jetstream_wireformat/)
 - Cross-platform (Linux, macOS, Windows, WebAssembly)
+- Cross-language — [TypeScript](typescript.md) and [Swift](swift.md) clients with wire-compatible codegen
 
 For detailed API documentation, see the [rustdoc documentation](doc/jetstream/index.html).
 

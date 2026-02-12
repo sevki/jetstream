@@ -16,8 +16,8 @@ impl<T> ProtocolHandler for T
 where
     T: Server<Error = jetstream_rpc::Error> + Clone + 'static,
 {
-    fn alpn(&self) -> String {
-        Self::VERSION.to_string()
+    fn alpns(&self) -> Vec<String> {
+        vec![Self::VERSION.to_string()]
     }
     async fn accept(&self, ctx: Context, conn: Connection) -> () {
         let handler = self.clone();

@@ -47,7 +47,7 @@ launch_chrome() {
     echo "Opening Chrome/Chromium..."
     case $(uname) in
         Linux*)
-            chromium --origin-to-force-quic-on=127.0.0.1:4433 --ignore-certificate-errors-spki-list=$SPKI https://localhost:4433/ 2>/dev/null &
+            chromium --origin-to-force-quic-on=127.0.0.1:4433 --ignore-certificate-errors-spki-list=$SPKI https://127.0.0.1:4433/ 2>/dev/null &
             ;;
         Darwin*)
             open -a "Google Chrome" --args --origin-to-force-quic-on=127.0.0.1:4433 --ignore-certificate-errors-spki-list=$SPKI https://127.0.0.1:4433/

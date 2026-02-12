@@ -1,4 +1,3 @@
-mod attributes;
 mod codegen;
 mod derive;
 

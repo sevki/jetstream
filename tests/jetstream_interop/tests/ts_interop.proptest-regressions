@@ -1,0 +1,9 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 0fb90168c7f34992c117cd834a2e4b0260b844a4a427fbba095addc6abf3d796 # shrinks to s = Circle(0)
+cc ff73d2afce2804dfb9648a5b10bd03c0d069f311943b70f3bae91ec0f854aec0 # shrinks to m = Message { id: 0, tags: [], payload: None }
+cc c5ab7a169e0e9bcfafd8b4035303e592a3f21e291aed571c404936fcdfb0ab2d # shrinks to p = Point { x: 0, y: 0 }

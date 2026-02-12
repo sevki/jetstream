@@ -2,7 +2,7 @@ use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use syn::{spanned::Spanned, Data, Fields, Ident};
 
-use super::attributes::{extract_field_options, has_skip_attr};
+use jetstream_codegen::attributes::{extract_field_options, has_skip_attr};
 use crate::utils::error;
 
 pub fn byte_size_sum(data: &Data) -> TokenStream {

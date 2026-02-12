@@ -12,9 +12,10 @@ license.workspace = true
 askama = "0.15.2"
 async-trait = "0.1.89"
 axum = { version = "0.8.8", features = [], default-features = false }
-bytes = "1.11.1"
+bytes = "1.11.0"
 futures ="0.3.31"
 h3 = { version = "0.0.8" }
+h3-webtransport = "0.1.2"
 h3-quinn = { version = "0.0.10" }
 http = "1.4.0"
 jetstream_error = { version = "15.1.0", path = "../jetstream_error"}
@@ -28,3 +29,5 @@ tokio-util.workspace = true
 tower-layer = "0.3.3"
 tower-service = "0.3.3"
 tracing = "0.1.44"
+h3-datagram = "0.0.2"
+semver = "1.0.27"

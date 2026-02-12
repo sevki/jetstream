@@ -1,0 +1,54 @@
+name: "Swift Build & Test"
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "Sources/**"
+      - "Tests/**"
+      - "Package.swift"
+      - "tests/jetstream_interop/**"
+      - ".github/workflows/swift.yml"
+
+jobs:
+  swift-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test
+
+  swift-linux:
+    runs-on: ubuntu-latest
+    container: swift:latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test
+
+  swift-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: compnerd/gha-setup-swift@main
+        with:
+          branch: swift-6.1-release
+          tag: 6.1-RELEASE
+      - name: Build
+        run: swift build
+      - name: Test
+        run: swift test
+
+  swift-interop:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Build Swift helper
+        run: swift build --product JetStreamInteropHelper
+      - name: Run Swift interop tests
+        run: cargo test -p jetstream_interop --test swift_interop

@@ -19,7 +19,9 @@ impl Router {
     }
 
     pub fn register(&mut self, handler: Arc<dyn ProtocolHandler>) {
-        self.handlers.insert(handler.alpn(), handler);
+        for alpn in handler.alpns() {
+            self.handlers.insert(alpn, handler.clone());
+        }
     }
 
     pub fn alpns(&self) -> Vec<Vec<u8>> {

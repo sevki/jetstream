@@ -47,7 +47,7 @@ pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
             url: RELAY_URL.clone(),
             quic: None,
         }])))
-        .alpns(vec![P::VERSION.as_bytes().to_vec()])
+        .alpns(vec![P::NAME.as_bytes().to_vec()])
         .add_discovery(jetstream_publisher_builder())
         .add_discovery(jetstream_resolver())
 }
@@ -57,7 +57,7 @@ pub async fn client_builder<P: Protocol>(
 ) -> Result<client::IrohTransport<P>, Box<dyn std::error::Error + 'static>> {
     let endpoint = endpoint_builder::<P>().bind().await.map_err(Box::new)?;
     let conn = endpoint
-        .connect(addr, P::VERSION.as_bytes())
+        .connect(addr, P::NAME.as_bytes())
         .await
         .map_err(Box::new)?;
     Ok(IrohTransport::from(conn.open_bi().await?))
@@ -69,7 +69,7 @@ pub async fn server_builder<P: Server + Protocol + Debug + Clone + 'static>(
     let endpoint = endpoint_builder::<P>().bind().await.map_err(Box::new)?;
 
     let router = Router::builder(endpoint)
-        .accept(P::VERSION.as_bytes(), IrohServer::new(inner))
+        .accept(P::NAME.as_bytes(), IrohServer::new(inner))
         .spawn();
     Ok(router)
 }

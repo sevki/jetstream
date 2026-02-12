@@ -186,9 +186,15 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
             use super::#trait_name;
             #(#additional_uses)*
 
-            const MESSAGE_ID_START: u8 = 101;
+            const MESSAGE_ID_START: u8 = 102;
             /// Error response message type constant
             pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
+            /// Version request message type constant
+            pub const TVERSION: u8 = jetstream::prelude::TVERSION;
+            /// Version response message type constant
+            pub const RVERSION: u8 = jetstream::prelude::RVERSION;
+            /// Protocol name — used for routing
+            pub const PROTOCOL_NAME: &str = concat!("rs.jetstream.proto/", #trait_name_lower);
             /// Protocol version string constructed from the generated crate's version
             pub const PROTOCOL_VERSION: &str = concat!(
                 "rs.jetstream.proto/",
@@ -199,7 +205,7 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
                 env!("CARGO_PKG_VERSION_MINOR"),
                 ".",
                 env!("CARGO_PKG_VERSION_PATCH"),
-                "-",
+                "+",
                 #digest_prefix
             );
             const DIGEST: &str = #digest_lit;

@@ -1,0 +1,13 @@
+{
+  "name": "@sevki/jetstream-interop-ts",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@sevki/jetstream-wireformat": "workspace:*"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

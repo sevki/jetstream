@@ -9,28 +9,30 @@
 //! Of note is the `Protocol` trait which is meant to be used with the `service` attribute macro.
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
-use std::str::FromStr;
+extern crate tokio_util;
+mod any_server;
+mod call;
 pub mod client;
+mod constants;
 pub mod context;
+mod error;
 pub mod framer;
+mod mux;
 pub mod server;
+mod tag;
+mod version;
+pub use any_server::AnyServer;
+pub use call::*;
+pub use constants::*;
+pub use error::*;
 pub use jetstream_error::IntoError;
 use jetstream_wireformat::WireFormat;
-// Re-export codecs
-extern crate tokio_util;
-pub use tokio_util::codec::{Decoder, Encoder, Framed};
-mod dynamic;
-pub use dynamic::AnyServer;
-mod constants;
-pub use constants::*;
-mod tag;
-pub use tag::*;
-mod call;
-pub use call::*;
-pub use error::*;
-mod error;
-mod mux;
 pub use mux::*;
+use std::str::FromStr;
+pub use tag::*;
+pub use tokio_util::codec::{Decoder, Encoder, Framed};
+pub use version::*;
+
 pub enum Encoding {
     JetStream,
     Json,
@@ -76,4 +78,5 @@ pub trait Protocol: Send + Sync {
     // r[impl jetstream.error.v2.into-error]
     type Error: IntoError;
     const VERSION: &'static str;
+    const NAME: &'static str;
 }

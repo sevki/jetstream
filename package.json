@@ -1,0 +1,19 @@
+{
+  "name": "jetstream",
+  "version": "15.0.0",
+  "private": true,
+  "description": "JetStream monorepo",
+  "type": "module",
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "BSD-3-Clause",
+  "devDependencies": {
+    "@types/node": "^25.2.2",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}
