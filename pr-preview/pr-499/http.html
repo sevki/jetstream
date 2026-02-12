@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5b3dbfa8.js";
+            window.path_to_searchindex_js = "searchindex-aea621fa.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-bd0508ba.js"></script>
+        <script src="toc-0333eb5f.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -199,21 +199,38 @@ use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
 
-use askama::Template;
-use axum::http::header;
-use axum::{routing::get, Router};
+use axum::Router;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as HttpBuilder;
 use hyper_util::service::TowerToHyperService;
-use jetstream_http::{
-    AltSvcLayer, H3Service, JetStreamContext, JetStreamTemplate,
-};
-use jetstream_rpc::context::{Peer, RemoteAddr};
+use jetstream::prelude::*;
+use jetstream_http::{AltSvcLayer, H3Service};
+use jetstream_macros::service;
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
+use tower_http::services::ServeDir;
 use tracing::{error, info};
 
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+
+// r[impl jetstream.webtransport.http-example]
+#[service]
+pub trait EchoHttp {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt;;
+}
+
+#[derive(Clone)]
+struct EchoHttpImpl;
+
+impl EchoHttp for EchoHttpImpl {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt; {
+        Ok(message)
+    }
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt; {
+        Ok(a + b)
+    }
+}
 
 pub static CA_PEM: &amp;str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
 pub static SERVER_PEM: &amp;str =
@@ -235,99 +252,15 @@ fn load_key(path: &amp;str) -&gt; PrivateKeyDer&lt;'static&gt; {
         .expect("No key found")
 }
 
-#[derive(Template)]
-#[template(path = "context.html")]
-struct ContextTemplate&lt;'a&gt; {
-    remote_addr: &amp;'a str,
-    has_peer_cert: bool,
-    common_name: Option&lt;&amp;'a str&gt;,
-    fingerprint: &amp;'a str,
-    dns_names: Vec&lt;&amp;'a str&gt;,
-    ip_addresses: Vec&lt;String&gt;,
-    emails: Vec&lt;&amp;'a str&gt;,
-    uris: Vec&lt;String&gt;,
-    method: &amp;'a str,
-    path: &amp;'a str,
-    protocol: &amp;'a str,
-}
-
-async fn handle_request(
-    ctx: JetStreamContext,
-    req: axum::extract::Request,
-) -&gt; impl axum::response::IntoResponse {
-    // Log the peer context
-    info!("Request from peer: {}", *ctx);
-
-    // Get remote address
-    let remote_addr = match ctx.remote() {
-        Some(RemoteAddr::IpAddr(ip)) =&gt; ip.to_string(),
-        _ =&gt; "unknown".to_string(),
-    };
-
-    // Determine protocol version
-    let protocol = format!("{:?}", req.version());
-    // Extract peer cert info
-    let (
-        has_peer_cert,
-        common_name,
-        fingerprint,
-        dns_names,
-        ip_addresses,
-        emails,
-        uris,
-    ) = match ctx.peer() {
-        Some(Peer::Tls(tls_peer)) =&gt; {
-            if let Some(leaf) = tls_peer.leaf() {
-                (
-                    true,
-                    leaf.common_name.clone(),
-                    leaf.fingerprint.clone(),
-                    leaf.dns_names.clone(),
-                    leaf.ip_addresses.iter().map(|ip| ip.to_string()).collect(),
-                    leaf.emails.clone(),
-                    leaf.uris.iter().map(|u| u.to_string()).collect(),
-                )
-            } else {
-                (false, None, String::new(), vec![], vec![], vec![], vec![])
-            }
-        }
-        _ =&gt; (false, None, String::new(), vec![], vec![], vec![], vec![]),
-    };
-
-    let method = req.method().as_str();
-    let path = req.uri().path();
-
-    let context_html = ContextTemplate {
-        remote_addr: &amp;remote_addr,
-        has_peer_cert,
-        common_name: common_name.as_deref(),
-        fingerprint: &amp;fingerprint,
-        dns_names: dns_names.iter().map(|s| s.as_str()).collect(),
-        ip_addresses,
-        emails: emails.iter().map(|s| s.as_str()).collect(),
-        uris,
-        method,
-        path,
-        protocol: &amp;protocol,
-    }
-    .render()
-    .unwrap_or_else(|_| "Error rendering context".to_string());
-
-    let template = JetStreamTemplate {
-        body: &amp;context_html,
-        ..Default::default()
-    };
-    let body = template.render().unwrap_or_else(|_| "Error".to_string());
-
-    ([(header::CONTENT_TYPE, "text/html; charset=utf-8")], body)
-}
+pub static APP_DIST: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/examples/app/dist");
 
 /// Run HTTP/2 server with TLS
 async fn run_http2_server(
     addr: SocketAddr,
     router: Router,
     tls_acceptor: TlsAcceptor,
-) -&gt; Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
+) -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
     let listener = TcpListener::bind(addr).await?;
 
     loop {
@@ -357,7 +290,7 @@ async fn run_http2_server(
     }
 }
 
-/// Run HTTP/3 server with QUIC
+/// Run HTTP/3 server with QUIC + WebTransport
 async fn run_http3_server(
     addr: SocketAddr,
     router: Router,
@@ -365,7 +298,14 @@ async fn run_http3_server(
     server_key: PrivateKeyDer&lt;'static&gt;,
     ca_cert: Option&lt;CertificateDer&lt;'static&gt;&gt;,
 ) {
-    let h3_service = Arc::new(H3Service::new(router));
+    // Register the EchoHttp service as a WebTransport handler
+    let echo = echohttp_protocol::EchoHttpService {
+        inner: EchoHttpImpl,
+    };
+    let h3_service = Arc::new(
+        H3Service::new(router)
+            .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
+    );
 
     let mut quic_router = jetstream_quic::Router::new();
     quic_router.register(h3_service);
@@ -398,7 +338,7 @@ async fn run_http3_server(
 }
 
 #[tokio::main]
-async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+async fn main() -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
     // Initialize tracing
     tracing_subscriber::fmt::init();
 
@@ -418,9 +358,9 @@ async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
         None
     };
 
-    // Create shared Axum router with Alt-Svc layer to advertise HTTP/3
+    // Create shared Axum router serving React app build + Alt-Svc header
     let router = Router::new()
-        .fallback(get(handle_request))
+        .fallback_service(ServeDir::new(APP_DIST))
         .layer(AltSvcLayer::new(4433));
 
     // Setup TLS config for HTTP/2
@@ -432,16 +372,19 @@ async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 
     let addr: SocketAddr = "127.0.0.1:4433".parse()?;
 
-    info!("=== JetStream HTTP Server ===");
+    info!("=== JetStream HTTP + WebTransport Server ===");
     info!("Listening on https://{}", addr);
     info!("  - HTTP/2 over TLS (TCP)");
-    info!("  - HTTP/3 over QUIC (UDP)");
+    info!("  - HTTP/3 + WebTransport over QUIC (UDP)");
+    info!(
+        "  - WebTransport protocol: {}",
+        echohttp_protocol::PROTOCOL_VERSION
+    );
     if mtls_enabled {
         info!("mTLS enabled - client certificates required");
     } else {
         info!("No client auth (use --mtls to enable)");
     }
-    info!("You can now run ./examples/launch_chrome.sh to connect with Chrome");
 
     // Run both servers concurrently on the same port (TCP for HTTP/2, UDP for HTTP/3)
     tokio::select! {
@@ -616,7 +559,7 @@ tower = "0.5"
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="crates.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="typescript.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -630,7 +573,7 @@ tower = "0.5"
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="crates.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="typescript.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>

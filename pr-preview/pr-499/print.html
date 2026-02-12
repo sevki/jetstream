@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-5b3dbfa8.js";
+            window.path_to_searchindex_js = "searchindex-aea621fa.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-bd0508ba.js"></script>
+        <script src="toc-0333eb5f.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -188,8 +188,7 @@
 <ul>
 <li><strong><a href="https://crates.io/crates/quinn">quinn</a></strong> - QUIC transport with TLS/mTLS support</li>
 <li><strong><a href="https://crates.io/crates/iroh">iroh</a></strong> - P2P transport with built-in NAT traversal</li>
-<li><strong>WebSocket</strong> - Browser-compatible transport</li>
-<li><strong>Cloudflare Workers</strong> - Edge computing support</li>
+<li><strong><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebTransport">webtransport</a></strong> - WebTransport transport for browser and server environments</li>
 </ul>
 <h2 id="features"><a class="header" href="#features">Features</a></h2>
 <ul>
@@ -198,6 +197,7 @@
 <li><a href="https://docs.rs/jetstream_quic/latest/jetstream_quic/struct.Server.html#method.new_with_mtls">mTLS</a></li>
 <li><a href="https://docs.rs/jetstream_wireformat/latest/jetstream_wireformat/">Binary encoding</a></li>
 <li>Cross-platform (Linux, macOS, Windows, WebAssembly)</li>
+<li>Cross-language — <a href="#typescript">TypeScript</a> and <a href="#swift">Swift</a> clients with wire-compatible codegen</li>
 </ul>
 <p>For detailed API documentation, see the <a href="#-jetstream">rustdoc documentation</a>.</p>
 <h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
@@ -619,21 +619,38 @@ use std::net::SocketAddr;
 use std::path::Path;
 use std::sync::Arc;
 
-use askama::Template;
-use axum::http::header;
-use axum::{routing::get, Router};
+use axum::Router;
 use hyper_util::rt::{TokioExecutor, TokioIo};
 use hyper_util::server::conn::auto::Builder as HttpBuilder;
 use hyper_util::service::TowerToHyperService;
-use jetstream_http::{
-    AltSvcLayer, H3Service, JetStreamContext, JetStreamTemplate,
-};
-use jetstream_rpc::context::{Peer, RemoteAddr};
+use jetstream::prelude::*;
+use jetstream_http::{AltSvcLayer, H3Service};
+use jetstream_macros::service;
 use tokio::net::TcpListener;
 use tokio_rustls::TlsAcceptor;
+use tower_http::services::ServeDir;
 use tracing::{error, info};
 
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+
+// r[impl jetstream.webtransport.http-example]
+#[service]
+pub trait EchoHttp {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt;;
+}
+
+#[derive(Clone)]
+struct EchoHttpImpl;
+
+impl EchoHttp for EchoHttpImpl {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt; {
+        Ok(message)
+    }
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt; {
+        Ok(a + b)
+    }
+}
 
 pub static CA_PEM: &amp;str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
 pub static SERVER_PEM: &amp;str =
@@ -655,99 +672,15 @@ fn load_key(path: &amp;str) -&gt; PrivateKeyDer&lt;'static&gt; {
         .expect("No key found")
 }
 
-#[derive(Template)]
-#[template(path = "context.html")]
-struct ContextTemplate&lt;'a&gt; {
-    remote_addr: &amp;'a str,
-    has_peer_cert: bool,
-    common_name: Option&lt;&amp;'a str&gt;,
-    fingerprint: &amp;'a str,
-    dns_names: Vec&lt;&amp;'a str&gt;,
-    ip_addresses: Vec&lt;String&gt;,
-    emails: Vec&lt;&amp;'a str&gt;,
-    uris: Vec&lt;String&gt;,
-    method: &amp;'a str,
-    path: &amp;'a str,
-    protocol: &amp;'a str,
-}
-
-async fn handle_request(
-    ctx: JetStreamContext,
-    req: axum::extract::Request,
-) -&gt; impl axum::response::IntoResponse {
-    // Log the peer context
-    info!("Request from peer: {}", *ctx);
-
-    // Get remote address
-    let remote_addr = match ctx.remote() {
-        Some(RemoteAddr::IpAddr(ip)) =&gt; ip.to_string(),
-        _ =&gt; "unknown".to_string(),
-    };
-
-    // Determine protocol version
-    let protocol = format!("{:?}", req.version());
-    // Extract peer cert info
-    let (
-        has_peer_cert,
-        common_name,
-        fingerprint,
-        dns_names,
-        ip_addresses,
-        emails,
-        uris,
-    ) = match ctx.peer() {
-        Some(Peer::Tls(tls_peer)) =&gt; {
-            if let Some(leaf) = tls_peer.leaf() {
-                (
-                    true,
-                    leaf.common_name.clone(),
-                    leaf.fingerprint.clone(),
-                    leaf.dns_names.clone(),
-                    leaf.ip_addresses.iter().map(|ip| ip.to_string()).collect(),
-                    leaf.emails.clone(),
-                    leaf.uris.iter().map(|u| u.to_string()).collect(),
-                )
-            } else {
-                (false, None, String::new(), vec![], vec![], vec![], vec![])
-            }
-        }
-        _ =&gt; (false, None, String::new(), vec![], vec![], vec![], vec![]),
-    };
-
-    let method = req.method().as_str();
-    let path = req.uri().path();
-
-    let context_html = ContextTemplate {
-        remote_addr: &amp;remote_addr,
-        has_peer_cert,
-        common_name: common_name.as_deref(),
-        fingerprint: &amp;fingerprint,
-        dns_names: dns_names.iter().map(|s| s.as_str()).collect(),
-        ip_addresses,
-        emails: emails.iter().map(|s| s.as_str()).collect(),
-        uris,
-        method,
-        path,
-        protocol: &amp;protocol,
-    }
-    .render()
-    .unwrap_or_else(|_| "Error rendering context".to_string());
-
-    let template = JetStreamTemplate {
-        body: &amp;context_html,
-        ..Default::default()
-    };
-    let body = template.render().unwrap_or_else(|_| "Error".to_string());
-
-    ([(header::CONTENT_TYPE, "text/html; charset=utf-8")], body)
-}
+pub static APP_DIST: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/examples/app/dist");
 
 /// Run HTTP/2 server with TLS
 async fn run_http2_server(
     addr: SocketAddr,
     router: Router,
     tls_acceptor: TlsAcceptor,
-) -&gt; Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
+) -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
     let listener = TcpListener::bind(addr).await?;
 
     loop {
@@ -777,7 +710,7 @@ async fn run_http2_server(
     }
 }
 
-/// Run HTTP/3 server with QUIC
+/// Run HTTP/3 server with QUIC + WebTransport
 async fn run_http3_server(
     addr: SocketAddr,
     router: Router,
@@ -785,7 +718,14 @@ async fn run_http3_server(
     server_key: PrivateKeyDer&lt;'static&gt;,
     ca_cert: Option&lt;CertificateDer&lt;'static&gt;&gt;,
 ) {
-    let h3_service = Arc::new(H3Service::new(router));
+    // Register the EchoHttp service as a WebTransport handler
+    let echo = echohttp_protocol::EchoHttpService {
+        inner: EchoHttpImpl,
+    };
+    let h3_service = Arc::new(
+        H3Service::new(router)
+            .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
+    );
 
     let mut quic_router = jetstream_quic::Router::new();
     quic_router.register(h3_service);
@@ -818,7 +758,7 @@ async fn run_http3_server(
 }
 
 #[tokio::main]
-async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+async fn main() -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
     // Initialize tracing
     tracing_subscriber::fmt::init();
 
@@ -838,9 +778,9 @@ async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
         None
     };
 
-    // Create shared Axum router with Alt-Svc layer to advertise HTTP/3
+    // Create shared Axum router serving React app build + Alt-Svc header
     let router = Router::new()
-        .fallback(get(handle_request))
+        .fallback_service(ServeDir::new(APP_DIST))
         .layer(AltSvcLayer::new(4433));
 
     // Setup TLS config for HTTP/2
@@ -852,16 +792,19 @@ async fn main() -&gt; Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
 
     let addr: SocketAddr = "127.0.0.1:4433".parse()?;
 
-    info!("=== JetStream HTTP Server ===");
+    info!("=== JetStream HTTP + WebTransport Server ===");
     info!("Listening on https://{}", addr);
     info!("  - HTTP/2 over TLS (TCP)");
-    info!("  - HTTP/3 over QUIC (UDP)");
+    info!("  - HTTP/3 + WebTransport over QUIC (UDP)");
+    info!(
+        "  - WebTransport protocol: {}",
+        echohttp_protocol::PROTOCOL_VERSION
+    );
     if mtls_enabled {
         info!("mTLS enabled - client certificates required");
     } else {
         info!("No client auth (use --mtls to enable)");
     }
-    info!("You can now run ./examples/launch_chrome.sh to connect with Chrome");
 
     // Run both servers concurrently on the same port (TCP for HTTP/2, UDP for HTTP/3)
     tokio::select! {
@@ -1027,6 +970,623 @@ tokio-rustls = "0.26"
 tower = "0.5"
 </code></pre>
 <p>For more details, see the <a href="#-jetstream_http">jetstream_http API documentation</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="typescript"><a class="header" href="#typescript">TypeScript</a></h1>
+<p>JetStream provides TypeScript packages for wire format encoding and RPC communication, published to the GitHub Package Registry under <code>@sevki</code>.</p>
+<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
+<pre><code class="language-bash"># Configure npm to use GitHub Package Registry for @sevki scope
+echo "@sevki:registry=https://npm.pkg.github.com" &gt;&gt; .npmrc
+
+pnpm add @sevki/jetstream-wireformat @sevki/jetstream-rpc
+</code></pre>
+<h2 id="wireformat-codecs"><a class="header" href="#wireformat-codecs">WireFormat Codecs</a></h2>
+<p>The <code>@sevki/jetstream-wireformat</code> package provides binary codecs for all JetStream primitive and composite types. Every codec implements the <code>WireFormat&lt;T&gt;</code> interface:</p>
+<pre><code class="language-typescript">interface WireFormat&lt;T&gt; {
+  byteSize(value: T): number;
+  encode(value: T, writer: BinaryWriter): void;
+  decode(reader: BinaryReader): T;
+}
+</code></pre>
+<h3 id="primitives"><a class="header" href="#primitives">Primitives</a></h3>
+<pre><code class="language-typescript">import { BinaryReader, BinaryWriter, u32Codec, stringCodec, boolCodec } from '@sevki/jetstream-wireformat';
+
+// Encode a u32
+const writer = new BinaryWriter();
+u32Codec.encode(42, writer);
+const bytes = writer.toUint8Array();
+
+// Decode it back
+const reader = new BinaryReader(bytes);
+const value = u32Codec.decode(reader); // 42
+</code></pre>
+<p>Available primitive codecs: <code>u8Codec</code>, <code>u16Codec</code>, <code>u32Codec</code>, <code>u64Codec</code>, <code>i16Codec</code>, <code>i32Codec</code>, <code>i64Codec</code>, <code>f32Codec</code>, <code>f64Codec</code>, <code>boolCodec</code>, <code>stringCodec</code>.</p>
+<h3 id="composite-types"><a class="header" href="#composite-types">Composite Types</a></h3>
+<p>Build codecs for collections and optional types:</p>
+<pre><code class="language-typescript">import { vecCodec, optionCodec, mapCodec, stringCodec, u32Codec } from '@sevki/jetstream-wireformat';
+
+// Vec&lt;String&gt;
+const tagsCodec = vecCodec(stringCodec);
+
+// Option&lt;u32&gt;
+const maybeIdCodec = optionCodec(u32Codec);
+
+// HashMap&lt;String, u32&gt;
+const scoresCodec = mapCodec(stringCodec, u32Codec);
+</code></pre>
+<h3 id="structs-and-enums"><a class="header" href="#structs-and-enums">Structs and Enums</a></h3>
+<p>Use the <code>structCodec</code> and <code>enumCodec</code> helpers, or generate codecs from Rust types using <code>jetstream_codegen</code>:</p>
+<pre><code class="language-typescript">import { BinaryReader, BinaryWriter, u32Codec } from '@sevki/jetstream-wireformat';
+import type { WireFormat } from '@sevki/jetstream-wireformat';
+
+// A manually defined codec for a Point struct
+interface Point {
+  x: number;
+  y: number;
+}
+
+const pointCodec: WireFormat&lt;Point&gt; = {
+  byteSize(value: Point): number {
+    return u32Codec.byteSize(value.x) + u32Codec.byteSize(value.y);
+  },
+  encode(value: Point, writer: BinaryWriter): void {
+    u32Codec.encode(value.x, writer);
+    u32Codec.encode(value.y, writer);
+  },
+  decode(reader: BinaryReader): Point {
+    const x = u32Codec.decode(reader);
+    const y = u32Codec.decode(reader);
+    return { x, y };
+  },
+};
+</code></pre>
+<h2 id="code-generation"><a class="header" href="#code-generation">Code Generation</a></h2>
+<p>Instead of writing codecs by hand, use <code>jetstream_codegen</code> to generate TypeScript types and codecs from Rust source files:</p>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input src/types.rs \
+  --ts-out generated/
+</code></pre>
+<p>Given a Rust file:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(JetStreamWireFormat)]
+pub struct Point {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[derive(JetStreamWireFormat)]
+pub enum Shape {
+    Circle(u32),
+    Rectangle { width: u32, height: u32 },
+}
+<span class="boring">}</span></code></pre>
+<p>The codegen produces TypeScript interfaces and <code>WireFormat&lt;T&gt;</code> codec objects that are wire-compatible with the Rust implementations.</p>
+<h2 id="rpc"><a class="header" href="#rpc">RPC</a></h2>
+<p>The <code>@sevki/jetstream-rpc</code> package provides the RPC runtime for multiplexed request/response communication.</p>
+<h3 id="generated-code"><a class="header" href="#generated-code">Generated Code</a></h3>
+<p>The codegen generates RPC client and handler types from <code>#[service]</code> trait definitions:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Rust service definition
+#[service]
+pub trait EchoHttp {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt;;
+}
+<span class="boring">}</span></code></pre>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input examples/http.rs \
+  --ts-out generated/
+</code></pre>
+<p>This generates:</p>
+<ul>
+<li><strong>Request/response types</strong>: <code>TPing</code>, <code>RPing</code>, <code>TAdd</code>, <code>RAdd</code> with codecs</li>
+<li><strong>Frame unions</strong>: <code>Tmessage</code>, <code>Rmessage</code> discriminated unions with <code>FramerCodec</code> implementations</li>
+<li><strong>Framer wrappers</strong>: <code>TmessageFramer</code>, <code>RmessageFramer</code> classes implementing the <code>Framer</code> interface</li>
+<li><strong><code>rmessageDecode</code></strong>: A decoder function for use with <code>Mux</code> and <code>WebTransportTransport</code></li>
+<li><strong>Protocol constants</strong>: <code>PROTOCOL_NAME</code> (e.g., <code>'rs.jetstream.proto/echohttp'</code>) and <code>PROTOCOL_VERSION</code> (e.g., <code>'rs.jetstream.proto/echohttp/15.0.0+bfd7d20e'</code>)</li>
+<li><strong><code>EchoHttpClient</code></strong>: A typed client class with async methods and version negotiation</li>
+<li><strong><code>EchoHttpHandler</code></strong>: A handler interface for implementing server-side dispatch</li>
+<li><strong><code>dispatchEchoHttp</code></strong>: A dispatch function that routes <code>Tmessage</code> frames to handler methods</li>
+</ul>
+<h3 id="version-negotiation"><a class="header" href="#version-negotiation">Version Negotiation</a></h3>
+<p>Before making RPC calls, clients must perform a Tversion/Rversion handshake to negotiate the protocol version and maximum message size. The generated client provides a static <code>negotiate</code> method:</p>
+<pre><code class="language-typescript">import { EchoHttpClient, rmessageDecode, PROTOCOL_NAME } from './generated/echohttp_rpc.js';
+
+// Open a WebTransport session and bidi stream
+const session = new WebTransport(`https://api.example.com:4433/${PROTOCOL_NAME}`);
+await session.ready;
+const stream = await session.createBidirectionalStream();
+
+// Negotiate version on the raw stream before creating the Mux
+const negotiated = await EchoHttpClient.negotiate(stream.readable, stream.writable);
+console.log(`Negotiated: ${negotiated.version}, msize: ${negotiated.msize}`);
+</code></pre>
+<p>You can also call <code>negotiateVersion</code> directly from <code>@sevki/jetstream-rpc</code>:</p>
+<pre><code class="language-typescript">import { negotiateVersion } from '@sevki/jetstream-rpc';
+import { PROTOCOL_VERSION } from './generated/echohttp_rpc.js';
+
+const negotiated = await negotiateVersion(stream.readable, stream.writable, PROTOCOL_VERSION);
+</code></pre>
+<p>After negotiation, the stream is ready for Mux framing.</p>
+<h3 id="client-usage"><a class="header" href="#client-usage">Client Usage</a></h3>
+<pre><code class="language-typescript">import { Mux } from '@sevki/jetstream-rpc';
+import { EchoHttpClient, rmessageDecode, PROTOCOL_NAME } from './generated/echohttp_rpc.js';
+
+// 1. Connect
+const session = new WebTransport(`https://api.example.com:4433/${PROTOCOL_NAME}`);
+await session.ready;
+const stream = await session.createBidirectionalStream();
+
+// 2. Negotiate version
+await EchoHttpClient.negotiate(stream.readable, stream.writable);
+
+// 3. Create transport and mux
+const transport = new WebTransportTransport(stream, rmessageDecode);
+const mux = new Mux(transport);
+await mux.start();
+
+// 4. Create client and make RPC calls
+const client = new EchoHttpClient(mux);
+const reply = await client.ping("hello");  // "hello"
+const sum = await client.add(2, 3);        // 5
+
+// 5. Cleanup
+await mux.close();
+session.close();
+</code></pre>
+<h3 id="handler-server-side"><a class="header" href="#handler-server-side">Handler (Server-Side)</a></h3>
+<p>Implement the generated handler interface to serve RPCs:</p>
+<pre><code class="language-typescript">import { EchoHttpHandler, dispatchEchoHttp } from './generated/echohttp_rpc.js';
+
+const handler: EchoHttpHandler = {
+  async ping(ctx, message) {
+    return message; // echo back
+  },
+  async add(ctx, a, b) {
+    return a + b;
+  },
+};
+</code></pre>
+<h3 id="frame-wire-format"><a class="header" href="#frame-wire-format">Frame Wire Format</a></h3>
+<p>RPC frames follow the format <code>[size:u32 LE][type:u8][tag:u16 LE][payload]</code> where size includes itself (minimum 7 bytes). The tag field enables multiplexing concurrent requests over a single connection.</p>
+<p>Special message types:</p>
+<ul>
+<li><code>TVERSION</code> (100) / <code>RVERSION</code> (101) — version negotiation</li>
+<li><code>MESSAGE_ID_START</code> (102) — first service method ID</li>
+<li><code>RJETSTREAMERROR</code> (5) — error response frames</li>
+</ul>
+<h3 id="mux"><a class="header" href="#mux">Mux</a></h3>
+<p>The <code>Mux</code> class handles tag allocation, request/response matching, and concurrent RPC dispatch:</p>
+<pre><code class="language-typescript">import { Mux } from '@sevki/jetstream-rpc';
+
+const mux = new Mux(transport);
+await mux.start();
+
+// Each rpc() call acquires a tag, sends a frame, waits for the matching response, and releases the tag
+const response = await mux.rpc(request);
+
+await mux.close();
+</code></pre>
+<h3 id="protocol-interface"><a class="header" href="#protocol-interface">Protocol Interface</a></h3>
+<p>Every generated service implements the <code>Protocol</code> interface:</p>
+<pre><code class="language-typescript">interface Protocol&lt;TReq extends Framer, TRes extends Framer&gt; {
+  readonly VERSION: string;
+  readonly NAME: string;
+}
+</code></pre>
+<ul>
+<li><code>NAME</code> is the protocol name used for routing (e.g., URI path, ALPN)</li>
+<li><code>VERSION</code> is the full version string used during Tversion/Rversion negotiation</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="react"><a class="header" href="#react">React</a></h1>
+<p><code>@sevki/jetstream-react</code> provides React hooks for bidirectional RPC over WebTransport. Downstream (browser) can call upstream services, and upstream can push RPCs downstream.</p>
+<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
+<pre><code class="language-bash">pnpm add @sevki/jetstream-react @sevki/jetstream-rpc @sevki/jetstream-wireformat
+</code></pre>
+<p><code>react</code> (&gt;=18) is a peer dependency.</p>
+<h2 id="quick-start-1"><a class="header" href="#quick-start-1">Quick Start</a></h2>
+<pre><code class="language-tsx">import { JetStreamProvider, useJetStream, useJetStreamStatus, useRPC } from '@sevki/jetstream-react';
+import { EchoHttpClient, rmessageDecode, PROTOCOL_VERSION, PROTOCOL_NAME } from './generated/echohttp_rpc.js';
+
+function App() {
+  return (
+    &lt;JetStreamProvider url={`https://api.example.com:4433/${PROTOCOL_NAME}`}&gt;
+      &lt;EchoDemo /&gt;
+    &lt;/JetStreamProvider&gt;
+  );
+}
+
+function EchoDemo() {
+  const status = useJetStreamStatus();
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+
+  const { data, error, isLoading } = useRPC(
+    () =&gt; (echo ? echo.ping('hello') : Promise.resolve('')),
+    [echo],
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Connection: {status}&lt;/p&gt;
+      {isLoading &amp;&amp; &lt;p&gt;Loading...&lt;/p&gt;}
+      {error &amp;&amp; &lt;p&gt;Error: {error.message}&lt;/p&gt;}
+      {data &amp;&amp; &lt;p&gt;Echo: {data}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h2 id="provider"><a class="header" href="#provider">Provider</a></h2>
+<p><code>JetStreamProvider</code> manages the WebTransport session lifecycle. It establishes the session on mount and closes it on unmount.</p>
+<pre><code class="language-tsx">&lt;JetStreamProvider url="https://api.example.com:4433/rs.jetstream.proto/echohttp"&gt;
+  &lt;App /&gt;
+&lt;/JetStreamProvider&gt;
+</code></pre>
+<p><strong>Props:</strong></p>
+<ul>
+<li><code>url</code> (required) — the upstream WebTransport URL, typically <code>https://host:port/{PROTOCOL_NAME}</code></li>
+<li><code>children</code> — React children</li>
+</ul>
+<p>The provider exposes connection state and protocol version through context:</p>
+<ul>
+<li><code>session</code> — the <code>WebTransport</code> instance (or <code>null</code> before connected)</li>
+<li><code>state</code> — <code>'connecting'</code> | <code>'connected'</code> | <code>'disconnected'</code> | <code>'error'</code></li>
+<li><code>protocolVersion</code> — the negotiated protocol version string (or <code>null</code> before negotiation)</li>
+</ul>
+<h3 id="usejetstreamstatus"><a class="header" href="#usejetstreamstatus">useJetStreamStatus</a></h3>
+<p>Read the current connection state:</p>
+<pre><code class="language-tsx">function StatusIndicator() {
+  const status = useJetStreamStatus();
+  return &lt;span className={status}&gt;{status}&lt;/span&gt;;
+}
+</code></pre>
+<h2 id="usejetstream"><a class="header" href="#usejetstream">useJetStream</a></h2>
+<p>Creates a memoized RPC client for calling upstream services. Handles stream creation, version negotiation, and Mux setup automatically.</p>
+<pre><code class="language-tsx">const client = useJetStream(ClientClass, responseDecode, protocolVersion);
+</code></pre>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>ClientClass</code> — the generated client constructor (e.g., <code>EchoHttpClient</code>)</li>
+<li><code>responseDecode</code> — the generated response decoder function (e.g., <code>rmessageDecode</code>)</li>
+<li><code>protocolVersion</code> — the protocol version string for Tversion negotiation (e.g., <code>PROTOCOL_VERSION</code>)</li>
+</ul>
+<p><strong>Returns:</strong> the client instance (or <code>null</code> while connecting).</p>
+<p>The hook:</p>
+<ol>
+<li>Opens a bidirectional stream on the WebTransport session</li>
+<li>Performs Tversion/Rversion negotiation on the raw stream</li>
+<li>Stores the negotiated version in the provider context</li>
+<li>Creates a <code>WebTransportTransport</code> and <code>Mux</code> over the stream</li>
+<li>Constructs and returns the client</li>
+</ol>
+<p>The returned client is stable across re-renders as long as the session and constructor remain the same.</p>
+<pre><code class="language-tsx">import { EchoHttpClient, rmessageDecode, PROTOCOL_VERSION } from './generated/echohttp_rpc.js';
+
+function MyComponent() {
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+
+  if (!echo) return &lt;p&gt;Connecting...&lt;/p&gt;;
+
+  return &lt;button onClick={() =&gt; echo.ping('hi')}&gt;Ping&lt;/button&gt;;
+}
+</code></pre>
+<h2 id="userpc"><a class="header" href="#userpc">useRPC</a></h2>
+<p>Reactive wrapper around a single RPC call. Re-executes when dependencies change.</p>
+<pre><code class="language-tsx">const { data, error, isLoading, refetch } = useRPC(fn, deps);
+</code></pre>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>fn</code> — a function returning a <code>Promise&lt;T&gt;</code> (the RPC call)</li>
+<li><code>deps</code> — dependency array (like <code>useEffect</code>); the call re-runs when dependencies change</li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>data: T | undefined</code> — the resolved value</li>
+<li><code>error: Error | undefined</code> — the rejection reason</li>
+<li><code>isLoading: boolean</code> — whether a request is in flight</li>
+<li><code>refetch: () =&gt; void</code> — manually re-execute the call</li>
+</ul>
+<p>When dependencies change, the previous in-flight request is discarded (stale results are never applied).</p>
+<pre><code class="language-tsx">function SearchResults() {
+  const [query, setQuery] = useState('');
+  const search = useJetStream(SearchClient, rmessageDecode, PROTOCOL_VERSION);
+
+  const { data, error, isLoading } = useRPC(
+    () =&gt; (search ? search.find(query) : Promise.resolve([])),
+    [search, query],
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;input value={query} onChange={e =&gt; setQuery(e.target.value)} /&gt;
+      {isLoading &amp;&amp; &lt;p&gt;Loading...&lt;/p&gt;}
+      {error &amp;&amp; &lt;p&gt;Error: {error.message}&lt;/p&gt;}
+      {data?.map(item =&gt; &lt;div key={item.id}&gt;{item.name}&lt;/div&gt;)}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h2 id="usehandler"><a class="header" href="#usehandler">useHandler</a></h2>
+<p>Registers a handler for incoming upstream-initiated RPCs (push notifications, cache invalidation, etc.).</p>
+<pre><code class="language-tsx">import { NotificationHandler } from './generated/notification_rpc.js';
+
+function NotificationBadge() {
+  const { events, error } = useHandler(NotificationHandler, {
+    async notify(ctx, title, body) {
+      return { ack: true };
+    },
+  });
+
+  const unread = events.filter(e =&gt; e.method === 'notify').length;
+  return &lt;span&gt;{unread &gt; 0 &amp;&amp; `${unread} new`}&lt;/span&gt;;
+}
+</code></pre>
+<p>The handler is registered on mount and unregistered on unmount. Incoming bidirectional streams from upstream are dispatched to the matching handler.</p>
+<h2 id="imperative-calls-and-mutations"><a class="header" href="#imperative-calls-and-mutations">Imperative Calls and Mutations</a></h2>
+<p>For imperative operations (mutations, fire-and-forget), call the client directly. The generated client methods return plain <code>Promise</code>s:</p>
+<pre><code class="language-tsx">function AddButton() {
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+  const [sum, setSum] = useState&lt;number&gt;();
+
+  return (
+    &lt;button
+      disabled={!echo}
+      onClick={async () =&gt; {
+        if (echo) setSum(await echo.add(2, 3));
+      }}
+    &gt;
+      Add 2 + 3 {sum !== undefined &amp;&amp; `= ${sum}`}
+    &lt;/button&gt;
+  );
+}
+</code></pre>
+<p>For richer mutation state (loading, error, retries, cache invalidation), use TanStack Query:</p>
+<pre><code class="language-tsx">import { useMutation } from '@tanstack/react-query';
+
+function AddForm() {
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+
+  const { mutate, data, isPending } = useMutation({
+    mutationFn: ({ a, b }: { a: number; b: number }) =&gt; echo!.add(a, b),
+  });
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={() =&gt; mutate({ a: 2, b: 3 })} disabled={isPending || !echo}&gt;
+        Add 2 + 3
+      &lt;/button&gt;
+      {data !== undefined &amp;&amp; &lt;p&gt;Sum: {data}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h2 id="full-example"><a class="header" href="#full-example">Full Example</a></h2>
+<pre><code class="language-tsx">import { useState } from 'react';
+import {
+  JetStreamProvider,
+  useJetStream,
+  useJetStreamStatus,
+  useRPC,
+} from '@sevki/jetstream-react';
+import {
+  EchoHttpClient,
+  rmessageDecode,
+  PROTOCOL_VERSION,
+  PROTOCOL_NAME,
+} from './generated/echohttp_rpc.js';
+
+const SERVER_URL = `https://127.0.0.1:4433/${PROTOCOL_NAME}`;
+
+function EchoDemo() {
+  const status = useJetStreamStatus();
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+  const [message, setMessage] = useState('hello');
+  const [sum, setSum] = useState&lt;number | null&gt;(null);
+
+  const { data, error, isLoading } = useRPC(
+    () =&gt; (echo ? echo.ping(message) : Promise.resolve('')),
+    [echo, message],
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;JetStream Echo Demo&lt;/h1&gt;
+      &lt;p&gt;Connection: {status}&lt;/p&gt;
+      &lt;p&gt;Protocol: {PROTOCOL_VERSION}&lt;/p&gt;
+
+      &lt;h2&gt;Ping&lt;/h2&gt;
+      &lt;input
+        value={message}
+        onChange={e =&gt; setMessage(e.target.value)}
+        placeholder="Type a message..."
+      /&gt;
+      {isLoading &amp;&amp; &lt;p&gt;Loading...&lt;/p&gt;}
+      {error &amp;&amp; &lt;p&gt;Error: {error.message}&lt;/p&gt;}
+      {data &amp;&amp; &lt;p&gt;Echo: {data}&lt;/p&gt;}
+
+      &lt;h2&gt;Add&lt;/h2&gt;
+      &lt;button
+        disabled={!echo}
+        onClick={async () =&gt; {
+          if (echo) setSum(await echo.add(2, 3));
+        }}
+      &gt;
+        Add 2 + 3
+      &lt;/button&gt;
+      {sum !== null &amp;&amp; &lt;p&gt;Sum: {sum}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}
+
+export default function App() {
+  return (
+    &lt;JetStreamProvider url={SERVER_URL}&gt;
+      &lt;EchoDemo /&gt;
+    &lt;/JetStreamProvider&gt;
+  );
+}
+</code></pre>
+<h2 id="package-structure"><a class="header" href="#package-structure">Package Structure</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Package</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>@sevki/jetstream-wireformat</code></td><td>Binary codecs for primitives and composite types</td></tr>
+<tr><td><code>@sevki/jetstream-rpc</code></td><td>RPC runtime: <code>Mux</code>, <code>TagPool</code>, framing, version negotiation</td></tr>
+<tr><td><code>@sevki/jetstream-react</code></td><td>React hooks: <code>JetStreamProvider</code>, <code>useJetStream</code>, <code>useRPC</code>, <code>useHandler</code></td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="swift"><a class="header" href="#swift">Swift</a></h1>
+<p>JetStream provides Swift packages for wire format encoding and RPC communication via Swift Package Manager.</p>
+<h2 id="installation-2"><a class="header" href="#installation-2">Installation</a></h2>
+<p>Add the JetStream package to your <code>Package.swift</code>:</p>
+<pre><code class="language-swift">dependencies: [
+    .package(url: "https://github.com/sevki/jetstream.git", from: "15.0.0"),
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "JetStreamWireFormat", package: "jetstream"),
+            .product(name: "JetStreamRpc", package: "jetstream"),
+        ]
+    ),
+]
+</code></pre>
+<h2 id="wireformat-protocol"><a class="header" href="#wireformat-protocol">WireFormat Protocol</a></h2>
+<p>The <code>JetStreamWireFormat</code> module defines the <code>WireFormat</code> protocol that all serializable types conform to:</p>
+<pre><code class="language-swift">public protocol WireFormat: Sized {
+    func byteSize() -&gt; UInt32
+    func encode(writer: inout BinaryWriter) throws
+    static func decode(reader: inout BinaryReader) throws -&gt; Self
+}
+</code></pre>
+<h3 id="primitives-1"><a class="header" href="#primitives-1">Primitives</a></h3>
+<p>All Swift standard types (<code>UInt8</code>, <code>UInt16</code>, <code>UInt32</code>, <code>UInt64</code>, <code>Int16</code>, <code>Int32</code>, <code>Int64</code>, <code>Float</code>, <code>Double</code>, <code>Bool</code>, <code>String</code>) conform to <code>WireFormat</code>:</p>
+<pre><code class="language-swift">import JetStreamWireFormat
+
+// Encode a UInt32
+var writer = BinaryWriter()
+try UInt32(42).encode(writer: &amp;writer)
+let bytes = writer.bytes
+
+// Decode it back
+var reader = BinaryReader(data: bytes)
+let value = try UInt32.decode(reader: &amp;reader) // 42
+</code></pre>
+<h3 id="collections-and-optionals"><a class="header" href="#collections-and-optionals">Collections and Optionals</a></h3>
+<p>Arrays, Dictionaries, Sets, and Optionals conform to <code>WireFormat</code> when their elements do:</p>
+<pre><code class="language-swift">// Array&lt;String&gt;
+let tags: [String] = ["hello", "world"]
+try tags.encode(writer: &amp;writer)
+
+// Optional&lt;UInt32&gt;
+let maybeId: UInt32? = 42
+try maybeId.encode(writer: &amp;writer)
+
+// Dictionary&lt;String, UInt32&gt;
+let scores: [String: UInt32] = ["alice": 100, "bob": 200]
+try scores.encode(writer: &amp;writer)
+</code></pre>
+<h3 id="structs-and-enums-1"><a class="header" href="#structs-and-enums-1">Structs and Enums</a></h3>
+<p>Define custom types conforming to <code>WireFormat</code>, or generate them from Rust types using <code>jetstream_codegen</code>:</p>
+<pre><code class="language-swift">import JetStreamWireFormat
+
+public struct Point: WireFormat {
+    public var x: UInt32
+    public var y: UInt32
+
+    public func byteSize() -&gt; UInt32 {
+        return x.byteSize() + y.byteSize()
+    }
+
+    public func encode(writer: inout BinaryWriter) throws {
+        try x.encode(writer: &amp;writer)
+        try y.encode(writer: &amp;writer)
+    }
+
+    public static func decode(reader: inout BinaryReader) throws -&gt; Point {
+        let x = try UInt32.decode(reader: &amp;reader)
+        let y = try UInt32.decode(reader: &amp;reader)
+        return Point(x: x, y: y)
+    }
+}
+</code></pre>
+<h2 id="code-generation-1"><a class="header" href="#code-generation-1">Code Generation</a></h2>
+<p>Instead of writing conformances by hand, use <code>jetstream_codegen</code> to generate Swift types from Rust source files:</p>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input src/types.rs \
+  --swift-out generated/
+</code></pre>
+<p>Given a Rust file:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(JetStreamWireFormat)]
+pub struct Point {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[derive(JetStreamWireFormat)]
+pub enum Shape {
+    Circle(u32),
+    Rectangle { width: u32, height: u32 },
+}
+<span class="boring">}</span></code></pre>
+<p>The codegen produces Swift structs and enums conforming to <code>WireFormat</code> that are wire-compatible with the Rust implementations.</p>
+<h2 id="rpc-1"><a class="header" href="#rpc-1">RPC</a></h2>
+<p>The <code>JetStreamRpc</code> module provides the RPC runtime for multiplexed request/response communication.</p>
+<h3 id="generated-client"><a class="header" href="#generated-client">Generated Client</a></h3>
+<p>The codegen generates RPC client classes and handler protocols from <code>#[service]</code> trait definitions:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Rust service definition
+#[service]
+pub trait Echo {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+    async fn add(&amp;mut self, a: u32, b: u32) -&gt; Result&lt;u32&gt;;
+}
+<span class="boring">}</span></code></pre>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input examples/echo.rs \
+  --swift-out generated/
+</code></pre>
+<p>This generates a typed <code>EchoClient</code> class and an <code>EchoHandler</code> protocol:</p>
+<pre><code class="language-swift">// Generated client usage
+let client = EchoClient(mux: mux)
+let reply = try await client.ping(message: "hello")
+let sum = try await client.add(a: 2, b: 3)
+</code></pre>
+<pre><code class="language-swift">// Generated handler protocol — implement this for your server
+public protocol EchoHandler {
+    func ping(message: String) async throws -&gt; String
+    func add(a: UInt32, b: UInt32) async throws -&gt; UInt32
+}
+</code></pre>
+<h3 id="framer-protocol"><a class="header" href="#framer-protocol">Framer Protocol</a></h3>
+<p>The <code>Framer</code> protocol handles message type dispatch for RPC envelopes:</p>
+<pre><code class="language-swift">public protocol Framer {
+    func messageType() -&gt; UInt8
+    func byteSize() -&gt; UInt32
+    func encode(writer: inout BinaryWriter) throws
+    static func decode(reader: inout BinaryReader, type: UInt8) throws -&gt; Self
+}
+</code></pre>
+<p>Generated <code>Tmessage</code> and <code>Rmessage</code> enums conform to <code>Framer</code> and dispatch encoding/decoding based on the message type byte.</p>
+<h3 id="frame-wire-format-1"><a class="header" href="#frame-wire-format-1">Frame Wire Format</a></h3>
+<p>RPC frames follow the format <code>[size:u32 LE][type:u8][tag:u16 LE][payload]</code> where size includes itself (minimum 7 bytes). The tag field enables multiplexing concurrent requests over a single connection.</p>
+<h3 id="mux-1"><a class="header" href="#mux-1">Mux</a></h3>
+<p>The <code>Mux</code> class handles tag allocation, request/response matching, and concurrent RPC dispatch:</p>
+<pre><code class="language-swift">let mux = Mux(transport: transport)
+
+// Each rpc() call acquires a tag, sends a frame, waits for the matching response, and releases the tag
+let response = try await mux.rpc(request)
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="-crates"><a class="header" href="#-crates">🦀 Crates</a></h1>
 <p>For detailed API documentation of all crates in this repository, please see the <a href="#-jetstream">rustdoc documentation</a>.</p>
