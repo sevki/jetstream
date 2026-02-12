@@ -28,7 +28,7 @@ insta = { version = "1.46.3", features = ["filters", "yaml"] }
 pretty_assertions = "1.4.0"
 
 sha256 = "1.5.0"
-trybuild = "1.0.112"
+trybuild = "1.0.116"
 futures = "0.3.31"
 tokio = { version = "1.48.0", features = ["full"] }
 turmoil = "0.6.5"
