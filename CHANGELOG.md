@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [15.2.0](https://github.com/sevki/jetstream/compare/v15.1.0...v15.2.0) (2026-02-12)
+
+
+### Features
+
+* jetstream_react package and webtransport implmentation ([3309a0c](https://github.com/sevki/jetstream/commit/3309a0c2745f8190a60e1ef736570cc3fce50987))
+* jetstream_wireformat for swift and typescript ([e0f73fc](https://github.com/sevki/jetstream/commit/e0f73fc92a28c11f6f880017b1d0173d2fcf0a73))
+* move webtransport to it's own package ([2ddbdf2](https://github.com/sevki/jetstream/commit/2ddbdf26579fcaed622422d2b62e28b79b954d76))
+
 ## [15.1.0](https://github.com/sevki/jetstream/compare/v15.0.0...v15.1.0) (2026-02-10)
 
 
