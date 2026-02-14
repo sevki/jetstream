@@ -9,7 +9,7 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
-askama = "0.15.2"
+askama = "0.15.4"
 async-trait = "0.1.89"
 axum = { version = "0.8.8", features = [], default-features = false }
 bytes = "1.11.0"
