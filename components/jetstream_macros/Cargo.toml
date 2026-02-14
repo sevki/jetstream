@@ -8,7 +8,7 @@ repository = { workspace = true }
 readme = { workspace = true }
 documentation = { workspace = true }
 [dependencies]
-syn = { version = "2.0.103", features = ["full", "extra-traits"] }
+syn = { version = "2.0.115", features = ["full", "extra-traits"] }
 quote = "^1"
 proc-macro2 = { version = "1.0.92", features = ["span-locations"] }
 convert_case = "0.6.0"
