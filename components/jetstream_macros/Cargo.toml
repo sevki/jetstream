@@ -11,7 +11,7 @@ documentation = { workspace = true }
 syn = { version = "2.0.115", features = ["full", "extra-traits"] }
 quote = "^1"
 proc-macro2 = { version = "1.0.92", features = ["span-locations"] }
-convert_case = "0.6.0"
+convert_case = "0.11.0"
 sha256 = "1.5.0"
 lazy_static = "1.5.0"
 prettyplease = "0.2.34"
