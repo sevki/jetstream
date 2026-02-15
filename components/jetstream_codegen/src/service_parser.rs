@@ -192,12 +192,12 @@ mod tests {
         assert_eq!(svc.methods[0].name, "echo");
         assert_eq!(svc.methods[0].params.len(), 1);
         assert_eq!(svc.methods[0].params[0].name, "msg");
-        assert_eq!(svc.methods[0].request_id, 101);
-        assert_eq!(svc.methods[0].response_id, 102);
+        assert_eq!(svc.methods[0].request_id, 102);
+        assert_eq!(svc.methods[0].response_id, 103);
 
         assert_eq!(svc.methods[1].name, "add");
         assert_eq!(svc.methods[1].params.len(), 2);
-        assert_eq!(svc.methods[1].request_id, 103);
-        assert_eq!(svc.methods[1].response_id, 104);
+        assert_eq!(svc.methods[1].request_id, 104);
+        assert_eq!(svc.methods[1].response_id, 105);
     }
 }
