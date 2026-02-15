@@ -32,7 +32,7 @@ impl IdentCased {
 
     pub fn to_screaming_snake_case(&self) -> Self {
         let converter = convert_case::Converter::new()
-            .to_case(convert_case::Case::ScreamingSnake);
+            .to_case(convert_case::Case::UpperSnake);
         let converted = converter.convert(self.0.to_string());
         IdentCased(Ident::new(&converted, self.0.span()))
     }
