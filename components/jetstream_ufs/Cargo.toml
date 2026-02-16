@@ -13,7 +13,7 @@ jetstream_9p = { version = "15.2.0", path = "../jetstream_9p" }
 jetstream_wireformat = { version = "15.2.0", path = "../jetstream_wireformat" }
 jetstream_rpc = { version = "15.2.0", path = "../jetstream_rpc" }
 serde = { version = "1.0.218", features = ["derive"] }
-libc = "0.2.181"
+libc = "0.2.182"
 tokio = { version = "1.48.0", features = ["full"] }
 
 argh = "0.1.14"
