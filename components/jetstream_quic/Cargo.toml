@@ -24,7 +24,7 @@ async-trait = "0.1.89"
 askama = "0.15.4"
 jetstream_rpc = { version = "15.2.0", path = "../jetstream_rpc", features = ["x509"] }
 tokio-util.workspace = true
-futures = "0.3.31"
+futures = "0.3.32"
 
 [dev-dependencies]
 rustls-pemfile = "2.2.0"
