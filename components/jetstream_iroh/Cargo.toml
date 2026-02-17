@@ -9,7 +9,7 @@ documentation.workspace = true
 readme.workspace = true
 
 [dependencies]
-futures = "0.3.31"
+futures = "0.3.32"
 jetstream_rpc = { version = "15.2.0", path = "../jetstream_rpc", features = [
   "iroh",
 ] }
