@@ -16,5 +16,5 @@ proc-macro2 = "1.0.106"
 quote = "1.0.44"
 sha256 = "1.6.0"
 syn = { version = "2.0.116", features = ["full", "extra-traits"] }
-toml = "1.0.0"
+toml = "1.0.2"
 typeshare-core = "1.13.4"
