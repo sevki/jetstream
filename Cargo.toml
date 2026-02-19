@@ -154,7 +154,7 @@ repository = "https://github.com/sevki/jetstream"
 license = "BSD-3-Clause"
 
 [workspace.dependencies]
-iroh = { version = "0.93.2" }
+iroh = { version = "0.96.1" }
 worker-macros = "0.7.4"
 tokio-util = { version = "0.7.16", features = ["codec"] }
 turmoil = "0.7.1"
