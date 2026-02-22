@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_wireformat"
-version = "15.2.0"
+version = "16.0.0"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -26,7 +26,7 @@ tokio = ["dep:tokio", "dep:tokio-util"]
 zerocopy = "0.8.39"
 paste = "1.0.15"
 bytes = { version = "1.11.1", features = ["serde"] }
-jetstream_macros = { version = "15.2.0", path = "../jetstream_macros" }
+jetstream_macros = { version = "16.0.0", path = "../jetstream_macros" }
 url = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -40,7 +40,7 @@ tokio-util = { version = "0.7.16", features = [
 ], optional = true }
 time = "0.3.47"
 serde = { version = "1.0.218", features = ["derive"], optional = true }
-jetstream_macros = { version = "15.2.0", path = "../jetstream_macros" }
+jetstream_macros = { version = "16.0.0", path = "../jetstream_macros" }
 mio = "1.0.3"
 tokio = { version = "1.48.0", optional = true }
 

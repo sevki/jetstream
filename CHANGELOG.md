@@ -1,6 +1,18 @@
 # Changelog
 
 
+## [16.0.0](https://github.com/sevki/jetstream/compare/v15.2.0...v16.0.0) (2026-02-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* **jetstream:** WebTransportHandler trait removed in favor of Router
+
+### Features
+
+* **jetstream:** add router-based dispatch and WebTransport cert auth ([5bb5ff8](https://github.com/sevki/jetstream/commit/5bb5ff8cfd033e811bb20dbf672930347aa50ca2))
+* **jetstream:** add router-based dispatch and WebTransport cert auth ([b6ca4f9](https://github.com/sevki/jetstream/commit/b6ca4f9dd6564ac1ea7bff7dc4293e86f6431c4f))
+
 ## [15.2.0](https://github.com/sevki/jetstream/compare/v15.1.0...v15.2.0) (2026-02-12)
 
 
