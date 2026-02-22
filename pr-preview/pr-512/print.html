@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-714d8ef4.js";
+            window.path_to_searchindex_js = "searchindex-21c678df.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-0333eb5f.js"></script>
@@ -341,8 +341,9 @@ jetstream = { version = "10", features = ["iroh"] }
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_macros::service;
-use jetstream_quic::{Client, QuicTransport, Router, Server};
-use jetstream_rpc::Protocol;
+use jetstream_quic::{
+    Client, QuicRouter, QuicRouterHandler, QuicTransport, Server,
+};
 
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
@@ -402,15 +403,20 @@ async fn server(
             .build()
             .expect("Failed to build client verifier");
 
-    // Register the EchoService as a protocol handler
-    // jetstream_quic's ProtocolHandler is auto-implemented for jetstream_rpc::Server
+    // Register the EchoService via the per-stream RPC router
     let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
 
-    let mut router = Router::new();
-    router.register(Arc::new(echo_service));
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
+            .with_handler(echo_protocol::PROTOCOL_NAME, echo_service),
+    );
+    let quic_handler = QuicRouterHandler::new(rpc_router);
+
+    let mut router = QuicRouter::new();
+    router.register(Arc::new(quic_handler));
 
     let server = Server::new_with_mtls(
-        server_cert,
+        vec![server_cert],
         server_key,
         client_verifier,
         addr,
@@ -433,9 +439,15 @@ async fn client(
     let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
     let client_key = load_key(CLIENT_KEY_PEM);
 
-    // Use the protocol version as ALPN
-    let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
-    let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
+    let alpn = vec![b"jetstream".to_vec()];
+    let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
+    let client = Client::new_with_mtls(
+        ca_cert,
+        client_cert,
+        client_key,
+        alpn,
+        bind_addr,
+    )?;
 
     let connection = client.connect(addr, "localhost").await?;
 
@@ -443,6 +455,7 @@ async fn client(
     let (send, recv) = connection.open_bi().await?;
     let transport: QuicTransport&lt;EchoChannel&gt; = (send, recv).into();
     let mut chan = EchoChannel::new(10, Box::new(transport));
+    chan.negotiate_version(u32::MAX).await?;
 
     eprintln!("Ping sent");
     chan.ping().await?;
@@ -722,13 +735,12 @@ async fn run_http3_server(
     let echo = echohttp_protocol::EchoHttpService {
         inner: EchoHttpImpl,
     };
-    let h3_service = Arc::new(
-        H3Service::new(router)
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
             .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
     );
 
-    let mut quic_router = jetstream_quic::Router::new();
-    quic_router.register(h3_service);
+    let mut quic_router = jetstream_quic::QuicRouter::new();
 
     let server = if let Some(ca) = ca_cert {
         let mut root_store = rustls::RootCertStore::empty();
@@ -738,16 +750,27 @@ async fn run_http3_server(
                 .allow_unauthenticated()
                 .build()
                 .expect("Failed to build client verifier");
+
+        let h3_service = Arc::new(H3Service::new_with_cert_verifier(
+            router,
+            rpc_router,
+            client_verifier.clone(),
+        ));
+        quic_router.register(h3_service);
+
         jetstream_quic::Server::new_with_mtls(
-            server_cert,
+            vec![server_cert],
             server_key,
             client_verifier,
             addr,
             quic_router,
         )
     } else {
+        let h3_service = Arc::new(H3Service::new(router, rpc_router));
+        quic_router.register(h3_service);
+
         jetstream_quic::Server::new_with_addr(
-            server_cert,
+            vec![server_cert],
             server_key,
             addr,
             quic_router,

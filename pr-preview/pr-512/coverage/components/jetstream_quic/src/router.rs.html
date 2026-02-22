@@ -149,7 +149,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">use crate::quic_handler::ProtocolHandler;</pre>
+                <pre class="has-background-white py-0 px-2">use crate::quic_handler::QuicHandler;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -213,7 +213,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    handlers: HashMap&lt;String, Arc&lt;dyn ProtocolHandler&gt;&gt;,</pre>
+                <pre class="has-background-white py-0 px-2">    handlers: HashMap&lt;String, Arc&lt;dyn QuicHandler&gt;&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -373,7 +373,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    pub fn register(&amp;mut self, handler: Arc&lt;dyn ProtocolHandler&gt;) {</pre>
+                <pre class="has-background-success-light py-0 px-2">    pub fn register(&amp;mut self, handler: Arc&lt;dyn QuicHandler&gt;) {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -512,8 +512,8 @@
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="11">
-                11
+                role="cell" aria-label="16">
+                16
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
@@ -1788,7 +1788,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-02-22 09:51</p>
+                    <p class="heading">Date: 2026-02-22 18:29</p>
                 </div>
             
         </footer>

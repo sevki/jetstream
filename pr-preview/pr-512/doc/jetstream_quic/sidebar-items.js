@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Client","QuicTransport","Router","Server"],"trait":["ProtocolHandler"]};
+window.SIDEBAR_ITEMS = {"struct":["Client","QuicRouter","QuicRouterHandler","QuicTransport","Server"],"trait":["QuicHandler"]};

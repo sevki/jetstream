@@ -261,7 +261,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">use crate::Router;</pre>
+                <pre class="has-background-white py-0 px-2">use crate::router::Router;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -517,7 +517,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        cert: CertificateDer&lt;&#x27;static&gt;,</pre>
+                <pre class="has-background-danger-light py-0 px-2">        certs: Vec&lt;CertificateDer&lt;&#x27;static&gt;&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -629,7 +629,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            .with_single_cert(vec![cert], key)</pre>
+                <pre class="has-background-danger-light py-0 px-2">            .with_single_cert(certs, key)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -997,7 +997,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        cert: CertificateDer&lt;&#x27;static&gt;,</pre>
+                <pre class="has-background-success-light py-0 px-2">        certs: Vec&lt;CertificateDer&lt;&#x27;static&gt;&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1125,7 +1125,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .with_single_cert(vec![cert], key)</pre>
+                <pre class="has-background-success-light py-0 px-2">            .with_single_cert(certs, key)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1548,7 +1548,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-02-22 09:51</p>
+                    <p class="heading">Date: 2026-02-22 18:29</p>
                 </div>
             
         </footer>

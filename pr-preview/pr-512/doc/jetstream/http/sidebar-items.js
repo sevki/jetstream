@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["new_jetsream_router"],"mod":["webtransport_handler"],"struct":["AltSvcLayer","AltSvcService","H3Service","JetStreamContext","JetStreamTemplate","ProtocolService"],"trait":["WebTransportHandler"]};
+window.SIDEBAR_ITEMS = {"fn":["new_jetsream_router"],"mod":["webtransport_handler"],"struct":["AltSvcLayer","AltSvcService","H3Service","JetStreamContext","JetStreamTemplate","ProtocolService"]};

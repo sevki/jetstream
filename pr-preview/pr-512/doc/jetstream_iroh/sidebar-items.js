@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"externcrate":["iroh"],"fn":["client_builder","endpoint_builder","server_builder"],"struct":["IrohServer","IrohTransport"]};
+window.SIDEBAR_ITEMS = {"externcrate":["iroh"],"fn":["client_builder","endpoint_builder","server_builder"],"struct":["IrohRouter","IrohServer","IrohTransport"]};
