@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-6df2a80a.js";
+            window.path_to_searchindex_js = "searchindex-21c678df.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-0333eb5f.js"></script>
@@ -735,16 +735,12 @@ async fn run_http3_server(
     let echo = echohttp_protocol::EchoHttpService {
         inner: EchoHttpImpl,
     };
-    let h3_service = Arc::new(H3Service::new(
-        router,
-        Arc::new(
-            jetstream_rpc::Router::new()
-                .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
-        ),
-    ));
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
+            .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
+    );
 
     let mut quic_router = jetstream_quic::QuicRouter::new();
-    quic_router.register(h3_service);
 
     let server = if let Some(ca) = ca_cert {
         let mut root_store = rustls::RootCertStore::empty();
@@ -754,6 +750,14 @@ async fn run_http3_server(
                 .allow_unauthenticated()
                 .build()
                 .expect("Failed to build client verifier");
+
+        let h3_service = Arc::new(H3Service::new_with_cert_verifier(
+            router,
+            rpc_router,
+            client_verifier.clone(),
+        ));
+        quic_router.register(h3_service);
+
         jetstream_quic::Server::new_with_mtls(
             vec![server_cert],
             server_key,
@@ -762,6 +766,9 @@ async fn run_http3_server(
             quic_router,
         )
     } else {
+        let h3_service = Arc::new(H3Service::new(router, rpc_router));
+        quic_router.register(h3_service);
+
         jetstream_quic::Server::new_with_addr(
             vec![server_cert],
             server_key,
