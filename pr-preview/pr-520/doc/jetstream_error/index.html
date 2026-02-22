@@ -1,0 +1,84 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Error handling for Jetstream"><title>jetstream_error - Rust</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../static.files/rustdoc-b7b9f40b.css"><meta name="rustdoc-vars" data-root-path="../" data-static-root-path="../static.files/" data-current-crate="jetstream_error" data-themes="" data-resource-suffix="" data-rustdoc-version="1.95.0-nightly (5fb2ff861 2026-02-21)" data-channel="nightly" data-search-js="search-63369b7b.js" data-stringdex-js="stringdex-b897f86f.js" data-settings-js="settings-170eb4bf.js" ><script src="../static.files/storage-41dd4d93.js"></script><script defer src="../crates.js"></script><script defer src="../static.files/main-5013f961.js"></script><noscript><link rel="stylesheet" href="../static.files/noscript-f7c3ffd8.css"></noscript><link rel="alternate icon" type="image/png" href="../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../static.files/favicon-044be391.svg"></head><body class="rustdoc mod crate"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><rustdoc-topbar><h2><a href="#">Crate jetstream_error</a></h2></rustdoc-topbar><nav class="sidebar"><div class="sidebar-crate"><h2><a href="../jetstream_error/index.html">jetstream_<wbr>error</a><span class="version">15.2.0</span></h2></div><div class="sidebar-elems"><ul class="block"><li><a id="all-types" href="all.html">All Items</a></li></ul><section id="rustdoc-toc"><h3><a href="#modules">Crate Items</a></h3><ul class="block"><li><a href="#modules" title="Modules">Modules</a></li><li><a href="#structs" title="Structs">Structs</a></li><li><a href="#traits" title="Traits">Traits</a></li><li><a href="#types" title="Type Aliases">Type Aliases</a></li></ul></section><div id="rustdoc-modnav"></div></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><div class="width-limiter"><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1>Crate <span>jetstream_<wbr>error</span>&nbsp;<button id="copy-path" title="Copy item path to clipboard">Copy item path</button></h1><rustdoc-toolbar></rustdoc-toolbar><span class="sub-heading"><a class="src" href="../src/jetstream_error/lib.rs.html#1-352">Source</a> </span></div><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Error handling for Jetstream</p>
+<p>r[impl jetstream.error.v2.type]
+r[impl jetstream.error.v2.source-info.disable]
+<code>jetstream::Error</code> is a struct containing a <code>Box&lt;ErrorInner&gt;</code> (message, code, help, url),
+an optional <code>SpanTrace</code> captured at creation, and lazily-initialized <code>Backtrace</code> and
+diagnostics state. The design is modeled after
+<a href="https://docs.rs/tracing-error/latest/tracing_error/struct.TracedError.html"><code>TracedError</code></a>
+from the <code>tracing-error</code> crate. The <code>Box</code> indirection on <code>ErrorInner</code> keeps <code>Error</code>
+efficient for passing through <code>Result</code>.</p>
+<div><!-- Created with term-transcript v0.4.0 (https://github.com/slowli/term-transcript) -->
+<svg viewBox="0 0 720 642" width="720" height="642" xmlns="http://www.w3.org/2000/svg">
+  <style>
+    .container {
+      font: 14px SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
+      line-height: 18px;
+    }
+    .input,.output,.output-bg {
+      white-space: pre;
+    }
+    .input-bg { fill: #fff; fill-opacity: 0.1; }
+    .output-bg { user-select: none; text-rendering: geometricPrecision; stroke-width: 0.1; }
+    .bold,.prompt { font-weight: 600; }
+    .italic { font-style: italic; }
+    .underline { text-decoration: underline; }
+    .dimmed { fill-opacity: 0.7; }
+    .hard-br { font-size: 16px; fill-opacity: 0.8; user-select: none; }
+    .fg0 { fill: #282936; } .output-bg .fg0 { stroke: #282936; }
+    .fg1 { fill: #ea51b2; } .output-bg .fg1 { stroke: #ea51b2; }
+    .fg2 { fill: #ebff87; } .output-bg .fg2 { stroke: #ebff87; }
+    .fg3 { fill: #00f769; } .output-bg .fg3 { stroke: #00f769; }
+    .fg4 { fill: #62d6e8; } .output-bg .fg4 { stroke: #62d6e8; }
+    .fg5 { fill: #b45bcf; } .output-bg .fg5 { stroke: #b45bcf; }
+    .fg6 { fill: #a1efe4; } .output-bg .fg6 { stroke: #a1efe4; }
+    .fg7 { fill: #e9e9f4; } .output-bg .fg7 { stroke: #e9e9f4; }
+    .fg8 { fill: #626483; } .output-bg .fg8 { stroke: #626483; }
+    .fg9 { fill: #b45bcf; } .output-bg .fg9 { stroke: #b45bcf; }
+    .fg10 { fill: #3a3c4e; } .output-bg .fg10 { stroke: #3a3c4e; }
+    .fg11 { fill: #4d4f68; } .output-bg .fg11 { stroke: #4d4f68; }
+    .fg12 { fill: #62d6e8; } .output-bg .fg12 { stroke: #62d6e8; }
+    .fg13 { fill: #f1f2f8; } .output-bg .fg13 { stroke: #f1f2f8; }
+    .fg14 { fill: #00f769; } .output-bg .fg14 { stroke: #00f769; }
+    .fg15 { fill: #f7f7fb; } .output-bg .fg15 { stroke: #f7f7fb; }
+  </style>
+  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #282936;" />
+    <svg x="0" y="10" width="720" height="622" viewBox="0 0 720 622">
+      <g class="input-bg"><rect x="0" y="0" width="100%" height="22"></rect></g>
+      <text class="container fg7"><tspan xml:space="preserve" x="10" y="16" class="input"><tspan x="10" y="16"><tspan class="prompt">$</tspan> # do some rpc
+</tspan></tspan><tspan xml:space="preserve" x="10" y="42" class="output"><tspan class="fg1">server::validation::E001</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="60" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="78" class="output">  <tspan class="fg1">×</tspan> [server::validation::E001] Server-side validation failed
+</tspan><tspan xml:space="preserve" x="10" y="96" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="114" class="output">Error: 
+</tspan><tspan xml:space="preserve" x="10" y="132" class="output">  <tspan class="fg1">×</tspan> validate_request
+</tspan><tspan xml:space="preserve" x="10" y="150" class="output">   ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:3:4</tspan>]
+</tspan><tspan xml:space="preserve" x="10" y="168" class="output"> <tspan class="dimmed">2</tspan> │ #[tracing::instrument]
+</tspan><tspan xml:space="preserve" x="10" y="186" class="output"> <tspan class="dimmed">3</tspan> │ fn validate_request(user_id: u64, email: &amp;str) -&gt; super::Error {
+</tspan><tspan xml:space="preserve" x="10" y="204" class="output">   · <tspan class="bold fg5">   ────────┬───────</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="222" class="output">   ·            <tspan class="bold fg5">╰── validate_request(user_id: 42, email: "user@example.com")</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="240" class="output"> <tspan class="dimmed">4</tspan> │     super::Error::with_code(
+</tspan><tspan xml:space="preserve" x="10" y="258" class="output">   ╰────
+</tspan><tspan xml:space="preserve" x="10" y="276" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="294" class="output">Error: 
+</tspan><tspan xml:space="preserve" x="10" y="312" class="output">  <tspan class="fg1">×</tspan> handle_request
+</tspan><tspan xml:space="preserve" x="10" y="330" class="output">    ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:12:4</tspan>]
+</tspan><tspan xml:space="preserve" x="10" y="348" class="output"> <tspan class="dimmed">11</tspan> │ #[tracing::instrument]
+</tspan><tspan xml:space="preserve" x="10" y="366" class="output"> <tspan class="dimmed">12</tspan> │ fn handle_request(endpoint: &amp;str) -&gt; super::Error {
+</tspan><tspan xml:space="preserve" x="10" y="384" class="output">    · <tspan class="bold fg5">   ───────┬──────</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="402" class="output">    ·           <tspan class="bold fg5">╰── handle_request(endpoint: "/api/v1/submit")</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="420" class="output"> <tspan class="dimmed">13</tspan> │     validate_request(42, "user@example.com")
+</tspan><tspan xml:space="preserve" x="10" y="438" class="output">    ╰────
+</tspan><tspan xml:space="preserve" x="10" y="456" class="output">
+</tspan><tspan xml:space="preserve" x="10" y="474" class="output">Error: 
+</tspan><tspan xml:space="preserve" x="10" y="492" class="output">  <tspan class="fg1">×</tspan> make_error
+</tspan><tspan xml:space="preserve" x="10" y="510" class="output">    ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:18:4</tspan>]
+</tspan><tspan xml:space="preserve" x="10" y="528" class="output"> <tspan class="dimmed">17</tspan> │ #[tracing::instrument]
+</tspan><tspan xml:space="preserve" x="10" y="546" class="output"> <tspan class="dimmed">18</tspan> │ fn make_error() -&gt; super::Error {
+</tspan><tspan xml:space="preserve" x="10" y="564" class="output">    · <tspan class="bold fg5">   ─────┬────</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="582" class="output">    ·         <tspan class="bold fg5">╰── make_error()</tspan>
+</tspan><tspan xml:space="preserve" x="10" y="600" class="output"> <tspan class="dimmed">19</tspan> │     handle_request("/api/v1/submit")
+</tspan><tspan xml:space="preserve" x="10" y="618" class="output">    ╰────
+</tspan></text>
+    </svg>
+</svg>
+</div></div></details><h2 id="modules" class="section-header">Modules<a href="#modules" class="anchor">§</a></h2><dl class="item-table"><dt><a class="mod" href="coding/index.html" title="mod jetstream_error::coding">coding</a></dt><dd>Structured span trace types for wire format serialization.</dd></dl><h2 id="structs" class="section-header">Structs<a href="#structs" class="anchor">§</a></h2><dl class="item-table"><dt><a class="struct" href="struct.Error.html" title="struct jetstream_error::Error">Error</a></dt><dd><code>Error</code> is the main error type for Jetstream</dd></dl><h2 id="traits" class="section-header">Traits<a href="#traits" class="anchor">§</a></h2><dl class="item-table"><dt><a class="trait" href="trait.IntoError.html" title="trait jetstream_error::IntoError">Into<wbr>Error</a></dt><dd>IntoError trait allows conversion of various error types into Jetstream Error.</dd></dl><h2 id="types" class="section-header">Type Aliases<a href="#types" class="anchor">§</a></h2><dl class="item-table"><dt><a class="type" href="type.Result.html" title="type jetstream_error::Result">Result</a></dt><dd>Result is a type alias for a Result type that uses the Error type.</dd></dl></section></div></main></body></html>
