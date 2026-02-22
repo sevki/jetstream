@@ -41,6 +41,7 @@ pub struct Rversion {
     pub version: String,
 }
 
+#[derive(Debug)]
 pub enum VersionFrame {
     Tversion(Tversion),
     Rversion(Rversion),

@@ -3,8 +3,9 @@ use std::{net::SocketAddr, path::Path, sync::Arc};
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_macros::service;
-use jetstream_quic::{Client, QuicTransport, Router, Server};
-use jetstream_rpc::Protocol;
+use jetstream_quic::{
+    Client, QuicRouter, QuicRouterHandler, QuicTransport, Server,
+};
 
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
@@ -64,15 +65,20 @@ async fn server(
             .build()
             .expect("Failed to build client verifier");
 
-    // Register the EchoService as a protocol handler
-    // jetstream_quic's ProtocolHandler is auto-implemented for jetstream_rpc::Server
+    // Register the EchoService via the per-stream RPC router
     let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
 
-    let mut router = Router::new();
-    router.register(Arc::new(echo_service));
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
+            .with_handler(echo_protocol::PROTOCOL_NAME, echo_service),
+    );
+    let quic_handler = QuicRouterHandler::new(rpc_router);
+
+    let mut router = QuicRouter::new();
+    router.register(Arc::new(quic_handler));
 
     let server = Server::new_with_mtls(
-        server_cert,
+        vec![server_cert],
         server_key,
         client_verifier,
         addr,
@@ -95,9 +101,15 @@ async fn client(
     let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
     let client_key = load_key(CLIENT_KEY_PEM);
 
-    // Use the protocol version as ALPN
-    let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
-    let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
+    let alpn = vec![b"jetstream".to_vec()];
+    let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
+    let client = Client::new_with_mtls(
+        ca_cert,
+        client_cert,
+        client_key,
+        alpn,
+        bind_addr,
+    )?;
 
     let connection = client.connect(addr, "localhost").await?;
 
@@ -105,6 +117,7 @@ async fn client(
     let (send, recv) = connection.open_bi().await?;
     let transport: QuicTransport<EchoChannel> = (send, recv).into();
     let mut chan = EchoChannel::new(10, Box::new(transport));
+    chan.negotiate_version(u32::MAX).await?;
 
     eprintln!("Ping sent");
     chan.ping().await?;

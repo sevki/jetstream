@@ -1,20 +1,21 @@
 //! WebAssembly specific implementation for jetstream_wireformat
-//! 
+//!
 //! This module provides WebAssembly-specific functionality for the wire format.
 
 #![cfg(target_arch = "wasm32")]
 
 use crate::WireFormat;
-use js_sys::{Uint8Array, ArrayBuffer};
-use wasm_bindgen::prelude::*;
+use js_sys::{ArrayBuffer, Uint8Array};
 use std::io::{self, Cursor};
+use wasm_bindgen::prelude::*;
 
 /// A trait that extends `WireFormat` with WebAssembly-specific methods.
 pub trait WasmWireFormat: WireFormat {
     /// Convert this object to a JavaScript-compatible ArrayBuffer
     fn to_array_buffer(&self) -> Result<ArrayBuffer, JsValue> {
         let mut buffer = Vec::new();
-        self.encode(&mut buffer).map_err(|e| JsValue::from_str(&e.to_string()))?;
+        self.encode(&mut buffer)
+            .map_err(|e| JsValue::from_str(&e.to_string()))?;
         let array = Uint8Array::new_with_length(buffer.len() as u32);
         array.copy_from(&buffer);
         Ok(array.buffer())

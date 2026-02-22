@@ -16,7 +16,11 @@ pub fn parse_rust_type(ty: &syn::Type) -> RustType {
         syn::Type::Path(type_path) => {
             let segment = match type_path.path.segments.last() {
                 Some(s) => s,
-                None => return RustType::Simple { id: "Unknown".into() },
+                None => {
+                    return RustType::Simple {
+                        id: "Unknown".into(),
+                    }
+                }
             };
             let ident = segment.ident.to_string();
             let generic_args: Vec<RustType> = match &segment.arguments {
@@ -71,7 +75,10 @@ pub fn parse_rust_type(ty: &syn::Type) -> RustType {
                     let val = args
                         .next()
                         .unwrap_or(RustType::Special(SpecialRustType::String));
-                    RustType::Special(SpecialRustType::HashMap(Box::new(key), Box::new(val)))
+                    RustType::Special(SpecialRustType::HashMap(
+                        Box::new(key),
+                        Box::new(val),
+                    ))
                 }
                 "Box" | "Arc" | "Rc" => generic_args
                     .into_iter()
@@ -178,8 +185,11 @@ pub fn parse_derive_input(input: &syn::DeriveInput) -> Option<RustItem> {
                                 .iter()
                                 .filter(|f| !has_skip_attr(f))
                                 .map(|f| {
-                                    let field_name =
-                                        f.ident.as_ref().map(|i| i.to_string()).unwrap_or_default();
+                                    let field_name = f
+                                        .ident
+                                        .as_ref()
+                                        .map(|i| i.to_string())
+                                        .unwrap_or_default();
                                     RustField {
                                         id: Id {
                                             original: field_name.clone(),
@@ -241,7 +251,8 @@ fn parse_fields(fields: &syn::Fields) -> Vec<RustField> {
             .iter()
             .filter(|f| !has_skip_attr(f))
             .map(|f| {
-                let field_name = f.ident.as_ref().map(|i| i.to_string()).unwrap_or_default();
+                let field_name =
+                    f.ident.as_ref().map(|i| i.to_string()).unwrap_or_default();
                 RustField {
                     id: Id {
                         original: field_name.clone(),
@@ -415,18 +426,33 @@ mod tests {
     #[test]
     fn test_parse_rust_type_primitives() {
         let ty: syn::Type = syn::parse_str("u64").unwrap();
-        assert_eq!(parse_rust_type(&ty), RustType::Special(SpecialRustType::U64));
+        assert_eq!(
+            parse_rust_type(&ty),
+            RustType::Special(SpecialRustType::U64)
+        );
 
         let ty: syn::Type = syn::parse_str("i64").unwrap();
-        assert_eq!(parse_rust_type(&ty), RustType::Special(SpecialRustType::I64));
+        assert_eq!(
+            parse_rust_type(&ty),
+            RustType::Special(SpecialRustType::I64)
+        );
 
         let ty: syn::Type = syn::parse_str("Vec<String>").unwrap();
-        assert!(matches!(parse_rust_type(&ty), RustType::Special(SpecialRustType::Vec(_))));
+        assert!(matches!(
+            parse_rust_type(&ty),
+            RustType::Special(SpecialRustType::Vec(_))
+        ));
 
         let ty: syn::Type = syn::parse_str("Option<u32>").unwrap();
-        assert!(matches!(parse_rust_type(&ty), RustType::Special(SpecialRustType::Option(_))));
+        assert!(matches!(
+            parse_rust_type(&ty),
+            RustType::Special(SpecialRustType::Option(_))
+        ));
 
         let ty: syn::Type = syn::parse_str("Box<u32>").unwrap();
-        assert_eq!(parse_rust_type(&ty), RustType::Special(SpecialRustType::U32));
+        assert_eq!(
+            parse_rust_type(&ty),
+            RustType::Special(SpecialRustType::U32)
+        );
     }
 }

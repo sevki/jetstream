@@ -12,6 +12,7 @@
 
 pub mod messages;
 pub mod ninep_2000_l;
+pub mod server;
 use jetstream_libc as libc;
 
 use std::io;

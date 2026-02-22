@@ -61,7 +61,8 @@ pub fn generate_swift_struct(s: &RustStruct, _config: &SwiftConfig) -> String {
     .unwrap();
     for field in &s.fields {
         let field_name = field.id.renamed.to_case(Case::Camel);
-        writeln!(out, "        try {field_name}.encode(writer: &writer)").unwrap();
+        writeln!(out, "        try {field_name}.encode(writer: &writer)")
+            .unwrap();
     }
     writeln!(out, "    }}").unwrap();
     writeln!(out).unwrap();
@@ -89,12 +90,7 @@ pub fn generate_swift_struct(s: &RustStruct, _config: &SwiftConfig) -> String {
             format!("{field_name}: {field_name}")
         })
         .collect();
-    writeln!(
-        out,
-        "        return {name}({})",
-        field_list.join(", ")
-    )
-    .unwrap();
+    writeln!(out, "        return {name}({})", field_list.join(", ")).unwrap();
     writeln!(out, "    }}").unwrap();
 
     writeln!(out, "}}").unwrap();
@@ -133,7 +129,8 @@ pub fn generate_swift_enum(e: &RustEnum, _config: &SwiftConfig) -> String {
                         format!("{field_name}: {swift_type}")
                     })
                     .collect();
-                writeln!(out, "    case {case_name}({})", params.join(", ")).unwrap();
+                writeln!(out, "    case {case_name}({})", params.join(", "))
+                    .unwrap();
             }
         }
     }
@@ -160,12 +157,17 @@ pub fn generate_swift_enum(e: &RustEnum, _config: &SwiftConfig) -> String {
                 let case_name = shared.id.original.to_case(Case::Camel);
                 let bindings: Vec<String> = fields
                     .iter()
-                    .map(|f| format!("let {}", f.id.renamed.to_case(Case::Camel)))
+                    .map(|f| {
+                        format!("let {}", f.id.renamed.to_case(Case::Camel))
+                    })
                     .collect();
                 let sizes: Vec<String> = fields
                     .iter()
                     .map(|f| {
-                        format!("{}.byteSize()", f.id.renamed.to_case(Case::Camel))
+                        format!(
+                            "{}.byteSize()",
+                            f.id.renamed.to_case(Case::Camel)
+                        )
                     })
                     .collect();
                 writeln!(
@@ -200,13 +202,16 @@ pub fn generate_swift_enum(e: &RustEnum, _config: &SwiftConfig) -> String {
                 let case_name = shared.id.original.to_case(Case::Camel);
                 writeln!(out, "        case .{case_name}(let v):").unwrap();
                 writeln!(out, "            writer.writeU8({idx})").unwrap();
-                writeln!(out, "            try v.encode(writer: &writer)").unwrap();
+                writeln!(out, "            try v.encode(writer: &writer)")
+                    .unwrap();
             }
             RustEnumVariant::AnonymousStruct { fields, shared } => {
                 let case_name = shared.id.original.to_case(Case::Camel);
                 let bindings: Vec<String> = fields
                     .iter()
-                    .map(|f| format!("let {}", f.id.renamed.to_case(Case::Camel)))
+                    .map(|f| {
+                        format!("let {}", f.id.renamed.to_case(Case::Camel))
+                    })
                     .collect();
                 writeln!(
                     out,
@@ -242,7 +247,8 @@ pub fn generate_swift_enum(e: &RustEnum, _config: &SwiftConfig) -> String {
         match v {
             RustEnumVariant::Unit(shared) => {
                 let case_name = shared.id.original.to_case(Case::Camel);
-                writeln!(out, "        case {idx}: return .{case_name}").unwrap();
+                writeln!(out, "        case {idx}: return .{case_name}")
+                    .unwrap();
             }
             RustEnumVariant::Tuple { ty, shared } => {
                 let case_name = shared.id.original.to_case(Case::Camel);
@@ -336,20 +342,27 @@ pub fn rust_type_to_swift(ty: &RustType) -> String {
             SpecialRustType::Bool => "Bool".into(),
             SpecialRustType::String | SpecialRustType::Char => "String".into(),
             SpecialRustType::Unit => "Void".into(),
-            SpecialRustType::Vec(inner) | SpecialRustType::Array(inner, _) | SpecialRustType::Slice(inner) => {
+            SpecialRustType::Vec(inner)
+            | SpecialRustType::Array(inner, _)
+            | SpecialRustType::Slice(inner) => {
                 format!("[{}]", rust_type_to_swift(inner))
             }
             SpecialRustType::Option(inner) => {
                 format!("{}?", rust_type_to_swift(inner))
             }
             SpecialRustType::HashMap(k, v) => {
-                format!("[{}: {}]", rust_type_to_swift(k), rust_type_to_swift(v))
+                format!(
+                    "[{}: {}]",
+                    rust_type_to_swift(k),
+                    rust_type_to_swift(v)
+                )
             }
             _ => "Any".into(),
         },
         RustType::Simple { id } => id.clone(),
         RustType::Generic { id, parameters } => {
-            let params: Vec<String> = parameters.iter().map(rust_type_to_swift).collect();
+            let params: Vec<String> =
+                parameters.iter().map(rust_type_to_swift).collect();
             format!("{}<{}>", id, params.join(", "))
         }
     }

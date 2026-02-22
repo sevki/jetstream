@@ -11,6 +11,15 @@ pub struct Frame<T: Framer> {
     pub msg: T,
 }
 
+impl<T: Framer + std::fmt::Debug> std::fmt::Debug for Frame<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Frame")
+            .field("tag", &self.tag)
+            .field("msg", &self.msg)
+            .finish()
+    }
+}
+
 impl<T: Framer> From<(u16, T)> for Frame<T> {
     fn from((tag, msg): (u16, T)) -> Self {
         Self { tag, msg }

@@ -158,9 +158,9 @@ fn test_options_with_enum() {
     let input: DeriveInput = parse_quote! {
         enum EnumWithOptions {
             A(u8),
-            B { 
+            B {
                 #[jetstream(with(CustomCodec))]
-                value: Vec<u8> 
+                value: Vec<u8>
             },
             C(#[jetstream(from(from_wire_format))] NonWireType),
         }

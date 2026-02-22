@@ -11,6 +11,10 @@ pub struct TsConfig {
     pub import_path: String,
     /// Import path for the RPC module (e.g., "@sevki/jetstream-rpc").
     pub rpc_import_path: String,
+    /// Extra import lines to inject into the generated types file (verbatim).
+    pub extra_imports: Vec<String>,
+    /// Extra import lines to inject into the generated RPC file (verbatim).
+    pub rpc_extra_imports: Vec<String>,
 }
 
 impl Default for TsConfig {
@@ -18,6 +22,8 @@ impl Default for TsConfig {
         Self {
             import_path: "@sevki/jetstream-wireformat".into(),
             rpc_import_path: "@sevki/jetstream-rpc".into(),
+            extra_imports: vec![],
+            rpc_extra_imports: vec![],
         }
     }
 }
@@ -305,7 +311,7 @@ pub fn generate_ts_enum(e: &RustEnum, _config: &TsConfig) -> String {
 
 /// Generate a complete TypeScript file from a list of RustItems.
 pub fn generate_ts_file(items: &[RustItem], config: &TsConfig) -> String {
-    let mut out = String::new();
+    let mut out = String::from("// @ts-nocheck — generated file\n");
 
     // Collect needed codecs
     let mut needed_codecs = std::collections::BTreeSet::new();
@@ -331,6 +337,11 @@ pub fn generate_ts_file(items: &[RustItem], config: &TsConfig) -> String {
         config.import_path
     )
     .unwrap();
+
+    // Extra imports
+    for extra in &config.extra_imports {
+        writeln!(out, "{extra}").unwrap();
+    }
     writeln!(out).unwrap();
 
     // Types
@@ -382,6 +393,17 @@ fn collect_codecs_for_type<'a>(
     ty: &RustType,
     codecs: &mut std::collections::BTreeSet<&'a str>,
 ) {
+    // Handle u128/i128 which typeshare_core doesn't have as SpecialRustType variants
+    if let RustType::Simple { id } = ty {
+        if id == "u128" {
+            codecs.insert("u128Codec");
+            return;
+        }
+        if id == "i128" {
+            codecs.insert("i128Codec");
+            return;
+        }
+    }
     if let RustType::Special(special) = ty {
         match special {
             SpecialRustType::U8 => {
@@ -440,6 +462,12 @@ fn collect_codecs_for_type<'a>(
 
 /// Map a RustType to a TypeScript type string.
 pub fn rust_type_to_ts(ty: &RustType) -> String {
+    // Handle u128/i128 which typeshare_core doesn't have as SpecialRustType variants
+    if let RustType::Simple { id } = ty {
+        if id == "u128" || id == "i128" {
+            return "bigint".into();
+        }
+    }
     match ty {
         RustType::Special(special) => match special {
             SpecialRustType::U8
@@ -482,6 +510,15 @@ pub fn rust_type_to_ts(ty: &RustType) -> String {
 
 /// Map a RustType to a TypeScript codec expression string.
 pub fn rust_type_to_ts_codec(ty: &RustType) -> String {
+    // Handle u128/i128 which typeshare_core doesn't have as SpecialRustType variants
+    if let RustType::Simple { id } = ty {
+        if id == "u128" {
+            return "u128Codec".into();
+        }
+        if id == "i128" {
+            return "i128Codec".into();
+        }
+    }
     match ty {
         RustType::Special(special) => match special {
             SpecialRustType::U8 => "u8Codec".into(),
@@ -555,6 +592,34 @@ mod tests {
         assert!(ts.contains("u32Codec.byteSize"));
         assert!(ts.contains("u32Codec.encode"));
         assert!(ts.contains("u32Codec.decode"));
+    }
+
+    #[test]
+    fn test_generate_u128_struct() {
+        let source = r#"
+            #[derive(JetStreamWireFormat)]
+            struct MyId(u128);
+        "#;
+        let items = parse_file(source);
+        let config = TsConfig::default();
+        let ts = generate_ts_file(&items, &config);
+        // u128 should map to bigint type
+        assert!(
+            ts.contains("field0: bigint"),
+            "expected bigint type, got:\n{ts}"
+        );
+        // u128Codec should be used
+        assert!(ts.contains("u128Codec"), "expected u128Codec, got:\n{ts}");
+        // u128Codec should be imported
+        assert!(
+            ts.contains("u128Codec"),
+            "expected u128Codec import, got:\n{ts}"
+        );
+        // Should NOT contain bare "u128" as a type
+        assert!(
+            !ts.contains(": u128;"),
+            "should not emit u128 as TS type, got:\n{ts}"
+        );
     }
 
     #[test]

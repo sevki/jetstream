@@ -9,6 +9,55 @@ use typeshare_core::rust_types::{RustType, SpecialRustType};
 use crate::service_parser::{MethodDef, ServiceDef};
 use crate::ts_backend::{rust_type_to_ts, rust_type_to_ts_codec, TsConfig};
 
+/// Collect all custom (non-primitive) type names referenced by a service's methods.
+/// These are `RustType::Simple` or `RustType::Generic` types that live in the
+/// sibling types file and need to be imported.
+fn collect_custom_types(service: &ServiceDef) -> BTreeSet<String> {
+    let mut types = BTreeSet::new();
+    for method in &service.methods {
+        for p in &method.params {
+            collect_custom_type_names(&p.ty, &mut types);
+        }
+        if let Some(ret) = &method.return_type {
+            collect_custom_type_names(ret, &mut types);
+        }
+    }
+    types
+}
+
+/// Type names that are scalar primitives handled by the wireformat package,
+/// not custom types from the sibling types module.
+const PRIMITIVE_SCALARS: &[&str] = &["u128", "i128"];
+
+fn collect_custom_type_names(ty: &RustType, types: &mut BTreeSet<String>) {
+    match ty {
+        RustType::Simple { id } => {
+            if !PRIMITIVE_SCALARS.contains(&id.as_str()) {
+                types.insert(id.clone());
+            }
+        }
+        RustType::Generic { id, parameters } => {
+            types.insert(id.clone());
+            for p in parameters {
+                collect_custom_type_names(p, types);
+            }
+        }
+        RustType::Special(special) => match special {
+            SpecialRustType::Vec(inner)
+            | SpecialRustType::Slice(inner)
+            | SpecialRustType::Array(inner, _)
+            | SpecialRustType::Option(inner) => {
+                collect_custom_type_names(inner, types);
+            }
+            SpecialRustType::HashMap(k, v) => {
+                collect_custom_type_names(k, types);
+                collect_custom_type_names(v, types);
+            }
+            _ => {}
+        },
+    }
+}
+
 /// Collect all codec names used by a service's methods so we can import them.
 fn collect_codecs(service: &ServiceDef) -> BTreeSet<String> {
     let mut codecs = BTreeSet::new();
@@ -24,6 +73,17 @@ fn collect_codecs(service: &ServiceDef) -> BTreeSet<String> {
 }
 
 fn collect_codec_names(ty: &RustType, codecs: &mut BTreeSet<String>) {
+    // Handle u128/i128 which typeshare_core doesn't have as SpecialRustType variants
+    if let RustType::Simple { id } = ty {
+        if id == "u128" {
+            codecs.insert("u128Codec".into());
+            return;
+        }
+        if id == "i128" {
+            codecs.insert("i128Codec".into());
+            return;
+        }
+    }
     if let RustType::Special(special) = ty {
         match special {
             SpecialRustType::U8 | SpecialRustType::I8 => {
@@ -92,8 +152,12 @@ fn collect_codec_names(ty: &RustType, codecs: &mut BTreeSet<String>) {
 /// - Tmessage/Rmessage discriminated unions with Framer impl
 /// - Client class with async methods
 /// - Handler interface
-pub fn generate_ts_rpc(service: &ServiceDef, config: &TsConfig) -> String {
-    let mut out = String::new();
+pub fn generate_ts_rpc(
+    service: &ServiceDef,
+    config: &TsConfig,
+    types_module: &str,
+) -> String {
+    let mut out = String::from("// @ts-nocheck — generated file\n");
 
     // Collect used codecs for import
     let codecs = collect_codecs(service);
@@ -132,6 +196,34 @@ pub fn generate_ts_rpc(service: &ServiceDef, config: &TsConfig) -> String {
         config.rpc_import_path
     )
     .unwrap();
+
+    // Import custom types and their codecs from the sibling types file
+    let custom_types = collect_custom_types(service);
+    if !custom_types.is_empty() {
+        let type_names: Vec<&str> =
+            custom_types.iter().map(|s| s.as_str()).collect();
+        let codec_names: Vec<String> = custom_types
+            .iter()
+            .map(|s| format!("{}Codec", s.to_case(Case::Camel)))
+            .collect();
+        writeln!(
+            out,
+            "import type {{ {} }} from './{types_module}';",
+            type_names.join(", "),
+        )
+        .unwrap();
+        writeln!(
+            out,
+            "import {{ {} }} from './{types_module}';",
+            codec_names.join(", "),
+        )
+        .unwrap();
+    }
+
+    // Extra RPC imports
+    for extra in &config.rpc_extra_imports {
+        writeln!(out, "{extra}").unwrap();
+    }
     writeln!(out).unwrap();
 
     let name = &service.name;
@@ -529,8 +621,12 @@ fn generate_ts_rmessage_framer(out: &mut String, methods: &[MethodDef]) {
 /// wrapping a Tmessage discriminated union and delegating to tmessageFramer.
 fn generate_ts_tmessage_framer_class(out: &mut String, _methods: &[MethodDef]) {
     writeln!(out, "export class TmessageFramer implements Framer {{").unwrap();
-    writeln!(out, "  constructor(public readonly inner: Tmessage) {{}}")
-        .unwrap();
+    writeln!(out, "  readonly inner: Tmessage;").unwrap();
+    writeln!(
+        out,
+        "  constructor(inner: Tmessage) {{ this.inner = inner; }}"
+    )
+    .unwrap();
     writeln!(out, "  messageType(): number {{ return tmessageFramer.messageType(this.inner); }}").unwrap();
     writeln!(out, "  byteSize(): number {{ return tmessageFramer.byteSize(this.inner); }}").unwrap();
     writeln!(out, "  encode(writer: BinaryWriter): void {{ tmessageFramer.encode(this.inner, writer); }}").unwrap();
@@ -542,8 +638,12 @@ fn generate_ts_tmessage_framer_class(out: &mut String, _methods: &[MethodDef]) {
 /// Also generates the static decode function for use with Mux/Transport.
 fn generate_ts_rmessage_framer_class(out: &mut String, _methods: &[MethodDef]) {
     writeln!(out, "export class RmessageFramer implements Framer {{").unwrap();
-    writeln!(out, "  constructor(public readonly inner: Rmessage) {{}}")
-        .unwrap();
+    writeln!(out, "  readonly inner: Rmessage;").unwrap();
+    writeln!(
+        out,
+        "  constructor(inner: Rmessage) {{ this.inner = inner; }}"
+    )
+    .unwrap();
     writeln!(out, "  messageType(): number {{ return rmessageFramer.messageType(this.inner); }}").unwrap();
     writeln!(out, "  byteSize(): number {{ return rmessageFramer.byteSize(this.inner); }}").unwrap();
     writeln!(out, "  encode(writer: BinaryWriter): void {{ rmessageFramer.encode(this.inner, writer); }}").unwrap();

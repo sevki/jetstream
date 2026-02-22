@@ -28,6 +28,7 @@ impl Client {
     pub fn new(
         ca_cert: CertificateDer<'static>,
         alpn_protocols: Vec<Vec<u8>>,
+        socket_address: SocketAddr,
     ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let mut root_store = RootCertStore::empty();
         root_store.add(ca_cert)?;
@@ -41,7 +42,7 @@ impl Client {
             quinn::crypto::rustls::QuicClientConfig::try_from(tls_config)?,
         ));
 
-        let mut endpoint = Endpoint::client("0.0.0.0:0".parse()?)?;
+        let mut endpoint = Endpoint::client(socket_address)?;
         endpoint.set_default_client_config(client_config);
 
         Ok(Self { endpoint })
@@ -59,6 +60,7 @@ impl Client {
         client_cert: CertificateDer<'static>,
         client_key: PrivateKeyDer<'static>,
         alpn_protocols: Vec<Vec<u8>>,
+        socket_address: SocketAddr,
     ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let mut root_store = RootCertStore::empty();
         root_store.add(ca_cert)?;
@@ -72,7 +74,7 @@ impl Client {
             quinn::crypto::rustls::QuicClientConfig::try_from(tls_config)?,
         ));
 
-        let mut endpoint = Endpoint::client("0.0.0.0:0".parse()?)?;
+        let mut endpoint = Endpoint::client(socket_address)?;
         endpoint.set_default_client_config(client_config);
 
         Ok(Self { endpoint })

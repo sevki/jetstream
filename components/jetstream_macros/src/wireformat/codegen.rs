@@ -2,8 +2,8 @@ use proc_macro2::{Span, TokenStream};
 use quote::{quote, quote_spanned};
 use syn::{spanned::Spanned, Data, Fields, Ident};
 
-use jetstream_codegen::attributes::{extract_field_options, has_skip_attr};
 use crate::utils::error;
+use jetstream_codegen::attributes::{extract_field_options, has_skip_attr};
 
 pub fn byte_size_sum(data: &Data) -> TokenStream {
     match data {
@@ -23,7 +23,9 @@ pub fn encode_wire_format(data: &Data) -> TokenStream {
 
 pub fn decode_wire_format(data: &Data, container: &Ident) -> TokenStream {
     match data {
-        Data::Struct(ref data) => generate_struct_decode(&data.fields, container),
+        Data::Struct(ref data) => {
+            generate_struct_decode(&data.fields, container)
+        }
         Data::Enum(ref data) => generate_enum_decode(data, container),
         Data::Union(_) => error::unsupported_data_type(),
     }
@@ -122,7 +124,7 @@ fn generate_struct_encode(fields: &Fields) -> TokenStream {
         }
         Fields::Unit => quote! {},
     };
-    
+
     quote! {
         #encode_fields
         Ok(())
@@ -198,7 +200,8 @@ fn generate_struct_decode(fields: &Fields, container: &Ident) -> TokenStream {
                 if *is_skipped {
                     quote! { Default::default() }
                 } else {
-                    let ident = Ident::new(&format!("__{}", i), Span::call_site());
+                    let ident =
+                        Ident::new(&format!("__{}", i), Span::call_site());
                     quote! { #ident }
                 }
             });
@@ -224,7 +227,7 @@ fn generate_enum_byte_size(data: &syn::DataEnum) -> TokenStream {
                     .filter(|f| !has_skip_attr(f))
                     .map(|f| (f, &f.ident))
                     .collect::<Vec<_>>();
-                
+
                 let size_calcs = field_idents.iter().map(|(f, ident)| {
                     let options = extract_field_options(f);
                     if let Some(byte_size_fn) = options.byte_size {
@@ -235,9 +238,9 @@ fn generate_enum_byte_size(data: &syn::DataEnum) -> TokenStream {
                         quote! { + WireFormat::byte_size(#ident) }
                     }
                 });
-                
+
                 let field_idents = field_idents.iter().map(|(_, ident)| ident);
-                
+
                 quote! {
                     Self::#variant_ident { #(ref #field_idents),* } => {
                         1 #(#size_calcs)*
@@ -252,11 +255,11 @@ fn generate_enum_byte_size(data: &syn::DataEnum) -> TokenStream {
                     .filter(|(_, f)| !has_skip_attr(f))
                     .map(|(i, f)| (f, format!("__{}", i)))
                     .collect::<Vec<_>>();
-                
+
                 let size_calcs = refs_with_fields.iter().map(|(f, name)| {
                     let ident = Ident::new(name, Span::call_site());
                     let options = extract_field_options(f);
-                    
+
                     if let Some(byte_size_fn) = options.byte_size {
                         quote! { + #byte_size_fn(#ident) }
                     } else if let Some(with_fn) = options.with {
@@ -265,11 +268,11 @@ fn generate_enum_byte_size(data: &syn::DataEnum) -> TokenStream {
                         quote! { + WireFormat::byte_size(#ident) }
                     }
                 });
-                
-                let refs = refs_with_fields.iter().map(|(_, name)|
-                    Ident::new(name, Span::call_site())
-                );
-                
+
+                let refs = refs_with_fields
+                    .iter()
+                    .map(|(_, name)| Ident::new(name, Span::call_site()));
+
                 quote! {
                     Self::#variant_ident(#(ref #refs),*) => {
                         1 #(#size_calcs)*
@@ -385,7 +388,10 @@ fn generate_enum_encode(data: &syn::DataEnum) -> TokenStream {
     }
 }
 
-fn generate_enum_decode(data: &syn::DataEnum, _container: &Ident) -> TokenStream {
+fn generate_enum_decode(
+    data: &syn::DataEnum,
+    _container: &Ident,
+) -> TokenStream {
     let mut variant_matches = data
         .variants
         .iter()

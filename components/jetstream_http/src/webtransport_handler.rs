@@ -1,23 +1,14 @@
-use async_trait::async_trait;
+use std::sync::Arc;
+
 use bytes::Bytes;
 use futures::{SinkExt, StreamExt};
 use h3::quic;
-use h3_webtransport::server::{AcceptedBi, WebTransportSession};
+use h3_webtransport::server::WebTransportSession;
 use jetstream_rpc::{
     server::{Server, ServerCodec},
-    Error, Frame, IntoError,
+    Error, Frame, Router as RpcRouter,
 };
 use tokio_util::codec::{FramedRead, FramedWrite};
-
-// r[impl jetstream.webtransport.handler-trait]
-#[async_trait]
-pub trait WebTransportHandler: Send + Sync {
-    async fn handle_session(
-        &self,
-        session: WebTransportSession<h3_quinn::Connection, Bytes>,
-        ctx: jetstream_rpc::context::Context,
-    ) -> jetstream_error::Result<()>;
-}
 
 // r[impl jetstream.webtransport.upstream-initiated]
 /// Opens a server-initiated bidirectional stream to the downstream client.
@@ -62,88 +53,9 @@ where
 // r[impl jetstream.webtransport.lifecycle]
 // r[impl jetstream.webtransport.errors]
 // r[impl jetstream.webtransport.errors.session]
-#[async_trait]
-impl<T> WebTransportHandler for T
-where
-    T: Server<Error = jetstream_rpc::Error> + Send + Sync + Clone + 'static,
-{
-    async fn handle_session(
-        &self,
-        session: WebTransportSession<h3_quinn::Connection, Bytes>,
-        ctx: jetstream_rpc::context::Context,
-    ) -> jetstream_error::Result<()> {
-        let handler = self.clone();
-        tokio::spawn(async move {
-            loop {
-                match session.accept_bi().await {
-                    Ok(Some(AcceptedBi::BidiStream(_, stream))) => {
-                        let (send, recv) = quic::BidiStream::split(stream);
-                        let handler = handler.clone();
-                        let ctx = ctx.clone();
-                        tokio::spawn(async move {
-                            let mut reader =
-                                FramedRead::new(recv, ServerCodec::<T>::new());
-                            let mut writer =
-                                FramedWrite::new(send, ServerCodec::<T>::new());
-
-                            // Channel for sending responses back to the writer
-                            let (resp_tx, mut resp_rx) =
-                                tokio::sync::mpsc::channel::<Frame<T::Response>>(
-                                    256,
-                                );
-
-                            // Spawn a task to write responses as they complete
-                            let writer_task = tokio::spawn(async move {
-                                while let Some(resp) = resp_rx.recv().await {
-                                    if writer.send(resp).await.is_err() {
-                                        break;
-                                    }
-                                }
-                            });
-
-                            // Process requests concurrently
-                            while let Some(req) = reader.next().await {
-                                let ctx = ctx.clone();
-                                match req {
-                                    Ok(req) => {
-                                        let mut handler = handler.clone();
-                                        let resp_tx = resp_tx.clone();
-                                        tokio::spawn(async move {
-                                            match handler.rpc(ctx, req).await {
-                                                Ok(resp) => {
-                                                    let _ = resp_tx
-                                                        .send(resp)
-                                                        .await;
-                                                }
-                                                Err(err) => {
-                                                    let error =
-                                                        err.into_error();
-                                                    eprintln!(
-                                                        "Error processing request: {}",
-                                                        error
-                                                    );
-                                                }
-                                            }
-                                        });
-                                    }
-                                    Err(_err) => {}
-                                };
-                            }
-
-                            // Drop the sender so the writer task knows to finish
-                            drop(resp_tx);
-                            let _ = writer_task.await;
-                        });
-                    }
-                    Ok(Some(_)) => continue,
-                    Ok(None) => break,
-                    Err(err) => {
-                        eprintln!("Error accepting bidi stream: {}", err);
-                        break;
-                    }
-                }
-            }
-        });
-        Ok(())
-    }
-}
+// r[impl jetstream.webtransport.router]
+// r[impl jetstream.webtransport.router.per-stream-version]
+/// A WebTransport handler that uses an `RpcRouter` for per-stream
+/// version-based protocol dispatch. Each bidi stream performs its own
+/// Tversion/Rversion negotiation and is routed to the appropriate handler.
+pub struct RouterHandler(pub Arc<RpcRouter>);
