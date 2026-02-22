@@ -13,13 +13,13 @@
  * r[impl jetstream.wireformat.ts.error]
  */
 
-import { BinaryReader } from './binary-reader.js';
-import { BinaryWriter } from './binary-writer.js';
-import type { WireFormat } from './primitives.js';
-import { u16Codec } from './primitives.js';
-import { stringCodec } from './string.js';
-import { optionCodec } from './option.js';
-import { vecCodec } from './collections.js';
+import { BinaryReader } from "./binary-reader.js";
+import { BinaryWriter } from "./binary-writer.js";
+import type { WireFormat } from "./primitives.js";
+import { u16Codec } from "./primitives.js";
+import { stringCodec } from "./string.js";
+import { optionCodec } from "./option.js";
+import { vecCodec } from "./collections.js";
 
 /** Tracing Level enum */
 export enum Level {
@@ -49,7 +49,7 @@ export const levelCodec: WireFormat<Level> = {
 
 /** FieldPair: key and value as u16 intern table indices */
 export interface FieldPair {
-  key: number;   // u16 intern table index
+  key: number; // u16 intern table index
   value: number; // u16 intern table index
 }
 
@@ -70,12 +70,12 @@ export const fieldPairCodec: WireFormat<FieldPair> = {
 
 /** Frame: a single backtrace frame */
 export interface Frame {
-  msg: string;        // span name (WF-STRING)
-  name: number;       // u16 intern table index
-  target: number;     // u16 intern table index
-  module: number;     // u16 intern table index
-  file: number;       // u16 intern table index
-  line: number;       // u16 source line number
+  msg: string; // span name (WF-STRING)
+  name: number; // u16 intern table index
+  target: number; // u16 intern table index
+  module: number; // u16 intern table index
+  file: number; // u16 intern table index
+  line: number; // u16 source line number
   fields: FieldPair[];
   level: Level;
 }
@@ -84,14 +84,16 @@ const fieldPairVecCodec = vecCodec(fieldPairCodec);
 
 export const frameCodec: WireFormat<Frame> = {
   byteSize(value: Frame): number {
-    return stringCodec.byteSize(value.msg)
-      + 2   // name
-      + 2   // target
-      + 2   // module
-      + 2   // file
-      + 2   // line
-      + fieldPairVecCodec.byteSize(value.fields)
-      + 1;  // level
+    return (
+      stringCodec.byteSize(value.msg) +
+      2 + // name
+      2 + // target
+      2 + // module
+      2 + // file
+      2 + // line
+      fieldPairVecCodec.byteSize(value.fields) +
+      1
+    ); // level
   },
   encode(value: Frame, writer: BinaryWriter): void {
     stringCodec.encode(value.msg, writer);
@@ -118,7 +120,7 @@ export const frameCodec: WireFormat<Frame> = {
 
 /** Backtrace with intern table */
 export interface Backtrace {
-  internTable: string[];  // index 0 = "" (empty string)
+  internTable: string[]; // index 0 = "" (empty string)
   frames: Frame[];
 }
 
@@ -127,8 +129,10 @@ const frameVecCodec = vecCodec(frameCodec);
 
 export const backtraceCodec: WireFormat<Backtrace> = {
   byteSize(value: Backtrace): number {
-    return stringVecCodec.byteSize(value.internTable)
-      + frameVecCodec.byteSize(value.frames);
+    return (
+      stringVecCodec.byteSize(value.internTable) +
+      frameVecCodec.byteSize(value.frames)
+    );
   },
   encode(value: Backtrace, writer: BinaryWriter): void {
     stringVecCodec.encode(value.internTable, writer);
@@ -153,10 +157,12 @@ const optionalStringCodec = optionCodec(stringCodec);
 
 export const errorInnerCodec: WireFormat<ErrorInner> = {
   byteSize(value: ErrorInner): number {
-    return stringCodec.byteSize(value.message)
-      + optionalStringCodec.byteSize(value.code)
-      + optionalStringCodec.byteSize(value.help)
-      + optionalStringCodec.byteSize(value.url);
+    return (
+      stringCodec.byteSize(value.message) +
+      optionalStringCodec.byteSize(value.code) +
+      optionalStringCodec.byteSize(value.help) +
+      optionalStringCodec.byteSize(value.url)
+    );
   },
   encode(value: ErrorInner, writer: BinaryWriter): void {
     stringCodec.encode(value.message, writer);
@@ -180,7 +186,7 @@ export class JetStreamError extends Error {
 
   constructor(inner: ErrorInner, backtrace: Backtrace) {
     super(inner.message);
-    this.name = 'JetStreamError';
+    this.name = "JetStreamError";
     this.inner = inner;
     this.backtrace = backtrace;
   }
@@ -188,8 +194,10 @@ export class JetStreamError extends Error {
 
 export const jetStreamErrorCodec: WireFormat<JetStreamError> = {
   byteSize(value: JetStreamError): number {
-    return errorInnerCodec.byteSize(value.inner)
-      + backtraceCodec.byteSize(value.backtrace);
+    return (
+      errorInnerCodec.byteSize(value.inner) +
+      backtraceCodec.byteSize(value.backtrace)
+    );
   },
   encode(value: JetStreamError, writer: BinaryWriter): void {
     errorInnerCodec.encode(value.inner, writer);

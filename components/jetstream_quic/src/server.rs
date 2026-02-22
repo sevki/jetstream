@@ -11,7 +11,7 @@ use rustls::server::danger::ClientCertVerifier;
 
 use tracing::trace_span;
 
-use crate::Router;
+use crate::router::Router;
 
 pub struct Server {
     pub(crate) endpoint: quinn::Endpoint,
@@ -27,14 +27,14 @@ impl Server {
     /// * `addr` - Socket address to bind to
     /// * `router` - Router for handling connections
     pub fn new_with_addr(
-        cert: CertificateDer<'static>,
+        certs: Vec<CertificateDer<'static>>,
         key: PrivateKeyDer<'static>,
         addr: SocketAddr,
         router: Router,
     ) -> Self {
         let mut tls_config = rustls::ServerConfig::builder()
             .with_no_client_auth()
-            .with_single_cert(vec![cert], key)
+            .with_single_cert(certs, key)
             .unwrap();
         tls_config.max_early_data_size = u32::MAX;
         tls_config.alpn_protocols = router.alpns();
@@ -57,7 +57,7 @@ impl Server {
     /// * `addr` - Socket address to bind to
     /// * `router` - Router for handling connections
     pub fn new_with_mtls(
-        cert: CertificateDer<'static>,
+        certs: Vec<CertificateDer<'static>>,
         key: PrivateKeyDer<'static>,
         client_verifier: Arc<dyn ClientCertVerifier>,
         addr: SocketAddr,
@@ -65,7 +65,7 @@ impl Server {
     ) -> Self {
         let mut tls_config = rustls::ServerConfig::builder()
             .with_client_cert_verifier(client_verifier)
-            .with_single_cert(vec![cert], key)
+            .with_single_cert(certs, key)
             .unwrap();
         tls_config.max_early_data_size = u32::MAX;
         tls_config.alpn_protocols = router.alpns();

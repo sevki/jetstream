@@ -13,6 +13,7 @@ mod router;
 mod server;
 
 pub use client::{Client, QuicTransport};
-pub use quic_handler::ProtocolHandler;
-pub use router::Router;
+pub use jetstream_over_quic::QuicRouterHandler;
+pub use quic_handler::QuicHandler;
+pub use router::Router as QuicRouter;
 pub use server::Server;

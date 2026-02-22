@@ -14,7 +14,7 @@ pub mod echo_protocol {
     /// Version response message type constant
     pub const RVERSION: u8 = jetstream::prelude::RVERSION;
     /// Protocol name — used for routing
-    pub const PROTOCOL_NAME: &str = concat!("rs.jetstream.proto/", "echo");
+    pub const PROTOCOL_NAME: &str = "echo";
     /// Protocol version string constructed from the generated crate's version
     pub const PROTOCOL_VERSION: &str = concat!(
         "rs.jetstream.proto/", "echo", "/", env!("CARGO_PKG_VERSION_MAJOR"), ".",

@@ -18,6 +18,7 @@ pub mod context;
 mod error;
 pub mod framer;
 mod mux;
+mod router;
 pub mod server;
 mod tag;
 mod version;
@@ -28,6 +29,7 @@ pub use error::*;
 pub use jetstream_error::IntoError;
 use jetstream_wireformat::WireFormat;
 pub use mux::*;
+pub use router::*;
 use std::str::FromStr;
 pub use tag::*;
 pub use tokio_util::codec::{Decoder, Encoder, Framed};
@@ -80,3 +82,9 @@ pub trait Protocol: Send + Sync {
     const VERSION: &'static str;
     const NAME: &'static str;
 }
+
+// const _: () = {
+//     let _: HashMap<String, Box<dyn Protocol>> = HashMap::new();
+
+//     ()
+// };

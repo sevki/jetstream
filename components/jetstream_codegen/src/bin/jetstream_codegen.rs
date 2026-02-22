@@ -34,6 +34,14 @@ struct Args {
     #[argh(option, default = "String::from(\"@sevki/jetstream-rpc\")")]
     ts_rpc_import_path: String,
 
+    /// extra import line to inject into the generated TS types file (repeatable)
+    #[argh(option)]
+    ts_extra_import: Vec<String>,
+
+    /// extra import line to inject into the generated TS RPC file (repeatable)
+    #[argh(option)]
+    ts_rpc_extra_import: Vec<String>,
+
     /// import module name for Swift wireformat
     #[argh(option, default = "String::from(\"JetStreamWireFormat\")")]
     swift_module: String,
@@ -73,6 +81,8 @@ fn main() {
         let ts_config = TsConfig {
             import_path: args.ts_import_path.clone(),
             rpc_import_path: args.ts_rpc_import_path.clone(),
+            extra_imports: args.ts_extra_import.clone(),
+            rpc_extra_imports: args.ts_rpc_extra_import.clone(),
         };
 
         if !items.is_empty() {
@@ -83,7 +93,7 @@ fn main() {
         }
 
         for service in &services {
-            let ts_rpc = generate_ts_rpc(service, &ts_config);
+            let ts_rpc = generate_ts_rpc(service, &ts_config, stem);
             let rpc_path =
                 ts_dir.join(format!("{}_rpc.ts", service.name.to_lowercase()));
             std::fs::write(&rpc_path, ts_rpc).unwrap();

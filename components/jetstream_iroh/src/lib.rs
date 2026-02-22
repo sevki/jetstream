@@ -20,7 +20,7 @@ use iroh::{
     NodeAddr, RelayMap, RelayNode, RelayUrl,
 };
 use jetstream_rpc::{server::Server, Protocol};
-pub use server::IrohServer;
+pub use server::{IrohRouter, IrohServer};
 
 pub extern crate iroh;
 

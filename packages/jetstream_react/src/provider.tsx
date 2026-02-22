@@ -34,11 +34,19 @@ export const JetStreamContext = createContext<JetStreamContextValue | null>(
 
 export interface JetStreamProviderProps {
   url: string;
+  /** Optional async function that returns a certificate string (e.g. base64 DER).
+   *  When provided, the certificate is URL-encoded and appended as `?cert=<encoded>`
+   *  to the WebTransport URL before connecting. */
+  getCertificate?: () => Promise<string>;
   maxConcurrentRequests?: number;
   children: ReactNode;
 }
 
-export function JetStreamProvider({ url, children }: JetStreamProviderProps) {
+export function JetStreamProvider({
+  url,
+  getCertificate,
+  children,
+}: JetStreamProviderProps) {
   const [session, setSession] = useState<WebTransport | null>(null);
   const [state, setState] = useState<ConnectionState>("connecting");
   const [protocolVersion, setProtocolVersion] = useState<string | null>(null);
@@ -50,7 +58,16 @@ export function JetStreamProvider({ url, children }: JetStreamProviderProps) {
 
     async function connect() {
       try {
-        transport = new WebTransport(url);
+        let connectUrl = url;
+        if (getCertificate) {
+          const cert = await getCertificate();
+          if (cancelled) return;
+          const encoded = encodeURIComponent(cert);
+          const separator = url.includes("?") ? "&" : "?";
+          connectUrl = `${url}${separator}cert=${encoded}`;
+        }
+
+        transport = new WebTransport(connectUrl);
         await transport.ready;
         if (cancelled) {
           transport.close();
@@ -82,7 +99,7 @@ export function JetStreamProvider({ url, children }: JetStreamProviderProps) {
       cancelled = true;
       transport?.close();
     };
-  }, [url]);
+  }, [url, getCertificate]);
 
   const contextValue: JetStreamContextValue = {
     session,

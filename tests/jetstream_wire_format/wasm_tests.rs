@@ -26,11 +26,12 @@ fn test_wasm_encode_decode() {
     // Encode
     let mut buf = Vec::new();
     item.encode(&mut buf).expect("Failed to encode");
-    
+
     // Decode
     let mut reader = Cursor::new(buf);
-    let decoded: WasmItem = WireFormat::decode(&mut reader).expect("Failed to decode");
-    
+    let decoded: WasmItem =
+        WireFormat::decode(&mut reader).expect("Failed to decode");
+
     // Verify
     assert_eq!(decoded.id, 12345);
     assert_eq!(decoded.name, "WebAssembly Test");
@@ -55,11 +56,12 @@ fn test_wasm_generic() {
     // Encode
     let mut buf = Vec::new();
     item.encode(&mut buf).expect("Failed to encode");
-    
+
     // Decode
     let mut reader = Cursor::new(buf);
-    let decoded: WasmGeneric<String> = WireFormat::decode(&mut reader).expect("Failed to decode");
-    
+    let decoded: WasmGeneric<String> =
+        WireFormat::decode(&mut reader).expect("Failed to decode");
+
     // Verify
     assert_eq!(decoded.value, "Generic WebAssembly Test");
     assert_eq!(decoded.count, 42);

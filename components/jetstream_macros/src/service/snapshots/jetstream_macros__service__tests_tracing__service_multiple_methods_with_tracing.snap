@@ -14,7 +14,7 @@ pub mod complexservice_protocol {
     /// Version response message type constant
     pub const RVERSION: u8 = jetstream::prelude::RVERSION;
     /// Protocol name — used for routing
-    pub const PROTOCOL_NAME: &str = concat!("rs.jetstream.proto/", "complexservice");
+    pub const PROTOCOL_NAME: &str = "complexservice";
     /// Protocol version string constructed from the generated crate's version
     pub const PROTOCOL_VERSION: &str = concat!(
         "rs.jetstream.proto/", "complexservice", "/", env!("CARGO_PKG_VERSION_MAJOR"),

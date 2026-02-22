@@ -23,8 +23,10 @@ use std::sync::Arc;
 use echo_protocol::EchoChannel;
 use jetstream::prelude::*;
 use jetstream_macros::service;
-use jetstream_quic::{Client, QuicTransport, Router, Server};
-use jetstream_rpc::Protocol;
+use jetstream_quic::{
+    Client, QuicRouter, QuicRouterHandler, QuicTransport, Server,
+};
+
 use rusqlite::Connection as SqliteConnection;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer, UnixTime};
 use rustls::server::danger::{ClientCertVerified, ClientCertVerifier};
@@ -229,11 +231,23 @@ async fn server(
     let verifier = Arc::new(SqliteRevocationVerifier::new(ca_cert, db));
 
     let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
-    let mut router = Router::new();
-    router.register(Arc::new(echo_service));
 
-    let server =
-        Server::new_with_mtls(server_cert, server_key, verifier, addr, router);
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
+            .with_handler(echo_protocol::PROTOCOL_NAME, echo_service),
+    );
+    let quic_handler = QuicRouterHandler::new(rpc_router);
+
+    let mut router = QuicRouter::new();
+    router.register(Arc::new(quic_handler));
+
+    let server = Server::new_with_mtls(
+        vec![server_cert],
+        server_key,
+        verifier,
+        addr,
+        router,
+    );
 
     eprintln!("Server listening on {}", addr);
     server.run().await;
@@ -251,14 +265,22 @@ async fn allowed_client(
     let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
     let client_key = load_key(CLIENT_KEY_PEM);
 
-    let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
-    let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
+    let alpn = vec![b"jetstream".to_vec()];
+    let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
+    let client = Client::new_with_mtls(
+        ca_cert,
+        client_cert,
+        client_key,
+        alpn,
+        bind_addr,
+    )?;
 
     let connection = client.connect(addr, "localhost").await?;
 
     let (send, recv) = connection.open_bi().await?;
     let transport: QuicTransport<EchoChannel> = (send, recv).into();
     let mut chan = EchoChannel::new(10, Box::new(transport));
+    chan.negotiate_version(u32::MAX).await?;
 
     eprintln!("[allowed]   Sending ping...");
     chan.ping().await?;
@@ -281,12 +303,14 @@ async fn revoked_client(
     let unauthorized_cert = load_certs(CLIENT2_CERT_PEM).pop().unwrap();
     let unauthorized_key = load_key(CLIENT2_KEY_PEM);
 
-    let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
+    let alpn = vec![b"jetstream".to_vec()];
+    let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
     let client = Client::new_with_mtls(
         ca_cert,
         unauthorized_cert,
         unauthorized_key,
         alpn,
+        bind_addr,
     )?;
 
     eprintln!("[revoked]   Connecting with revoked certificate...");
@@ -299,6 +323,7 @@ async fn revoked_client(
                 let (send, recv) = connection.open_bi().await?;
                 let transport: QuicTransport<EchoChannel> = (send, recv).into();
                 let mut chan = EchoChannel::new(10, Box::new(transport));
+                chan.negotiate_version(u32::MAX).await?;
                 chan.ping().await?;
                 Ok::<_, Box<dyn std::error::Error + Send + Sync>>(())
             };

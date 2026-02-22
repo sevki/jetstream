@@ -4,7 +4,9 @@ use syn::{parse_quote, DeriveInput, Ident};
 extern crate pretty_assertions;
 use pretty_assertions::assert_eq;
 
-use crate::wireformat::{byte_size_sum, decode_wire_format, encode_wire_format, wire_format_inner};
+use crate::wireformat::{
+    byte_size_sum, decode_wire_format, encode_wire_format, wire_format_inner,
+};
 
 #[test]
 fn byte_size() {
@@ -23,10 +25,7 @@ fn byte_size() {
             + WireFormat::byte_size(&self.other)
     };
 
-    assert_eq!(
-        byte_size_sum(&input.data).to_string(),
-        expected.to_string()
-    );
+    assert_eq!(byte_size_sum(&input.data).to_string(), expected.to_string());
 }
 
 #[test]
@@ -207,10 +206,7 @@ fn enum_byte_size() {
         }
     };
 
-    assert_eq!(
-        byte_size_sum(&input.data).to_string(),
-        expected.to_string()
-    );
+    assert_eq!(byte_size_sum(&input.data).to_string(), expected.to_string());
 }
 
 #[test]

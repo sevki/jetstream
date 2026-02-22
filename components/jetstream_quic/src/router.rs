@@ -4,11 +4,11 @@ use jetstream_rpc::context::{Peer, RemoteAddr, TlsPeer};
 use quinn::{crypto::rustls::HandshakeData, Incoming};
 use tracing::{error, info, warn};
 
-use crate::quic_handler::ProtocolHandler;
+use crate::quic_handler::QuicHandler;
 
 #[derive(Clone, Default)]
 pub struct Router {
-    handlers: HashMap<String, Arc<dyn ProtocolHandler>>,
+    handlers: HashMap<String, Arc<dyn QuicHandler>>,
 }
 
 impl Router {
@@ -18,7 +18,7 @@ impl Router {
         }
     }
 
-    pub fn register(&mut self, handler: Arc<dyn ProtocolHandler>) {
+    pub fn register(&mut self, handler: Arc<dyn QuicHandler>) {
         for alpn in handler.alpns() {
             self.handlers.insert(alpn, handler.clone());
         }

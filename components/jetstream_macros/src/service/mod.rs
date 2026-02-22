@@ -194,7 +194,7 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
             /// Version response message type constant
             pub const RVERSION: u8 = jetstream::prelude::RVERSION;
             /// Protocol name — used for routing
-            pub const PROTOCOL_NAME: &str = concat!("rs.jetstream.proto/", #trait_name_lower);
+            pub const PROTOCOL_NAME: &str = #trait_name_lower;
             /// Protocol version string constructed from the generated crate's version
             pub const PROTOCOL_VERSION: &str = concat!(
                 "rs.jetstream.proto/",

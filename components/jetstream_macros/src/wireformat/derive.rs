@@ -1,9 +1,12 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, Generics, WherePredicate, Type, TypeParamBound, TraitBound, Path, PathSegment, GenericParam, TypeParam, punctuated::Punctuated};
+use syn::{
+    punctuated::Punctuated, DeriveInput, GenericParam, Generics, Path,
+    PathSegment, TraitBound, Type, TypeParam, TypeParamBound, WherePredicate,
+};
 
-use jetstream_codegen::attributes::extract_jetstream_type;
 use super::codegen::{byte_size_sum, decode_wire_format, encode_wire_format};
+use jetstream_codegen::attributes::extract_jetstream_type;
 
 // Add WireFormat bounds to generic type parameters
 fn add_wireformat_bounds(
@@ -28,7 +31,9 @@ fn add_wireformat_bounds(
             });
 
             // Create the WireFormat trait bound
-            let trait_path = syn::parse_str::<Path>("jetstream_wireformat::WireFormat").unwrap();
+            let trait_path =
+                syn::parse_str::<Path>("jetstream_wireformat::WireFormat")
+                    .unwrap();
             let trait_bound = TypeParamBound::Trait(TraitBound {
                 paren_token: None,
                 modifier: syn::TraitBoundModifier::None,
@@ -39,14 +44,14 @@ fn add_wireformat_bounds(
             // Create the where predicate: T: WireFormat
             let mut bounds = Punctuated::new();
             bounds.push(trait_bound);
-            
+
             let predicate = WherePredicate::Type(syn::PredicateType {
                 lifetimes: None,
                 bounded_ty: ty,
                 colon_token: syn::token::Colon::default(),
                 bounds,
             });
-            
+
             predicates.push(predicate);
         }
     }
@@ -55,11 +60,11 @@ fn add_wireformat_bounds(
 pub fn wire_format_inner(input: DeriveInput) -> TokenStream {
     let jetstream_type = extract_jetstream_type(&input);
     let container = input.ident.clone();
-    
+
     // Extract generics information
     let generics = input.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    
+
     // Create a where clause for WireFormat bounds on generic types
     let where_clause = match where_clause {
         Some(where_clause) => {
@@ -80,8 +85,9 @@ pub fn wire_format_inner(input: DeriveInput) -> TokenStream {
         }
         None => None,
     };
-    
-    let where_clause_tokens = where_clause.map_or_else(|| quote! {}, |wc| quote! { #wc });
+
+    let where_clause_tokens =
+        where_clause.map_or_else(|| quote! {}, |wc| quote! { #wc });
 
     // Generate message type implementation
     let message_impl = if let Some(msg_type) = jetstream_type {
@@ -97,7 +103,7 @@ pub fn wire_format_inner(input: DeriveInput) -> TokenStream {
     let byte_size_impl = byte_size_sum(&input.data);
     let encode_impl = encode_wire_format(&input.data);
     let decode_impl = decode_wire_format(&input.data, &container);
-    
+
     // Use const block for hygiene
     quote! {
         const _: () = {

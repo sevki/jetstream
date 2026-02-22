@@ -106,13 +106,12 @@ async fn run_http3_server(
     let echo = echohttp_protocol::EchoHttpService {
         inner: EchoHttpImpl,
     };
-    let h3_service = Arc::new(
-        H3Service::new(router)
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
             .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
     );
 
-    let mut quic_router = jetstream_quic::Router::new();
-    quic_router.register(h3_service);
+    let mut quic_router = jetstream_quic::QuicRouter::new();
 
     let server = if let Some(ca) = ca_cert {
         let mut root_store = rustls::RootCertStore::empty();
@@ -122,16 +121,27 @@ async fn run_http3_server(
                 .allow_unauthenticated()
                 .build()
                 .expect("Failed to build client verifier");
+
+        let h3_service = Arc::new(H3Service::new_with_cert_verifier(
+            router,
+            rpc_router,
+            client_verifier.clone(),
+        ));
+        quic_router.register(h3_service);
+
         jetstream_quic::Server::new_with_mtls(
-            server_cert,
+            vec![server_cert],
             server_key,
             client_verifier,
             addr,
             quic_router,
         )
     } else {
+        let h3_service = Arc::new(H3Service::new(router, rpc_router));
+        quic_router.register(h3_service);
+
         jetstream_quic::Server::new_with_addr(
-            server_cert,
+            vec![server_cert],
             server_key,
             addr,
             quic_router,

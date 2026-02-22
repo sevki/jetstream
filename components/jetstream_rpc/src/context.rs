@@ -4,7 +4,7 @@ use std::ops::{Deref, DerefMut};
 use std::path::PathBuf;
 use std::{collections::BTreeSet, fmt::Display, net::IpAddr};
 
-use jetstream_wireformat::JetStreamWireFormat;
+use jetstream_wireformat::{JetStreamWireFormat, WireFormat};
 #[cfg(tokio_unix)]
 use tokio::net::{unix::UCred, UnixStream};
 #[cfg(any(feature = "turmoil", tokio_unix))]
@@ -41,6 +41,13 @@ impl Display for Context {
                     write!(f, "TLS(empty chain)")
                 }
             }
+            Some(Peer::WebCredentials(creds)) => {
+                write!(
+                    f,
+                    "WebCredentials({})",
+                    creds.0.to_str().unwrap_or("<invalid>")
+                )
+            }
             None => write!(f, "None"),
         }
     }
@@ -70,6 +77,7 @@ pub enum Peer {
     NodeId(NodeId),
     #[cfg(feature = "x509")]
     Tls(TlsPeer),
+    WebCredentials(WebCredentials),
 }
 
 /// Parsed TLS certificate with extracted identity information
@@ -263,6 +271,41 @@ pub struct TlsPeer {
     pub chain: Vec<TlsCert>,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct WebCredentials(pub http::HeaderValue);
+
+impl WireFormat for WebCredentials {
+    fn byte_size(&self) -> u32 {
+        2 + self.0.as_bytes().len() as u32
+    }
+
+    fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        Self: Sized,
+    {
+        let bytes = self.0.as_bytes();
+        writer.write_all(&(bytes.len() as u16).to_be_bytes())?;
+        writer.write_all(bytes)
+    }
+
+    fn decode<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let len = u16::decode(reader)?;
+        let mut buf = vec![0u8; len as usize];
+        reader.read_exact(&mut buf)?;
+        let header_value =
+            http::HeaderValue::from_bytes(&buf).map_err(|_| {
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Invalid header value",
+                )
+            })?;
+        Ok(WebCredentials(header_value))
+    }
+}
+
 #[cfg(feature = "x509")]
 impl TlsPeer {
     /// Parse a certificate chain from DER-encoded bytes
@@ -397,16 +440,18 @@ pub trait Contextual {
 #[cfg(tokio_unix)]
 impl<U> Contextual for Framed<UnixStream, U> {
     fn context(&self) -> Context {
-        let addr = self.get_ref().peer_addr().unwrap();
-        let ucred = self.get_ref().peer_cred().unwrap();
-        Context {
-            remote: Some(RemoteAddr::UnixAddr(
-                addr.as_pathname()
-                    .expect("Failed to get path")
-                    .to_path_buf(),
-            )),
-            peer: Some(Peer::Unix(Unix(ucred))),
-        }
+        let remote = if let Ok(addr) = self.get_ref().peer_addr() {
+            addr.as_pathname()
+                .map(|addr| RemoteAddr::UnixAddr(addr.to_path_buf()))
+        } else {
+            None
+        };
+        let peer = if let Ok(ucred) = self.get_ref().peer_cred() {
+            Some(Peer::Unix(Unix(ucred)))
+        } else {
+            None
+        };
+        Context { remote, peer }
     }
 }
 
