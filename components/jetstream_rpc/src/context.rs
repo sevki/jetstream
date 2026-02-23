@@ -1,14 +1,19 @@
+#[cfg(feature = "iroh")]
+use std::collections::BTreeSet;
+#[cfg(feature = "iroh")]
+use std::net::SocketAddr;
 #[cfg(tokio_unix)]
 use std::ops::{Deref, DerefMut};
 #[cfg(tokio_unix)]
 use std::path::PathBuf;
-use std::{collections::BTreeSet, fmt::Display, net::IpAddr};
+use std::{fmt::Display, net::IpAddr};
 
 use jetstream_wireformat::{JetStreamWireFormat, WireFormat};
 #[cfg(tokio_unix)]
 use tokio::net::{unix::UCred, UnixStream};
 #[cfg(any(feature = "turmoil", tokio_unix))]
 use tokio_util::codec::Framed;
+#[cfg(any(feature = "iroh", feature = "x509"))]
 use url::Url;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash, Default)]
@@ -66,6 +71,7 @@ impl From<NodeId> for Context {
 pub enum RemoteAddr {
     #[cfg(tokio_unix)]
     UnixAddr(PathBuf),
+    #[cfg(feature = "iroh")]
     NodeAddr(NodeAddr),
     IpAddr(IpAddr),
 }
@@ -328,11 +334,87 @@ impl TlsPeer {
 #[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct NodeId(String);
 
+#[cfg(feature = "iroh")]
 #[derive(Debug, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct NodeAddr {
     id: NodeId,
-    relay_url: Option<Url>,
-    direct_addresses: BTreeSet<std::net::SocketAddr>,
+    addrs: BTreeSet<TransportAddr>,
+}
+
+#[cfg(feature = "iroh")]
+/// Available address types.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[non_exhaustive]
+pub enum TransportAddr {
+    /// Relays
+    Relay(iroh::RelayUrl),
+    /// IP based addresses
+    Ip(SocketAddr),
+}
+
+#[cfg(feature = "iroh")]
+impl From<iroh::TransportAddr> for TransportAddr {
+    fn from(addr: iroh::TransportAddr) -> Self {
+        match addr {
+            iroh::TransportAddr::Relay(url) => TransportAddr::Relay(url),
+            iroh::TransportAddr::Ip(addr) => TransportAddr::Ip(addr),
+            _ => unreachable!(),
+        }
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl From<&TransportAddr> for iroh::TransportAddr {
+    fn from(addr: &TransportAddr) -> Self {
+        match addr {
+            TransportAddr::Relay(url) => {
+                iroh::TransportAddr::Relay(url.clone())
+            }
+            TransportAddr::Ip(addr) => iroh::TransportAddr::Ip(*addr),
+        }
+    }
+}
+
+#[cfg(feature = "iroh")]
+impl WireFormat for TransportAddr {
+    fn byte_size(&self) -> u32 {
+        1 + match self {
+            TransportAddr::Relay(url) => url.byte_size(),
+            TransportAddr::Ip(addr) => addr.byte_size(),
+        }
+    }
+
+    fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()>
+    where
+        Self: Sized,
+    {
+        match self {
+            TransportAddr::Relay(url) => {
+                0_u8.encode(writer)?;
+                url.encode(writer)
+            }
+            TransportAddr::Ip(addr) => {
+                1_u8.encode(writer)?;
+                addr.encode(writer)
+            }
+        }
+    }
+
+    fn decode<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self>
+    where
+        Self: Sized,
+    {
+        match u8::decode(reader)? {
+            0 => Ok(TransportAddr::Relay(iroh::RelayUrl::from(Url::decode(
+                reader,
+            )?))),
+            1 => Ok(TransportAddr::Ip(SocketAddr::decode(reader)?)),
+            _ => Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidData,
+                "Invalid transport address type",
+            )),
+        }
+    }
 }
 
 #[cfg(feature = "iroh")]
@@ -343,33 +425,26 @@ impl From<iroh::PublicKey> for NodeId {
 }
 
 #[cfg(feature = "iroh")]
-impl From<NodeAddr> for iroh::NodeAddr {
+impl From<NodeAddr> for iroh::EndpointAddr {
     fn from(value: NodeAddr) -> Self {
         use std::str::FromStr;
 
         use iroh::PublicKey;
 
-        iroh::NodeAddr {
-            node_id: PublicKey::from_str(&value.id.0)
+        iroh::EndpointAddr {
+            id: PublicKey::from_str(&value.id.0)
                 .expect("Failed to convert NodeId to iroh::NodeId"),
-            relay_url: if value.relay_url.is_some() {
-                use iroh::RelayUrl;
-                Some(RelayUrl::from(value.relay_url.unwrap()))
-            } else {
-                None
-            },
-            direct_addresses: value.direct_addresses.clone(),
+            addrs: value.addrs.iter().map(|addr| addr.into()).collect(),
         }
     }
 }
 
 #[cfg(feature = "iroh")]
-impl From<iroh::NodeAddr> for NodeAddr {
-    fn from(value: iroh::NodeAddr) -> Self {
+impl From<iroh::EndpointAddr> for NodeAddr {
+    fn from(value: iroh::EndpointAddr) -> Self {
         NodeAddr {
-            id: NodeId(value.node_id.to_string()),
-            relay_url: value.relay_url.map(|url| url.into()),
-            direct_addresses: value.direct_addresses,
+            id: NodeId(value.id.to_string()),
+            addrs: value.addrs.into_iter().map(|addr| addr.into()).collect(),
         }
     }
 }

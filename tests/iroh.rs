@@ -30,7 +30,7 @@ async fn test_iroh_echo_service() {
 
     // get our own address. At this point we have a running router
     // that's ready to accept connections.
-    let addr = router.endpoint().node_addr();
+    let addr = router.endpoint().addr();
 
     // Build client transport and connect
     let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)

@@ -33,10 +33,7 @@ impl<P: Protocol + Server + Debug + Clone + 'static> ProtocolHandler
         connection: Connection,
     ) -> Result<(), iroh::protocol::AcceptError> {
         let handler = self.inner.clone();
-        let node_id: NodeId = connection
-            .remote_node_id()
-            .expect("Failed to get remote node ID")
-            .into();
+        let node_id: NodeId = connection.remote_id().into();
 
         loop {
             let (send_stream, recv_stream) = match connection.accept_bi().await
@@ -119,10 +116,7 @@ impl ProtocolHandler for IrohRouter {
         connection: Connection,
     ) -> Result<(), iroh::protocol::AcceptError> {
         let router = self.router.clone();
-        let node_id: NodeId = connection
-            .remote_node_id()
-            .expect("Failed to get remote node ID")
-            .into();
+        let node_id: NodeId = connection.remote_id().into();
 
         loop {
             let (send_stream, recv_stream) = match connection.accept_bi().await
