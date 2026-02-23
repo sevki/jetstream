@@ -177,7 +177,7 @@ fn benchmarks(#[allow(unused)] c: &mut Criterion) {
             .await
             .unwrap();
 
-            let addr = router.endpoint().node_addr();
+            let addr = router.endpoint().addr();
             let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
                 .await
                 .unwrap();
