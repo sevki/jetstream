@@ -2482,7 +2482,7 @@ dependencies = [
  "miette",
  "prost",
  "rand",
- "rcgen 0.14.7",
+ "rcgen",
  "rusqlite",
  "rustls",
  "rustls-pemfile",
@@ -2570,7 +2570,7 @@ dependencies = [
  "jetstream_wireformat",
  "pin-project",
  "quinn",
- "rcgen 0.13.2",
+ "rcgen",
  "rustls",
  "rustls-pemfile",
  "semver",
@@ -4089,19 +4089,6 @@ checksum = "22e18b0f0062d30d4230b2e85ff77fdfe4326feb054b9783a3460d8435c8ab91"
 dependencies = [
  "crossbeam-deque",
  "crossbeam-utils",
-]
-
-[[package]]
-name = "rcgen"
-version = "0.13.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75e669e5202259b5314d1ea5397316ad400819437857b90861765f24c4cf80a2"
-dependencies = [
- "pem",
- "ring",
- "rustls-pki-types",
- "time",
- "yasna",
 ]
 
 [[package]]
