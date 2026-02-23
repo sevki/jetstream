@@ -36,7 +36,7 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 url = { workspace = true }
 
 [dev-dependencies]
-rcgen = "0.13"
+rcgen = "0.14"
 axum-test = "18"
 rustls-pemfile = "2"
 tokio = { version = "1.49.0", features = ["rt", "macros"] }
