@@ -12,26 +12,25 @@ use std::fmt::Debug;
 
 pub use client::IrohTransport;
 use iroh::{
-    discovery::{
+    address_lookup::{
         pkarr::{PkarrPublisher, PkarrResolver},
-        IntoDiscovery,
+        IntoAddressLookup,
     },
     protocol::Router,
-    NodeAddr, RelayMap, RelayNode, RelayUrl,
+    EndpointAddr, RelayConfig, RelayMap, RelayUrl,
 };
 use jetstream_rpc::{server::Server, Protocol};
 pub use server::{IrohRouter, IrohServer};
 
 pub extern crate iroh;
 
-fn jetstream_resolver() -> impl IntoDiscovery {
+fn jetstream_resolver() -> impl IntoAddressLookup {
     PkarrResolver::builder(
         url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
-    .build()
 }
 
-fn jetstream_publisher_builder() -> impl IntoDiscovery {
+fn jetstream_publisher_builder() -> impl IntoAddressLookup {
     PkarrPublisher::builder(
         url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
@@ -43,17 +42,19 @@ lazy_static::lazy_static!(
 
 pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
     iroh::Endpoint::builder()
-        .relay_mode(iroh::RelayMode::Custom(RelayMap::from_iter([RelayNode {
-            url: RELAY_URL.clone(),
-            quic: None,
-        }])))
+        .relay_mode(iroh::RelayMode::Custom(RelayMap::from_iter([
+            RelayConfig {
+                url: RELAY_URL.clone(),
+                quic: None,
+            },
+        ])))
         .alpns(vec![P::NAME.as_bytes().to_vec()])
-        .add_discovery(jetstream_publisher_builder())
-        .add_discovery(jetstream_resolver())
+        .address_lookup(jetstream_publisher_builder())
+        .address_lookup(jetstream_resolver())
 }
 
 pub async fn client_builder<P: Protocol>(
-    addr: NodeAddr,
+    addr: EndpointAddr,
 ) -> Result<client::IrohTransport<P>, Box<dyn std::error::Error + 'static>> {
     let endpoint = endpoint_builder::<P>().bind().await.map_err(Box::new)?;
     let conn = endpoint
