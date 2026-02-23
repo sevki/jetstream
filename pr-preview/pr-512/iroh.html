@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-21c678df.js";
+            window.path_to_searchindex_js = "searchindex-5aac2d25.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-0333eb5f.js"></script>
@@ -227,7 +227,7 @@ async fn main() {
 
     // get our own address. At this point we have a running router
     // that's ready to accept connections.
-    let addr = router.endpoint().node_addr();
+    let addr = router.endpoint().addr();
 
     // Build client transport and connect
     let transport = jetstream_iroh::client_builder::&lt;SquareChannel&gt;(addr)

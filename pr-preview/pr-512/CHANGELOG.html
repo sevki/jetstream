@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-21c678df.js";
+            window.path_to_searchindex_js = "searchindex-5aac2d25.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-0333eb5f.js"></script>
@@ -176,46 +176,56 @@
                 <div id="mdbook-content" class="content">
                     <main>
                         <h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
-<h2 id="1520-2026-02-12"><a class="header" href="#1520-2026-02-12">15.2.0 (2026-02-12)</a></h2>
+<h2 id="1600-2026-02-22"><a class="header" href="#1600-2026-02-22">16.0.0 (2026-02-22)</a></h2>
+<h3 id="-breaking-changes"><a class="header" href="#-breaking-changes">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li><strong>jetstream:</strong> WebTransportHandler trait removed in favor of Router</li>
+</ul>
 <h3 id="features"><a class="header" href="#features">Features</a></h3>
+<ul>
+<li><strong>jetstream:</strong> add router-based dispatch and WebTransport cert auth (<a href="https://github.com/sevki/jetstream/commit/5bb5ff8cfd033e811bb20dbf672930347aa50ca2">5bb5ff8</a>)</li>
+<li><strong>jetstream:</strong> add router-based dispatch and WebTransport cert auth (<a href="https://github.com/sevki/jetstream/commit/b6ca4f9dd6564ac1ea7bff7dc4293e86f6431c4f">b6ca4f9</a>)</li>
+</ul>
+<h2 id="1520-2026-02-12"><a class="header" href="#1520-2026-02-12">15.2.0 (2026-02-12)</a></h2>
+<h3 id="features-1"><a class="header" href="#features-1">Features</a></h3>
 <ul>
 <li>jetstream_react package and webtransport implmentation (<a href="https://github.com/sevki/jetstream/commit/3309a0c2745f8190a60e1ef736570cc3fce50987">3309a0c</a>)</li>
 <li>jetstream_wireformat for swift and typescript (<a href="https://github.com/sevki/jetstream/commit/e0f73fc92a28c11f6f880017b1d0173d2fcf0a73">e0f73fc</a>)</li>
 <li>move webtransport to it’s own package (<a href="https://github.com/sevki/jetstream/commit/2ddbdf26579fcaed622422d2b62e28b79b954d76">2ddbdf2</a>)</li>
 </ul>
 <h2 id="1510-2026-02-10"><a class="header" href="#1510-2026-02-10">15.1.0 (2026-02-10)</a></h2>
-<h3 id="features-1"><a class="header" href="#features-1">Features</a></h3>
+<h3 id="features-2"><a class="header" href="#features-2">Features</a></h3>
 <ul>
 <li>implement backtrace for error (<a href="https://github.com/sevki/jetstream/commit/ac9d388044bd753dc26111f9b77bef4e7248cec2">ac9d388</a>)</li>
 <li>implement backtrace for error (<a href="https://github.com/sevki/jetstream/commit/bc85295c37f946c58c99b69b98f84e8a2e04dce8">bc85295</a>)</li>
 </ul>
 <h2 id="1500-2026-02-07"><a class="header" href="#1500-2026-02-07">15.0.0 (2026-02-07)</a></h2>
-<h3 id="-breaking-changes"><a class="header" href="#-breaking-changes">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-1"><a class="header" href="#-breaking-changes-1">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>mtls now accepts a client verifier</li>
 </ul>
-<h3 id="features-2"><a class="header" href="#features-2">Features</a></h3>
+<h3 id="features-3"><a class="header" href="#features-3">Features</a></h3>
 <ul>
 <li>mtls now accepts a client verifier (<a href="https://github.com/sevki/jetstream/commit/3b8fe8c771e6d09aca5d85e771041d07db80b7b0">3b8fe8c</a>)</li>
 </ul>
 <h2 id="1410-2026-02-06"><a class="header" href="#1410-2026-02-06">14.1.0 (2026-02-06)</a></h2>
-<h3 id="features-3"><a class="header" href="#features-3">Features</a></h3>
+<h3 id="features-4"><a class="header" href="#features-4">Features</a></h3>
 <ul>
 <li>version is devived in crate (<a href="https://github.com/sevki/jetstream/commit/0a2a1ea7aa3031e517deaa545a56ec69c3298773">0a2a1ea</a>)</li>
 <li>version is fixed, service now has a uses attribute (<a href="https://github.com/sevki/jetstream/commit/3c9e03d1bc59917c9fedded28f1d116109a1302c">3c9e03d</a>)</li>
 </ul>
 <h2 id="1400-2026-01-29"><a class="header" href="#1400-2026-01-29">14.0.0 (2026-01-29)</a></h2>
-<h3 id="-breaking-changes-1"><a class="header" href="#-breaking-changes-1">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-2"><a class="header" href="#-breaking-changes-2">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>fully implenent jetstream_quic, introduced related traits</li>
 </ul>
-<h3 id="features-4"><a class="header" href="#features-4">Features</a></h3>
+<h3 id="features-5"><a class="header" href="#features-5">Features</a></h3>
 <ul>
 <li>fully implenent jetstream_quic, introduced related traits (<a href="https://github.com/sevki/jetstream/commit/2b1e4a6fb4fdbfbf0d4247997c79b3300807350d">2b1e4a6</a>)</li>
 <li>introduce jetstream_http, supports http1.1,http2 and h3 (<a href="https://github.com/sevki/jetstream/commit/10c203b8d76f8a6b17045576fd5107dd746ca86b">10c203b</a>)</li>
 </ul>
 <h2 id="1300-2026-01-25"><a class="header" href="#1300-2026-01-25">13.0.0 (2026-01-25)</a></h2>
-<h3 id="-breaking-changes-2"><a class="header" href="#-breaking-changes-2">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-3"><a class="header" href="#-breaking-changes-3">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>add multiplexing ability to client.</li>
 <li>make error types more isomorphic</li>
@@ -227,7 +237,7 @@
 <li>protocol -&gt; coding</li>
 <li>merge all the creates</li>
 </ul>
-<h3 id="features-5"><a class="header" href="#features-5">Features</a></h3>
+<h3 id="features-6"><a class="header" href="#features-6">Features</a></h3>
 <ul>
 <li>add cleanup code serverside. add cloudflare docs to mdbook (<a href="https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b">91da99c</a>)</li>
 <li>add context (<a href="https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d">4771c84</a>)</li>
@@ -418,7 +428,7 @@
 <li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
 </ul>
 <h2 id="1210-2026-01-25"><a class="header" href="#1210-2026-01-25">12.1.0 (2026-01-25)</a></h2>
-<h3 id="features-6"><a class="header" href="#features-6">Features</a></h3>
+<h3 id="features-7"><a class="header" href="#features-7">Features</a></h3>
 <ul>
 <li>publish npm package to gh (<a href="https://github.com/sevki/jetstream/commit/9b332b9f5a26a73ce72ec07e3e4e6315cc1d47c1">9b332b9</a>)</li>
 </ul>
@@ -428,11 +438,11 @@
 <li>npm scoping issue (<a href="https://github.com/sevki/jetstream/commit/0d0688482a692a7766e1dca5764ff4189532cd59">0d06884</a>)</li>
 </ul>
 <h2 id="1200-2026-01-24"><a class="header" href="#1200-2026-01-24">12.0.0 (2026-01-24)</a></h2>
-<h3 id="-breaking-changes-3"><a class="header" href="#-breaking-changes-3">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-4"><a class="header" href="#-breaking-changes-4">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>add multiplexing ability to client.</li>
 </ul>
-<h3 id="features-7"><a class="header" href="#features-7">Features</a></h3>
+<h3 id="features-8"><a class="header" href="#features-8">Features</a></h3>
 <ul>
 <li>add multiple tag pool backends (<a href="https://github.com/sevki/jetstream/commit/c85aafbb6606c9b89937cf1c3d6d1e2149fa3eae">c85aafb</a>)</li>
 <li>add multiplexing ability to client. (<a href="https://github.com/sevki/jetstream/commit/91a238e30eff6b20a8d2b2f8bbce67e4bc865068">91a238e</a>)</li>
@@ -447,14 +457,14 @@
 <li>semaphor should use permit.forget() (<a href="https://github.com/sevki/jetstream/commit/340323c9039fce8b6d60cf39d9e7ceca2b1b322e">340323c</a>)</li>
 </ul>
 <h2 id="1110-2026-01-21"><a class="header" href="#1110-2026-01-21">11.1.0 (2026-01-21)</a></h2>
-<h3 id="features-8"><a class="header" href="#features-8">Features</a></h3>
+<h3 id="features-9"><a class="header" href="#features-9">Features</a></h3>
 <ul>
 <li>add prost_wireformat macro (<a href="https://github.com/sevki/jetstream/commit/beeb94747f66ba01ce98dec24bff83fda88f1a99">beeb947</a>)</li>
 <li>add wireformat for SystemTime (<a href="https://github.com/sevki/jetstream/commit/169f74a162d477177ee81b07bb0315372644f2fd">169f74a</a>)</li>
 <li><strong>prost_wireformat:</strong> make derives optional (<a href="https://github.com/sevki/jetstream/commit/12dfacbc0eb6287d90e50ed8ec2dcd11cf41d24b">12dfacb</a>)</li>
 </ul>
 <h2 id="1100-2026-01-20"><a class="header" href="#1100-2026-01-20">11.0.0 (2026-01-20)</a></h2>
-<h3 id="-breaking-changes-4"><a class="header" href="#-breaking-changes-4">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-5"><a class="header" href="#-breaking-changes-5">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>make error types more isomorphic</li>
 <li>move quic and webocket to their own crates.</li>
@@ -465,7 +475,7 @@
 <li>protocol -&gt; coding</li>
 <li>merge all the creates</li>
 </ul>
-<h3 id="features-9"><a class="header" href="#features-9">Features</a></h3>
+<h3 id="features-10"><a class="header" href="#features-10">Features</a></h3>
 <ul>
 <li>add cleanup code serverside. add cloudflare docs to mdbook (<a href="https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b">91da99c</a>)</li>
 <li>add context (<a href="https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d">4771c84</a>)</li>
@@ -636,7 +646,7 @@
 <li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
 </ul>
 <h2 id="1010-2026-01-20"><a class="header" href="#1010-2026-01-20">10.1.0 (2026-01-20)</a></h2>
-<h3 id="features-10"><a class="header" href="#features-10">Features</a></h3>
+<h3 id="features-11"><a class="header" href="#features-11">Features</a></h3>
 <ul>
 <li>better error handling (<a href="https://github.com/sevki/jetstream/commit/faae10a704821d723be55e0e6d92e88def17591c">faae10a</a>)</li>
 <li>update mdbook (<a href="https://github.com/sevki/jetstream/commit/f213c712bcc5395b048f83b2c352c163c11518e0">f213c71</a>)</li>
@@ -651,7 +661,7 @@
 <li>publish script (<a href="https://github.com/sevki/jetstream/commit/e8685cc195682d2467de6d042ff3052ddd9175c5">e8685cc</a>)</li>
 </ul>
 <h2 id="1000-2025-11-19"><a class="header" href="#1000-2025-11-19">10.0.0 (2025-11-19)</a></h2>
-<h3 id="-breaking-changes-5"><a class="header" href="#-breaking-changes-5">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-6"><a class="header" href="#-breaking-changes-6">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>make error types more isomorphic</li>
 </ul>
@@ -660,7 +670,7 @@
 <li>make error types more isomorphic (<a href="https://github.com/sevki/jetstream/commit/aee2fa21a7c6879f5d77765d3ff96b22b98e0e86">aee2fa2</a>)</li>
 </ul>
 <h2 id="950-2025-10-30"><a class="header" href="#950-2025-10-30">9.5.0 (2025-10-30)</a></h2>
-<h3 id="features-11"><a class="header" href="#features-11">Features</a></h3>
+<h3 id="features-12"><a class="header" href="#features-12">Features</a></h3>
 <ul>
 <li>add cleanup code serverside. add cloudflare docs to mdbook (<a href="https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b">91da99c</a>)</li>
 <li>introduce jetstream cloudflare module. (<a href="https://github.com/sevki/jetstream/commit/6e8cc015024d3066f9f3208e20bd4725c03b0ac2">6e8cc01</a>)</li>
@@ -683,7 +693,7 @@
 <li>target os cfg attrs (<a href="https://github.com/sevki/jetstream/commit/16e5c849b2c1b7b962590dfab779f4429cf06445">16e5c84</a>)</li>
 </ul>
 <h2 id="940-2025-10-15"><a class="header" href="#940-2025-10-15">9.4.0 (2025-10-15)</a></h2>
-<h3 id="features-12"><a class="header" href="#features-12">Features</a></h3>
+<h3 id="features-13"><a class="header" href="#features-13">Features</a></h3>
 <ul>
 <li>add context (<a href="https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d">4771c84</a>)</li>
 </ul>
@@ -695,12 +705,12 @@
 <li>wasm32 feature gates (<a href="https://github.com/sevki/jetstream/commit/755f9c1c6628fc46b1d4d3df03441106de3abdfd">755f9c1</a>)</li>
 </ul>
 <h2 id="930-2025-10-14"><a class="header" href="#930-2025-10-14">9.3.0 (2025-10-14)</a></h2>
-<h3 id="features-13"><a class="header" href="#features-13">Features</a></h3>
+<h3 id="features-14"><a class="header" href="#features-14">Features</a></h3>
 <ul>
 <li>add tracing feature (<a href="https://github.com/sevki/jetstream/commit/5cb290799dd251c6e04ab4c2fe52089e3f32336c">5cb2907</a>)</li>
 </ul>
 <h2 id="920-2025-10-05"><a class="header" href="#920-2025-10-05">9.2.0 (2025-10-05)</a></h2>
-<h3 id="features-14"><a class="header" href="#features-14">Features</a></h3>
+<h3 id="features-15"><a class="header" href="#features-15">Features</a></h3>
 <ul>
 <li>dt features, remove rustdoc_to_md_book (<a href="https://github.com/sevki/jetstream/commit/039815903e127055ec494a3dc3e1780b7afb4fe2">0398159</a>)</li>
 </ul>
@@ -721,7 +731,7 @@
 <li>hide documentation for iroh (<a href="https://github.com/sevki/jetstream/commit/47b104d73ece751924c1e41a77a92a8317c968f9">47b104d</a>)</li>
 </ul>
 <h2 id="910-2025-10-02"><a class="header" href="#910-2025-10-02">9.1.0 (2025-10-02)</a></h2>
-<h3 id="features-15"><a class="header" href="#features-15">Features</a></h3>
+<h3 id="features-16"><a class="header" href="#features-16">Features</a></h3>
 <ul>
 <li>introduce iroh examples (<a href="https://github.com/sevki/jetstream/commit/86e001f9195a28429e34670597347d3148ea22d9">86e001f</a>)</li>
 </ul>
@@ -732,11 +742,11 @@
 <li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/7f44956f965d5c906812e91b138e5c21597e37df">7f44956</a>)</li>
 </ul>
 <h2 id="900-2025-09-29"><a class="header" href="#900-2025-09-29">9.0.0 (2025-09-29)</a></h2>
-<h3 id="-breaking-changes-6"><a class="header" href="#-breaking-changes-6">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-7"><a class="header" href="#-breaking-changes-7">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>move quic and webocket to their own crates.</li>
 </ul>
-<h3 id="features-16"><a class="header" href="#features-16">Features</a></h3>
+<h3 id="features-17"><a class="header" href="#features-17">Features</a></h3>
 <ul>
 <li>move quic and webocket to their own crates. (<a href="https://github.com/sevki/jetstream/commit/7d0ba9fae68f1e4995d9ea6d1adcaf95b8dc983a">7d0ba9f</a>)</li>
 </ul>
@@ -750,7 +760,7 @@
 <li>update docs (<a href="https://github.com/sevki/jetstream/commit/74e2867864e46b441ed01193220c22842fcf67a8">74e2867</a>)</li>
 </ul>
 <h2 id="830-2025-05-31"><a class="header" href="#830-2025-05-31">8.3.0 (2025-05-31)</a></h2>
-<h3 id="features-17"><a class="header" href="#features-17">Features</a></h3>
+<h3 id="features-18"><a class="header" href="#features-18">Features</a></h3>
 <ul>
 <li>jetstream_libc (<a href="https://github.com/sevki/jetstream/commit/aba123bb7a027a97cad4d8a9d7731d18bb4059ca">aba123b</a>)</li>
 </ul>
@@ -760,7 +770,7 @@
 <li>rustdoc to mdbook (<a href="https://github.com/sevki/jetstream/commit/2098ad11072e31ec329b42ae7df6dd380d993ff7">2098ad1</a>)</li>
 </ul>
 <h2 id="820-2025-05-29"><a class="header" href="#820-2025-05-29">8.2.0 (2025-05-29)</a></h2>
-<h3 id="features-18"><a class="header" href="#features-18">Features</a></h3>
+<h3 id="features-19"><a class="header" href="#features-19">Features</a></h3>
 <ul>
 <li>jetstream distributed features (<a href="https://github.com/sevki/jetstream/commit/52b5e89e64b1e5559e600bed5fd91499cd051934">52b5e89</a>)</li>
 </ul>
@@ -798,7 +808,7 @@
 <li>make websocket pub (<a href="https://github.com/sevki/jetstream/commit/6096ff9815b3b15dac1cfdd124821dc9d40218b0">6096ff9</a>)</li>
 </ul>
 <h2 id="810-2025-02-15"><a class="header" href="#810-2025-02-15">8.1.0 (2025-02-15)</a></h2>
-<h3 id="features-19"><a class="header" href="#features-19">Features</a></h3>
+<h3 id="features-20"><a class="header" href="#features-20">Features</a></h3>
 <ul>
 <li>add websocket transport (<a href="https://github.com/sevki/jetstream/commit/3f4054c9ebe2253c11a2096c4983c7d75073da9a">3f4054c</a>)</li>
 <li>channels can now be split (<a href="https://github.com/sevki/jetstream/commit/ef646a590a5af13adc2c97c4871f19bca2a1d6b6">ef646a5</a>)</li>
@@ -863,11 +873,11 @@
 <li>remove distributed (<a href="https://github.com/sevki/jetstream/commit/3aba1f6543493e107b079d35fa441d46611e637e">3aba1f6</a>)</li>
 </ul>
 <h2 id="800-2025-01-27"><a class="header" href="#800-2025-01-27">8.0.0 (2025-01-27)</a></h2>
-<h3 id="-breaking-changes-7"><a class="header" href="#-breaking-changes-7">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-8"><a class="header" href="#-breaking-changes-8">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>use more futures</li>
 </ul>
-<h3 id="features-20"><a class="header" href="#features-20">Features</a></h3>
+<h3 id="features-21"><a class="header" href="#features-21">Features</a></h3>
 <ul>
 <li>use more futures (<a href="https://github.com/sevki/jetstream/commit/467b6f56d0808e89f078c656f1e7c447738244ed">467b6f5</a>)</li>
 </ul>
@@ -876,12 +886,12 @@
 <li>formatting (<a href="https://github.com/sevki/jetstream/commit/04aace42d2d1338e614081954e32448ac3e5ec30">04aace4</a>)</li>
 </ul>
 <h2 id="740-2025-01-18"><a class="header" href="#740-2025-01-18">7.4.0 (2025-01-18)</a></h2>
-<h3 id="features-21"><a class="header" href="#features-21">Features</a></h3>
+<h3 id="features-22"><a class="header" href="#features-22">Features</a></h3>
 <ul>
 <li>jetstream_rpc supports wasm (<a href="https://github.com/sevki/jetstream/commit/e97e6ca6a94067551fb7a98c4e34fa2a774ebdfd">e97e6ca</a>)</li>
 </ul>
 <h2 id="730-2025-01-17"><a class="header" href="#730-2025-01-17">7.3.0 (2025-01-17)</a></h2>
-<h3 id="features-22"><a class="header" href="#features-22">Features</a></h3>
+<h3 id="features-23"><a class="header" href="#features-23">Features</a></h3>
 <ul>
 <li>wasm-support (<a href="https://github.com/sevki/jetstream/issues/260">#260</a>) (<a href="https://github.com/sevki/jetstream/commit/5cbff0daf95c780cd5962252aaa975d6248b524b">5cbff0d</a>)</li>
 </ul>
@@ -891,7 +901,7 @@
 <li>keep reciver types as is in generated code (<a href="https://github.com/sevki/jetstream/commit/7d956718c4e4c1564b1aeeb2d6af635eb44ae220">7d95671</a>)</li>
 </ul>
 <h2 id="720-2024-12-09"><a class="header" href="#720-2024-12-09">7.2.0 (2024-12-09)</a></h2>
-<h3 id="features-23"><a class="header" href="#features-23">Features</a></h3>
+<h3 id="features-24"><a class="header" href="#features-24">Features</a></h3>
 <ul>
 <li>Ip primitives (<a href="https://github.com/sevki/jetstream/commit/1c263b59494e2699ec2347727f6cbf77bdac3b67">1c263b5</a>)</li>
 </ul>
@@ -906,7 +916,7 @@
 <li>broken use statement for async_trait (<a href="https://github.com/sevki/jetstream/commit/cce4df6a5a594f25fcf71eb63e51534bf8b85c3b">cce4df6</a>)</li>
 </ul>
 <h2 id="710-2024-11-25"><a class="header" href="#710-2024-11-25">7.1.0 (2024-11-25)</a></h2>
-<h3 id="features-24"><a class="header" href="#features-24">Features</a></h3>
+<h3 id="features-25"><a class="header" href="#features-25">Features</a></h3>
 <ul>
 <li>added async_trait support service macro (<a href="https://github.com/sevki/jetstream/commit/9a86185b07eb02cd05933920f9ad02792992c71c">9a86185</a>)</li>
 </ul>
@@ -928,11 +938,11 @@
 <li>docs (<a href="https://github.com/sevki/jetstream/commit/995da2f79e1fc42eeb8a87811d070094b6e9e4b1">995da2f</a>)</li>
 </ul>
 <h2 id="700-2024-11-21"><a class="header" href="#700-2024-11-21">7.0.0 (2024-11-21)</a></h2>
-<h3 id="-breaking-changes-8"><a class="header" href="#-breaking-changes-8">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-9"><a class="header" href="#-breaking-changes-9">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>fix proken publish</li>
 </ul>
-<h3 id="features-25"><a class="header" href="#features-25">Features</a></h3>
+<h3 id="features-26"><a class="header" href="#features-26">Features</a></h3>
 <ul>
 <li>fix proken publish (<a href="https://github.com/sevki/jetstream/commit/a7272c0f3dc25aa10e89c8b7e9ad070d919a369d">a7272c0</a>)</li>
 </ul>
@@ -947,7 +957,7 @@
 <li>broken okid lockfile (<a href="https://github.com/sevki/jetstream/commit/63bae5e68e8707273b13dd06a74981f635556923">63bae5e</a>)</li>
 </ul>
 <h2 id="660-2024-11-20"><a class="header" href="#660-2024-11-20">6.6.0 (2024-11-20)</a></h2>
-<h3 id="features-26"><a class="header" href="#features-26">Features</a></h3>
+<h3 id="features-27"><a class="header" href="#features-27">Features</a></h3>
 <ul>
 <li>distributes jetsream (<a href="https://github.com/sevki/jetstream/commit/d1477d56e574ca4c76b967a27c84ce7ccc4d9396">d1477d5</a>)</li>
 <li><strong>jetstream_distributed:</strong> placement (<a href="https://github.com/sevki/jetstream/commit/8a93788e51a98807466aa868b13685ba81aa1d3e">8a93788</a>)</li>
@@ -958,7 +968,7 @@
 <li>typo (<a href="https://github.com/sevki/jetstream/commit/901ffbdda65336060410f348fe57c0ddc01a9fc4">901ffbd</a>)</li>
 </ul>
 <h2 id="650-2024-11-20"><a class="header" href="#650-2024-11-20">6.5.0 (2024-11-20)</a></h2>
-<h3 id="features-27"><a class="header" href="#features-27">Features</a></h3>
+<h3 id="features-28"><a class="header" href="#features-28">Features</a></h3>
 <ul>
 <li>jetstream cluster (<a href="https://github.com/sevki/jetstream/commit/80b5727722b1b44d522eb793c18e5bf117660d8b">80b5727</a>)</li>
 <li>rustdoc_to_mdbook (<a href="https://github.com/sevki/jetstream/commit/32deadf98614a9365e9991c3cd76620280c85b5d">32deadf</a>)</li>
@@ -979,7 +989,7 @@
 <li>make the proto mod same vis as trait (<a href="https://github.com/sevki/jetstream/commit/a43c0a2e3fbcb2991f6f3396eba9e30c96a47663">a43c0a2</a>)</li>
 </ul>
 <h2 id="640-2024-11-10"><a class="header" href="#640-2024-11-10">6.4.0 (2024-11-10)</a></h2>
-<h3 id="features-28"><a class="header" href="#features-28">Features</a></h3>
+<h3 id="features-29"><a class="header" href="#features-29">Features</a></h3>
 <ul>
 <li>Add support for bool in WireFormat (<a href="https://github.com/sevki/jetstream/commit/640c6ca3e22d0ed1dc7ec9c58af998e96efab235">640c6ca</a>)</li>
 <li>Add tests for jetstream modules (<a href="https://github.com/sevki/jetstream/commit/18462d96f8dd71b528d49441dc257d2038f3e39f">18462d9</a>)</li>
@@ -1011,7 +1021,7 @@
 <li>ci workflows (<a href="https://github.com/sevki/jetstream/commit/4c12f046e9ff9a5d39f4f0619f6ed68b25edcfe7">4c12f04</a>)</li>
 </ul>
 <h2 id="630-2024-11-09"><a class="header" href="#630-2024-11-09">6.3.0 (2024-11-09)</a></h2>
-<h3 id="features-29"><a class="header" href="#features-29">Features</a></h3>
+<h3 id="features-30"><a class="header" href="#features-30">Features</a></h3>
 <ul>
 <li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/ba741bd0d2aed8d33d2b5589ca2a3da83b1abce8">ba741bd</a>)</li>
 <li>enum support (<a href="https://github.com/sevki/jetstream/commit/c4552d8bd056debdbb7845145f964defae6f90d2">c4552d8</a>)</li>
@@ -1021,12 +1031,12 @@
 <li>remove jj (<a href="https://github.com/sevki/jetstream/commit/02fefd9e82f0f260d54f703daa0eb4667cdbce5d">02fefd9</a>)</li>
 </ul>
 <h2 id="620-2024-11-08"><a class="header" href="#620-2024-11-08">6.2.0 (2024-11-08)</a></h2>
-<h3 id="features-30"><a class="header" href="#features-30">Features</a></h3>
+<h3 id="features-31"><a class="header" href="#features-31">Features</a></h3>
 <ul>
 <li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/3f0751a8588bf0fb5d189865f65417a717f414c4">3f0751a</a>)</li>
 </ul>
 <h2 id="610-2024-11-08"><a class="header" href="#610-2024-11-08">6.1.0 (2024-11-08)</a></h2>
-<h3 id="features-31"><a class="header" href="#features-31">Features</a></h3>
+<h3 id="features-32"><a class="header" href="#features-32">Features</a></h3>
 <ul>
 <li>start quic server with config (<a href="https://github.com/sevki/jetstream/issues/159">#159</a>) (<a href="https://github.com/sevki/jetstream/commit/34339819f26044e0a19c5c668c2fb710734af564">3433981</a>)</li>
 </ul>
@@ -1041,14 +1051,14 @@
 <li>trait_variant use (<a href="https://github.com/sevki/jetstream/issues/155">#155</a>) (<a href="https://github.com/sevki/jetstream/commit/3cd5665454bb42c3e38606c4a3dd9355ef63fc9b">3cd5665</a>)</li>
 </ul>
 <h2 id="600-2024-11-07"><a class="header" href="#600-2024-11-07">6.0.0 (2024-11-07)</a></h2>
-<h3 id="-breaking-changes-9"><a class="header" href="#-breaking-changes-9">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-10"><a class="header" href="#-breaking-changes-10">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>splits up packages</li>
 <li>move modules to sensible parents</li>
 <li>protocol -&gt; coding</li>
 <li>merge all the creates</li>
 </ul>
-<h3 id="features-32"><a class="header" href="#features-32">Features</a></h3>
+<h3 id="features-33"><a class="header" href="#features-33">Features</a></h3>
 <ul>
 <li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
 <li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
@@ -1114,12 +1124,12 @@
 <li>readme (<a href="https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820">dc77722</a>)</li>
 </ul>
 <h2 id="540-2024-11-07"><a class="header" href="#540-2024-11-07">5.4.0 (2024-11-07)</a></h2>
-<h3 id="features-33"><a class="header" href="#features-33">Features</a></h3>
+<h3 id="features-34"><a class="header" href="#features-34">Features</a></h3>
 <ul>
 <li>revamp service (<a href="https://github.com/sevki/jetstream/issues/147">#147</a>) (<a href="https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706">6d96be8</a>)</li>
 </ul>
 <h2 id="530-2024-10-23"><a class="header" href="#530-2024-10-23">5.3.0 (2024-10-23)</a></h2>
-<h3 id="features-34"><a class="header" href="#features-34">Features</a></h3>
+<h3 id="features-35"><a class="header" href="#features-35">Features</a></h3>
 <ul>
 <li>use sccache (<a href="https://github.com/sevki/jetstream/issues/142">#142</a>) (<a href="https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6">89f96ab</a>)</li>
 </ul>
@@ -1144,7 +1154,7 @@
 <li><strong>wireformat:</strong> from_bytes doesn’t require a mutable buf (<a href="https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725">437c35c</a>)</li>
 </ul>
 <h2 id="520-2024-10-06"><a class="header" href="#520-2024-10-06">5.2.0 (2024-10-06)</a></h2>
-<h3 id="features-35"><a class="header" href="#features-35">Features</a></h3>
+<h3 id="features-36"><a class="header" href="#features-36">Features</a></h3>
 <ul>
 <li>use serde_bytes::ByteBuf instead of Bytes (<a href="https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b">a1101d9</a>)</li>
 </ul>
@@ -1174,7 +1184,7 @@
 <li>warnings (<a href="https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83">62d8013</a>)</li>
 </ul>
 <h2 id="510-2024-10-03"><a class="header" href="#510-2024-10-03">5.1.0 (2024-10-03)</a></h2>
-<h3 id="features-36"><a class="header" href="#features-36">Features</a></h3>
+<h3 id="features-37"><a class="header" href="#features-37">Features</a></h3>
 <ul>
 <li><strong>wireformat:</strong> add u128 (<a href="https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab">c76f6c4</a>)</li>
 </ul>
@@ -1183,11 +1193,11 @@
 <li>release workflow (<a href="https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094">4abeb24</a>)</li>
 </ul>
 <h2 id="500-2024-10-03"><a class="header" href="#500-2024-10-03">5.0.0 (2024-10-03)</a></h2>
-<h3 id="-breaking-changes-10"><a class="header" href="#-breaking-changes-10">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-11"><a class="header" href="#-breaking-changes-11">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>splits up packages</li>
 </ul>
-<h3 id="features-37"><a class="header" href="#features-37">Features</a></h3>
+<h3 id="features-38"><a class="header" href="#features-38">Features</a></h3>
 <ul>
 <li>modularize components (<a href="https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a">7262a66</a>)</li>
 </ul>
@@ -1196,7 +1206,7 @@
 <li>version (<a href="https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945">822bf0e</a>)</li>
 </ul>
 <h2 id="400-2024-10-01"><a class="header" href="#400-2024-10-01">4.0.0 (2024-10-01)</a></h2>
-<h3 id="-breaking-changes-11"><a class="header" href="#-breaking-changes-11">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-12"><a class="header" href="#-breaking-changes-12">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>move modules to sensible parents</li>
 </ul>
@@ -1205,12 +1215,12 @@
 <li>move modules to sensible parents (<a href="https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b">4eba5fb</a>)</li>
 </ul>
 <h2 id="300-2024-03-30"><a class="header" href="#300-2024-03-30">3.0.0 (2024-03-30)</a></h2>
-<h3 id="-breaking-changes-12"><a class="header" href="#-breaking-changes-12">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-13"><a class="header" href="#-breaking-changes-13">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>protocol -&gt; coding</li>
 <li>merge all the creates</li>
 </ul>
-<h3 id="features-38"><a class="header" href="#features-38">Features</a></h3>
+<h3 id="features-39"><a class="header" href="#features-39">Features</a></h3>
 <ul>
 <li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
 <li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
@@ -1253,7 +1263,7 @@
 <li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
 </ul>
 <h2 id="200-2024-03-29"><a class="header" href="#200-2024-03-29">2.0.0 (2024-03-29)</a></h2>
-<h3 id="-breaking-changes-13"><a class="header" href="#-breaking-changes-13">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-14"><a class="header" href="#-breaking-changes-14">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>protocol -&gt; coding</li>
 </ul>
@@ -1267,12 +1277,12 @@
 <li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
 </ul>
 <h2 id="110-2024-03-29"><a class="header" href="#110-2024-03-29">1.1.0 (2024-03-29)</a></h2>
-<h3 id="features-39"><a class="header" href="#features-39">Features</a></h3>
+<h3 id="features-40"><a class="header" href="#features-40">Features</a></h3>
 <ul>
 <li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
 </ul>
 <h2 id="100-2024-03-25"><a class="header" href="#100-2024-03-25">1.0.0 (2024-03-25)</a></h2>
-<h3 id="-breaking-changes-14"><a class="header" href="#-breaking-changes-14">⚠ BREAKING CHANGES</a></h3>
+<h3 id="-breaking-changes-15"><a class="header" href="#-breaking-changes-15">⚠ BREAKING CHANGES</a></h3>
 <ul>
 <li>merge all the creates</li>
 </ul>
@@ -1281,7 +1291,7 @@
 <li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
 </ul>
 <h2 id="060-2024-03-21"><a class="header" href="#060-2024-03-21">0.6.0 (2024-03-21)</a></h2>
-<h3 id="features-40"><a class="header" href="#features-40">Features</a></h3>
+<h3 id="features-41"><a class="header" href="#features-41">Features</a></h3>
 <ul>
 <li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
 </ul>
@@ -1292,7 +1302,7 @@
 <li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
 </ul>
 <h2 id="050-2024-03-15"><a class="header" href="#050-2024-03-15">0.5.0 (2024-03-15)</a></h2>
-<h3 id="features-41"><a class="header" href="#features-41">Features</a></h3>
+<h3 id="features-42"><a class="header" href="#features-42">Features</a></h3>
 <ul>
 <li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
 </ul>
@@ -1301,7 +1311,7 @@
 <li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
 </ul>
 <h2 id="040-2024-03-14"><a class="header" href="#040-2024-03-14">0.4.0 (2024-03-14)</a></h2>
-<h3 id="features-42"><a class="header" href="#features-42">Features</a></h3>
+<h3 id="features-43"><a class="header" href="#features-43">Features</a></h3>
 <ul>
 <li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
 <li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
@@ -1318,13 +1328,13 @@
 <li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
 </ul>
 <h2 id="030-2024-03-14"><a class="header" href="#030-2024-03-14">0.3.0 (2024-03-14)</a></h2>
-<h3 id="features-43"><a class="header" href="#features-43">Features</a></h3>
+<h3 id="features-44"><a class="header" href="#features-44">Features</a></h3>
 <ul>
 <li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
 <li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
 </ul>
 <h2 id="020-2024-03-14"><a class="header" href="#020-2024-03-14">0.2.0 (2024-03-14)</a></h2>
-<h3 id="features-44"><a class="header" href="#features-44">Features</a></h3>
+<h3 id="features-45"><a class="header" href="#features-45">Features</a></h3>
 <ul>
 <li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
 </ul>

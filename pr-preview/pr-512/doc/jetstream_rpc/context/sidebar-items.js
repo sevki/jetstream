@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"enum":["Peer","RemoteAddr"],"struct":["Context","NodeAddr","NodeId","TlsCert","TlsPeer","Unix","WebCredentials"],"trait":["Contextual"]};
+window.SIDEBAR_ITEMS = {"enum":["Peer","RemoteAddr","TransportAddr"],"struct":["Context","NodeAddr","NodeId","TlsCert","TlsPeer","Unix","WebCredentials"],"trait":["Contextual"]};
