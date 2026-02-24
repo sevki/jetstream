@@ -10,8 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Run sccache-cache
-        uses: mozilla-actions/sccache-action@v0.0.9
+        with:
+          fetch-depth: 0
       - name: Run sccache-cache only on non-release runs
         if: github.event_name != 'release' && github.event_name != 'workflow_dispatch'
         uses: mozilla-actions/sccache-action@v0.0.9
@@ -20,6 +20,8 @@ jobs:
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
+      - name: Configure git to auto-stash on checkout
+        run: git config --global rebase.autoStash true
       - uses: boa-dev/criterion-compare-action@v3
         with:
           defaultFeatures: true
