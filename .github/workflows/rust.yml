@@ -93,6 +93,7 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: generate certificates
+        shell: bash
         run: cd certs && ./generate_certs.sh
       - name: Run example echo
         run: cargo run --example echo --features quic
