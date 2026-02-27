@@ -1,0 +1,5 @@
+js_library(
+    name = "jetstream_wireformat",
+    srcs = glob(["src/**/*.ts"]),
+    visibility = ["PUBLIC"],
+)

@@ -1,0 +1,74 @@
+[workspace]
+
+[package]
+name = "jetstream-third-party"
+version = "0.0.0"
+publish = false
+edition = "2021"
+
+# Dummy target to satisfy Cargo
+[[bin]]
+name = "fake"
+path = "/dev/null"
+
+[dependencies]
+argh = "0.1.14"
+askama = "0.15.4"
+async-trait = "0.1.89"
+axum = { version = "0.8.8", default-features = false }
+base64 = "0.22"
+bcder = "0.7.6"
+bytes = { version = "1.11.1", features = ["serde"] }
+cargo_metadata = "0.23.1"
+cfg_aliases = "0.2.1"
+convert_case = "0.11.0"
+futures = "0.3.31"
+getrandom = { version = "0.2.15", features = ["js"] }
+h3 = "0.0.8"
+h3-datagram = "0.0.2"
+h3-quinn = "0.0.10"
+h3-webtransport = "0.1.2"
+hex = "0.4.3"
+http = "1.4.0"
+ident_case = "1.0.1"
+iroh = "0.96.1"
+js-sys = "0.3.69"
+lazy_static = "1.5.0"
+libc = { version = "0.2.182", default-features = false }
+miette = { version = "7.6.0", features = ["fancy"] }
+mio = { version = "1.0.3", features = ["os-poll", "os-ext"] }
+paste = "1.0.15"
+pin-project = "1.1.10"
+pkarr = "5.0"
+prettyplease = "0.2.34"
+proc-macro2 = { version = "1.0.92", features = ["span-locations"] }
+prost = "0.14.3"
+quinn = { version = "0.11.9", features = ["runtime-tokio", "rustls"] }
+quote = "1.0.44"
+rand = "0.9.2"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
+semver = "1.0.27"
+serde = { version = "1.0.228", features = ["derive"] }
+sha256 = "1.6.0"
+string-interner = { version = "0.19.0", default-features = false, features = ["backends"] }
+syn = { version = "2.0.117", features = ["full", "extra-traits"] }
+thiserror = "2.0.17"
+time = "0.3.47"
+tokio = { version = "1.49.0", features = ["full"] }
+tokio-util = { version = "0.7.16", features = ["codec", "full"] }
+toml = "1.0.3"
+tower-http = { version = "0.6.8", features = ["fs"] }
+tower-layer = "0.3.3"
+tower-service = "0.3.3"
+tracing = "0.1.44"
+tracing-core = "0.1.36"
+tracing-error = { version = "0.2.1", default-features = false }
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+trait-variant = "0.1.2"
+turmoil = "0.7.1"
+typeshare-core = "1.13.4"
+url = "2.5.7"
+wasm-bindgen = "0.2.92"
+web-sys = { version = "0.3.69", features = ["console"] }
+x509-certificate = "0.25.0"
+zerocopy = { version = "0.8.40", features = ["derive"] }

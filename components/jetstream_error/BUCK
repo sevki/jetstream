@@ -1,0 +1,18 @@
+rust_library(
+    name = "jetstream_error",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_error",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_macros:jetstream_macros",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+        "//third-party:string-interner",
+        "//third-party:thiserror",
+        "//third-party:tracing",
+        "//third-party:tracing-core",
+        "//third-party:tracing-error",
+        "//third-party:tracing-subscriber",
+    ],
+)

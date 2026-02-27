@@ -1,0 +1,27 @@
+rust_test(
+    name = "jetstream_wire_format",
+    srcs = glob(["jetstream_wire_format/**/*.rs"]),
+    crate_root = "jetstream_wire_format/mod.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//:jetstream",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+        "//third-party:prost",
+        "//third-party:serde",
+    ],
+)
+
+rust_test(
+    name = "server",
+    srcs = ["server.rs"],
+    crate_root = "server.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//:jetstream",
+        "//components/jetstream_rpc:jetstream_rpc",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+        "//third-party:tokio",
+    ],
+)

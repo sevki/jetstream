@@ -1,0 +1,9 @@
+apple_test(
+    name = "JetStreamWireFormatTests",
+    srcs = glob(["**/*.swift"]),
+    swift_version = "5",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//Sources/JetStreamWireFormat:JetStreamWireFormat",
+    ],
+)

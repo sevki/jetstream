@@ -1,0 +1,123 @@
+name: "Buck2 Build"
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # ── Buck2 build: Rust + TypeScript targets (Linux) ──────────────────────────
+  buck2-linux:
+    name: Buck2 (Linux – Rust & JS)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      # ── Install Buck2 ──────────────────────────────────────────────────────
+      - name: Install Buck2
+        run: |
+          BUCK2_VERSION=$(cat .buckversion | tr -d '[:space:]')
+          echo "Installing Buck2 ${BUCK2_VERSION}"
+          sudo apt-get install -y zstd
+          wget -q "https://github.com/facebook/buck2/releases/download/${BUCK2_VERSION}/buck2-x86_64-unknown-linux-musl.zst" \
+            -O /tmp/buck2.zst
+          zstd -d /tmp/buck2.zst -o /tmp/buck2
+          chmod +x /tmp/buck2
+          sudo mv /tmp/buck2 /usr/local/bin/buck2
+          buck2 --version
+
+      # ── Clone prelude ──────────────────────────────────────────────────────
+      - name: Clone Buck2 prelude
+        run: |
+          git clone --depth=1 https://github.com/facebook/buck2-prelude.git prelude
+
+      # ── Install Reindeer ───────────────────────────────────────────────────
+      - name: Install Reindeer
+        run: |
+          cargo install --locked --git https://github.com/facebookincubator/reindeer \
+            reindeer
+
+      # ── Generate third-party BUCK files ───────────────────────────────────
+      - name: Generate third-party BUCK files
+        run: |
+          cd third-party
+          cargo generate-lockfile
+          cd ..
+          reindeer --third-party-dir third-party buckify
+
+      # ── Validate build graph (all targets) ────────────────────────────────
+      - name: Validate Buck2 target graph
+        run: |
+          buck2 targets //...
+
+      # ── Build Rust libraries ───────────────────────────────────────────────
+      - name: Build jetstream_libc
+        run: buck2 build //components/jetstream_libc:jetstream_libc
+
+      - name: Build jetstream_wireformat
+        run: buck2 build //components/jetstream_wireformat:jetstream_wireformat
+
+      - name: Build jetstream_rpc
+        run: buck2 build //components/jetstream_rpc:jetstream_rpc
+
+      # ── Build TypeScript (JS) libraries ───────────────────────────────────
+      - name: Build JS packages
+        run: |
+          buck2 build //packages/jetstream_wireformat:jetstream_wireformat
+          buck2 build //packages/jetstream_rpc:jetstream_rpc
+          buck2 build //packages/jetstream_http:jetstream_http
+          buck2 build //packages/jetstream_react:jetstream_react
+
+  # ── Buck2 build: Swift / Apple targets (macOS) ──────────────────────────────
+  buck2-macos:
+    name: Buck2 (macOS – Apple/Swift)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Install Buck2 ──────────────────────────────────────────────────────
+      - name: Install Buck2
+        run: |
+          BUCK2_VERSION=$(cat .buckversion | tr -d '[:space:]')
+          echo "Installing Buck2 ${BUCK2_VERSION}"
+          brew install zstd || true
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ]; then
+            TRIPLE="aarch64-apple-darwin"
+          else
+            TRIPLE="x86_64-apple-darwin"
+          fi
+          wget -q "https://github.com/facebook/buck2/releases/download/${BUCK2_VERSION}/buck2-${TRIPLE}.zst" \
+            -O /tmp/buck2.zst
+          zstd -d /tmp/buck2.zst -o /tmp/buck2
+          chmod +x /tmp/buck2
+          sudo mv /tmp/buck2 /usr/local/bin/buck2
+          buck2 --version
+
+      # ── Clone prelude ──────────────────────────────────────────────────────
+      - name: Clone Buck2 prelude
+        run: |
+          git clone --depth=1 https://github.com/facebook/buck2-prelude.git prelude
+
+      # ── Validate Apple targets ─────────────────────────────────────────────
+      - name: Validate Apple/Swift target graph
+        run: |
+          buck2 targets //Sources/...
+          buck2 targets //Tests/...
+
+      # ── Build Apple/Swift libraries ────────────────────────────────────────
+      - name: Build JetStreamWireFormat (apple_library)
+        run: buck2 build //Sources/JetStreamWireFormat:JetStreamWireFormat
+
+      - name: Build JetStreamRpc (apple_library)
+        run: buck2 build //Sources/JetStreamRpc:JetStreamRpc
+
+      - name: Build JetStreamInteropHelper (apple_library)
+        run: buck2 build //Sources/JetStreamInteropHelper:JetStreamInteropHelper

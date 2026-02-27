@@ -1,0 +1,9 @@
+apple_library(
+    name = "JetStreamInteropHelper",
+    srcs = glob(["**/*.swift"]),
+    swift_version = "5",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//Sources/JetStreamWireFormat:JetStreamWireFormat",
+    ],
+)

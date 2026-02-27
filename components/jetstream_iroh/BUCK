@@ -1,0 +1,18 @@
+rust_library(
+    name = "jetstream_iroh",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_iroh",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_rpc:jetstream_rpc",
+        "//third-party:futures",
+        "//third-party:iroh",
+        "//third-party:lazy_static",
+        "//third-party:pkarr",
+        "//third-party:tokio",
+        "//third-party:tokio-util",
+        "//third-party:url",
+    ],
+)
