@@ -11,9 +11,8 @@ permissions:
 
 env:
   CARGO_TERM_COLOR: always
-  # Use the rolling "latest" release for both buck2 and reindeer.
+  # Use the rolling "latest" release for Buck2.
   BUCK2_TAG: "latest"
-  REINDEER_VERSION: "v2026.02.23.00"
 
 jobs:
   # ── Buck2 build: Rust + TypeScript targets (Linux) ──────────────────────────
@@ -42,15 +41,9 @@ jobs:
           sudo mv /tmp/buck2 /usr/local/bin/buck2
           buck2 --version
 
-      # ── Install Reindeer (prebuilt binary) ────────────────────────────────
+      # ── Install Reindeer ──────────────────────────────────────────────────
       - name: Install Reindeer
-        run: |
-          wget -q "https://github.com/facebookincubator/reindeer/releases/download/${REINDEER_VERSION}/reindeer-x86_64-unknown-linux-gnu.zst" \
-            -O /tmp/reindeer.zst
-          zstd -d /tmp/reindeer.zst -o /tmp/reindeer
-          chmod +x /tmp/reindeer
-          sudo mv /tmp/reindeer /usr/local/bin/reindeer
-          reindeer --version
+        run: cargo install --locked --git https://github.com/facebookincubator/reindeer reindeer
 
       # ── Clone Buck2 prelude ────────────────────────────────────────────────
       - name: Clone Buck2 prelude
