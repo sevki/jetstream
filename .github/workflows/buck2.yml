@@ -14,6 +14,8 @@ on:
 jobs:
   buck2:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
       - name: Setup Rust
