@@ -127,6 +127,11 @@ jobs:
           constraint_setting(name = "fast_adhoc_signing", visibility = ["PUBLIC"])
           constraint_value(name = "fast_adhoc_signing_enabled", constraint_setting = ":fast_adhoc_signing", visibility = ["PUBLIC"])
           constraint_value(name = "fast_adhoc_signing_disabled", constraint_setting = ":fast_adhoc_signing", visibility = ["PUBLIC"])
+          constraint_setting(name = "swift_enable_testing", visibility = ["PUBLIC"])
+          constraint_value(name = "swift_enable_testing_enabled", constraint_setting = ":swift_enable_testing", visibility = ["PUBLIC"])
+          constraint_setting(name = "entitlements_verification_check", visibility = ["PUBLIC"])
+          constraint_value(name = "entitlements_verification_check_enabled", constraint_setting = ":entitlements_verification_check", visibility = ["PUBLIC"])
+          constraint_value(name = "entitlements_verification_check_disabled", constraint_setting = ":entitlements_verification_check", visibility = ["PUBLIC"])
           EOF
 
           cat > prelude/features/apple/constraints/BUCK << 'EOF'
@@ -136,6 +141,8 @@ jobs:
           constraint_setting(name = "versioned_macos_bundle", visibility = ["PUBLIC"])
           constraint_value(name = "versioned_macos_bundle_false", constraint_setting = ":versioned_macos_bundle", visibility = ["PUBLIC"])
           constraint_value(name = "versioned_macos_bundle_true", constraint_setting = ":versioned_macos_bundle", visibility = ["PUBLIC"])
+          constraint_setting(name = "swift_enable_testing", visibility = ["PUBLIC"])
+          constraint_value(name = "swift_enable_testing_enabled", constraint_setting = ":swift_enable_testing", visibility = ["PUBLIC"])
           EOF
 
           cat > prelude/marker/apple/constraints/BUCK << 'EOF'
