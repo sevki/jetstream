@@ -1,0 +1,26 @@
+name: "Buck2 Build & Test"
+on:
+  pull_request:
+    branches: ["main"]
+    paths:
+      - "**/*.rs"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - ".buckconfig"
+      - "BUCK"
+      - "scripts/buck2/**"
+      - ".github/workflows/buck2.yml"
+
+jobs:
+  buck2:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install Buck2
+        uses: taiki-e/install-action@buck2
+      - name: Buck2 build
+        run: buck2 run //:build
+      - name: Buck2 test
+        run: buck2 run //:test

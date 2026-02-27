@@ -9,3 +9,5 @@ docs/doc/
 **/node_modules/
 dist/
 .build/
+buck-out/
+.buck2/
