@@ -1,0 +1,11 @@
+rust_library(
+    name = "jetstream_libc",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_libc",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party:libc",
+    ],
+)

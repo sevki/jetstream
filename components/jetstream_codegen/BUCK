@@ -1,0 +1,19 @@
+rust_library(
+    name = "jetstream_codegen",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_codegen",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//third-party:argh",
+        "//third-party:cargo_metadata",
+        "//third-party:convert_case",
+        "//third-party:proc-macro2",
+        "//third-party:quote",
+        "//third-party:sha256",
+        "//third-party:syn",
+        "//third-party:toml",
+        "//third-party:typeshare-core",
+    ],
+)

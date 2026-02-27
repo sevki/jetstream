@@ -1,0 +1,11 @@
+apple_test(
+    name = "JetStreamRpcTests",
+    srcs = glob(["**/*.swift"]),
+    info_plist = "Info.plist",
+    swift_version = "5",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//Sources/JetStreamRpc:JetStreamRpc",
+        "//Sources/JetStreamWireFormat:JetStreamWireFormat",
+    ],
+)

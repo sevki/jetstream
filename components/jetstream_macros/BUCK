@@ -1,0 +1,20 @@
+rust_library(
+    name = "jetstream_macros",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_macros",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    proc_macro = True,
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_codegen:jetstream_codegen",
+        "//third-party:convert_case",
+        "//third-party:ident_case",
+        "//third-party:lazy_static",
+        "//third-party:prettyplease",
+        "//third-party:proc-macro2",
+        "//third-party:quote",
+        "//third-party:sha256",
+        "//third-party:syn",
+    ],
+)

@@ -1,0 +1,167 @@
+name: "Buck2 Build"
+
+on:
+  pull_request:
+    branches: ["main"]
+  push:
+    branches: ["main"]
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  # Use the rolling "latest" release for Buck2.
+  BUCK2_TAG: "latest"
+
+jobs:
+  # ── Buck2 build: Rust + TypeScript targets (Linux) ──────────────────────────
+  buck2-linux:
+    name: Buck2 (Linux – Rust & JS)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      # ── Install zstd ───────────────────────────────────────────────────────
+      - name: Install zstd
+        run: sudo apt-get install -y zstd
+
+      # ── Install Buck2 ──────────────────────────────────────────────────────
+      - name: Install Buck2
+        run: |
+          wget -q "https://github.com/facebook/buck2/releases/download/${BUCK2_TAG}/buck2-x86_64-unknown-linux-musl.zst" \
+            -O /tmp/buck2.zst
+          zstd -d /tmp/buck2.zst -o /tmp/buck2
+          chmod +x /tmp/buck2
+          sudo mv /tmp/buck2 /usr/local/bin/buck2
+          buck2 --version
+
+      # ── Install Reindeer ──────────────────────────────────────────────────
+      - name: Install Reindeer
+        run: cargo install --locked --git https://github.com/facebookincubator/reindeer reindeer
+
+      # ── Clone Buck2 prelude ────────────────────────────────────────────────
+      - name: Clone Buck2 prelude
+        run: git clone --depth=1 https://github.com/facebook/buck2-prelude.git prelude
+
+      # ── Generate third-party BUCK files via Reindeer ──────────────────────
+      - name: Generate third-party BUCK files
+        run: |
+          cd third-party
+          cargo generate-lockfile
+          cd ..
+          reindeer --third-party-dir third-party buckify
+
+      # ── Validate build graph (all targets) ────────────────────────────────
+      - name: Validate Buck2 target graph
+        run: buck2 targets //...
+
+      # ── Build core Rust libraries ──────────────────────────────────────────
+      - name: Build jetstream_libc (rust_library)
+        run: buck2 build //components/jetstream_libc:jetstream_libc
+
+      - name: Build jetstream_wireformat (rust_library)
+        run: buck2 build //components/jetstream_wireformat:jetstream_wireformat
+
+      - name: Build jetstream_rpc (rust_library)
+        run: buck2 build //components/jetstream_rpc:jetstream_rpc
+
+      # ── Build TypeScript (JS) libraries ───────────────────────────────────
+      - name: Build JS packages (js_library)
+        run: |
+          buck2 build //packages/jetstream_wireformat:jetstream_wireformat
+          buck2 build //packages/jetstream_rpc:jetstream_rpc
+          buck2 build //packages/jetstream_http:jetstream_http
+          buck2 build //packages/jetstream_react:jetstream_react
+
+  # ── Buck2 build: Swift / Apple targets (macOS) ──────────────────────────────
+  buck2-macos:
+    name: Buck2 (macOS – Apple/Swift)
+    runs-on: macos-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Install Buck2 ──────────────────────────────────────────────────────
+      - name: Install Buck2
+        run: |
+          brew install zstd wget
+          ARCH=$(uname -m)
+          if [ "$ARCH" = "arm64" ]; then
+            TRIPLE="aarch64-apple-darwin"
+          else
+            TRIPLE="x86_64-apple-darwin"
+          fi
+          wget -q "https://github.com/facebook/buck2/releases/download/${BUCK2_TAG}/buck2-${TRIPLE}.zst" \
+            -O /tmp/buck2.zst
+          zstd -d /tmp/buck2.zst -o /tmp/buck2
+          chmod +x /tmp/buck2
+          sudo mv /tmp/buck2 /usr/local/bin/buck2
+          buck2 --version
+
+      # ── Clone Buck2 prelude ────────────────────────────────────────────────
+      - name: Clone Buck2 prelude
+        run: git clone --depth=1 https://github.com/facebook/buck2-prelude.git prelude
+
+      # ── Create missing prelude feature stubs ──────────────────────────────
+      # The prelude references config//features/apple:... constraint values
+      # that are defined in Meta's internal config cell. For open-source use,
+      # we create stub constraint definitions in the prelude directory
+      # (since config = prelude in .buckconfig).
+      - name: Patch prelude with Apple feature constraint stubs
+        run: |
+          mkdir -p prelude/features/apple/constraints
+          mkdir -p prelude/marker/apple/constraints
+
+          cat > prelude/features/apple/BUCK << 'EOF'
+          constraint_setting(name = "swift_library_evolution", visibility = ["PUBLIC"])
+          constraint_value(name = "swift_library_evolution_enabled", constraint_setting = ":swift_library_evolution", visibility = ["PUBLIC"])
+          constraint_setting(name = "strict_provisioning_profile_search", visibility = ["PUBLIC"])
+          constraint_value(name = "strict_provisioning_profile_search_enabled", constraint_setting = ":strict_provisioning_profile_search", visibility = ["PUBLIC"])
+          constraint_setting(name = "fast_adhoc_signing", visibility = ["PUBLIC"])
+          constraint_value(name = "fast_adhoc_signing_enabled", constraint_setting = ":fast_adhoc_signing", visibility = ["PUBLIC"])
+          constraint_value(name = "fast_adhoc_signing_disabled", constraint_setting = ":fast_adhoc_signing", visibility = ["PUBLIC"])
+          constraint_setting(name = "swift_enable_testing", visibility = ["PUBLIC"])
+          constraint_value(name = "swift_enable_testing_enabled", constraint_setting = ":swift_enable_testing", visibility = ["PUBLIC"])
+          constraint_setting(name = "entitlements_verification_check", visibility = ["PUBLIC"])
+          constraint_value(name = "entitlements_verification_check_enabled", constraint_setting = ":entitlements_verification_check", visibility = ["PUBLIC"])
+          constraint_value(name = "entitlements_verification_check_disabled", constraint_setting = ":entitlements_verification_check", visibility = ["PUBLIC"])
+          EOF
+
+          cat > prelude/features/apple/constraints/BUCK << 'EOF'
+          constraint_setting(name = "skip_adhoc_resigning_scrubbed_frameworks", visibility = ["PUBLIC"])
+          constraint_value(name = "skip_adhoc_resigning_scrubbed_frameworks_disabled", constraint_setting = ":skip_adhoc_resigning_scrubbed_frameworks", visibility = ["PUBLIC"])
+          constraint_value(name = "skip_adhoc_resigning_scrubbed_frameworks_enabled", constraint_setting = ":skip_adhoc_resigning_scrubbed_frameworks", visibility = ["PUBLIC"])
+          constraint_setting(name = "versioned_macos_bundle", visibility = ["PUBLIC"])
+          constraint_value(name = "versioned_macos_bundle_false", constraint_setting = ":versioned_macos_bundle", visibility = ["PUBLIC"])
+          constraint_value(name = "versioned_macos_bundle_true", constraint_setting = ":versioned_macos_bundle", visibility = ["PUBLIC"])
+          constraint_setting(name = "swift_enable_testing", visibility = ["PUBLIC"])
+          constraint_value(name = "swift_enable_testing_enabled", constraint_setting = ":swift_enable_testing", visibility = ["PUBLIC"])
+          EOF
+
+          cat > prelude/marker/apple/constraints/BUCK << 'EOF'
+          constraint_setting(name = "embed_xctest_frameworks", visibility = ["PUBLIC"])
+          constraint_value(name = "embed_xctest_frameworks_enabled", constraint_setting = ":embed_xctest_frameworks", visibility = ["PUBLIC"])
+          EOF
+
+      # ── Validate Apple/Swift targets ───────────────────────────────────────
+      - name: Validate Apple/Swift target graph
+        run: |
+          buck2 targets //Sources/...
+          buck2 targets //Tests/...
+
+      # ── Build Apple/Swift libraries ────────────────────────────────────────
+      - name: Build JetStreamWireFormat (apple_library)
+        run: buck2 build //Sources/JetStreamWireFormat:JetStreamWireFormat
+
+      - name: Build JetStreamRpc (apple_library)
+        run: buck2 build //Sources/JetStreamRpc:JetStreamRpc
+
+      - name: Build JetStreamInteropHelper (apple_library)
+        run: buck2 build //Sources/JetStreamInteropHelper:JetStreamInteropHelper
