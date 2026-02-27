@@ -109,6 +109,40 @@ jobs:
       - name: Clone Buck2 prelude
         run: git clone --depth=1 https://github.com/facebook/buck2-prelude.git prelude
 
+      # ── Create missing prelude feature stubs ──────────────────────────────
+      # The prelude references config//features/apple:... constraint values
+      # that are defined in Meta's internal config cell. For open-source use,
+      # we create stub constraint definitions in the prelude directory
+      # (since config = prelude in .buckconfig).
+      - name: Patch prelude with Apple feature constraint stubs
+        run: |
+          mkdir -p prelude/features/apple/constraints
+          mkdir -p prelude/marker/apple/constraints
+
+          cat > prelude/features/apple/BUCK << 'EOF'
+          constraint_setting(name = "swift_library_evolution", visibility = ["PUBLIC"])
+          constraint_value(name = "swift_library_evolution_enabled", constraint_setting = ":swift_library_evolution", visibility = ["PUBLIC"])
+          constraint_setting(name = "strict_provisioning_profile_search", visibility = ["PUBLIC"])
+          constraint_value(name = "strict_provisioning_profile_search_enabled", constraint_setting = ":strict_provisioning_profile_search", visibility = ["PUBLIC"])
+          constraint_setting(name = "fast_adhoc_signing", visibility = ["PUBLIC"])
+          constraint_value(name = "fast_adhoc_signing_enabled", constraint_setting = ":fast_adhoc_signing", visibility = ["PUBLIC"])
+          constraint_value(name = "fast_adhoc_signing_disabled", constraint_setting = ":fast_adhoc_signing", visibility = ["PUBLIC"])
+          EOF
+
+          cat > prelude/features/apple/constraints/BUCK << 'EOF'
+          constraint_setting(name = "skip_adhoc_resigning_scrubbed_frameworks", visibility = ["PUBLIC"])
+          constraint_value(name = "skip_adhoc_resigning_scrubbed_frameworks_disabled", constraint_setting = ":skip_adhoc_resigning_scrubbed_frameworks", visibility = ["PUBLIC"])
+          constraint_value(name = "skip_adhoc_resigning_scrubbed_frameworks_enabled", constraint_setting = ":skip_adhoc_resigning_scrubbed_frameworks", visibility = ["PUBLIC"])
+          constraint_setting(name = "versioned_macos_bundle", visibility = ["PUBLIC"])
+          constraint_value(name = "versioned_macos_bundle_false", constraint_setting = ":versioned_macos_bundle", visibility = ["PUBLIC"])
+          constraint_value(name = "versioned_macos_bundle_true", constraint_setting = ":versioned_macos_bundle", visibility = ["PUBLIC"])
+          EOF
+
+          cat > prelude/marker/apple/constraints/BUCK << 'EOF'
+          constraint_setting(name = "embed_xctest_frameworks", visibility = ["PUBLIC"])
+          constraint_value(name = "embed_xctest_frameworks_enabled", constraint_setting = ":embed_xctest_frameworks", visibility = ["PUBLIC"])
+          EOF
+
       # ── Validate Apple/Swift targets ───────────────────────────────────────
       - name: Validate Apple/Swift target graph
         run: |
