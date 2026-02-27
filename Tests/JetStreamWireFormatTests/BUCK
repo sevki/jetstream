@@ -1,6 +1,7 @@
 apple_test(
     name = "JetStreamWireFormatTests",
     srcs = glob(["**/*.swift"]),
+    info_plist = "Info.plist",
     swift_version = "5",
     visibility = ["PUBLIC"],
     deps = [
