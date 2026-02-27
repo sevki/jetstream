@@ -6,6 +6,13 @@ on:
       - "**/*.rs"
       - "Cargo.toml"
       - "Cargo.lock"
+      - "Sources/**"
+      - "Tests/**"
+      - "Package.swift"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
       - ".buckconfig"
       - "BUCK"
       - "scripts/buck2/**"
@@ -20,6 +27,11 @@ jobs:
       - uses: actions/checkout@v4
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
+      - name: Setup Swift
+        uses: swift-actions/setup-swift@v2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
       - name: Install Buck2
         uses: taiki-e/install-action@buck2
       - name: Buck2 build
