@@ -20,8 +20,10 @@ jobs:
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-      - name: Configure git to auto-stash on checkout
-        run: git config --global rebase.autoStash true
+      - name: Stash any generated changes before criterion-compare switches branches
+        run: |
+          git status --porcelain
+          git stash push -u -m "ci: stash generated changes before criterion-compare" || true
       - uses: boa-dev/criterion-compare-action@v3
         with:
           defaultFeatures: true
