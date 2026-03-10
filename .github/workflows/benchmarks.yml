@@ -20,14 +20,47 @@ jobs:
         run: |
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
-      - name: Stash any generated changes before criterion-compare switches branches
+      - name: Install critcmp
+        run: cargo install critcmp
+      - name: Benchmark PR branch
+        run: cargo bench --features "iroh,quic" -- --save-baseline changes
+      - name: Stash workspace changes and switch to base branch
+        # cargo bench above may modify Cargo.lock; stash those changes so that
+        # git checkout can proceed cleanly, then switch to the base branch.
         run: |
-          git status --porcelain
-          git stash push -u -m "ci: stash generated changes before criterion-compare" || true
-      - uses: boa-dev/criterion-compare-action@v3
+          git stash push -u -m "ci: stash after PR benchmark" || true
+          git checkout ${{ github.base_ref }}
+      - name: Benchmark base branch
+        run: cargo bench --features "iroh,quic" -- --save-baseline base
+      - name: Compare benchmarks
+        run: critcmp base changes | tee /tmp/benchmark-results.txt
+      - name: Post benchmark comparison comment
+        uses: actions/github-script@v6
         with:
-          defaultFeatures: true
-          features: "iroh,quic"
-          branchName: ${{ github.base_ref }}
-          # Optional. Default is `${{ github.token }}`.
-          token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const fs = require('fs');
+            const output = fs.readFileSync('/tmp/benchmark-results.txt', 'utf8');
+            const shortSha = context.sha.slice(0, 7);
+            const body = [
+              `## Benchmark for ${shortSha}`,
+              '<details>',
+              '  <summary>Click to view benchmark</summary>',
+              '',
+              '```',
+              output.trimEnd(),
+              '```',
+              '',
+              '</details>',
+            ].join('\n');
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body,
+              });
+            } catch (err) {
+              core.warning(`Failed to comment: ${err}`);
+              core.info('Commenting is not possible from forks.');
+            }
