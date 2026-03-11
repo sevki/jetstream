@@ -30,7 +30,7 @@ jetstream_macros = { version = "16.0.0", path = "../jetstream_macros" }
 url = { workspace = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libc = "0.2.182"
+libc = "0.2.183"
 
 futures = { version = "0.3.32", optional = true }
 tokio-util = { version = "0.7.16", features = [
