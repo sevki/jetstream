@@ -57,9 +57,11 @@ jobs:
           cd ..
           reindeer --third-party-dir third-party buckify
 
-      # ── Validate build graph (all targets) ────────────────────────────────
+      # ── Validate build graph (Rust targets only) ──────────────────────────
+      # Scope to //components/... because //packages/... use js_library which
+      # requires Meta's Metro bundler worker toolchain (not available OSS).
       - name: Validate Buck2 target graph
-        run: buck2 targets //...
+        run: buck2 targets //components/...
 
       # ── Build core Rust libraries ──────────────────────────────────────────
       - name: Build jetstream_libc (rust_library)
@@ -70,14 +72,6 @@ jobs:
 
       - name: Build jetstream_rpc (rust_library)
         run: buck2 build //components/jetstream_rpc:jetstream_rpc
-
-      # ── Build TypeScript (JS) libraries ───────────────────────────────────
-      - name: Build JS packages (js_library)
-        run: |
-          buck2 build //packages/jetstream_wireformat:jetstream_wireformat
-          buck2 build //packages/jetstream_rpc:jetstream_rpc
-          buck2 build //packages/jetstream_http:jetstream_http
-          buck2 build //packages/jetstream_react:jetstream_react
 
   # ── Buck2 build: Swift / Apple targets (macOS) ──────────────────────────────
   buck2-macos:
@@ -118,6 +112,7 @@ jobs:
         run: |
           mkdir -p prelude/features/apple/constraints
           mkdir -p prelude/marker/apple/constraints
+          mkdir -p prelude/build_mode/constraints
 
           cat > prelude/features/apple/BUCK << 'EOF'
           constraint_setting(name = "swift_library_evolution", visibility = ["PUBLIC"])
@@ -148,6 +143,13 @@ jobs:
           cat > prelude/marker/apple/constraints/BUCK << 'EOF'
           constraint_setting(name = "embed_xctest_frameworks", visibility = ["PUBLIC"])
           constraint_value(name = "embed_xctest_frameworks_enabled", constraint_setting = ":embed_xctest_frameworks", visibility = ["PUBLIC"])
+          EOF
+
+          cat > prelude/build_mode/constraints/BUCK << 'EOF'
+          constraint_setting(name = "build_mode", visibility = ["PUBLIC"])
+          constraint_value(name = "opt", constraint_setting = ":build_mode", visibility = ["PUBLIC"])
+          constraint_value(name = "release", constraint_setting = ":build_mode", visibility = ["PUBLIC"])
+          constraint_value(name = "distributed-thin-lto-enabled", constraint_setting = ":build_mode", visibility = ["PUBLIC"])
           EOF
 
       # ── Validate Apple/Swift targets ───────────────────────────────────────
