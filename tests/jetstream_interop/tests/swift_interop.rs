@@ -79,6 +79,7 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(32))]
 
     #[test]
+    #[ignore = "too expensive"]
     fn swift_point_proptest(p in strategies::point_strategy()) {
         let mut child = match spawn_swift_helper() {
             Some(c) => c,
@@ -95,6 +96,7 @@ proptest! {
     }
 
     #[test]
+    #[ignore = "too expensive"]
     fn swift_shape_proptest(s in strategies::shape_strategy()) {
         let mut child = match spawn_swift_helper() {
             Some(c) => c,
@@ -111,6 +113,7 @@ proptest! {
     }
 
     #[test]
+    #[ignore = "too expensive"]
     fn swift_message_proptest(m in strategies::message_strategy()) {
         let mut child = match spawn_swift_helper() {
             Some(c) => c,

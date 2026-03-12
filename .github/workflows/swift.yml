@@ -51,4 +51,4 @@ jobs:
       - name: Build Swift helper
         run: swift build --product JetStreamInteropHelper
       - name: Run Swift interop tests
-        run: cargo test -p jetstream_interop --test swift_interop
+        run: cargo test -p jetstream_interop --test swift_interop -- --include-ignored

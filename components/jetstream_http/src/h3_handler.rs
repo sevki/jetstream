@@ -408,8 +408,9 @@ mod tests {
     /// Returns (ca_der, client_der, client_b64).
     fn ca_signed_cert() -> (Vec<u8>, Vec<u8>, String) {
         use rcgen::{
-            BasicConstraints, CertificateParams, DistinguishedName, DnType,
-            IsCa, KeyPair, KeyUsagePurpose, SanType,
+            BasicConstraints, CertificateParams, CertifiedIssuer,
+            DistinguishedName, DnType, IsCa, KeyPair, KeyUsagePurpose,
+            SanType,
         };
 
         // Generate CA
@@ -421,8 +422,9 @@ mod tests {
         ca_params.is_ca = IsCa::Ca(BasicConstraints::Unconstrained);
         ca_params.key_usages =
             vec![KeyUsagePurpose::KeyCertSign, KeyUsagePurpose::CrlSign];
-        let ca_cert = ca_params.self_signed(&ca_key).unwrap();
-        let ca_der = ca_cert.der().to_vec();
+        let ca_issuer =
+            CertifiedIssuer::self_signed(ca_params, ca_key).unwrap();
+        let ca_der = ca_issuer.as_ref().der().to_vec();
 
         // Generate client cert signed by CA
         let client_key = KeyPair::generate().unwrap();
@@ -433,7 +435,7 @@ mod tests {
         client_params.subject_alt_names =
             vec![SanType::Rfc822Name("test@example.com".try_into().unwrap())];
         let client_cert = client_params
-            .signed_by(&client_key, &ca_cert, &ca_key)
+            .signed_by(&client_key, &ca_issuer)
             .unwrap();
         let client_der = client_cert.der().to_vec();
         let client_b64 =
