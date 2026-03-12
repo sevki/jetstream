@@ -3,7 +3,6 @@
 specs (
     {
         name jetstream
-        prefix r
         source_url https://github.com/sevki/jetstream
         include (docs/specs/**/*.md)
         impls (

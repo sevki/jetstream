@@ -68,7 +68,7 @@ lazy_static = "1.5.0"
 tracing = { version = "0.1.41", optional = true }
 tracing-subscriber = { version = "0.3.20", optional = true }
 trait-variant = "0.1.2"
-rand = "0.9.2"
+rand = "0.10.0"
 jetstream_http = { version = "16.0.0", path = "components/jetstream_http", optional = true }
 tower-http = { version = "0.6.8", features = ["fs"] }
 
@@ -81,7 +81,7 @@ cfg_aliases = { workspace = true }
 [dev-dependencies]
 askama = "0.15.1"
 axum = "0.8.8"
-criterion = { version = "0.7.0", features = ["async_tokio"] }
+criterion = { version = "0.8.2", features = ["async_tokio"] }
 hyper = { version = "1.8.1", features = ["full"] }
 hyper-util = { version = "0.1.19", features = ["full"] }
 insta = "1.46.1"
@@ -142,7 +142,9 @@ members = [
   "components/jetstream_ufs",
   "components/jetstream_wireformat",
   "components/jetstream_error",
-  "components/jetstream_http", "components/jetstream_codegen", "tests/jetstream_interop",
+  "components/jetstream_http",
+  "components/jetstream_codegen",
+  "tests/jetstream_interop",
 ]
 
 [workspace.package]
