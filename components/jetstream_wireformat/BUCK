@@ -1,0 +1,20 @@
+rust_library(
+    name = "jetstream_wireformat",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_wireformat",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["std", "async"],
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_macros:jetstream_macros",
+        "//third-party:bytes",
+        "//third-party:futures",
+        "//third-party:libc",
+        "//third-party:mio",
+        "//third-party:paste",
+        "//third-party:time",
+        "//third-party:url",
+        "//third-party:zerocopy",
+    ],
+)

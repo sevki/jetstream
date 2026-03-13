@@ -1,0 +1,10 @@
+js_library(
+    name = "jetstream_react",
+    srcs = glob(["src/**/*.ts", "src/**/*.tsx"]),
+    visibility = ["PUBLIC"],
+    deps = [
+        "//packages/jetstream_http:jetstream_http",
+        "//packages/jetstream_rpc:jetstream_rpc",
+        "//packages/jetstream_wireformat:jetstream_wireformat",
+    ],
+)

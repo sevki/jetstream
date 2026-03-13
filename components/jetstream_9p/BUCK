@@ -1,0 +1,15 @@
+rust_library(
+    name = "jetstream_9p",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_9p",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_libc:jetstream_libc",
+        "//components/jetstream_macros:jetstream_macros",
+        "//components/jetstream_rpc:jetstream_rpc",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+        "//third-party:trait-variant",
+    ],
+)

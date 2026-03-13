@@ -1,0 +1,18 @@
+rust_library(
+    name = "jetstream_ufs",
+    srcs = glob(["src/lib.rs", "src/read_dir.rs", "src/ufs.rs"]),
+    crate = "jetstream_ufs",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_9p:jetstream_9p",
+        "//components/jetstream_rpc:jetstream_rpc",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+        "//third-party:argh",
+        "//third-party:libc",
+        "//third-party:serde",
+        "//third-party:tokio",
+        "//third-party:tokio-util",
+    ],
+)
