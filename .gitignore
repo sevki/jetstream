@@ -9,3 +9,11 @@ docs/doc/
 **/node_modules/
 dist/
 .build/
+
+# Buck2
+/prelude/
+/buck-out/
+.buck/
+third-party/vendor/
+third-party/Cargo.lock
+third-party/BUCK

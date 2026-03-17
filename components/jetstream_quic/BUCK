@@ -1,0 +1,23 @@
+rust_library(
+    name = "jetstream_quic",
+    srcs = glob(["src/**/*.rs"]),
+    crate = "jetstream_quic",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_rpc:jetstream_rpc",
+        "//third-party:askama",
+        "//third-party:async-trait",
+        "//third-party:bytes",
+        "//third-party:futures",
+        "//third-party:h3",
+        "//third-party:h3-quinn",
+        "//third-party:http",
+        "//third-party:quinn",
+        "//third-party:rustls",
+        "//third-party:tokio",
+        "//third-party:tokio-util",
+        "//third-party:tracing",
+    ],
+)

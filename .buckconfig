@@ -1,0 +1,31 @@
+# vim: set ft=conf :
+[repositories]
+    root = .
+    prelude = prelude
+    toolchains = toolchains
+    platforms = platforms
+    none = none
+
+[repository_aliases]
+    config = prelude
+    fbcode = none
+    fbsource = none
+    fbcode_macros = none
+    buck = none
+
+# Target platform auto-detection: use prelude//platforms:default for all root targets.
+[parser]
+    target_platform_detector_spec = target:root//...->prelude//platforms:default
+
+[project]
+    ignore = .git, target, node_modules, .build, dist, prelude, .direnv
+
+[rust]
+    default_edition = 2021
+
+[build]
+    execution_platforms = prelude//platforms:default
+
+[buck2]
+    materializations = deferred
+    defer_write_actions = true

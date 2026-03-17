@@ -1,0 +1,25 @@
+rust_library(
+    name = "jetstream",
+    srcs = glob([
+        "src/**/*.rs",
+    ]),
+    crate = "jetstream",
+    crate_root = "src/lib.rs",
+    edition = "2021",
+    features = ["tracing"],
+    visibility = ["PUBLIC"],
+    deps = [
+        "//components/jetstream_error:jetstream_error",
+        "//components/jetstream_macros:jetstream_macros",
+        "//components/jetstream_rpc:jetstream_rpc",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+        "//third-party:async-trait",
+        "//third-party:futures",
+        "//third-party:lazy_static",
+        "//third-party:rand",
+        "//third-party:tower-http",
+        "//third-party:trait-variant",
+        "//third-party:tracing",
+        "//third-party:tracing-subscriber",
+    ],
+)

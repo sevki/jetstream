@@ -1,0 +1,9 @@
+js_library(
+    name = "jetstream_http",
+    srcs = glob(["src/**/*.ts"]),
+    visibility = ["PUBLIC"],
+    deps = [
+        "//packages/jetstream_rpc:jetstream_rpc",
+        "//packages/jetstream_wireformat:jetstream_wireformat",
+    ],
+)

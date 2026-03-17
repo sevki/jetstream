@@ -1,0 +1,6 @@
+apple_library(
+    name = "JetStreamWireFormat",
+    srcs = glob(["**/*.swift"]),
+    swift_version = "5",
+    visibility = ["PUBLIC"],
+)
