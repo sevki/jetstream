@@ -12,9 +12,8 @@ use std::fmt::Debug;
 
 pub use client::IrohTransport;
 use iroh::{
-    address_lookup::{
-        pkarr::{PkarrPublisher, PkarrResolver},
-        IntoAddressLookup,
+    address_lookup::pkarr::{
+        PkarrPublisher, PkarrPublisherBuilder, PkarrResolver, PkarrResolverBuilder,
     },
     protocol::Router,
     EndpointAddr, RelayConfig, RelayMap, RelayUrl,
@@ -24,13 +23,13 @@ pub use server::{IrohRouter, IrohServer};
 
 pub extern crate iroh;
 
-fn jetstream_resolver() -> impl IntoAddressLookup {
+fn jetstream_resolver() -> PkarrResolverBuilder {
     PkarrResolver::builder(
         url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
 }
 
-fn jetstream_publisher_builder() -> impl IntoAddressLookup {
+fn jetstream_publisher_builder() -> PkarrPublisherBuilder {
     PkarrPublisher::builder(
         url::Url::parse("https://discovery.jetstream.rs").unwrap(),
     )
