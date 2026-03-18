@@ -14,7 +14,7 @@ use tokio::{
     sync::mpsc,
 };
 use tokio_util::codec::{FramedRead, FramedWrite};
-use tracing::{error, info, instrument};
+use tracing::{error, instrument};
 
 pub trait Incoming: AsyncRead + AsyncWrite + Send + Sync {}
 

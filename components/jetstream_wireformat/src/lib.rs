@@ -580,7 +580,10 @@ impl<T: WireFormat + Send + Sync + Eq + Hash> WireFormat for HashSet<T> {
     where
         Self: Sized,
     {
-        writer.write_all(&[self.len() as u8, 0])?;
+        if self.len() > u16::MAX as usize {
+            return Err(io::Error::new(io::ErrorKind::Other, "Set too large"));
+        }
+        (self.len() as u16).encode(writer)?;
         for v in self.iter() {
             v.encode(writer)?;
         }
@@ -622,8 +625,7 @@ impl<
                 "Map too large",
             ));
         }
-        let len = self.len() as u16;
-        len.encode(writer)?;
+        (self.len() as u16).encode(writer)?;
         for (k, v) in self {
             k.encode(writer)?;
             v.encode(writer)?;

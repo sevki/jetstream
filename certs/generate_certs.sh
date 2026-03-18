@@ -111,7 +111,11 @@ SPKI=$(openssl x509 -inform der -in server.crt -pubkey -noout | openssl pkey -pu
 echo "  SPKI hash: $SPKI"
 PLAYWRIGHT_CONFIG="$SCRIPT_DIR/../.playwright-mcp.json"
 if [ -f "$PLAYWRIGHT_CONFIG" ] && command -v sed >/dev/null 2>&1; then
-    sed -i "s|--ignore-certificate-errors-spki-list=.*\"|--ignore-certificate-errors-spki-list=$SPKI\"|" "$PLAYWRIGHT_CONFIG"
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        sed -i '' "s|--ignore-certificate-errors-spki-list=.*\"|--ignore-certificate-errors-spki-list=$SPKI\"|" "$PLAYWRIGHT_CONFIG"
+    else
+        sed -i "s|--ignore-certificate-errors-spki-list=.*\"|--ignore-certificate-errors-spki-list=$SPKI\"|" "$PLAYWRIGHT_CONFIG"
+    fi
     echo "  Updated $PLAYWRIGHT_CONFIG"
 else
     echo "  Warning: $PLAYWRIGHT_CONFIG not found or sed not available, skipping"
