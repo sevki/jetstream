@@ -28,8 +28,8 @@ async fn test_iroh_echo_service() {
     .await
     .unwrap();
 
-    // get our own address. At this point we have a running router
-    // that's ready to accept connections.
+    // Wait until the endpoint is online (connected to relay) before getting address
+    router.endpoint().online().await;
     let addr = router.endpoint().addr();
 
     // Build client transport and connect

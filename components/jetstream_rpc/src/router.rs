@@ -14,7 +14,7 @@ use tokio::{
     sync::mpsc,
 };
 use tokio_util::codec::{FramedRead, FramedWrite};
-use tracing::{error, info};
+use tracing::{error, instrument};
 
 pub trait Incoming: AsyncRead + AsyncWrite + Send + Sync {}
 
@@ -83,6 +83,7 @@ impl Protocol for VersionProtocol {
 }
 
 impl Router {
+    #[instrument(skip_all)]
     pub async fn accept(
         &self,
         ctx: Context,
@@ -95,13 +96,14 @@ impl Router {
             FramedWrite::new(writer, ServerCodec::<VersionProtocol>::new());
 
         let version = framed_read.next().await;
+
         let Some(frame) = version else {
             return Err(Error::with_code(
                 "connection closed before version negotiation",
                 "jetstream_rpc::error::no_version",
             ));
         };
-        info!("received version frame: {:?}", frame);
+
         let frame = frame?;
         {
             match frame.msg {

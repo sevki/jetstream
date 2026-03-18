@@ -409,8 +409,7 @@ mod tests {
     fn ca_signed_cert() -> (Vec<u8>, Vec<u8>, String) {
         use rcgen::{
             BasicConstraints, CertificateParams, CertifiedIssuer,
-            DistinguishedName, DnType, IsCa, KeyPair, KeyUsagePurpose,
-            SanType,
+            DistinguishedName, DnType, IsCa, KeyPair, KeyUsagePurpose, SanType,
         };
 
         // Generate CA
@@ -434,9 +433,8 @@ mod tests {
         client_params.distinguished_name = client_dn;
         client_params.subject_alt_names =
             vec![SanType::Rfc822Name("test@example.com".try_into().unwrap())];
-        let client_cert = client_params
-            .signed_by(&client_key, &ca_issuer)
-            .unwrap();
+        let client_cert =
+            client_params.signed_by(&client_key, &ca_issuer).unwrap();
         let client_der = client_cert.der().to_vec();
         let client_b64 =
             base64::engine::general_purpose::STANDARD.encode(&client_der);

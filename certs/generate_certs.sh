@@ -34,13 +34,20 @@ openssl x509 -req \
     -CAkey ca.key \
     -CAcreateserial \
     -out server.pem \
-    -days 3650 \
+    -days 14 \
     -sha256 \
     -extensions req_ext \
     -extfile config/server.cnf
 
 # Convert to DER format for Chrome
 openssl x509 -in server.pem -outform der -out server.crt
+
+# Compute certificate hash for WebTransport serverCertificateHashes
+# (requires cert validity <= 14 days)
+SERVER_CERT_HASH=$(openssl x509 -in server.pem -outform der | openssl dgst -sha256 -binary | openssl enc -base64)
+echo "  Server cert SHA-256 hash (for serverCertificateHashes): $SERVER_CERT_HASH"
+# Write hash to file for compile-time embedding (used by examples/http.rs)
+echo -n "$SERVER_CERT_HASH" > server.hash
 
 # --- 3. Generate Client Certificate ---
 echo ""
@@ -57,7 +64,7 @@ openssl x509 -req \
     -CAkey ca.key \
     -CAcreateserial \
     -out client.pem \
-    -days 3650 \
+    -days 365 \
     -sha256 \
     -extensions req_ext \
     -extfile config/client.cnf
@@ -85,7 +92,7 @@ openssl x509 -req \
     -CAkey ca.key \
     -CAcreateserial \
     -out client2.pem \
-    -days 3650 \
+    -days 365 \
     -sha256 \
     -extensions req_ext \
     -extfile config/client2.cnf

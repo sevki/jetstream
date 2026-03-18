@@ -15,6 +15,7 @@ use std::{
     collections::{BTreeSet, VecDeque},
     ffi::{CStr, CString, OsStr},
     fmt,
+    hash::Hash,
     io::{self, ErrorKind, Read, Write},
     marker::PhantomData,
     mem,
@@ -24,6 +25,7 @@ use std::{
 };
 
 use bytes::Buf;
+use hashbrown::{HashMap, HashSet};
 pub use jetstream_macros::JetStreamWireFormat;
 use zerocopy::LittleEndian;
 
@@ -566,6 +568,83 @@ impl<T: WireFormat> WireFormat for Box<T> {
     {
         let inner = T::decode(reader)?;
         Ok(Box::new(inner))
+    }
+}
+
+impl<T: WireFormat + Send + Sync + Eq + Hash> WireFormat for HashSet<T> {
+    fn byte_size(&self) -> u32 {
+        self.iter().fold(0, |acc, v| acc + v.byte_size()) + 2
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        if self.len() > u16::MAX as usize {
+            return Err(io::Error::new(io::ErrorKind::Other, "Set too large"));
+        }
+        (self.len() as u16).encode(writer)?;
+        for v in self.iter() {
+            v.encode(writer)?;
+        }
+        Ok(())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut set = Self::with_capacity(len as usize);
+        for _ in 0..len {
+            let v = T::decode(reader)?;
+            set.insert(v);
+        }
+        Ok(set)
+    }
+}
+
+impl<
+        K: WireFormat + Send + Sync + Ord + Eq + Hash,
+        V: WireFormat + Send + Sync,
+    > WireFormat for HashMap<K, V>
+{
+    fn byte_size(&self) -> u32 {
+        self.iter()
+            .fold(0, |acc, (k, v)| acc + k.byte_size() + v.byte_size())
+            + 2
+    }
+
+    fn encode<W: io::Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        if self.len() > u16::MAX as usize {
+            return Err(io::Error::new(
+                io::ErrorKind::InvalidInput,
+                "Map too large",
+            ));
+        }
+        (self.len() as u16).encode(writer)?;
+        for (k, v) in self {
+            k.encode(writer)?;
+            v.encode(writer)?;
+        }
+        Ok(())
+    }
+
+    fn decode<R: io::Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut map = HashMap::new();
+        for _ in 0..len {
+            let k = K::decode(reader)?;
+            let v = V::decode(reader)?;
+            map.insert(k, v);
+        }
+        Ok(map)
     }
 }
 

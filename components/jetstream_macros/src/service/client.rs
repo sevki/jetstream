@@ -113,7 +113,22 @@ fn generate_client_calls(
                         syn::FnArg::Typed(pat) => {
                             let name = pat.pat.clone();
                             let ty = pat.ty.clone();
-                            quote! { #name: #ty, }
+                            // if context add #[allow(unused)]
+                            let allow_unused = if let syn::Type::Path(type_path) = &ty.as_ref() {
+                                if let Some(segment) = type_path.path.segments.last() {
+                                    if segment.ident == "Context" {
+                                        quote! { #[allow(unused)] }
+                                    } else {
+                                        quote! {}
+                                    }
+                                } else {
+                                    quote! {}
+                                }
+                            } else {
+                                quote! {}
+                            };
+
+                            quote! { #allow_unused #name: #ty, }
                         }
                         syn::FnArg::Receiver(_) => quote! {},
                     }

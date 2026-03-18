@@ -24,21 +24,18 @@ pub use server::{IrohRouter, IrohServer};
 
 pub extern crate iroh;
 
+lazy_static::lazy_static!(
+    static ref RELAY_URL: RelayUrl = RelayUrl::from(url::Url::parse("https://relay.jetstream.rs").unwrap());
+    static ref DISCOVERY_URL: url::Url = url::Url::parse("https://discovery.jetstream.rs").unwrap();
+);
+
 fn jetstream_resolver() -> impl IntoAddressLookup {
-    PkarrResolver::builder(
-        url::Url::parse("https://discovery.jetstream.rs").unwrap(),
-    )
+    PkarrResolver::builder(DISCOVERY_URL.clone())
 }
 
 fn jetstream_publisher_builder() -> impl IntoAddressLookup {
-    PkarrPublisher::builder(
-        url::Url::parse("https://discovery.jetstream.rs").unwrap(),
-    )
+    PkarrPublisher::builder(DISCOVERY_URL.clone())
 }
-
-lazy_static::lazy_static!(
-    static ref RELAY_URL: RelayUrl = RelayUrl::from(url::Url::parse("https://relay.jetstream.rs").unwrap());
-);
 
 pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
     iroh::Endpoint::builder()

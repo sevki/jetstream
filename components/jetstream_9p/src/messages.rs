@@ -859,7 +859,7 @@ pub struct Tgetattr {
     pub request_mask: u64,
 }
 
-#[derive(Debug, JetStreamWireFormat)]
+#[derive(Debug, Clone, Copy, JetStreamWireFormat)]
 pub struct Rgetattr {
     pub valid: u64,
     pub qid: Qid,
@@ -879,7 +879,7 @@ pub struct Rgetattr {
     pub ctime_nsec: u64,
     pub btime_sec: u64,
     pub btime_nsec: u64,
-    pub gen: u64,
+    pub r#gen: u64,
     pub data_version: u64,
 }
 
@@ -1111,7 +1111,7 @@ pub struct Tunlinkat {
 }
 
 /// Qid
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash, JetStreamWireFormat)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, JetStreamWireFormat)]
 pub struct Qid {
     pub ty: u8,
     pub version: u32,
