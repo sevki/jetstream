@@ -879,7 +879,7 @@ pub struct Rgetattr {
     pub ctime_nsec: u64,
     pub btime_sec: u64,
     pub btime_nsec: u64,
-    pub gen: u64,
+    pub r#gen: u64,
     pub data_version: u64,
 }
 
