@@ -22,7 +22,7 @@ jetstream_error = { version = "16.0.0", path = "../jetstream_error"}
 jetstream_quic = { version = "16.0.0", path = "../jetstream_quic" }
 jetstream_rpc = { version = "16.0.0", path = "../jetstream_rpc", features = ["quinn", "x509"] }
 jetstream_wireformat = { version = "16.0.0", path = "../jetstream_wireformat" }
-pin-project = "1.1.10"
+pin-project = "1.1.11"
 quinn = { version = "0.11.9" }
 tokio = { version = "1.49.0", features = ["rt", "tracing"] }
 tokio-util.workspace = true
