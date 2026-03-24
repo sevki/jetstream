@@ -233,6 +233,62 @@ macro_rules! float_wire_format_impl {
 float_wire_format_impl!(f32);
 float_wire_format_impl!(f64);
 
+macro_rules! tuple_wire_format_impl {
+    ($( $name:ident ),+) => {
+        #[allow(non_snake_case)]
+        impl<$( $name ),+> WireFormat for ( $( $name ),+ )
+        where
+            $( $name: WireFormat ),+
+        {
+            fn byte_size(&self) -> u32 {
+                let ( $( $name ),+ ) = self;
+                0 $( + $name.byte_size() )+
+            }
+
+            fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+                let ( $( $name ),+ ) = self;
+                $( $name.encode(writer)?; )+
+                Ok(())
+            }
+
+            fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+                Ok((
+                    $( $name::decode(reader)? ),+
+                ))
+            }
+        }
+    };
+}
+
+// Single-element tuple needs a hand-written impl because the macro expands
+// `(A)` (parenthesized value) instead of `(A,)` (1-tuple).
+#[allow(non_snake_case)]
+impl<A: WireFormat> WireFormat for (A,) {
+    fn byte_size(&self) -> u32 {
+        self.0.byte_size()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        self.0.encode(writer)
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        Ok((A::decode(reader)?,))
+    }
+}
+
+tuple_wire_format_impl!(A, B);
+tuple_wire_format_impl!(A, B, C);
+tuple_wire_format_impl!(A, B, C, D);
+tuple_wire_format_impl!(A, B, C, D, E);
+tuple_wire_format_impl!(A, B, C, D, E, F);
+tuple_wire_format_impl!(A, B, C, D, E, F, G);
+tuple_wire_format_impl!(A, B, C, D, E, F, G, H);
+tuple_wire_format_impl!(A, B, C, D, E, F, G, H, I);
+tuple_wire_format_impl!(A, B, C, D, E, F, G, H, I, J);
+tuple_wire_format_impl!(A, B, C, D, E, F, G, H, I, J, K);
+tuple_wire_format_impl!(A, B, C, D, E, F, G, H, I, J, K, L);
+
 impl WireFormat for u8 {
     fn byte_size(&self) -> u32 {
         1
