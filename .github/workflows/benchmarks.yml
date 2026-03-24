@@ -22,7 +22,7 @@ jobs:
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Configure git to auto-stash on checkout
         run: git config --global rebase.autoStash true
-      - uses: boa-dev/criterion-compare-action@v3
+      - uses: sevki/criterion-compare-action@v4
         with:
           defaultFeatures: true
           features: "iroh,quic"
