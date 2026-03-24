@@ -260,6 +260,23 @@ macro_rules! tuple_wire_format_impl {
     };
 }
 
+// Single-element tuple needs a hand-written impl because the macro expands
+// `(A)` (parenthesized value) instead of `(A,)` (1-tuple).
+#[allow(non_snake_case)]
+impl<A: WireFormat> WireFormat for (A,) {
+    fn byte_size(&self) -> u32 {
+        self.0.byte_size()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        self.0.encode(writer)
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        Ok((A::decode(reader)?,))
+    }
+}
+
 tuple_wire_format_impl!(A, B);
 tuple_wire_format_impl!(A, B, C);
 tuple_wire_format_impl!(A, B, C, D);
