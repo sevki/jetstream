@@ -9,7 +9,7 @@ repository.workspace = true
 license.workspace = true
 
 [dependencies]
-askama = { version = "0.15.4", optional = true }
+askama = { version = "0.15.6", optional = true }
 axum = { version = "0.8.8", default-features = false, optional = true }
 iroh = { workspace = true, optional = true }
 jetstream_wireformat = { version = "16.0.0", path = "../jetstream_wireformat" }
