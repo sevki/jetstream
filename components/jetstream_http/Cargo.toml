@@ -30,7 +30,7 @@ tower-layer = "0.3.3"
 tower-service = "0.3.3"
 tracing = "0.1.44"
 h3-datagram = "0.0.2"
-semver = "1.0.27"
+semver = "1.0.28"
 base64 = "0.22"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
 url = { workspace = true }

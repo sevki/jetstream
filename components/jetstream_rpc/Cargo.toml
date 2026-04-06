@@ -33,7 +33,7 @@ x509-certificate = { version = "0.25.0", optional = true }
 hex = "0.4.3"
 bcder = { version = "0.7.6", optional = true }
 jetstream_libc = { version = "16.0.0", path = "../jetstream_libc" }
-semver = "1.0.27"
+semver = "1.0.28"
 http = "1.4.0"
 [target.'cfg(loom)'.dependencies]
 loom = "0.7.2"
