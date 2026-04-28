@@ -22,7 +22,7 @@ thiserror = "2.0.17"
 url = { workspace = true }
 iroh = { workspace = true, optional = true }
 turmoil = { workspace = true, optional = true }
-tokio = { version = "1.47.1", features = ["sync", "rt"] }
+tokio = { version = "1.50.0", features = ["sync", "rt"] }
 async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 jetstream_error = { version = "16.0.0", path = "../jetstream_error" }
