@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"derive":["JetStreamWireFormat"],"mod":["wire_format_extensions"],"struct":["Data","P9String","Wrapped"],"trait":["WireFormat"]};
