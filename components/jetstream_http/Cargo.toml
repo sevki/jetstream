@@ -11,7 +11,7 @@ license.workspace = true
 [dependencies]
 askama = "0.15.6"
 async-trait = "0.1.89"
-axum = { version = "0.8.8", features = [], default-features = false }
+axum = { version = "0.8.9", features = [], default-features = false }
 bytes = "1.11.0"
 futures ="0.3.32"
 h3 = { version = "0.0.8" }
