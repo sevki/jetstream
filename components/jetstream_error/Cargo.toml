@@ -10,7 +10,7 @@ license.workspace = true
 
 [dependencies]
 askama = { version = "0.15.6", optional = true }
-axum = { version = "0.8.8", default-features = false, optional = true }
+axum = { version = "0.8.9", default-features = false, optional = true }
 iroh = { workspace = true, optional = true }
 jetstream_wireformat = { version = "16.0.0", path = "../jetstream_wireformat" }
 miette = { version = "7.6.0", features = ["fancy"], optional = true }
