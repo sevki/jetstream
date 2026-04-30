@@ -1,0 +1,2878 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>JetStream Book</title>
+        <meta name="robots" content="noindex">
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-2459343d.css">
+        <link rel="stylesheet" href="css/chrome-ae938929.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="docs/styles-2410a0be.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-5aac2d25.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-0333eb5f.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">JetStream Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <picture>
+  <source media="(max-width:200px),(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream-dark.png">
+  <img width="200px" alt="Fallback image description" src="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png">
+</picture>
+<h1 id="jetstream"><a class="header" href="#jetstream">JetStream</a></h1>
+<p><a href="https://crates.io/crates/jetstream"><img src="https://img.shields.io/crates/v/jetstream.svg" alt="crates.io"></a> <a href="https://docs.rs/jetstream"><img src="https://docs.rs/jetstream/badge.svg" alt="docs.rs"></a> <!--gh actions--> <img src="https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg" alt="Build Status"> <a href="https://github.com/sevki/jetstream/actions/workflows/release-please.yml"><img src="https://github.com/sevki/jetstream/actions/workflows/release-please.yml/badge.svg" alt="Release Please🙏!"></a> <a href="https://github.com/sevki/jetstream/actions/workflows/benchmarks.yml"><img src="https://github.com/sevki/jetstream/actions/workflows/benchmarks.yml/badge.svg" alt="benchmark pull requests"></a> <a href="https://crates.io/crates/jetstream"><img src="https://img.shields.io/crates/d/jetstream.svg" alt="crates.io downloads"></a></p>
+<p>JetStream is an RPC framework designed to be a high performance, low latency, secure, and reliable RPC framework.</p>
+<h2 id="transport-backends"><a class="header" href="#transport-backends">Transport Backends</a></h2>
+<p>JetStream supports multiple transport backends:</p>
+<ul>
+<li><strong><a href="https://crates.io/crates/quinn">quinn</a></strong> - QUIC transport with TLS/mTLS support</li>
+<li><strong><a href="https://crates.io/crates/iroh">iroh</a></strong> - P2P transport with built-in NAT traversal</li>
+<li><strong><a href="https://developer.mozilla.org/en-US/docs/Web/API/WebTransport">webtransport</a></strong> - WebTransport transport for browser and server environments</li>
+</ul>
+<h2 id="features"><a class="header" href="#features">Features</a></h2>
+<ul>
+<li><a href="https://datatracker.ietf.org/meeting/99/materials/slides-99-quic-sessb-quic-unidirectional-and-bidirectional-streams-01">Bidirectional streaming</a></li>
+<li><a href="https://blog.cloudflare.com/even-faster-connection-establishment-with-quic-0-rtt-resumption/">0-RTT</a></li>
+<li><a href="https://docs.rs/jetstream_quic/latest/jetstream_quic/struct.Server.html#method.new_with_mtls">mTLS</a></li>
+<li><a href="https://docs.rs/jetstream_wireformat/latest/jetstream_wireformat/">Binary encoding</a></li>
+<li>Cross-platform (Linux, macOS, Windows, WebAssembly)</li>
+<li>Cross-language — <a href="#typescript">TypeScript</a> and <a href="#swift">Swift</a> clients with wire-compatible codegen</li>
+</ul>
+<p>For detailed API documentation, see the <a href="#-jetstream">rustdoc documentation</a>.</p>
+<h2 id="examples"><a class="header" href="#examples">Examples</a></h2>
+<ul>
+<li><a href="https://github.com/sevki/jetstream/blob/main/examples/echo.rs">echo</a> - Basic QUIC-based echo service example</li>
+<li><a href="https://github.com/sevki/jetstream/blob/main/examples/iroh_echo.rs">iroh_echo</a> - Echo service using iroh transport</li>
+<li><a href="https://github.com/sevki/jetstream/blob/main/examples/wasm_example.rs">wasm_example</a> - WebAssembly example</li>
+<li><a href="https://github.com/sevki/jetstream/blob/main/examples/wasm_example_bindings.rs">wasm_example_bindings</a> - WebAssembly bindings example</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="jetstream-iroh"><a class="header" href="#jetstream-iroh">JetStream Iroh</a></h1>
+<p><a href="https://iroh.computer/">Iroh</a> is a peer-to-peer networking library that provides NAT traversal, hole punching, and relay fallback. JetStream integrates with Iroh to enable peer-to-peer RPC communication.</p>
+<h2 id="features-1"><a class="header" href="#features-1">Features</a></h2>
+<ul>
+<li><strong>NAT Traversal</strong>: Automatic hole punching for direct peer-to-peer connections</li>
+<li><strong>Relay Fallback</strong>: Falls back to relay servers when direct connection isn’t possible</li>
+<li><strong>Discovery</strong>: Uses JetStream’s discovery service at <code>discovery.jetstream.rs</code></li>
+<li><strong>ALPN-based Protocol Negotiation</strong>: Each service defines its own protocol version</li>
+</ul>
+<h2 id="example"><a class="header" href="#example">Example</a></h2>
+<p>Here’s a complete example of an echo service using Iroh transport:</p>
+<pre><code class="language-rs">#![cfg(feature = "iroh")]
+use crate::square_protocol::{SquareChannel, SquareService};
+use futures::stream::FuturesUnordered;
+use futures::StreamExt;
+use jetstream::prelude::*;
+use jetstream_macros::service;
+
+#[service(tracing)]
+pub trait Square {
+    async fn square(&amp;self, ctx: Context, i: u32) -&gt; Result&lt;String&gt;;
+}
+
+#[derive(Debug, Clone)]
+struct SquareServer;
+
+impl Square for SquareServer {
+    async fn square(&amp;self, _ctx: Context, i: u32) -&gt; Result&lt;String&gt; {
+        Ok((i * i).to_string())
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    // Initialize tracing subscriber
+    tracing_subscriber::fmt()
+        .with_max_level(tracing::Level::DEBUG)
+        .with_thread_ids(true)
+        .with_span_events(
+            tracing_subscriber::fmt::format::FmtSpan::ENTER
+                | tracing_subscriber::fmt::format::FmtSpan::EXIT,
+        )
+        .init();
+    // Build the server router with the echo service
+    let router = jetstream_iroh::server_builder(SquareService {
+        inner: SquareServer {},
+    })
+    .await
+    .unwrap();
+
+    // get our own address. At this point we have a running router
+    // that's ready to accept connections.
+    let addr = router.endpoint().addr();
+
+    // Build client transport and connect
+    let transport = jetstream_iroh::client_builder::&lt;SquareChannel&gt;(addr)
+        .await
+        .unwrap();
+
+    let ec = SquareChannel::new(10, Box::new(transport));
+    let mut futures = FuturesUnordered::new();
+    for i in 0..1000 {
+        futures.push(ec.square(Context::default(), i));
+    }
+
+    while let Some(result) = futures.next().await {
+        let response = result.unwrap();
+        println!("Response: {}", response);
+    }
+    router.shutdown().await.unwrap();
+}
+</code></pre>
+<h2 id="server-setup"><a class="header" href="#server-setup">Server Setup</a></h2>
+<p>To create an Iroh server, use the <code>server_builder</code> function:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_iroh::server_builder;
+
+let router = server_builder(EchoService { inner: EchoServer {} })
+    .await
+    .unwrap();
+
+// Get the node address to share with clients
+let addr = router.endpoint().node_addr();
+<span class="boring">}</span></code></pre>
+<h2 id="client-setup"><a class="header" href="#client-setup">Client Setup</a></h2>
+<p>To connect to an Iroh server, use the <code>client_builder</code> function:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_iroh::client_builder;
+
+let mut transport = client_builder::&lt;EchoChannel&gt;(addr)
+    .await
+    .unwrap();
+<span class="boring">}</span></code></pre>
+<h2 id="discovery"><a class="header" href="#discovery">Discovery</a></h2>
+<p>JetStream uses a custom discovery service for Iroh nodes. The discovery URL is:</p>
+<pre><code>https://discovery.jetstream.rs
+</code></pre>
+<p>This allows nodes to find each other using their public keys without needing to exchange IP addresses directly.</p>
+<h2 id="feature-flag"><a class="header" href="#feature-flag">Feature Flag</a></h2>
+<p>To use Iroh transport, enable the <code>iroh</code> feature in your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+jetstream = { version = "10", features = ["iroh"] }
+</code></pre>
+<p>For more details, see the <a href="#-jetstream_iroh">jetstream_iroh API documentation</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="jetstream-quic"><a class="header" href="#jetstream-quic">JetStream QUIC</a></h1>
+<p><a href="https://www.rfc-editor.org/rfc/rfc9000.html">QUIC</a> is a modern transport protocol that provides multiplexed connections over UDP with built-in TLS 1.3 encryption. JetStream QUIC provides the transport layer using <a href="https://crates.io/crates/quinn">quinn</a>.</p>
+<h2 id="features-2"><a class="header" href="#features-2">Features</a></h2>
+<ul>
+<li><strong>ALPN-based Routing</strong>: Route connections to different handlers based on ALPN protocol negotiation</li>
+<li><strong>TLS 1.3</strong>: Built-in secure transport with rustls</li>
+<li><strong>0-RTT</strong>: Support for zero round-trip connection resumption</li>
+<li><strong>mTLS Support</strong>: Mutual TLS authentication for client certificate verification</li>
+<li><strong>Peer Identity</strong>: Extract client certificate information (CN, fingerprint, SANs) in request handlers</li>
+</ul>
+<h2 id="architecture"><a class="header" href="#architecture">Architecture</a></h2>
+<p>The crate is organized around these core components:</p>
+<ul>
+<li><strong><code>Server</code></strong>: The main QUIC server that accepts incoming connections</li>
+<li><strong><code>Router</code></strong>: Routes connections to protocol handlers based on ALPN</li>
+<li><strong><code>ProtocolHandler</code></strong>: Trait for implementing custom protocol handlers</li>
+<li><strong><code>Client</code></strong>: QUIC client for connecting to servers</li>
+</ul>
+<p>For HTTP/3 support, see <a href="#jetstream-http">jetstream_http</a>.</p>
+<h2 id="example-1"><a class="header" href="#example-1">Example</a></h2>
+<p>Here’s a complete echo service example:</p>
+<pre class="playground"><code class="language-rust">use std::{net::SocketAddr, path::Path, sync::Arc};
+
+use echo_protocol::EchoChannel;
+use jetstream::prelude::*;
+use jetstream_macros::service;
+use jetstream_quic::{
+    Client, QuicRouter, QuicRouterHandler, QuicTransport, Server,
+};
+
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+
+#[service]
+pub trait Echo {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt;;
+}
+
+#[derive(Clone)]
+struct EchoImpl {}
+
+impl Echo for EchoImpl {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt; {
+        eprintln!("Ping received");
+        eprintln!("Pong sent");
+        Ok(())
+    }
+}
+
+pub static CA_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
+pub static CLIENT_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.pem");
+pub static CLIENT_KEY_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.key");
+pub static SERVER_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.pem");
+pub static SERVER_KEY_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.key");
+
+fn load_certs(path: &amp;str) -&gt; Vec&lt;CertificateDer&lt;'static&gt;&gt; {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read cert");
+    rustls_pemfile::certs(&amp;mut &amp;*data)
+        .filter_map(|r| r.ok())
+        .collect()
+}
+
+fn load_key(path: &amp;str) -&gt; PrivateKeyDer&lt;'static&gt; {
+    let data = std::fs::read(Path::new(path)).expect("Failed to read key");
+    rustls_pemfile::private_key(&amp;mut &amp;*data)
+        .expect("Failed to parse key")
+        .expect("No key found")
+}
+
+async fn server(
+    addr: SocketAddr,
+) -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
+    let server_cert = load_certs(SERVER_CERT_PEM).pop().unwrap();
+    let server_key = load_key(SERVER_KEY_PEM);
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
+
+    let mut root_store = rustls::RootCertStore::empty();
+    root_store.add(ca_cert).expect("Failed to add CA cert");
+    let client_verifier =
+        rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
+            .allow_unauthenticated()
+            .build()
+            .expect("Failed to build client verifier");
+
+    // Register the EchoService via the per-stream RPC router
+    let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
+
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
+            .with_handler(echo_protocol::PROTOCOL_NAME, echo_service),
+    );
+    let quic_handler = QuicRouterHandler::new(rpc_router);
+
+    let mut router = QuicRouter::new();
+    router.register(Arc::new(quic_handler));
+
+    let server = Server::new_with_mtls(
+        vec![server_cert],
+        server_key,
+        client_verifier,
+        addr,
+        router,
+    );
+
+    eprintln!("Server listening on {}", addr);
+    server.run().await;
+
+    Ok(())
+}
+
+async fn client(
+    addr: SocketAddr,
+) -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
+    // Wait for server to start
+    tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+
+    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
+    let client_cert = load_certs(CLIENT_CERT_PEM).pop().unwrap();
+    let client_key = load_key(CLIENT_KEY_PEM);
+
+    let alpn = vec![b"jetstream".to_vec()];
+    let bind_addr: SocketAddr = "0.0.0.0:0".parse().unwrap();
+    let client = Client::new_with_mtls(
+        ca_cert,
+        client_cert,
+        client_key,
+        alpn,
+        bind_addr,
+    )?;
+
+    let connection = client.connect(addr, "localhost").await?;
+
+    // Open a bidirectional stream and wrap it in QuicTransport
+    let (send, recv) = connection.open_bi().await?;
+    let transport: QuicTransport&lt;EchoChannel&gt; = (send, recv).into();
+    let mut chan = EchoChannel::new(10, Box::new(transport));
+    chan.negotiate_version(u32::MAX).await?;
+
+    eprintln!("Ping sent");
+    chan.ping().await?;
+    eprintln!("Pong received");
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    // Install the ring crypto provider for rustls
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
+
+    let addr: SocketAddr = "127.0.0.1:4433".parse().unwrap();
+    tokio::select! {
+      _ = server(addr) =&gt; {},
+      _ = client(addr) =&gt; {},
+    }
+}</code></pre>
+<h2 id="defining-a-service"><a class="header" href="#defining-a-service">Defining a Service</a></h2>
+<p>Use the <code>#[service]</code> macro to define an RPC service:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream::prelude::*;
+use jetstream_macros::service;
+
+#[service]
+pub trait Echo {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt;;
+    async fn echo(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+}
+<span class="boring">}</span></code></pre>
+<p>The macro generates:</p>
+<ul>
+<li><code>EchoChannel</code> - Client-side channel for calling methods</li>
+<li><code>EchoService</code> - Server-side wrapper for your implementation</li>
+</ul>
+<h2 id="implementing-the-service"><a class="header" href="#implementing-the-service">Implementing the Service</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(Clone)]
+struct EchoImpl;
+
+impl Echo for EchoImpl {
+    async fn ping(&amp;mut self) -&gt; Result&lt;()&gt; {
+        Ok(())
+    }
+
+    async fn echo(&amp;mut self, message: String) -&gt; Result&lt;String&gt; {
+        Ok(message)
+    }
+}
+<span class="boring">}</span></code></pre>
+<h2 id="server-setup-1"><a class="header" href="#server-setup-1">Server Setup</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use std::sync::Arc;
+use jetstream_quic::{Server, Router};
+
+// Create the service
+let echo_service = echo_protocol::EchoService { inner: EchoImpl {} };
+
+// Register with router
+let mut router = Router::new();
+router.register(Arc::new(echo_service));
+
+// Create and run server
+let server = Server::new_with_addr(cert, key, addr, router);
+server.run().await;
+<span class="boring">}</span></code></pre>
+<h2 id="client-setup-1"><a class="header" href="#client-setup-1">Client Setup</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_quic::{Client, QuicTransport};
+use jetstream_rpc::Protocol;
+
+// Create client
+let alpn = vec![EchoChannel::VERSION.as_bytes().to_vec()];
+let client = Client::new_with_mtls(ca_cert, client_cert, client_key, alpn)?;
+
+// Connect
+let connection = client.connect(addr, "localhost").await?;
+
+// Open stream and create channel
+let (send, recv) = connection.open_bi().await?;
+let transport: QuicTransport&lt;EchoChannel&gt; = (send, recv).into();
+let mut chan = EchoChannel::new(10, Box::new(transport));
+
+// Call methods
+chan.ping().await?;
+let response = chan.echo("Hello".to_string()).await?;
+<span class="boring">}</span></code></pre>
+<h2 id="tls-certificates"><a class="header" href="#tls-certificates">TLS Certificates</a></h2>
+<p>Generate development certificates:</p>
+<pre><code class="language-bash">cd certs
+./generate_certs.sh
+</code></pre>
+<p>This generates:</p>
+<ul>
+<li><code>ca.pem</code> / <code>ca.key</code> - Certificate Authority</li>
+<li><code>server.pem</code> / <code>server.key</code> - Server certificate</li>
+<li><code>client.pem</code> / <code>client.key</code> - Client certificate</li>
+<li><code>client.p12</code> - PKCS12 bundle for browser import</li>
+</ul>
+<p>For production, use certificates from a trusted CA or Let’s Encrypt.</p>
+<h2 id="mutual-tls-mtls"><a class="header" href="#mutual-tls-mtls">Mutual TLS (mTLS)</a></h2>
+<p>JetStream QUIC supports mutual TLS authentication:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Build a client certificate verifier from a CA cert
+let mut root_store = rustls::RootCertStore::empty();
+root_store.add(ca_cert).expect("Failed to add CA cert");
+let client_verifier =
+    rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
+        .allow_unauthenticated()
+        .build()
+        .expect("Failed to build client verifier");
+
+let server = Server::new_with_mtls(
+    server_cert,
+    server_key,
+    client_verifier,  // any Arc&lt;dyn ClientCertVerifier&gt;
+    addr,
+    router,
+);
+<span class="boring">}</span></code></pre>
+<h3 id="accessing-peer-certificate-info"><a class="header" href="#accessing-peer-certificate-info">Accessing Peer Certificate Info</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_rpc::context::{Context, Peer};
+
+// In your service implementation or handler
+if let Some(Peer::Tls(tls_peer)) = ctx.peer() {
+    if let Some(leaf) = tls_peer.leaf() {
+        println!("Client CN: {:?}", leaf.common_name);
+        println!("Fingerprint: {}", leaf.fingerprint);
+        println!("DNS SANs: {:?}", leaf.dns_names);
+    }
+}
+<span class="boring">}</span></code></pre>
+<h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
+<p>Add to your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+jetstream = "13"
+jetstream_quic = "13"
+jetstream_macros = "13"
+tokio = { version = "1", features = ["full"] }
+</code></pre>
+<p>For more details, see the <a href="#-jetstream_quic">jetstream_quic API documentation</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="jetstream-http"><a class="header" href="#jetstream-http">JetStream HTTP</a></h1>
+<p>JetStream HTTP provides HTTP/2 and HTTP/3 server support with a unified <a href="https://crates.io/crates/axum">Axum</a> router interface. It enables serving both protocols on the same port using TCP for HTTP/2 and UDP (QUIC) for HTTP/3.</p>
+<h2 id="features-3"><a class="header" href="#features-3">Features</a></h2>
+<ul>
+<li><strong>HTTP/2 + HTTP/3</strong>: Serve both protocols simultaneously on the same port</li>
+<li><strong>Axum Integration</strong>: Use familiar Axum routers and handlers</li>
+<li><strong>Alt-Svc Header</strong>: Automatically advertise HTTP/3 availability to HTTP/2 clients</li>
+<li><strong>Context Extractor</strong>: Access connection metadata (peer certificates, remote address) in handlers</li>
+<li><strong>mTLS Support</strong>: Mutual TLS authentication for both protocols</li>
+</ul>
+<h2 id="architecture-1"><a class="header" href="#architecture-1">Architecture</a></h2>
+<p>The crate provides these components:</p>
+<ul>
+<li><strong><code>H3Service</code></strong>: HTTP/3 protocol handler for use with <code>jetstream_quic</code></li>
+<li><strong><code>AltSvcLayer</code></strong>: Tower layer that adds <code>Alt-Svc</code> header to advertise HTTP/3</li>
+<li><strong><code>JetStreamContext</code></strong>: Axum extractor for accessing connection context</li>
+</ul>
+<h2 id="example-2"><a class="header" href="#example-2">Example</a></h2>
+<p>Here’s a complete example serving HTTP/2 and HTTP/3:</p>
+<pre class="playground"><code class="language-rust">use std::fs;
+use std::net::SocketAddr;
+use std::path::Path;
+use std::sync::Arc;
+
+use axum::Router;
+use hyper_util::rt::{TokioExecutor, TokioIo};
+use hyper_util::server::conn::auto::Builder as HttpBuilder;
+use hyper_util::service::TowerToHyperService;
+use jetstream::prelude::*;
+use jetstream_http::{AltSvcLayer, H3Service};
+use jetstream_macros::service;
+use tokio::net::TcpListener;
+use tokio_rustls::TlsAcceptor;
+use tower_http::services::ServeDir;
+use tracing::{error, info};
+
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+
+// r[impl jetstream.webtransport.http-example]
+#[service]
+pub trait EchoHttp {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt;;
+}
+
+#[derive(Clone)]
+struct EchoHttpImpl;
+
+impl EchoHttp for EchoHttpImpl {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt; {
+        Ok(message)
+    }
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt; {
+        Ok(a + b)
+    }
+}
+
+pub static CA_PEM: &amp;str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
+pub static SERVER_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.pem");
+pub static SERVER_KEY: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.key");
+
+fn load_certs(path: &amp;str) -&gt; Vec&lt;CertificateDer&lt;'static&gt;&gt; {
+    let data = fs::read(Path::new(path)).expect("Failed to read cert");
+    rustls_pemfile::certs(&amp;mut &amp;*data)
+        .filter_map(|r| r.ok())
+        .collect()
+}
+
+fn load_key(path: &amp;str) -&gt; PrivateKeyDer&lt;'static&gt; {
+    let data = fs::read(Path::new(path)).expect("Failed to read key");
+    rustls_pemfile::private_key(&amp;mut &amp;*data)
+        .expect("Failed to parse key")
+        .expect("No key found")
+}
+
+pub static APP_DIST: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/examples/app/dist");
+
+/// Run HTTP/2 server with TLS
+async fn run_http2_server(
+    addr: SocketAddr,
+    router: Router,
+    tls_acceptor: TlsAcceptor,
+) -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error + Send + Sync&gt;&gt; {
+    let listener = TcpListener::bind(addr).await?;
+
+    loop {
+        let (stream, _remote_addr) = listener.accept().await?;
+        let tls_acceptor = tls_acceptor.clone();
+        let router = router.clone();
+
+        tokio::spawn(async move {
+            let tls_stream = match tls_acceptor.accept(stream).await {
+                Ok(s) =&gt; s,
+                Err(e) =&gt; {
+                    error!("TLS accept error: {}", e);
+                    return;
+                }
+            };
+
+            let io = TokioIo::new(tls_stream);
+            let svc = TowerToHyperService::new(router);
+
+            if let Err(e) = HttpBuilder::new(TokioExecutor::new())
+                .serve_connection(io, svc)
+                .await
+            {
+                error!("HTTP/2 connection error: {}", e);
+            }
+        });
+    }
+}
+
+/// Run HTTP/3 server with QUIC + WebTransport
+async fn run_http3_server(
+    addr: SocketAddr,
+    router: Router,
+    server_cert: CertificateDer&lt;'static&gt;,
+    server_key: PrivateKeyDer&lt;'static&gt;,
+    ca_cert: Option&lt;CertificateDer&lt;'static&gt;&gt;,
+) {
+    // Register the EchoHttp service as a WebTransport handler
+    let echo = echohttp_protocol::EchoHttpService {
+        inner: EchoHttpImpl,
+    };
+    let rpc_router = Arc::new(
+        jetstream_rpc::Router::new()
+            .with_handler(echohttp_protocol::PROTOCOL_NAME, echo),
+    );
+
+    let mut quic_router = jetstream_quic::QuicRouter::new();
+
+    let server = if let Some(ca) = ca_cert {
+        let mut root_store = rustls::RootCertStore::empty();
+        root_store.add(ca).expect("Failed to add CA cert");
+        let client_verifier =
+            rustls::server::WebPkiClientVerifier::builder(Arc::new(root_store))
+                .allow_unauthenticated()
+                .build()
+                .expect("Failed to build client verifier");
+
+        let h3_service = Arc::new(H3Service::new_with_cert_verifier(
+            router,
+            rpc_router,
+            client_verifier.clone(),
+        ));
+        quic_router.register(h3_service);
+
+        jetstream_quic::Server::new_with_mtls(
+            vec![server_cert],
+            server_key,
+            client_verifier,
+            addr,
+            quic_router,
+        )
+    } else {
+        let h3_service = Arc::new(H3Service::new(router, rpc_router));
+        quic_router.register(h3_service);
+
+        jetstream_quic::Server::new_with_addr(
+            vec![server_cert],
+            server_key,
+            addr,
+            quic_router,
+        )
+    };
+
+    server.run().await;
+}
+
+#[tokio::main]
+async fn main() -&gt; std::result::Result&lt;(), Box&lt;dyn std::error::Error&gt;&gt; {
+    // Initialize tracing
+    tracing_subscriber::fmt::init();
+
+    // Install the ring crypto provider for rustls
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
+
+    // Check for --mtls flag
+    let mtls_enabled = std::env::args().any(|arg| arg == "--mtls");
+
+    let server_certs = load_certs(SERVER_PEM);
+    let server_key = load_key(SERVER_KEY);
+    let ca_cert = if mtls_enabled {
+        Some(load_certs(CA_PEM).pop().unwrap())
+    } else {
+        None
+    };
+
+    // Create shared Axum router serving React app build + Alt-Svc header
+    let router = Router::new()
+        .fallback_service(ServeDir::new(APP_DIST))
+        .layer(AltSvcLayer::new(4433));
+
+    // Setup TLS config for HTTP/2
+    let mut tls_config = rustls::ServerConfig::builder()
+        .with_no_client_auth()
+        .with_single_cert(server_certs.clone(), server_key.clone_key())?;
+    tls_config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+    let tls_acceptor = TlsAcceptor::from(Arc::new(tls_config));
+
+    let addr: SocketAddr = "127.0.0.1:4433".parse()?;
+
+    info!("=== JetStream HTTP + WebTransport Server ===");
+    info!("Listening on https://{}", addr);
+    info!("  - HTTP/2 over TLS (TCP)");
+    info!("  - HTTP/3 + WebTransport over QUIC (UDP)");
+    info!(
+        "  - WebTransport protocol: {}",
+        echohttp_protocol::PROTOCOL_VERSION
+    );
+    if mtls_enabled {
+        info!("mTLS enabled - client certificates required");
+    } else {
+        info!("No client auth (use --mtls to enable)");
+    }
+
+    // Run both servers concurrently on the same port (TCP for HTTP/2, UDP for HTTP/3)
+    tokio::select! {
+        result = run_http2_server(addr, router.clone(), tls_acceptor) =&gt; {
+            if let Err(e) = result {
+                error!("HTTP/2 server error: {}", e);
+            }
+        }
+        _ = run_http3_server(
+            addr,
+            router,
+            server_certs.into_iter().next().unwrap(),
+            server_key,
+            ca_cert,
+        ) =&gt; {}
+    }
+
+    Ok(())
+}</code></pre>
+<h2 id="quick-start"><a class="header" href="#quick-start">Quick Start</a></h2>
+<h3 id="1-create-an-axum-router"><a class="header" href="#1-create-an-axum-router">1. Create an Axum Router</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use axum::{routing::get, Router};
+use jetstream_http::{AltSvcLayer, JetStreamContext};
+
+async fn handler(ctx: JetStreamContext) -&gt; &amp;'static str {
+    println!("Request from: {:?}", ctx.remote());
+    "Hello, World!"
+}
+
+let router = Router::new()
+    .route("/", get(handler))
+    .layer(AltSvcLayer::new(4433));
+<span class="boring">}</span></code></pre>
+<h3 id="2-set-up-http2-server-tcp--tls"><a class="header" href="#2-set-up-http2-server-tcp--tls">2. Set Up HTTP/2 Server (TCP + TLS)</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use hyper_util::rt::{TokioExecutor, TokioIo};
+use hyper_util::server::conn::auto::Builder as HttpBuilder;
+use hyper_util::service::TowerToHyperService;
+use tokio::net::TcpListener;
+use tokio_rustls::TlsAcceptor;
+
+let listener = TcpListener::bind("127.0.0.1:4433").await?;
+let tls_acceptor = TlsAcceptor::from(Arc::new(tls_config));
+
+loop {
+    let (stream, _) = listener.accept().await?;
+    let tls_stream = tls_acceptor.accept(stream).await?;
+    let io = TokioIo::new(tls_stream);
+    let svc = TowerToHyperService::new(router.clone());
+    
+    HttpBuilder::new(TokioExecutor::new())
+        .serve_connection(io, svc)
+        .await?;
+}
+<span class="boring">}</span></code></pre>
+<h3 id="3-set-up-http3-server-quic"><a class="header" href="#3-set-up-http3-server-quic">3. Set Up HTTP/3 Server (QUIC)</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_http::H3Service;
+use jetstream_quic::{Router as QuicRouter, Server};
+
+let h3_service = Arc::new(H3Service::new(router));
+
+let mut quic_router = QuicRouter::new();
+quic_router.register(h3_service);
+
+let server = Server::new_with_addr(cert, key, addr, quic_router);
+server.run().await;
+<span class="boring">}</span></code></pre>
+<h2 id="alt-svc-layer"><a class="header" href="#alt-svc-layer">Alt-Svc Layer</a></h2>
+<p>The <code>AltSvcLayer</code> adds the <code>Alt-Svc</code> header to HTTP/2 responses, telling browsers that HTTP/3 is available:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_http::AltSvcLayer;
+
+// Advertise HTTP/3 on port 4433 with 24-hour max-age
+let layer = AltSvcLayer::new(4433);
+// Adds: Alt-Svc: h3=":4433"; ma=86400
+
+// Or with custom value
+let layer = AltSvcLayer::with_value("h3=\":443\"; ma=3600, h3-29=\":443\"");
+<span class="boring">}</span></code></pre>
+<p>When browsers receive this header over HTTP/2, they will attempt to upgrade to HTTP/3 on subsequent requests.</p>
+<h2 id="context-extractor"><a class="header" href="#context-extractor">Context Extractor</a></h2>
+<p>Use <code>JetStreamContext</code> to access connection metadata in your handlers:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_http::JetStreamContext;
+use jetstream_rpc::context::{Peer, RemoteAddr};
+
+async fn handler(ctx: JetStreamContext) -&gt; String {
+    // Get remote address
+    let addr = match ctx.remote() {
+        Some(RemoteAddr::IpAddr(ip)) =&gt; ip.to_string(),
+        _ =&gt; "unknown".to_string(),
+    };
+
+    // Get peer certificate info (for mTLS)
+    if let Some(Peer::Tls(tls_peer)) = ctx.peer() {
+        if let Some(leaf) = tls_peer.leaf() {
+            return format!(
+                "Hello {}! (CN: {:?})",
+                addr,
+                leaf.common_name
+            );
+        }
+    }
+
+    format!("Hello {}!", addr)
+}
+<span class="boring">}</span></code></pre>
+<h2 id="tls-configuration"><a class="header" href="#tls-configuration">TLS Configuration</a></h2>
+<h3 id="http2-tls-config"><a class="header" href="#http2-tls-config">HTTP/2 TLS Config</a></h3>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let mut tls_config = rustls::ServerConfig::builder()
+    .with_no_client_auth()
+    .with_single_cert(certs, key)?;
+
+// Important: set ALPN for HTTP/2
+tls_config.alpn_protocols = vec![b"h2".to_vec(), b"http/1.1".to_vec()];
+<span class="boring">}</span></code></pre>
+<h3 id="http3-quic-tls"><a class="header" href="#http3-quic-tls">HTTP/3 (QUIC) TLS</a></h3>
+<p>QUIC/HTTP/3 TLS is handled automatically by <code>jetstream_quic::Server</code>.</p>
+<h2 id="certificates"><a class="header" href="#certificates">Certificates</a></h2>
+<p>Generate development certificates:</p>
+<pre><code class="language-bash">cd certs
+./generate_certs.sh
+</code></pre>
+<p>Files created:</p>
+<ul>
+<li><code>server.pem</code> / <code>server.key</code> - Server certificate</li>
+<li><code>ca.pem</code> - CA certificate (for client trust)</li>
+<li><code>client.pem</code> / <code>client.key</code> - Client certificate (for mTLS)</li>
+<li><code>client.p12</code> - PKCS12 bundle for browser import</li>
+<li><code>server.crt</code> - DER format for Chrome</li>
+</ul>
+<h2 id="testing-with-chrome"><a class="header" href="#testing-with-chrome">Testing with Chrome</a></h2>
+<p>Chrome supports HTTP/3. To test:</p>
+<pre><code class="language-bash"># Start the server
+cargo run --example http --features quic
+
+# Launch Chrome with QUIC enabled
+./examples/launch_chrome.sh
+</code></pre>
+<p>The <code>launch_chrome.sh</code> script:</p>
+<ol>
+<li>Extracts the server’s SPKI hash</li>
+<li>Launches Chrome with <code>--origin-to-force-quic-on</code> flag</li>
+<li>Provides instructions for importing certificates</li>
+</ol>
+<h2 id="dependencies-1"><a class="header" href="#dependencies-1">Dependencies</a></h2>
+<p>Add to your <code>Cargo.toml</code>:</p>
+<pre><code class="language-toml">[dependencies]
+jetstream_http = "0.1"
+jetstream_quic = "13"
+axum = "0.8"
+hyper-util = { version = "0.1", features = ["full"] }
+tokio-rustls = "0.26"
+tower = "0.5"
+</code></pre>
+<p>For more details, see the <a href="#-jetstream_http">jetstream_http API documentation</a>.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="typescript"><a class="header" href="#typescript">TypeScript</a></h1>
+<p>JetStream provides TypeScript packages for wire format encoding and RPC communication, published to the GitHub Package Registry under <code>@sevki</code>.</p>
+<h2 id="installation"><a class="header" href="#installation">Installation</a></h2>
+<pre><code class="language-bash"># Configure npm to use GitHub Package Registry for @sevki scope
+echo "@sevki:registry=https://npm.pkg.github.com" &gt;&gt; .npmrc
+
+pnpm add @sevki/jetstream-wireformat @sevki/jetstream-rpc
+</code></pre>
+<h2 id="wireformat-codecs"><a class="header" href="#wireformat-codecs">WireFormat Codecs</a></h2>
+<p>The <code>@sevki/jetstream-wireformat</code> package provides binary codecs for all JetStream primitive and composite types. Every codec implements the <code>WireFormat&lt;T&gt;</code> interface:</p>
+<pre><code class="language-typescript">interface WireFormat&lt;T&gt; {
+  byteSize(value: T): number;
+  encode(value: T, writer: BinaryWriter): void;
+  decode(reader: BinaryReader): T;
+}
+</code></pre>
+<h3 id="primitives"><a class="header" href="#primitives">Primitives</a></h3>
+<pre><code class="language-typescript">import { BinaryReader, BinaryWriter, u32Codec, stringCodec, boolCodec } from '@sevki/jetstream-wireformat';
+
+// Encode a u32
+const writer = new BinaryWriter();
+u32Codec.encode(42, writer);
+const bytes = writer.toUint8Array();
+
+// Decode it back
+const reader = new BinaryReader(bytes);
+const value = u32Codec.decode(reader); // 42
+</code></pre>
+<p>Available primitive codecs: <code>u8Codec</code>, <code>u16Codec</code>, <code>u32Codec</code>, <code>u64Codec</code>, <code>i16Codec</code>, <code>i32Codec</code>, <code>i64Codec</code>, <code>f32Codec</code>, <code>f64Codec</code>, <code>boolCodec</code>, <code>stringCodec</code>.</p>
+<h3 id="composite-types"><a class="header" href="#composite-types">Composite Types</a></h3>
+<p>Build codecs for collections and optional types:</p>
+<pre><code class="language-typescript">import { vecCodec, optionCodec, mapCodec, stringCodec, u32Codec } from '@sevki/jetstream-wireformat';
+
+// Vec&lt;String&gt;
+const tagsCodec = vecCodec(stringCodec);
+
+// Option&lt;u32&gt;
+const maybeIdCodec = optionCodec(u32Codec);
+
+// HashMap&lt;String, u32&gt;
+const scoresCodec = mapCodec(stringCodec, u32Codec);
+</code></pre>
+<h3 id="structs-and-enums"><a class="header" href="#structs-and-enums">Structs and Enums</a></h3>
+<p>Use the <code>structCodec</code> and <code>enumCodec</code> helpers, or generate codecs from Rust types using <code>jetstream_codegen</code>:</p>
+<pre><code class="language-typescript">import { BinaryReader, BinaryWriter, u32Codec } from '@sevki/jetstream-wireformat';
+import type { WireFormat } from '@sevki/jetstream-wireformat';
+
+// A manually defined codec for a Point struct
+interface Point {
+  x: number;
+  y: number;
+}
+
+const pointCodec: WireFormat&lt;Point&gt; = {
+  byteSize(value: Point): number {
+    return u32Codec.byteSize(value.x) + u32Codec.byteSize(value.y);
+  },
+  encode(value: Point, writer: BinaryWriter): void {
+    u32Codec.encode(value.x, writer);
+    u32Codec.encode(value.y, writer);
+  },
+  decode(reader: BinaryReader): Point {
+    const x = u32Codec.decode(reader);
+    const y = u32Codec.decode(reader);
+    return { x, y };
+  },
+};
+</code></pre>
+<h2 id="code-generation"><a class="header" href="#code-generation">Code Generation</a></h2>
+<p>Instead of writing codecs by hand, use <code>jetstream_codegen</code> to generate TypeScript types and codecs from Rust source files:</p>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input src/types.rs \
+  --ts-out generated/
+</code></pre>
+<p>Given a Rust file:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(JetStreamWireFormat)]
+pub struct Point {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[derive(JetStreamWireFormat)]
+pub enum Shape {
+    Circle(u32),
+    Rectangle { width: u32, height: u32 },
+}
+<span class="boring">}</span></code></pre>
+<p>The codegen produces TypeScript interfaces and <code>WireFormat&lt;T&gt;</code> codec objects that are wire-compatible with the Rust implementations.</p>
+<h2 id="rpc"><a class="header" href="#rpc">RPC</a></h2>
+<p>The <code>@sevki/jetstream-rpc</code> package provides the RPC runtime for multiplexed request/response communication.</p>
+<h3 id="generated-code"><a class="header" href="#generated-code">Generated Code</a></h3>
+<p>The codegen generates RPC client and handler types from <code>#[service]</code> trait definitions:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Rust service definition
+#[service]
+pub trait EchoHttp {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+    async fn add(&amp;mut self, a: i32, b: i32) -&gt; Result&lt;i32&gt;;
+}
+<span class="boring">}</span></code></pre>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input examples/http.rs \
+  --ts-out generated/
+</code></pre>
+<p>This generates:</p>
+<ul>
+<li><strong>Request/response types</strong>: <code>TPing</code>, <code>RPing</code>, <code>TAdd</code>, <code>RAdd</code> with codecs</li>
+<li><strong>Frame unions</strong>: <code>Tmessage</code>, <code>Rmessage</code> discriminated unions with <code>FramerCodec</code> implementations</li>
+<li><strong>Framer wrappers</strong>: <code>TmessageFramer</code>, <code>RmessageFramer</code> classes implementing the <code>Framer</code> interface</li>
+<li><strong><code>rmessageDecode</code></strong>: A decoder function for use with <code>Mux</code> and <code>WebTransportTransport</code></li>
+<li><strong>Protocol constants</strong>: <code>PROTOCOL_NAME</code> (e.g., <code>'rs.jetstream.proto/echohttp'</code>) and <code>PROTOCOL_VERSION</code> (e.g., <code>'rs.jetstream.proto/echohttp/15.0.0+bfd7d20e'</code>)</li>
+<li><strong><code>EchoHttpClient</code></strong>: A typed client class with async methods and version negotiation</li>
+<li><strong><code>EchoHttpHandler</code></strong>: A handler interface for implementing server-side dispatch</li>
+<li><strong><code>dispatchEchoHttp</code></strong>: A dispatch function that routes <code>Tmessage</code> frames to handler methods</li>
+</ul>
+<h3 id="version-negotiation"><a class="header" href="#version-negotiation">Version Negotiation</a></h3>
+<p>Before making RPC calls, clients must perform a Tversion/Rversion handshake to negotiate the protocol version and maximum message size. The generated client provides a static <code>negotiate</code> method:</p>
+<pre><code class="language-typescript">import { EchoHttpClient, rmessageDecode, PROTOCOL_NAME } from './generated/echohttp_rpc.js';
+
+// Open a WebTransport session and bidi stream
+const session = new WebTransport(`https://api.example.com:4433/${PROTOCOL_NAME}`);
+await session.ready;
+const stream = await session.createBidirectionalStream();
+
+// Negotiate version on the raw stream before creating the Mux
+const negotiated = await EchoHttpClient.negotiate(stream.readable, stream.writable);
+console.log(`Negotiated: ${negotiated.version}, msize: ${negotiated.msize}`);
+</code></pre>
+<p>You can also call <code>negotiateVersion</code> directly from <code>@sevki/jetstream-rpc</code>:</p>
+<pre><code class="language-typescript">import { negotiateVersion } from '@sevki/jetstream-rpc';
+import { PROTOCOL_VERSION } from './generated/echohttp_rpc.js';
+
+const negotiated = await negotiateVersion(stream.readable, stream.writable, PROTOCOL_VERSION);
+</code></pre>
+<p>After negotiation, the stream is ready for Mux framing.</p>
+<h3 id="client-usage"><a class="header" href="#client-usage">Client Usage</a></h3>
+<pre><code class="language-typescript">import { Mux } from '@sevki/jetstream-rpc';
+import { EchoHttpClient, rmessageDecode, PROTOCOL_NAME } from './generated/echohttp_rpc.js';
+
+// 1. Connect
+const session = new WebTransport(`https://api.example.com:4433/${PROTOCOL_NAME}`);
+await session.ready;
+const stream = await session.createBidirectionalStream();
+
+// 2. Negotiate version
+await EchoHttpClient.negotiate(stream.readable, stream.writable);
+
+// 3. Create transport and mux
+const transport = new WebTransportTransport(stream, rmessageDecode);
+const mux = new Mux(transport);
+await mux.start();
+
+// 4. Create client and make RPC calls
+const client = new EchoHttpClient(mux);
+const reply = await client.ping("hello");  // "hello"
+const sum = await client.add(2, 3);        // 5
+
+// 5. Cleanup
+await mux.close();
+session.close();
+</code></pre>
+<h3 id="handler-server-side"><a class="header" href="#handler-server-side">Handler (Server-Side)</a></h3>
+<p>Implement the generated handler interface to serve RPCs:</p>
+<pre><code class="language-typescript">import { EchoHttpHandler, dispatchEchoHttp } from './generated/echohttp_rpc.js';
+
+const handler: EchoHttpHandler = {
+  async ping(ctx, message) {
+    return message; // echo back
+  },
+  async add(ctx, a, b) {
+    return a + b;
+  },
+};
+</code></pre>
+<h3 id="frame-wire-format"><a class="header" href="#frame-wire-format">Frame Wire Format</a></h3>
+<p>RPC frames follow the format <code>[size:u32 LE][type:u8][tag:u16 LE][payload]</code> where size includes itself (minimum 7 bytes). The tag field enables multiplexing concurrent requests over a single connection.</p>
+<p>Special message types:</p>
+<ul>
+<li><code>TVERSION</code> (100) / <code>RVERSION</code> (101) — version negotiation</li>
+<li><code>MESSAGE_ID_START</code> (102) — first service method ID</li>
+<li><code>RJETSTREAMERROR</code> (5) — error response frames</li>
+</ul>
+<h3 id="mux"><a class="header" href="#mux">Mux</a></h3>
+<p>The <code>Mux</code> class handles tag allocation, request/response matching, and concurrent RPC dispatch:</p>
+<pre><code class="language-typescript">import { Mux } from '@sevki/jetstream-rpc';
+
+const mux = new Mux(transport);
+await mux.start();
+
+// Each rpc() call acquires a tag, sends a frame, waits for the matching response, and releases the tag
+const response = await mux.rpc(request);
+
+await mux.close();
+</code></pre>
+<h3 id="protocol-interface"><a class="header" href="#protocol-interface">Protocol Interface</a></h3>
+<p>Every generated service implements the <code>Protocol</code> interface:</p>
+<pre><code class="language-typescript">interface Protocol&lt;TReq extends Framer, TRes extends Framer&gt; {
+  readonly VERSION: string;
+  readonly NAME: string;
+}
+</code></pre>
+<ul>
+<li><code>NAME</code> is the protocol name used for routing (e.g., URI path, ALPN)</li>
+<li><code>VERSION</code> is the full version string used during Tversion/Rversion negotiation</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="react"><a class="header" href="#react">React</a></h1>
+<p><code>@sevki/jetstream-react</code> provides React hooks for bidirectional RPC over WebTransport. Downstream (browser) can call upstream services, and upstream can push RPCs downstream.</p>
+<h2 id="installation-1"><a class="header" href="#installation-1">Installation</a></h2>
+<pre><code class="language-bash">pnpm add @sevki/jetstream-react @sevki/jetstream-rpc @sevki/jetstream-wireformat
+</code></pre>
+<p><code>react</code> (&gt;=18) is a peer dependency.</p>
+<h2 id="quick-start-1"><a class="header" href="#quick-start-1">Quick Start</a></h2>
+<pre><code class="language-tsx">import { JetStreamProvider, useJetStream, useJetStreamStatus, useRPC } from '@sevki/jetstream-react';
+import { EchoHttpClient, rmessageDecode, PROTOCOL_VERSION, PROTOCOL_NAME } from './generated/echohttp_rpc.js';
+
+function App() {
+  return (
+    &lt;JetStreamProvider url={`https://api.example.com:4433/${PROTOCOL_NAME}`}&gt;
+      &lt;EchoDemo /&gt;
+    &lt;/JetStreamProvider&gt;
+  );
+}
+
+function EchoDemo() {
+  const status = useJetStreamStatus();
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+
+  const { data, error, isLoading } = useRPC(
+    () =&gt; (echo ? echo.ping('hello') : Promise.resolve('')),
+    [echo],
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Connection: {status}&lt;/p&gt;
+      {isLoading &amp;&amp; &lt;p&gt;Loading...&lt;/p&gt;}
+      {error &amp;&amp; &lt;p&gt;Error: {error.message}&lt;/p&gt;}
+      {data &amp;&amp; &lt;p&gt;Echo: {data}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h2 id="provider"><a class="header" href="#provider">Provider</a></h2>
+<p><code>JetStreamProvider</code> manages the WebTransport session lifecycle. It establishes the session on mount and closes it on unmount.</p>
+<pre><code class="language-tsx">&lt;JetStreamProvider url="https://api.example.com:4433/rs.jetstream.proto/echohttp"&gt;
+  &lt;App /&gt;
+&lt;/JetStreamProvider&gt;
+</code></pre>
+<p><strong>Props:</strong></p>
+<ul>
+<li><code>url</code> (required) — the upstream WebTransport URL, typically <code>https://host:port/{PROTOCOL_NAME}</code></li>
+<li><code>children</code> — React children</li>
+</ul>
+<p>The provider exposes connection state and protocol version through context:</p>
+<ul>
+<li><code>session</code> — the <code>WebTransport</code> instance (or <code>null</code> before connected)</li>
+<li><code>state</code> — <code>'connecting'</code> | <code>'connected'</code> | <code>'disconnected'</code> | <code>'error'</code></li>
+<li><code>protocolVersion</code> — the negotiated protocol version string (or <code>null</code> before negotiation)</li>
+</ul>
+<h3 id="usejetstreamstatus"><a class="header" href="#usejetstreamstatus">useJetStreamStatus</a></h3>
+<p>Read the current connection state:</p>
+<pre><code class="language-tsx">function StatusIndicator() {
+  const status = useJetStreamStatus();
+  return &lt;span className={status}&gt;{status}&lt;/span&gt;;
+}
+</code></pre>
+<h2 id="usejetstream"><a class="header" href="#usejetstream">useJetStream</a></h2>
+<p>Creates a memoized RPC client for calling upstream services. Handles stream creation, version negotiation, and Mux setup automatically.</p>
+<pre><code class="language-tsx">const client = useJetStream(ClientClass, responseDecode, protocolVersion);
+</code></pre>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>ClientClass</code> — the generated client constructor (e.g., <code>EchoHttpClient</code>)</li>
+<li><code>responseDecode</code> — the generated response decoder function (e.g., <code>rmessageDecode</code>)</li>
+<li><code>protocolVersion</code> — the protocol version string for Tversion negotiation (e.g., <code>PROTOCOL_VERSION</code>)</li>
+</ul>
+<p><strong>Returns:</strong> the client instance (or <code>null</code> while connecting).</p>
+<p>The hook:</p>
+<ol>
+<li>Opens a bidirectional stream on the WebTransport session</li>
+<li>Performs Tversion/Rversion negotiation on the raw stream</li>
+<li>Stores the negotiated version in the provider context</li>
+<li>Creates a <code>WebTransportTransport</code> and <code>Mux</code> over the stream</li>
+<li>Constructs and returns the client</li>
+</ol>
+<p>The returned client is stable across re-renders as long as the session and constructor remain the same.</p>
+<pre><code class="language-tsx">import { EchoHttpClient, rmessageDecode, PROTOCOL_VERSION } from './generated/echohttp_rpc.js';
+
+function MyComponent() {
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+
+  if (!echo) return &lt;p&gt;Connecting...&lt;/p&gt;;
+
+  return &lt;button onClick={() =&gt; echo.ping('hi')}&gt;Ping&lt;/button&gt;;
+}
+</code></pre>
+<h2 id="userpc"><a class="header" href="#userpc">useRPC</a></h2>
+<p>Reactive wrapper around a single RPC call. Re-executes when dependencies change.</p>
+<pre><code class="language-tsx">const { data, error, isLoading, refetch } = useRPC(fn, deps);
+</code></pre>
+<p><strong>Parameters:</strong></p>
+<ul>
+<li><code>fn</code> — a function returning a <code>Promise&lt;T&gt;</code> (the RPC call)</li>
+<li><code>deps</code> — dependency array (like <code>useEffect</code>); the call re-runs when dependencies change</li>
+</ul>
+<p><strong>Returns:</strong></p>
+<ul>
+<li><code>data: T | undefined</code> — the resolved value</li>
+<li><code>error: Error | undefined</code> — the rejection reason</li>
+<li><code>isLoading: boolean</code> — whether a request is in flight</li>
+<li><code>refetch: () =&gt; void</code> — manually re-execute the call</li>
+</ul>
+<p>When dependencies change, the previous in-flight request is discarded (stale results are never applied).</p>
+<pre><code class="language-tsx">function SearchResults() {
+  const [query, setQuery] = useState('');
+  const search = useJetStream(SearchClient, rmessageDecode, PROTOCOL_VERSION);
+
+  const { data, error, isLoading } = useRPC(
+    () =&gt; (search ? search.find(query) : Promise.resolve([])),
+    [search, query],
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;input value={query} onChange={e =&gt; setQuery(e.target.value)} /&gt;
+      {isLoading &amp;&amp; &lt;p&gt;Loading...&lt;/p&gt;}
+      {error &amp;&amp; &lt;p&gt;Error: {error.message}&lt;/p&gt;}
+      {data?.map(item =&gt; &lt;div key={item.id}&gt;{item.name}&lt;/div&gt;)}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h2 id="usehandler"><a class="header" href="#usehandler">useHandler</a></h2>
+<p>Registers a handler for incoming upstream-initiated RPCs (push notifications, cache invalidation, etc.).</p>
+<pre><code class="language-tsx">import { NotificationHandler } from './generated/notification_rpc.js';
+
+function NotificationBadge() {
+  const { events, error } = useHandler(NotificationHandler, {
+    async notify(ctx, title, body) {
+      return { ack: true };
+    },
+  });
+
+  const unread = events.filter(e =&gt; e.method === 'notify').length;
+  return &lt;span&gt;{unread &gt; 0 &amp;&amp; `${unread} new`}&lt;/span&gt;;
+}
+</code></pre>
+<p>The handler is registered on mount and unregistered on unmount. Incoming bidirectional streams from upstream are dispatched to the matching handler.</p>
+<h2 id="imperative-calls-and-mutations"><a class="header" href="#imperative-calls-and-mutations">Imperative Calls and Mutations</a></h2>
+<p>For imperative operations (mutations, fire-and-forget), call the client directly. The generated client methods return plain <code>Promise</code>s:</p>
+<pre><code class="language-tsx">function AddButton() {
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+  const [sum, setSum] = useState&lt;number&gt;();
+
+  return (
+    &lt;button
+      disabled={!echo}
+      onClick={async () =&gt; {
+        if (echo) setSum(await echo.add(2, 3));
+      }}
+    &gt;
+      Add 2 + 3 {sum !== undefined &amp;&amp; `= ${sum}`}
+    &lt;/button&gt;
+  );
+}
+</code></pre>
+<p>For richer mutation state (loading, error, retries, cache invalidation), use TanStack Query:</p>
+<pre><code class="language-tsx">import { useMutation } from '@tanstack/react-query';
+
+function AddForm() {
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+
+  const { mutate, data, isPending } = useMutation({
+    mutationFn: ({ a, b }: { a: number; b: number }) =&gt; echo!.add(a, b),
+  });
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={() =&gt; mutate({ a: 2, b: 3 })} disabled={isPending || !echo}&gt;
+        Add 2 + 3
+      &lt;/button&gt;
+      {data !== undefined &amp;&amp; &lt;p&gt;Sum: {data}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+<h2 id="full-example"><a class="header" href="#full-example">Full Example</a></h2>
+<pre><code class="language-tsx">import { useState } from 'react';
+import {
+  JetStreamProvider,
+  useJetStream,
+  useJetStreamStatus,
+  useRPC,
+} from '@sevki/jetstream-react';
+import {
+  EchoHttpClient,
+  rmessageDecode,
+  PROTOCOL_VERSION,
+  PROTOCOL_NAME,
+} from './generated/echohttp_rpc.js';
+
+const SERVER_URL = `https://127.0.0.1:4433/${PROTOCOL_NAME}`;
+
+function EchoDemo() {
+  const status = useJetStreamStatus();
+  const echo = useJetStream(EchoHttpClient, rmessageDecode, PROTOCOL_VERSION);
+  const [message, setMessage] = useState('hello');
+  const [sum, setSum] = useState&lt;number | null&gt;(null);
+
+  const { data, error, isLoading } = useRPC(
+    () =&gt; (echo ? echo.ping(message) : Promise.resolve('')),
+    [echo, message],
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;JetStream Echo Demo&lt;/h1&gt;
+      &lt;p&gt;Connection: {status}&lt;/p&gt;
+      &lt;p&gt;Protocol: {PROTOCOL_VERSION}&lt;/p&gt;
+
+      &lt;h2&gt;Ping&lt;/h2&gt;
+      &lt;input
+        value={message}
+        onChange={e =&gt; setMessage(e.target.value)}
+        placeholder="Type a message..."
+      /&gt;
+      {isLoading &amp;&amp; &lt;p&gt;Loading...&lt;/p&gt;}
+      {error &amp;&amp; &lt;p&gt;Error: {error.message}&lt;/p&gt;}
+      {data &amp;&amp; &lt;p&gt;Echo: {data}&lt;/p&gt;}
+
+      &lt;h2&gt;Add&lt;/h2&gt;
+      &lt;button
+        disabled={!echo}
+        onClick={async () =&gt; {
+          if (echo) setSum(await echo.add(2, 3));
+        }}
+      &gt;
+        Add 2 + 3
+      &lt;/button&gt;
+      {sum !== null &amp;&amp; &lt;p&gt;Sum: {sum}&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}
+
+export default function App() {
+  return (
+    &lt;JetStreamProvider url={SERVER_URL}&gt;
+      &lt;EchoDemo /&gt;
+    &lt;/JetStreamProvider&gt;
+  );
+}
+</code></pre>
+<h2 id="package-structure"><a class="header" href="#package-structure">Package Structure</a></h2>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Package</th><th>Description</th></tr>
+</thead>
+<tbody>
+<tr><td><code>@sevki/jetstream-wireformat</code></td><td>Binary codecs for primitives and composite types</td></tr>
+<tr><td><code>@sevki/jetstream-rpc</code></td><td>RPC runtime: <code>Mux</code>, <code>TagPool</code>, framing, version negotiation</td></tr>
+<tr><td><code>@sevki/jetstream-react</code></td><td>React hooks: <code>JetStreamProvider</code>, <code>useJetStream</code>, <code>useRPC</code>, <code>useHandler</code></td></tr>
+</tbody>
+</table>
+</div>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="swift"><a class="header" href="#swift">Swift</a></h1>
+<p>JetStream provides Swift packages for wire format encoding and RPC communication via Swift Package Manager.</p>
+<h2 id="installation-2"><a class="header" href="#installation-2">Installation</a></h2>
+<p>Add the JetStream package to your <code>Package.swift</code>:</p>
+<pre><code class="language-swift">dependencies: [
+    .package(url: "https://github.com/sevki/jetstream.git", from: "15.0.0"),
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "JetStreamWireFormat", package: "jetstream"),
+            .product(name: "JetStreamRpc", package: "jetstream"),
+        ]
+    ),
+]
+</code></pre>
+<h2 id="wireformat-protocol"><a class="header" href="#wireformat-protocol">WireFormat Protocol</a></h2>
+<p>The <code>JetStreamWireFormat</code> module defines the <code>WireFormat</code> protocol that all serializable types conform to:</p>
+<pre><code class="language-swift">public protocol WireFormat: Sized {
+    func byteSize() -&gt; UInt32
+    func encode(writer: inout BinaryWriter) throws
+    static func decode(reader: inout BinaryReader) throws -&gt; Self
+}
+</code></pre>
+<h3 id="primitives-1"><a class="header" href="#primitives-1">Primitives</a></h3>
+<p>All Swift standard types (<code>UInt8</code>, <code>UInt16</code>, <code>UInt32</code>, <code>UInt64</code>, <code>Int16</code>, <code>Int32</code>, <code>Int64</code>, <code>Float</code>, <code>Double</code>, <code>Bool</code>, <code>String</code>) conform to <code>WireFormat</code>:</p>
+<pre><code class="language-swift">import JetStreamWireFormat
+
+// Encode a UInt32
+var writer = BinaryWriter()
+try UInt32(42).encode(writer: &amp;writer)
+let bytes = writer.bytes
+
+// Decode it back
+var reader = BinaryReader(data: bytes)
+let value = try UInt32.decode(reader: &amp;reader) // 42
+</code></pre>
+<h3 id="collections-and-optionals"><a class="header" href="#collections-and-optionals">Collections and Optionals</a></h3>
+<p>Arrays, Dictionaries, Sets, and Optionals conform to <code>WireFormat</code> when their elements do:</p>
+<pre><code class="language-swift">// Array&lt;String&gt;
+let tags: [String] = ["hello", "world"]
+try tags.encode(writer: &amp;writer)
+
+// Optional&lt;UInt32&gt;
+let maybeId: UInt32? = 42
+try maybeId.encode(writer: &amp;writer)
+
+// Dictionary&lt;String, UInt32&gt;
+let scores: [String: UInt32] = ["alice": 100, "bob": 200]
+try scores.encode(writer: &amp;writer)
+</code></pre>
+<h3 id="structs-and-enums-1"><a class="header" href="#structs-and-enums-1">Structs and Enums</a></h3>
+<p>Define custom types conforming to <code>WireFormat</code>, or generate them from Rust types using <code>jetstream_codegen</code>:</p>
+<pre><code class="language-swift">import JetStreamWireFormat
+
+public struct Point: WireFormat {
+    public var x: UInt32
+    public var y: UInt32
+
+    public func byteSize() -&gt; UInt32 {
+        return x.byteSize() + y.byteSize()
+    }
+
+    public func encode(writer: inout BinaryWriter) throws {
+        try x.encode(writer: &amp;writer)
+        try y.encode(writer: &amp;writer)
+    }
+
+    public static func decode(reader: inout BinaryReader) throws -&gt; Point {
+        let x = try UInt32.decode(reader: &amp;reader)
+        let y = try UInt32.decode(reader: &amp;reader)
+        return Point(x: x, y: y)
+    }
+}
+</code></pre>
+<h2 id="code-generation-1"><a class="header" href="#code-generation-1">Code Generation</a></h2>
+<p>Instead of writing conformances by hand, use <code>jetstream_codegen</code> to generate Swift types from Rust source files:</p>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input src/types.rs \
+  --swift-out generated/
+</code></pre>
+<p>Given a Rust file:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[derive(JetStreamWireFormat)]
+pub struct Point {
+    pub x: u32,
+    pub y: u32,
+}
+
+#[derive(JetStreamWireFormat)]
+pub enum Shape {
+    Circle(u32),
+    Rectangle { width: u32, height: u32 },
+}
+<span class="boring">}</span></code></pre>
+<p>The codegen produces Swift structs and enums conforming to <code>WireFormat</code> that are wire-compatible with the Rust implementations.</p>
+<h2 id="rpc-1"><a class="header" href="#rpc-1">RPC</a></h2>
+<p>The <code>JetStreamRpc</code> module provides the RPC runtime for multiplexed request/response communication.</p>
+<h3 id="generated-client"><a class="header" href="#generated-client">Generated Client</a></h3>
+<p>The codegen generates RPC client classes and handler protocols from <code>#[service]</code> trait definitions:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Rust service definition
+#[service]
+pub trait Echo {
+    async fn ping(&amp;mut self, message: String) -&gt; Result&lt;String&gt;;
+    async fn add(&amp;mut self, a: u32, b: u32) -&gt; Result&lt;u32&gt;;
+}
+<span class="boring">}</span></code></pre>
+<pre><code class="language-bash">cargo run -p jetstream_codegen -- \
+  --input examples/echo.rs \
+  --swift-out generated/
+</code></pre>
+<p>This generates a typed <code>EchoClient</code> class and an <code>EchoHandler</code> protocol:</p>
+<pre><code class="language-swift">// Generated client usage
+let client = EchoClient(mux: mux)
+let reply = try await client.ping(message: "hello")
+let sum = try await client.add(a: 2, b: 3)
+</code></pre>
+<pre><code class="language-swift">// Generated handler protocol — implement this for your server
+public protocol EchoHandler {
+    func ping(message: String) async throws -&gt; String
+    func add(a: UInt32, b: UInt32) async throws -&gt; UInt32
+}
+</code></pre>
+<h3 id="framer-protocol"><a class="header" href="#framer-protocol">Framer Protocol</a></h3>
+<p>The <code>Framer</code> protocol handles message type dispatch for RPC envelopes:</p>
+<pre><code class="language-swift">public protocol Framer {
+    func messageType() -&gt; UInt8
+    func byteSize() -&gt; UInt32
+    func encode(writer: inout BinaryWriter) throws
+    static func decode(reader: inout BinaryReader, type: UInt8) throws -&gt; Self
+}
+</code></pre>
+<p>Generated <code>Tmessage</code> and <code>Rmessage</code> enums conform to <code>Framer</code> and dispatch encoding/decoding based on the message type byte.</p>
+<h3 id="frame-wire-format-1"><a class="header" href="#frame-wire-format-1">Frame Wire Format</a></h3>
+<p>RPC frames follow the format <code>[size:u32 LE][type:u8][tag:u16 LE][payload]</code> where size includes itself (minimum 7 bytes). The tag field enables multiplexing concurrent requests over a single connection.</p>
+<h3 id="mux-1"><a class="header" href="#mux-1">Mux</a></h3>
+<p>The <code>Mux</code> class handles tag allocation, request/response matching, and concurrent RPC dispatch:</p>
+<pre><code class="language-swift">let mux = Mux(transport: transport)
+
+// Each rpc() call acquires a tag, sends a frame, waits for the matching response, and releases the tag
+let response = try await mux.rpc(request)
+</code></pre>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-crates"><a class="header" href="#-crates">🦀 Crates</a></h1>
+<p>For detailed API documentation of all crates in this repository, please see the <a href="#-jetstream">rustdoc documentation</a>.</p>
+<p>The main crates include:</p>
+<ul>
+<li><a href="#-jetstream"><strong>jetstream</strong></a> - The main crate with the <code>jetstream::prelude</code> module</li>
+<li><a href="#-jetstream_9p"><strong>jetstream_9p</strong></a> - 9P protocol implementation</li>
+<li><a href="#-jetstream_error"><strong>jetstream_error</strong></a> - Error types and handling</li>
+<li><a href="#-jetstream_iroh"><strong>jetstream_iroh</strong></a> - Iroh peer-to-peer transport</li>
+<li><a href="#-jetstream_libc"><strong>jetstream_libc</strong></a> - libc bindings</li>
+<li><a href="#-jetstream_macros"><strong>jetstream_macros</strong></a> - Procedural macros</li>
+<li><a href="#-jetstream_quic"><strong>jetstream_quic</strong></a> - QUIC/HTTP3 transport</li>
+<li><a href="doc/jetstream_radar/index.html"><strong>jetstream_radar</strong></a> - Radar functionality</li>
+<li><a href="#-jetstream_rpc"><strong>jetstream_rpc</strong></a> - RPC framework core</li>
+<li><a href="#-jetstream_ufs"><strong>jetstream_ufs</strong></a> - UFS (Unix File System) implementation</li>
+<li><a href="doc/jetstream_websocket/index.html"><strong>jetstream_websocket</strong></a> - WebSocket transport</li>
+<li><a href="#-jetstream_wireformat"><strong>jetstream_wireformat</strong></a> - Encoding and decoding logic</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream"><a class="header" href="#-jetstream">📦 jetstream</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_9p"><a class="header" href="#-jetstream_9p">📦 jetstream_9p</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_error"><a class="header" href="#-jetstream_error">📦 jetstream_error</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_http"><a class="header" href="#-jetstream_http">📦 jetstream_http</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_iroh"><a class="header" href="#-jetstream_iroh">📦 jetstream_iroh</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_libc"><a class="header" href="#-jetstream_libc">📦 jetstream_libc</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_macros"><a class="header" href="#-jetstream_macros">📦 jetstream_macros</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_quic"><a class="header" href="#-jetstream_quic">📦 jetstream_quic</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_rpc"><a class="header" href="#-jetstream_rpc">📦 jetstream_rpc</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_ufs"><a class="header" href="#-jetstream_ufs">📦 jetstream_ufs</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="-jetstream_wireformat"><a class="header" href="#-jetstream_wireformat">📦 jetstream_wireformat</a></h1>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="changelog"><a class="header" href="#changelog">Changelog</a></h1>
+<h2 id="1600-2026-02-22"><a class="header" href="#1600-2026-02-22">16.0.0 (2026-02-22)</a></h2>
+<h3 id="-breaking-changes"><a class="header" href="#-breaking-changes">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li><strong>jetstream:</strong> WebTransportHandler trait removed in favor of Router</li>
+</ul>
+<h3 id="features-4"><a class="header" href="#features-4">Features</a></h3>
+<ul>
+<li><strong>jetstream:</strong> add router-based dispatch and WebTransport cert auth (<a href="https://github.com/sevki/jetstream/commit/5bb5ff8cfd033e811bb20dbf672930347aa50ca2">5bb5ff8</a>)</li>
+<li><strong>jetstream:</strong> add router-based dispatch and WebTransport cert auth (<a href="https://github.com/sevki/jetstream/commit/b6ca4f9dd6564ac1ea7bff7dc4293e86f6431c4f">b6ca4f9</a>)</li>
+</ul>
+<h2 id="1520-2026-02-12"><a class="header" href="#1520-2026-02-12">15.2.0 (2026-02-12)</a></h2>
+<h3 id="features-1-1"><a class="header" href="#features-1-1">Features</a></h3>
+<ul>
+<li>jetstream_react package and webtransport implmentation (<a href="https://github.com/sevki/jetstream/commit/3309a0c2745f8190a60e1ef736570cc3fce50987">3309a0c</a>)</li>
+<li>jetstream_wireformat for swift and typescript (<a href="https://github.com/sevki/jetstream/commit/e0f73fc92a28c11f6f880017b1d0173d2fcf0a73">e0f73fc</a>)</li>
+<li>move webtransport to it’s own package (<a href="https://github.com/sevki/jetstream/commit/2ddbdf26579fcaed622422d2b62e28b79b954d76">2ddbdf2</a>)</li>
+</ul>
+<h2 id="1510-2026-02-10"><a class="header" href="#1510-2026-02-10">15.1.0 (2026-02-10)</a></h2>
+<h3 id="features-2-1"><a class="header" href="#features-2-1">Features</a></h3>
+<ul>
+<li>implement backtrace for error (<a href="https://github.com/sevki/jetstream/commit/ac9d388044bd753dc26111f9b77bef4e7248cec2">ac9d388</a>)</li>
+<li>implement backtrace for error (<a href="https://github.com/sevki/jetstream/commit/bc85295c37f946c58c99b69b98f84e8a2e04dce8">bc85295</a>)</li>
+</ul>
+<h2 id="1500-2026-02-07"><a class="header" href="#1500-2026-02-07">15.0.0 (2026-02-07)</a></h2>
+<h3 id="-breaking-changes-1"><a class="header" href="#-breaking-changes-1">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>mtls now accepts a client verifier</li>
+</ul>
+<h3 id="features-3-1"><a class="header" href="#features-3-1">Features</a></h3>
+<ul>
+<li>mtls now accepts a client verifier (<a href="https://github.com/sevki/jetstream/commit/3b8fe8c771e6d09aca5d85e771041d07db80b7b0">3b8fe8c</a>)</li>
+</ul>
+<h2 id="1410-2026-02-06"><a class="header" href="#1410-2026-02-06">14.1.0 (2026-02-06)</a></h2>
+<h3 id="features-4-1"><a class="header" href="#features-4-1">Features</a></h3>
+<ul>
+<li>version is devived in crate (<a href="https://github.com/sevki/jetstream/commit/0a2a1ea7aa3031e517deaa545a56ec69c3298773">0a2a1ea</a>)</li>
+<li>version is fixed, service now has a uses attribute (<a href="https://github.com/sevki/jetstream/commit/3c9e03d1bc59917c9fedded28f1d116109a1302c">3c9e03d</a>)</li>
+</ul>
+<h2 id="1400-2026-01-29"><a class="header" href="#1400-2026-01-29">14.0.0 (2026-01-29)</a></h2>
+<h3 id="-breaking-changes-2"><a class="header" href="#-breaking-changes-2">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>fully implenent jetstream_quic, introduced related traits</li>
+</ul>
+<h3 id="features-5"><a class="header" href="#features-5">Features</a></h3>
+<ul>
+<li>fully implenent jetstream_quic, introduced related traits (<a href="https://github.com/sevki/jetstream/commit/2b1e4a6fb4fdbfbf0d4247997c79b3300807350d">2b1e4a6</a>)</li>
+<li>introduce jetstream_http, supports http1.1,http2 and h3 (<a href="https://github.com/sevki/jetstream/commit/10c203b8d76f8a6b17045576fd5107dd746ca86b">10c203b</a>)</li>
+</ul>
+<h2 id="1300-2026-01-25"><a class="header" href="#1300-2026-01-25">13.0.0 (2026-01-25)</a></h2>
+<h3 id="-breaking-changes-3"><a class="header" href="#-breaking-changes-3">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>add multiplexing ability to client.</li>
+<li>make error types more isomorphic</li>
+<li>move quic and webocket to their own crates.</li>
+<li>use more futures</li>
+<li>fix proken publish</li>
+<li>splits up packages</li>
+<li>move modules to sensible parents</li>
+<li>protocol -&gt; coding</li>
+<li>merge all the creates</li>
+</ul>
+<h3 id="features-6"><a class="header" href="#features-6">Features</a></h3>
+<ul>
+<li>add cleanup code serverside. add cloudflare docs to mdbook (<a href="https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b">91da99c</a>)</li>
+<li>add context (<a href="https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d">4771c84</a>)</li>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/ba741bd0d2aed8d33d2b5589ca2a3da83b1abce8">ba741bd</a>)</li>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/3f0751a8588bf0fb5d189865f65417a717f414c4">3f0751a</a>)</li>
+<li>add iroh docs (<a href="https://github.com/sevki/jetstream/commit/6b7392f3c719e292a370c7c51e00506e49fb26b6">6b7392f</a>)</li>
+<li>add multiple tag pool backends (<a href="https://github.com/sevki/jetstream/commit/c85aafbb6606c9b89937cf1c3d6d1e2149fa3eae">c85aafb</a>)</li>
+<li>add multiplexing ability to client. (<a href="https://github.com/sevki/jetstream/commit/91a238e30eff6b20a8d2b2f8bbce67e4bc865068">91a238e</a>)</li>
+<li>add prost_wireformat macro (<a href="https://github.com/sevki/jetstream/commit/beeb94747f66ba01ce98dec24bff83fda88f1a99">beeb947</a>)</li>
+<li>Add support for bool in WireFormat (<a href="https://github.com/sevki/jetstream/commit/640c6ca3e22d0ed1dc7ec9c58af998e96efab235">640c6ca</a>)</li>
+<li>Add tests for jetstream modules (<a href="https://github.com/sevki/jetstream/commit/18462d96f8dd71b528d49441dc257d2038f3e39f">18462d9</a>)</li>
+<li>add tracing feature (<a href="https://github.com/sevki/jetstream/commit/5cb290799dd251c6e04ab4c2fe52089e3f32336c">5cb2907</a>)</li>
+<li>add websocket transport (<a href="https://github.com/sevki/jetstream/commit/3f4054c9ebe2253c11a2096c4983c7d75073da9a">3f4054c</a>)</li>
+<li>add wireformat for SystemTime (<a href="https://github.com/sevki/jetstream/commit/169f74a162d477177ee81b07bb0315372644f2fd">169f74a</a>)</li>
+<li>added async_trait support service macro (<a href="https://github.com/sevki/jetstream/commit/9a86185b07eb02cd05933920f9ad02792992c71c">9a86185</a>)</li>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>better error handling (<a href="https://github.com/sevki/jetstream/commit/faae10a704821d723be55e0e6d92e88def17591c">faae10a</a>)</li>
+<li>channels can now be split (<a href="https://github.com/sevki/jetstream/commit/ef646a590a5af13adc2c97c4871f19bca2a1d6b6">ef646a5</a>)</li>
+<li>distributes jetsream (<a href="https://github.com/sevki/jetstream/commit/d1477d56e574ca4c76b967a27c84ce7ccc4d9396">d1477d5</a>)</li>
+<li>dt features, remove rustdoc_to_md_book (<a href="https://github.com/sevki/jetstream/commit/039815903e127055ec494a3dc3e1780b7afb4fe2">0398159</a>)</li>
+<li>enum support (<a href="https://github.com/sevki/jetstream/commit/c4552d8bd056debdbb7845145f964defae6f90d2">c4552d8</a>)</li>
+<li>fix proken publish (<a href="https://github.com/sevki/jetstream/commit/a7272c0f3dc25aa10e89c8b7e9ad070d919a369d">a7272c0</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+<li>introduce iroh examples (<a href="https://github.com/sevki/jetstream/commit/86e001f9195a28429e34670597347d3148ea22d9">86e001f</a>)</li>
+<li>introduce jetstream cloudflare module. (<a href="https://github.com/sevki/jetstream/commit/6e8cc015024d3066f9f3208e20bd4725c03b0ac2">6e8cc01</a>)</li>
+<li>Ip primitives (<a href="https://github.com/sevki/jetstream/commit/1c263b59494e2699ec2347727f6cbf77bdac3b67">1c263b5</a>)</li>
+<li>jetstream cluster (<a href="https://github.com/sevki/jetstream/commit/80b5727722b1b44d522eb793c18e5bf117660d8b">80b5727</a>)</li>
+<li>jetstream distributed features (<a href="https://github.com/sevki/jetstream/commit/52b5e89e64b1e5559e600bed5fd91499cd051934">52b5e89</a>)</li>
+<li><strong>jetstream_distributed:</strong> placement (<a href="https://github.com/sevki/jetstream/commit/8a93788e51a98807466aa868b13685ba81aa1d3e">8a93788</a>)</li>
+<li>jetstream_libc (<a href="https://github.com/sevki/jetstream/commit/aba123bb7a027a97cad4d8a9d7731d18bb4059ca">aba123b</a>)</li>
+<li>jetstream_rpc supports wasm (<a href="https://github.com/sevki/jetstream/commit/e97e6ca6a94067551fb7a98c4e34fa2a774ebdfd">e97e6ca</a>)</li>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+<li>modularize components (<a href="https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a">7262a66</a>)</li>
+<li>move quic and webocket to their own crates. (<a href="https://github.com/sevki/jetstream/commit/7d0ba9fae68f1e4995d9ea6d1adcaf95b8dc983a">7d0ba9f</a>)</li>
+<li><strong>prost_wireformat:</strong> make derives optional (<a href="https://github.com/sevki/jetstream/commit/12dfacbc0eb6287d90e50ed8ec2dcd11cf41d24b">12dfacb</a>)</li>
+<li>publish npm package to gh (<a href="https://github.com/sevki/jetstream/commit/9b332b9f5a26a73ce72ec07e3e4e6315cc1d47c1">9b332b9</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/5fe2180cddc74c5933bac93c96d35a3fbd8653de">5fe2180</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>revamp service (<a href="https://github.com/sevki/jetstream/issues/147">#147</a>) (<a href="https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706">6d96be8</a>)</li>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+<li>rustdoc_to_mdbook (<a href="https://github.com/sevki/jetstream/commit/32deadf98614a9365e9991c3cd76620280c85b5d">32deadf</a>)</li>
+<li>start quic server with config (<a href="https://github.com/sevki/jetstream/issues/159">#159</a>) (<a href="https://github.com/sevki/jetstream/commit/34339819f26044e0a19c5c668c2fb710734af564">3433981</a>)</li>
+<li>update mdbook (<a href="https://github.com/sevki/jetstream/commit/f213c712bcc5395b048f83b2c352c163c11518e0">f213c71</a>)</li>
+<li>use more futures (<a href="https://github.com/sevki/jetstream/commit/467b6f56d0808e89f078c656f1e7c447738244ed">467b6f5</a>)</li>
+<li>use sccache (<a href="https://github.com/sevki/jetstream/issues/142">#142</a>) (<a href="https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6">89f96ab</a>)</li>
+<li>use serde_bytes::ByteBuf instead of Bytes (<a href="https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b">a1101d9</a>)</li>
+<li>use tag pool in mux (<a href="https://github.com/sevki/jetstream/commit/cd5dd5db7be347b586becd64e3113c5f34d3bd09">cd5dd5d</a>)</li>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+<li>wasm-support (<a href="https://github.com/sevki/jetstream/issues/260">#260</a>) (<a href="https://github.com/sevki/jetstream/commit/5cbff0daf95c780cd5962252aaa975d6248b524b">5cbff0d</a>)</li>
+<li><strong>wireformat:</strong> add u128 (<a href="https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab">c76f6c4</a>)</li>
+</ul>
+<h3 id="bug-fixes"><a class="header" href="#bug-fixes">Bug Fixes</a></h3>
+<ul>
+<li>add a script to update the workspace versions (<a href="https://github.com/sevki/jetstream/commit/9fc4ca29c2e3d99c37d10c75bc439540f26d7cea">9fc4ca2</a>)</li>
+<li>add comment about cf exec model (<a href="https://github.com/sevki/jetstream/commit/c979856a7406e0f612fc26adbfa200471034fbeb">c979856</a>)</li>
+<li>add support for libc in windows and mac (<a href="https://github.com/sevki/jetstream/commit/1fb3b5ba61c36372db24231f66753453a05b149a">1fb3b5b</a>)</li>
+<li>add toasty types fix skip (<a href="https://github.com/sevki/jetstream/commit/0fe936abdda512235343a77ff29fed7c972d3f96">0fe936a</a>)</li>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+<li>benchmarks (<a href="https://github.com/sevki/jetstream/commit/af695e28faa054b8434a13ae963d2fc6abab5d3a">af695e2</a>)</li>
+<li>benchmarks (<a href="https://github.com/sevki/jetstream/commit/94767ddfbd2b43f9562621dbbd679b3ec2215da6">94767dd</a>)</li>
+<li>benchmarks and add iroh_benchmarks (<a href="https://github.com/sevki/jetstream/commit/56dbc12c0938ed5aa1b22d8e4867beaaf7b0d587">56dbc12</a>)</li>
+<li>benchmarks code (<a href="https://github.com/sevki/jetstream/commit/c0d0f5948757ef9a7e6a0a803a51163710154ba1">c0d0f59</a>)</li>
+<li>bothced update (<a href="https://github.com/sevki/jetstream/commit/b3b7003f565fc833804a70519aeb0741d03f34be">b3b7003</a>)</li>
+<li>broken lock file (<a href="https://github.com/sevki/jetstream/commit/6148cf776ac29ab9941574422aeda44ed01450ee">6148cf7</a>)</li>
+<li>broken okid lockfile (<a href="https://github.com/sevki/jetstream/commit/63bae5e68e8707273b13dd06a74981f635556923">63bae5e</a>)</li>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>broken use statement for async_trait (<a href="https://github.com/sevki/jetstream/commit/cce4df6a5a594f25fcf71eb63e51534bf8b85c3b">cce4df6</a>)</li>
+<li>bump deps (<a href="https://github.com/sevki/jetstream/commit/0dbd81b248e3d34aee458116f7aa82cddc31d570">0dbd81b</a>)</li>
+<li>bump okid (<a href="https://github.com/sevki/jetstream/commit/7ed29402ed7a2c41d2f88696cefec4a42c09ec38">7ed2940</a>)</li>
+<li>bump zero copy (<a href="https://github.com/sevki/jetstream/issues/140">#140</a>) (<a href="https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454">4bb933f</a>)</li>
+<li>cargo lock resolver (<a href="https://github.com/sevki/jetstream/commit/327d8bdfe9d11f3d4d99e245de100ffae9e5d94b">327d8bd</a>)</li>
+<li>cargo publish workspace (<a href="https://github.com/sevki/jetstream/commit/8db93673748a9b5684f746ab55a34c289df70554">8db9367</a>)</li>
+<li>cargo toml version issues (<a href="https://github.com/sevki/jetstream/commit/3481015e9fd2ffb3fc881168bb38ee03c72144d5">3481015</a>)</li>
+<li>Change git user configuration in workflow (<a href="https://github.com/sevki/jetstream/commit/c3d92c19a876d5d433e15ce47cb5977b23eff7a9">c3d92c1</a>)</li>
+<li>change service shape (<a href="https://github.com/sevki/jetstream/commit/194252db4e3a58509845692a09a77fd9d1ccac2f">194252d</a>)</li>
+<li>ci (<a href="https://github.com/sevki/jetstream/commit/e7418e584a5b45965666f85bbfbf9795fc1a5b7c">e7418e5</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+<li>ci workflows (<a href="https://github.com/sevki/jetstream/commit/4c12f046e9ff9a5d39f4f0619f6ed68b25edcfe7">4c12f04</a>)</li>
+<li>ci-builds, drop 1.76 (<a href="https://github.com/sevki/jetstream/commit/5664e571b607eb8ed3b6f9ee3488994b4cd568b9">5664e57</a>)</li>
+<li>ci/cd (<a href="https://github.com/sevki/jetstream/issues/157">#157</a>) (<a href="https://github.com/sevki/jetstream/commit/3f7ff1ea0b561136bc51c65f1acc0f683cfafb01">3f7ff1e</a>)</li>
+<li>cleanup code and remove unused mermaid (<a href="https://github.com/sevki/jetstream/commit/c8975d56c388470fb4305c569ee30b84fde30f81">c8975d5</a>)</li>
+<li>collections can only be u16::MAX (<a href="https://github.com/sevki/jetstream/commit/6ada71a7222d16b0e3035837c76b8e3bcb51f627">6ada71a</a>)</li>
+<li>correct release workflow step ordering (<a href="https://github.com/sevki/jetstream/commit/0c7bbcd0403718dd0f18432c699ee9defc54068b">0c7bbcd</a>)</li>
+<li>criterion benchmark test, framed implementation (<a href="https://github.com/sevki/jetstream/commit/25b1611be97ffde52a1cb403ea4a55e3aa5f8e0b">25b1611</a>)</li>
+<li>Delete CHANGELOG.md (<a href="https://github.com/sevki/jetstream/commit/abcc79dc0511230f4725ea5da20c624352635b65">abcc79d</a>)</li>
+<li>delete release-plz (<a href="https://github.com/sevki/jetstream/commit/a7e319947a95b0915d01896688a13c86b77fc440">a7e3199</a>)</li>
+<li>dependency order (<a href="https://github.com/sevki/jetstream/commit/9a0e1f979c85a45780bf71f669da4cc91ecd3f5b">9a0e1f9</a>)</li>
+<li>dependency order and cycle (<a href="https://github.com/sevki/jetstream/commit/6a6c99778f90f8481d5792d560a6e97e0c5926bc">6a6c997</a>)</li>
+<li>dependency sudoku (<a href="https://github.com/sevki/jetstream/commit/7df5f9bdce4a3a830609fe5f50bfc3cdd278b5d2">7df5f9b</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/828d6be26328a938417b976cb8c8f63ddc1a9bea">828d6be</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/7f44956f965d5c906812e91b138e5c21597e37df">7f44956</a>)</li>
+<li>docs (<a href="https://github.com/sevki/jetstream/commit/995da2f79e1fc42eeb8a87811d070094b6e9e4b1">995da2f</a>)</li>
+<li>elide lifetimes in ufs (<a href="https://github.com/sevki/jetstream/commit/b778ff9481bf9c9d1cf35fc691903b80483e8cdb">b778ff9</a>)</li>
+<li>extern async_trait and trait_variant and lazy_static (<a href="https://github.com/sevki/jetstream/commit/71e93e2db32236e01bfc2cc923a6db10a788a730">71e93e2</a>)</li>
+<li>extern_more (<a href="https://github.com/sevki/jetstream/commit/1bd58d8150031c1394f94e7074afd2c1c60928de">1bd58d8</a>)</li>
+<li>extract git config to separate step (<a href="https://github.com/sevki/jetstream/commit/679d1a75fbe52ec995c01ad95a53afce994bc8fe">679d1a7</a>)</li>
+<li>failing docs (<a href="https://github.com/sevki/jetstream/commit/232ddee45d616dc08ea7e6dcd072db2c7f2cbba6">232ddee</a>)</li>
+<li>failing serde tests (<a href="https://github.com/sevki/jetstream/commit/81db0ded08429489cf5d83d5540804b00fdb9802">81db0de</a>)</li>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/049e58478f81be41983bdeef4a661f12eb21215a">049e584</a>)</li>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/04aace42d2d1338e614081954e32448ac3e5ec30">04aace4</a>)</li>
+<li>fuzz target (<a href="https://github.com/sevki/jetstream/commit/a494e15fca5b0ee1e66399d2b50cf0e1158b070c">a494e15</a>)</li>
+<li>hide documentation for iroh (<a href="https://github.com/sevki/jetstream/commit/47b104d73ece751924c1e41a77a92a8317c968f9">47b104d</a>)</li>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+<li>iroh example needs -F iroh (<a href="https://github.com/sevki/jetstream/commit/5246fb234453964ebf0e0f12ad0437f23780032d">5246fb2</a>)</li>
+<li>keep reciver types as is in generated code (<a href="https://github.com/sevki/jetstream/commit/7d956718c4e4c1564b1aeeb2d6af635eb44ae220">7d95671</a>)</li>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+<li>lint errors and rm unnecessary compiler_error (<a href="https://github.com/sevki/jetstream/commit/27aed1ef8263e4750f6a19dcd971d5b438dd1668">27aed1e</a>)</li>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+<li>make error types more isomorphic (<a href="https://github.com/sevki/jetstream/commit/aee2fa21a7c6879f5d77765d3ff96b22b98e0e86">aee2fa2</a>)</li>
+<li>make qid eq,hash (<a href="https://github.com/sevki/jetstream/commit/522de0d41e5cbda8d29ea6a20f1cb2cba7b5bb82">522de0d</a>)</li>
+<li>make TagPool use a channel (<a href="https://github.com/sevki/jetstream/commit/beb6209632a2a8abe283387eea531d8728c55ce2">beb6209</a>)</li>
+<li>make the proto mod same vis as trait (<a href="https://github.com/sevki/jetstream/commit/a43c0a2e3fbcb2991f6f3396eba9e30c96a47663">a43c0a2</a>)</li>
+<li>make websocket pub (<a href="https://github.com/sevki/jetstream/commit/6096ff9815b3b15dac1cfdd124821dc9d40218b0">6096ff9</a>)</li>
+<li>make websocket pub again (<a href="https://github.com/sevki/jetstream/commit/21acf4bd6f9269ff9c0ce3b4c3654bbfa2ca6d98">21acf4b</a>)</li>
+<li>mdbook changelog (<a href="https://github.com/sevki/jetstream/commit/5f03b6b7e2fe7b2fb56f082f8ff56105066b0998">5f03b6b</a>)</li>
+<li>mdbook-changelog version issue (<a href="https://github.com/sevki/jetstream/commit/7043b8e1b3ef85b1da383e6e2488bc32e4c9f839">7043b8e</a>)</li>
+<li>more tests (<a href="https://github.com/sevki/jetstream/commit/9a5071fb22c4a63e0af4fb1af9c7133f00cbc26e">9a5071f</a>)</li>
+<li>move term-transcript to dev, gate s2n windows (<a href="https://github.com/sevki/jetstream/commit/5fa7f4ce55ef111c0a155416d556189fbc266b87">5fa7f4c</a>)</li>
+<li>npm scoping issue (<a href="https://github.com/sevki/jetstream/commit/0d0688482a692a7766e1dca5764ff4189532cd59">0d06884</a>)</li>
+<li>only build docs in release (<a href="https://github.com/sevki/jetstream/commit/02b02bc6348a3ec537683d9b18047c02e8b7c502">02b02bc</a>)</li>
+<li>option&lt;T&gt; support (<a href="https://github.com/sevki/jetstream/commit/2e224cad47d775fb2c967c4d37d33b8aabeb7470">2e224ca</a>)</li>
+<li>pin toasty (<a href="https://github.com/sevki/jetstream/commit/03b6b18c6cce3cf9cdb274040bf29da21e1e5dd2">03b6b18</a>)</li>
+<li>publish script (<a href="https://github.com/sevki/jetstream/commit/e8685cc195682d2467de6d042ff3052ddd9175c5">e8685cc</a>)</li>
+<li>readme (<a href="https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820">dc77722</a>)</li>
+<li>recursive self call (<a href="https://github.com/sevki/jetstream/commit/c51d455ececd5ac461561b8bd44709a92a45b2b7">c51d455</a>)</li>
+<li>reenable sccache (<a href="https://github.com/sevki/jetstream/commit/757bb7e248996a587ee13c2a8c21246d0e198a04">757bb7e</a>)</li>
+<li>reexport tokio_util from rpc (<a href="https://github.com/sevki/jetstream/commit/cf28c40a3783379ac89295fef4a55bd4212d4891">cf28c40</a>)</li>
+<li>release again (<a href="https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2">3a6e65e</a>)</li>
+<li>release order (<a href="https://github.com/sevki/jetstream/commit/0973046516c6703f7f3fb97d8732d4130ffaa729">0973046</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/53a698b53ad31d12cc068ba8e921779b710a448e">53a698b</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/92eeee530c2be541a31a46d86dcd67fd68b0c8a5">92eeee5</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/3a2f4df4bbec17361295a2839ba10e521656f94f">3a2f4df</a>)</li>
+<li>release workflow (<a href="https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094">4abeb24</a>)</li>
+<li>release-please-config.json (<a href="https://github.com/sevki/jetstream/commit/885527f075deffba2f139739032460e35d93bc08">885527f</a>)</li>
+<li>remove distributed (<a href="https://github.com/sevki/jetstream/commit/3aba1f6543493e107b079d35fa441d46611e637e">3aba1f6</a>)</li>
+<li>remove expects (<a href="https://github.com/sevki/jetstream/commit/8a58cf565453d755100b5298c1c89ed478dff11e">8a58cf5</a>)</li>
+<li>remove jj (<a href="https://github.com/sevki/jetstream/commit/02fefd9e82f0f260d54f703daa0eb4667cdbce5d">02fefd9</a>)</li>
+<li>remove prost (<a href="https://github.com/sevki/jetstream/commit/5a5ff9b7904f1023f5bbed6c5a6236ef01644c17">5a5ff9b</a>)</li>
+<li>remove redundant io imports and use fully qualified paths (<a href="https://github.com/sevki/jetstream/commit/7de4b9ea0cece01326cde4af027eae8a3120f1f9">7de4b9e</a>)</li>
+<li>remove redundant push from version update step (<a href="https://github.com/sevki/jetstream/commit/923d6969e1435d261a16bbe2e156be834304ed0f">923d696</a>)</li>
+<li>remove tracing from sink and stream (<a href="https://github.com/sevki/jetstream/commit/97ac0a59b3c0cd8aefb2b0af2804b81316ea6acf">97ac0a5</a>)</li>
+<li>remove unsafe code (<a href="https://github.com/sevki/jetstream/commit/a286d93fddc7bf8329defe77b5d01c0b6dbabd17">a286d93</a>)</li>
+<li>revert serde_bytes to bytes with serde (<a href="https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54">2e02460</a>)</li>
+<li>rollback toasty (<a href="https://github.com/sevki/jetstream/commit/ae0790b473fa81e1c67ec25003bec0f0d6082450">ae0790b</a>)</li>
+<li>rust.yml workflow (<a href="https://github.com/sevki/jetstream/commit/9dc7bc09ad8a341e8bcf19f945b8efa478b0d67d">9dc7bc0</a>)</li>
+<li>rustdoc to mdbook (<a href="https://github.com/sevki/jetstream/commit/2098ad11072e31ec329b42ae7df6dd380d993ff7">2098ad1</a>)</li>
+<li>semaphor should use permit.forget() (<a href="https://github.com/sevki/jetstream/commit/340323c9039fce8b6d60cf39d9e7ceca2b1b322e">340323c</a>)</li>
+<li>service macro works correctly with client calls (<a href="https://github.com/sevki/jetstream/commit/eb1fd0f01bc899b7f0650dbfca29e2d77ec76720">eb1fd0f</a>)</li>
+<li>simpler workflows for github actions (<a href="https://github.com/sevki/jetstream/commit/17185ddd3337fff27131f96a26eabcb0d1961155">17185dd</a>)</li>
+<li>snapshots for macros (<a href="https://github.com/sevki/jetstream/commit/fab686df8c79710b5e9319519d8aa3d17b203847">fab686d</a>)</li>
+<li>some tests (<a href="https://github.com/sevki/jetstream/commit/c65ded107a254d283e165563b0b97fa735741399">c65ded1</a>)</li>
+<li>switch to release-plz (<a href="https://github.com/sevki/jetstream/commit/a07aaec0dd9a38be953b739ad9269650d690d885">a07aaec</a>)</li>
+<li>target os cfg attrs (<a href="https://github.com/sevki/jetstream/commit/16e5c849b2c1b7b962590dfab779f4429cf06445">16e5c84</a>)</li>
+<li>trait_variant use (<a href="https://github.com/sevki/jetstream/issues/155">#155</a>) (<a href="https://github.com/sevki/jetstream/commit/3cd5665454bb42c3e38606c4a3dd9355ef63fc9b">3cd5665</a>)</li>
+<li>typo (<a href="https://github.com/sevki/jetstream/commit/901ffbdda65336060410f348fe57c0ddc01a9fc4">901ffbd</a>)</li>
+<li>unused git (<a href="https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68">3fe908e</a>)</li>
+<li>update 9p to use trait_variant (<a href="https://github.com/sevki/jetstream/commit/96db410d8e5e04c4beb9100be2b58c271cdd7b8c">96db410</a>)</li>
+<li>Update CHANGELOG.md (<a href="https://github.com/sevki/jetstream/commit/6ab562f5210fa30a0a33a393d4fa18f3eb1154db">6ab562f</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+<li>update doc links (<a href="https://github.com/sevki/jetstream/commit/80a5e1efc9b2a275b8d49be7eedc832602914c0c">80a5e1e</a>)</li>
+<li>update docs (<a href="https://github.com/sevki/jetstream/commit/74e2867864e46b441ed01193220c22842fcf67a8">74e2867</a>)</li>
+<li>Update lib.rs for extern crates (<a href="https://github.com/sevki/jetstream/commit/ffb677744364c3d44274be2d5eb20c30ecabb6b5">ffb6777</a>)</li>
+<li>update release flow (<a href="https://github.com/sevki/jetstream/issues/144">#144</a>) (<a href="https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489">36dd4af</a>)</li>
+<li>Update release-please-config.json (<a href="https://github.com/sevki/jetstream/commit/e592cf3ed85bf657b26e792e149848b5623bbd5b">e592cf3</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/commit/b058b38367db97630b91af82e6bb11e26728708e">b058b38</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/issues/122">#122</a>) (<a href="https://github.com/sevki/jetstream/commit/566fe1f64c6d6f25d157a227b261c69c9b3e83b5">566fe1f</a>)</li>
+<li>update snapshot tests (<a href="https://github.com/sevki/jetstream/commit/b9fde4c2a2192d58c839d7d9e45ea0d2110089f4">b9fde4c</a>)</li>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+<li>use cargo publish workspace (<a href="https://github.com/sevki/jetstream/commit/e28a0f75bfa9fca9a990c6f2b5527be5e25a3d16">e28a0f7</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/ca861a7ac9797925d208c3b08e8d195607d4d388">ca861a7</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945">822bf0e</a>)</li>
+<li>versioning issues (<a href="https://github.com/sevki/jetstream/commit/4a3111cc18be2856b0d4355a0da2ec3f011eebf9">4a3111c</a>)</li>
+<li>versions in workspace (<a href="https://github.com/sevki/jetstream/commit/8b90b5af219a36fa4934ace0e6411baedf816843">8b90b5a</a>)</li>
+<li>warnings (<a href="https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83">62d8013</a>)</li>
+<li>wasm-pack build error. rm rustdoc2mdbook (<a href="https://github.com/sevki/jetstream/commit/68076ccbcf88d18d1dadb30355d8358283864b54">68076cc</a>)</li>
+<li>wasm32 feature gates (<a href="https://github.com/sevki/jetstream/commit/755f9c1c6628fc46b1d4d3df03441106de3abdfd">755f9c1</a>)</li>
+<li><strong>wireformat:</strong> from_bytes doesn’t require a mutable buf (<a href="https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725">437c35c</a>)</li>
+</ul>
+<h3 id="code-refactoring"><a class="header" href="#code-refactoring">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+<li>move modules to sensible parents (<a href="https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b">4eba5fb</a>)</li>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="1210-2026-01-25"><a class="header" href="#1210-2026-01-25">12.1.0 (2026-01-25)</a></h2>
+<h3 id="features-7"><a class="header" href="#features-7">Features</a></h3>
+<ul>
+<li>publish npm package to gh (<a href="https://github.com/sevki/jetstream/commit/9b332b9f5a26a73ce72ec07e3e4e6315cc1d47c1">9b332b9</a>)</li>
+</ul>
+<h3 id="bug-fixes-1"><a class="header" href="#bug-fixes-1">Bug Fixes</a></h3>
+<ul>
+<li>Change git user configuration in workflow (<a href="https://github.com/sevki/jetstream/commit/c3d92c19a876d5d433e15ce47cb5977b23eff7a9">c3d92c1</a>)</li>
+<li>npm scoping issue (<a href="https://github.com/sevki/jetstream/commit/0d0688482a692a7766e1dca5764ff4189532cd59">0d06884</a>)</li>
+</ul>
+<h2 id="1200-2026-01-24"><a class="header" href="#1200-2026-01-24">12.0.0 (2026-01-24)</a></h2>
+<h3 id="-breaking-changes-4"><a class="header" href="#-breaking-changes-4">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>add multiplexing ability to client.</li>
+</ul>
+<h3 id="features-8"><a class="header" href="#features-8">Features</a></h3>
+<ul>
+<li>add multiple tag pool backends (<a href="https://github.com/sevki/jetstream/commit/c85aafbb6606c9b89937cf1c3d6d1e2149fa3eae">c85aafb</a>)</li>
+<li>add multiplexing ability to client. (<a href="https://github.com/sevki/jetstream/commit/91a238e30eff6b20a8d2b2f8bbce67e4bc865068">91a238e</a>)</li>
+<li>use tag pool in mux (<a href="https://github.com/sevki/jetstream/commit/cd5dd5db7be347b586becd64e3113c5f34d3bd09">cd5dd5d</a>)</li>
+</ul>
+<h3 id="bug-fixes-2"><a class="header" href="#bug-fixes-2">Bug Fixes</a></h3>
+<ul>
+<li>benchmarks code (<a href="https://github.com/sevki/jetstream/commit/c0d0f5948757ef9a7e6a0a803a51163710154ba1">c0d0f59</a>)</li>
+<li>delete release-plz (<a href="https://github.com/sevki/jetstream/commit/a7e319947a95b0915d01896688a13c86b77fc440">a7e3199</a>)</li>
+<li>lint errors and rm unnecessary compiler_error (<a href="https://github.com/sevki/jetstream/commit/27aed1ef8263e4750f6a19dcd971d5b438dd1668">27aed1e</a>)</li>
+<li>make TagPool use a channel (<a href="https://github.com/sevki/jetstream/commit/beb6209632a2a8abe283387eea531d8728c55ce2">beb6209</a>)</li>
+<li>semaphor should use permit.forget() (<a href="https://github.com/sevki/jetstream/commit/340323c9039fce8b6d60cf39d9e7ceca2b1b322e">340323c</a>)</li>
+</ul>
+<h2 id="1110-2026-01-21"><a class="header" href="#1110-2026-01-21">11.1.0 (2026-01-21)</a></h2>
+<h3 id="features-9"><a class="header" href="#features-9">Features</a></h3>
+<ul>
+<li>add prost_wireformat macro (<a href="https://github.com/sevki/jetstream/commit/beeb94747f66ba01ce98dec24bff83fda88f1a99">beeb947</a>)</li>
+<li>add wireformat for SystemTime (<a href="https://github.com/sevki/jetstream/commit/169f74a162d477177ee81b07bb0315372644f2fd">169f74a</a>)</li>
+<li><strong>prost_wireformat:</strong> make derives optional (<a href="https://github.com/sevki/jetstream/commit/12dfacbc0eb6287d90e50ed8ec2dcd11cf41d24b">12dfacb</a>)</li>
+</ul>
+<h2 id="1100-2026-01-20"><a class="header" href="#1100-2026-01-20">11.0.0 (2026-01-20)</a></h2>
+<h3 id="-breaking-changes-5"><a class="header" href="#-breaking-changes-5">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>make error types more isomorphic</li>
+<li>move quic and webocket to their own crates.</li>
+<li>use more futures</li>
+<li>fix proken publish</li>
+<li>splits up packages</li>
+<li>move modules to sensible parents</li>
+<li>protocol -&gt; coding</li>
+<li>merge all the creates</li>
+</ul>
+<h3 id="features-10"><a class="header" href="#features-10">Features</a></h3>
+<ul>
+<li>add cleanup code serverside. add cloudflare docs to mdbook (<a href="https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b">91da99c</a>)</li>
+<li>add context (<a href="https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d">4771c84</a>)</li>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/ba741bd0d2aed8d33d2b5589ca2a3da83b1abce8">ba741bd</a>)</li>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/3f0751a8588bf0fb5d189865f65417a717f414c4">3f0751a</a>)</li>
+<li>add iroh docs (<a href="https://github.com/sevki/jetstream/commit/6b7392f3c719e292a370c7c51e00506e49fb26b6">6b7392f</a>)</li>
+<li>Add support for bool in WireFormat (<a href="https://github.com/sevki/jetstream/commit/640c6ca3e22d0ed1dc7ec9c58af998e96efab235">640c6ca</a>)</li>
+<li>Add tests for jetstream modules (<a href="https://github.com/sevki/jetstream/commit/18462d96f8dd71b528d49441dc257d2038f3e39f">18462d9</a>)</li>
+<li>add tracing feature (<a href="https://github.com/sevki/jetstream/commit/5cb290799dd251c6e04ab4c2fe52089e3f32336c">5cb2907</a>)</li>
+<li>add websocket transport (<a href="https://github.com/sevki/jetstream/commit/3f4054c9ebe2253c11a2096c4983c7d75073da9a">3f4054c</a>)</li>
+<li>added async_trait support service macro (<a href="https://github.com/sevki/jetstream/commit/9a86185b07eb02cd05933920f9ad02792992c71c">9a86185</a>)</li>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>better error handling (<a href="https://github.com/sevki/jetstream/commit/faae10a704821d723be55e0e6d92e88def17591c">faae10a</a>)</li>
+<li>channels can now be split (<a href="https://github.com/sevki/jetstream/commit/ef646a590a5af13adc2c97c4871f19bca2a1d6b6">ef646a5</a>)</li>
+<li>distributes jetsream (<a href="https://github.com/sevki/jetstream/commit/d1477d56e574ca4c76b967a27c84ce7ccc4d9396">d1477d5</a>)</li>
+<li>dt features, remove rustdoc_to_md_book (<a href="https://github.com/sevki/jetstream/commit/039815903e127055ec494a3dc3e1780b7afb4fe2">0398159</a>)</li>
+<li>enum support (<a href="https://github.com/sevki/jetstream/commit/c4552d8bd056debdbb7845145f964defae6f90d2">c4552d8</a>)</li>
+<li>fix proken publish (<a href="https://github.com/sevki/jetstream/commit/a7272c0f3dc25aa10e89c8b7e9ad070d919a369d">a7272c0</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+<li>introduce iroh examples (<a href="https://github.com/sevki/jetstream/commit/86e001f9195a28429e34670597347d3148ea22d9">86e001f</a>)</li>
+<li>introduce jetstream cloudflare module. (<a href="https://github.com/sevki/jetstream/commit/6e8cc015024d3066f9f3208e20bd4725c03b0ac2">6e8cc01</a>)</li>
+<li>Ip primitives (<a href="https://github.com/sevki/jetstream/commit/1c263b59494e2699ec2347727f6cbf77bdac3b67">1c263b5</a>)</li>
+<li>jetstream cluster (<a href="https://github.com/sevki/jetstream/commit/80b5727722b1b44d522eb793c18e5bf117660d8b">80b5727</a>)</li>
+<li>jetstream distributed features (<a href="https://github.com/sevki/jetstream/commit/52b5e89e64b1e5559e600bed5fd91499cd051934">52b5e89</a>)</li>
+<li><strong>jetstream_distributed:</strong> placement (<a href="https://github.com/sevki/jetstream/commit/8a93788e51a98807466aa868b13685ba81aa1d3e">8a93788</a>)</li>
+<li>jetstream_libc (<a href="https://github.com/sevki/jetstream/commit/aba123bb7a027a97cad4d8a9d7731d18bb4059ca">aba123b</a>)</li>
+<li>jetstream_rpc supports wasm (<a href="https://github.com/sevki/jetstream/commit/e97e6ca6a94067551fb7a98c4e34fa2a774ebdfd">e97e6ca</a>)</li>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+<li>modularize components (<a href="https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a">7262a66</a>)</li>
+<li>move quic and webocket to their own crates. (<a href="https://github.com/sevki/jetstream/commit/7d0ba9fae68f1e4995d9ea6d1adcaf95b8dc983a">7d0ba9f</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/5fe2180cddc74c5933bac93c96d35a3fbd8653de">5fe2180</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+<li>revamp service (<a href="https://github.com/sevki/jetstream/issues/147">#147</a>) (<a href="https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706">6d96be8</a>)</li>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+<li>rustdoc_to_mdbook (<a href="https://github.com/sevki/jetstream/commit/32deadf98614a9365e9991c3cd76620280c85b5d">32deadf</a>)</li>
+<li>start quic server with config (<a href="https://github.com/sevki/jetstream/issues/159">#159</a>) (<a href="https://github.com/sevki/jetstream/commit/34339819f26044e0a19c5c668c2fb710734af564">3433981</a>)</li>
+<li>update mdbook (<a href="https://github.com/sevki/jetstream/commit/f213c712bcc5395b048f83b2c352c163c11518e0">f213c71</a>)</li>
+<li>use more futures (<a href="https://github.com/sevki/jetstream/commit/467b6f56d0808e89f078c656f1e7c447738244ed">467b6f5</a>)</li>
+<li>use sccache (<a href="https://github.com/sevki/jetstream/issues/142">#142</a>) (<a href="https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6">89f96ab</a>)</li>
+<li>use serde_bytes::ByteBuf instead of Bytes (<a href="https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b">a1101d9</a>)</li>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+<li>wasm-support (<a href="https://github.com/sevki/jetstream/issues/260">#260</a>) (<a href="https://github.com/sevki/jetstream/commit/5cbff0daf95c780cd5962252aaa975d6248b524b">5cbff0d</a>)</li>
+<li><strong>wireformat:</strong> add u128 (<a href="https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab">c76f6c4</a>)</li>
+</ul>
+<h3 id="bug-fixes-3"><a class="header" href="#bug-fixes-3">Bug Fixes</a></h3>
+<ul>
+<li>add a script to update the workspace versions (<a href="https://github.com/sevki/jetstream/commit/9fc4ca29c2e3d99c37d10c75bc439540f26d7cea">9fc4ca2</a>)</li>
+<li>add comment about cf exec model (<a href="https://github.com/sevki/jetstream/commit/c979856a7406e0f612fc26adbfa200471034fbeb">c979856</a>)</li>
+<li>add support for libc in windows and mac (<a href="https://github.com/sevki/jetstream/commit/1fb3b5ba61c36372db24231f66753453a05b149a">1fb3b5b</a>)</li>
+<li>add toasty types fix skip (<a href="https://github.com/sevki/jetstream/commit/0fe936abdda512235343a77ff29fed7c972d3f96">0fe936a</a>)</li>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+<li>benchmarks (<a href="https://github.com/sevki/jetstream/commit/af695e28faa054b8434a13ae963d2fc6abab5d3a">af695e2</a>)</li>
+<li>benchmarks (<a href="https://github.com/sevki/jetstream/commit/94767ddfbd2b43f9562621dbbd679b3ec2215da6">94767dd</a>)</li>
+<li>benchmarks and add iroh_benchmarks (<a href="https://github.com/sevki/jetstream/commit/56dbc12c0938ed5aa1b22d8e4867beaaf7b0d587">56dbc12</a>)</li>
+<li>bothced update (<a href="https://github.com/sevki/jetstream/commit/b3b7003f565fc833804a70519aeb0741d03f34be">b3b7003</a>)</li>
+<li>broken lock file (<a href="https://github.com/sevki/jetstream/commit/6148cf776ac29ab9941574422aeda44ed01450ee">6148cf7</a>)</li>
+<li>broken okid lockfile (<a href="https://github.com/sevki/jetstream/commit/63bae5e68e8707273b13dd06a74981f635556923">63bae5e</a>)</li>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>broken use statement for async_trait (<a href="https://github.com/sevki/jetstream/commit/cce4df6a5a594f25fcf71eb63e51534bf8b85c3b">cce4df6</a>)</li>
+<li>bump deps (<a href="https://github.com/sevki/jetstream/commit/0dbd81b248e3d34aee458116f7aa82cddc31d570">0dbd81b</a>)</li>
+<li>bump okid (<a href="https://github.com/sevki/jetstream/commit/7ed29402ed7a2c41d2f88696cefec4a42c09ec38">7ed2940</a>)</li>
+<li>bump zero copy (<a href="https://github.com/sevki/jetstream/issues/140">#140</a>) (<a href="https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454">4bb933f</a>)</li>
+<li>cargo lock resolver (<a href="https://github.com/sevki/jetstream/commit/327d8bdfe9d11f3d4d99e245de100ffae9e5d94b">327d8bd</a>)</li>
+<li>cargo publish workspace (<a href="https://github.com/sevki/jetstream/commit/8db93673748a9b5684f746ab55a34c289df70554">8db9367</a>)</li>
+<li>cargo toml version issues (<a href="https://github.com/sevki/jetstream/commit/3481015e9fd2ffb3fc881168bb38ee03c72144d5">3481015</a>)</li>
+<li>change service shape (<a href="https://github.com/sevki/jetstream/commit/194252db4e3a58509845692a09a77fd9d1ccac2f">194252d</a>)</li>
+<li>ci (<a href="https://github.com/sevki/jetstream/commit/e7418e584a5b45965666f85bbfbf9795fc1a5b7c">e7418e5</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+<li>ci workflows (<a href="https://github.com/sevki/jetstream/commit/4c12f046e9ff9a5d39f4f0619f6ed68b25edcfe7">4c12f04</a>)</li>
+<li>ci-builds, drop 1.76 (<a href="https://github.com/sevki/jetstream/commit/5664e571b607eb8ed3b6f9ee3488994b4cd568b9">5664e57</a>)</li>
+<li>ci/cd (<a href="https://github.com/sevki/jetstream/issues/157">#157</a>) (<a href="https://github.com/sevki/jetstream/commit/3f7ff1ea0b561136bc51c65f1acc0f683cfafb01">3f7ff1e</a>)</li>
+<li>cleanup code and remove unused mermaid (<a href="https://github.com/sevki/jetstream/commit/c8975d56c388470fb4305c569ee30b84fde30f81">c8975d5</a>)</li>
+<li>collections can only be u16::MAX (<a href="https://github.com/sevki/jetstream/commit/6ada71a7222d16b0e3035837c76b8e3bcb51f627">6ada71a</a>)</li>
+<li>criterion benchmark test, framed implementation (<a href="https://github.com/sevki/jetstream/commit/25b1611be97ffde52a1cb403ea4a55e3aa5f8e0b">25b1611</a>)</li>
+<li>Delete CHANGELOG.md (<a href="https://github.com/sevki/jetstream/commit/abcc79dc0511230f4725ea5da20c624352635b65">abcc79d</a>)</li>
+<li>dependency order (<a href="https://github.com/sevki/jetstream/commit/9a0e1f979c85a45780bf71f669da4cc91ecd3f5b">9a0e1f9</a>)</li>
+<li>dependency order and cycle (<a href="https://github.com/sevki/jetstream/commit/6a6c99778f90f8481d5792d560a6e97e0c5926bc">6a6c997</a>)</li>
+<li>dependency sudoku (<a href="https://github.com/sevki/jetstream/commit/7df5f9bdce4a3a830609fe5f50bfc3cdd278b5d2">7df5f9b</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/828d6be26328a938417b976cb8c8f63ddc1a9bea">828d6be</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/7f44956f965d5c906812e91b138e5c21597e37df">7f44956</a>)</li>
+<li>docs (<a href="https://github.com/sevki/jetstream/commit/995da2f79e1fc42eeb8a87811d070094b6e9e4b1">995da2f</a>)</li>
+<li>elide lifetimes in ufs (<a href="https://github.com/sevki/jetstream/commit/b778ff9481bf9c9d1cf35fc691903b80483e8cdb">b778ff9</a>)</li>
+<li>extern async_trait and trait_variant and lazy_static (<a href="https://github.com/sevki/jetstream/commit/71e93e2db32236e01bfc2cc923a6db10a788a730">71e93e2</a>)</li>
+<li>extern_more (<a href="https://github.com/sevki/jetstream/commit/1bd58d8150031c1394f94e7074afd2c1c60928de">1bd58d8</a>)</li>
+<li>failing docs (<a href="https://github.com/sevki/jetstream/commit/232ddee45d616dc08ea7e6dcd072db2c7f2cbba6">232ddee</a>)</li>
+<li>failing serde tests (<a href="https://github.com/sevki/jetstream/commit/81db0ded08429489cf5d83d5540804b00fdb9802">81db0de</a>)</li>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/049e58478f81be41983bdeef4a661f12eb21215a">049e584</a>)</li>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/04aace42d2d1338e614081954e32448ac3e5ec30">04aace4</a>)</li>
+<li>fuzz target (<a href="https://github.com/sevki/jetstream/commit/a494e15fca5b0ee1e66399d2b50cf0e1158b070c">a494e15</a>)</li>
+<li>hide documentation for iroh (<a href="https://github.com/sevki/jetstream/commit/47b104d73ece751924c1e41a77a92a8317c968f9">47b104d</a>)</li>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+<li>iroh example needs -F iroh (<a href="https://github.com/sevki/jetstream/commit/5246fb234453964ebf0e0f12ad0437f23780032d">5246fb2</a>)</li>
+<li>keep reciver types as is in generated code (<a href="https://github.com/sevki/jetstream/commit/7d956718c4e4c1564b1aeeb2d6af635eb44ae220">7d95671</a>)</li>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+<li>make error types more isomorphic (<a href="https://github.com/sevki/jetstream/commit/aee2fa21a7c6879f5d77765d3ff96b22b98e0e86">aee2fa2</a>)</li>
+<li>make qid eq,hash (<a href="https://github.com/sevki/jetstream/commit/522de0d41e5cbda8d29ea6a20f1cb2cba7b5bb82">522de0d</a>)</li>
+<li>make the proto mod same vis as trait (<a href="https://github.com/sevki/jetstream/commit/a43c0a2e3fbcb2991f6f3396eba9e30c96a47663">a43c0a2</a>)</li>
+<li>make websocket pub (<a href="https://github.com/sevki/jetstream/commit/6096ff9815b3b15dac1cfdd124821dc9d40218b0">6096ff9</a>)</li>
+<li>make websocket pub again (<a href="https://github.com/sevki/jetstream/commit/21acf4bd6f9269ff9c0ce3b4c3654bbfa2ca6d98">21acf4b</a>)</li>
+<li>mdbook changelog (<a href="https://github.com/sevki/jetstream/commit/5f03b6b7e2fe7b2fb56f082f8ff56105066b0998">5f03b6b</a>)</li>
+<li>mdbook-changelog version issue (<a href="https://github.com/sevki/jetstream/commit/7043b8e1b3ef85b1da383e6e2488bc32e4c9f839">7043b8e</a>)</li>
+<li>more tests (<a href="https://github.com/sevki/jetstream/commit/9a5071fb22c4a63e0af4fb1af9c7133f00cbc26e">9a5071f</a>)</li>
+<li>move term-transcript to dev, gate s2n windows (<a href="https://github.com/sevki/jetstream/commit/5fa7f4ce55ef111c0a155416d556189fbc266b87">5fa7f4c</a>)</li>
+<li>only build docs in release (<a href="https://github.com/sevki/jetstream/commit/02b02bc6348a3ec537683d9b18047c02e8b7c502">02b02bc</a>)</li>
+<li>option&lt;T&gt; support (<a href="https://github.com/sevki/jetstream/commit/2e224cad47d775fb2c967c4d37d33b8aabeb7470">2e224ca</a>)</li>
+<li>pin toasty (<a href="https://github.com/sevki/jetstream/commit/03b6b18c6cce3cf9cdb274040bf29da21e1e5dd2">03b6b18</a>)</li>
+<li>publish script (<a href="https://github.com/sevki/jetstream/commit/e8685cc195682d2467de6d042ff3052ddd9175c5">e8685cc</a>)</li>
+<li>readme (<a href="https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820">dc77722</a>)</li>
+<li>recursive self call (<a href="https://github.com/sevki/jetstream/commit/c51d455ececd5ac461561b8bd44709a92a45b2b7">c51d455</a>)</li>
+<li>reenable sccache (<a href="https://github.com/sevki/jetstream/commit/757bb7e248996a587ee13c2a8c21246d0e198a04">757bb7e</a>)</li>
+<li>reexport tokio_util from rpc (<a href="https://github.com/sevki/jetstream/commit/cf28c40a3783379ac89295fef4a55bd4212d4891">cf28c40</a>)</li>
+<li>release again (<a href="https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2">3a6e65e</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/53a698b53ad31d12cc068ba8e921779b710a448e">53a698b</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/92eeee530c2be541a31a46d86dcd67fd68b0c8a5">92eeee5</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/3a2f4df4bbec17361295a2839ba10e521656f94f">3a2f4df</a>)</li>
+<li>release workflow (<a href="https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094">4abeb24</a>)</li>
+<li>release-please-config.json (<a href="https://github.com/sevki/jetstream/commit/885527f075deffba2f139739032460e35d93bc08">885527f</a>)</li>
+<li>remove distributed (<a href="https://github.com/sevki/jetstream/commit/3aba1f6543493e107b079d35fa441d46611e637e">3aba1f6</a>)</li>
+<li>remove expects (<a href="https://github.com/sevki/jetstream/commit/8a58cf565453d755100b5298c1c89ed478dff11e">8a58cf5</a>)</li>
+<li>remove jj (<a href="https://github.com/sevki/jetstream/commit/02fefd9e82f0f260d54f703daa0eb4667cdbce5d">02fefd9</a>)</li>
+<li>remove prost (<a href="https://github.com/sevki/jetstream/commit/5a5ff9b7904f1023f5bbed6c5a6236ef01644c17">5a5ff9b</a>)</li>
+<li>remove redundant io imports and use fully qualified paths (<a href="https://github.com/sevki/jetstream/commit/7de4b9ea0cece01326cde4af027eae8a3120f1f9">7de4b9e</a>)</li>
+<li>remove tracing from sink and stream (<a href="https://github.com/sevki/jetstream/commit/97ac0a59b3c0cd8aefb2b0af2804b81316ea6acf">97ac0a5</a>)</li>
+<li>remove unsafe code (<a href="https://github.com/sevki/jetstream/commit/a286d93fddc7bf8329defe77b5d01c0b6dbabd17">a286d93</a>)</li>
+<li>revert serde_bytes to bytes with serde (<a href="https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54">2e02460</a>)</li>
+<li>rollback toasty (<a href="https://github.com/sevki/jetstream/commit/ae0790b473fa81e1c67ec25003bec0f0d6082450">ae0790b</a>)</li>
+<li>rust.yml workflow (<a href="https://github.com/sevki/jetstream/commit/9dc7bc09ad8a341e8bcf19f945b8efa478b0d67d">9dc7bc0</a>)</li>
+<li>rustdoc to mdbook (<a href="https://github.com/sevki/jetstream/commit/2098ad11072e31ec329b42ae7df6dd380d993ff7">2098ad1</a>)</li>
+<li>service macro works correctly with client calls (<a href="https://github.com/sevki/jetstream/commit/eb1fd0f01bc899b7f0650dbfca29e2d77ec76720">eb1fd0f</a>)</li>
+<li>simpler workflows for github actions (<a href="https://github.com/sevki/jetstream/commit/17185ddd3337fff27131f96a26eabcb0d1961155">17185dd</a>)</li>
+<li>snapshots for macros (<a href="https://github.com/sevki/jetstream/commit/fab686df8c79710b5e9319519d8aa3d17b203847">fab686d</a>)</li>
+<li>some tests (<a href="https://github.com/sevki/jetstream/commit/c65ded107a254d283e165563b0b97fa735741399">c65ded1</a>)</li>
+<li>target os cfg attrs (<a href="https://github.com/sevki/jetstream/commit/16e5c849b2c1b7b962590dfab779f4429cf06445">16e5c84</a>)</li>
+<li>trait_variant use (<a href="https://github.com/sevki/jetstream/issues/155">#155</a>) (<a href="https://github.com/sevki/jetstream/commit/3cd5665454bb42c3e38606c4a3dd9355ef63fc9b">3cd5665</a>)</li>
+<li>typo (<a href="https://github.com/sevki/jetstream/commit/901ffbdda65336060410f348fe57c0ddc01a9fc4">901ffbd</a>)</li>
+<li>unused git (<a href="https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68">3fe908e</a>)</li>
+<li>update 9p to use trait_variant (<a href="https://github.com/sevki/jetstream/commit/96db410d8e5e04c4beb9100be2b58c271cdd7b8c">96db410</a>)</li>
+<li>Update CHANGELOG.md (<a href="https://github.com/sevki/jetstream/commit/6ab562f5210fa30a0a33a393d4fa18f3eb1154db">6ab562f</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+<li>update doc links (<a href="https://github.com/sevki/jetstream/commit/80a5e1efc9b2a275b8d49be7eedc832602914c0c">80a5e1e</a>)</li>
+<li>update docs (<a href="https://github.com/sevki/jetstream/commit/74e2867864e46b441ed01193220c22842fcf67a8">74e2867</a>)</li>
+<li>Update lib.rs for extern crates (<a href="https://github.com/sevki/jetstream/commit/ffb677744364c3d44274be2d5eb20c30ecabb6b5">ffb6777</a>)</li>
+<li>update release flow (<a href="https://github.com/sevki/jetstream/issues/144">#144</a>) (<a href="https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489">36dd4af</a>)</li>
+<li>Update release-please-config.json (<a href="https://github.com/sevki/jetstream/commit/e592cf3ed85bf657b26e792e149848b5623bbd5b">e592cf3</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/commit/b058b38367db97630b91af82e6bb11e26728708e">b058b38</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/issues/122">#122</a>) (<a href="https://github.com/sevki/jetstream/commit/566fe1f64c6d6f25d157a227b261c69c9b3e83b5">566fe1f</a>)</li>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+<li>use cargo publish workspace (<a href="https://github.com/sevki/jetstream/commit/e28a0f75bfa9fca9a990c6f2b5527be5e25a3d16">e28a0f7</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/ca861a7ac9797925d208c3b08e8d195607d4d388">ca861a7</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945">822bf0e</a>)</li>
+<li>versions in workspace (<a href="https://github.com/sevki/jetstream/commit/8b90b5af219a36fa4934ace0e6411baedf816843">8b90b5a</a>)</li>
+<li>warnings (<a href="https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83">62d8013</a>)</li>
+<li>wasm-pack build error. rm rustdoc2mdbook (<a href="https://github.com/sevki/jetstream/commit/68076ccbcf88d18d1dadb30355d8358283864b54">68076cc</a>)</li>
+<li>wasm32 feature gates (<a href="https://github.com/sevki/jetstream/commit/755f9c1c6628fc46b1d4d3df03441106de3abdfd">755f9c1</a>)</li>
+<li><strong>wireformat:</strong> from_bytes doesn’t require a mutable buf (<a href="https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725">437c35c</a>)</li>
+</ul>
+<h3 id="code-refactoring-1"><a class="header" href="#code-refactoring-1">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+<li>move modules to sensible parents (<a href="https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b">4eba5fb</a>)</li>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="1010-2026-01-20"><a class="header" href="#1010-2026-01-20">10.1.0 (2026-01-20)</a></h2>
+<h3 id="features-11"><a class="header" href="#features-11">Features</a></h3>
+<ul>
+<li>better error handling (<a href="https://github.com/sevki/jetstream/commit/faae10a704821d723be55e0e6d92e88def17591c">faae10a</a>)</li>
+<li>update mdbook (<a href="https://github.com/sevki/jetstream/commit/f213c712bcc5395b048f83b2c352c163c11518e0">f213c71</a>)</li>
+</ul>
+<h3 id="bug-fixes-4"><a class="header" href="#bug-fixes-4">Bug Fixes</a></h3>
+<ul>
+<li>benchmarks (<a href="https://github.com/sevki/jetstream/commit/af695e28faa054b8434a13ae963d2fc6abab5d3a">af695e2</a>)</li>
+<li>cargo publish workspace (<a href="https://github.com/sevki/jetstream/commit/8db93673748a9b5684f746ab55a34c289df70554">8db9367</a>)</li>
+<li>cleanup code and remove unused mermaid (<a href="https://github.com/sevki/jetstream/commit/c8975d56c388470fb4305c569ee30b84fde30f81">c8975d5</a>)</li>
+<li>mdbook-changelog version issue (<a href="https://github.com/sevki/jetstream/commit/7043b8e1b3ef85b1da383e6e2488bc32e4c9f839">7043b8e</a>)</li>
+<li>move term-transcript to dev, gate s2n windows (<a href="https://github.com/sevki/jetstream/commit/5fa7f4ce55ef111c0a155416d556189fbc266b87">5fa7f4c</a>)</li>
+<li>publish script (<a href="https://github.com/sevki/jetstream/commit/e8685cc195682d2467de6d042ff3052ddd9175c5">e8685cc</a>)</li>
+</ul>
+<h2 id="1000-2025-11-19"><a class="header" href="#1000-2025-11-19">10.0.0 (2025-11-19)</a></h2>
+<h3 id="-breaking-changes-6"><a class="header" href="#-breaking-changes-6">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>make error types more isomorphic</li>
+</ul>
+<h3 id="bug-fixes-5"><a class="header" href="#bug-fixes-5">Bug Fixes</a></h3>
+<ul>
+<li>make error types more isomorphic (<a href="https://github.com/sevki/jetstream/commit/aee2fa21a7c6879f5d77765d3ff96b22b98e0e86">aee2fa2</a>)</li>
+</ul>
+<h2 id="950-2025-10-30"><a class="header" href="#950-2025-10-30">9.5.0 (2025-10-30)</a></h2>
+<h3 id="features-12"><a class="header" href="#features-12">Features</a></h3>
+<ul>
+<li>add cleanup code serverside. add cloudflare docs to mdbook (<a href="https://github.com/sevki/jetstream/commit/91da99cae4a47dbd80672574e75098909bbcb79b">91da99c</a>)</li>
+<li>introduce jetstream cloudflare module. (<a href="https://github.com/sevki/jetstream/commit/6e8cc015024d3066f9f3208e20bd4725c03b0ac2">6e8cc01</a>)</li>
+</ul>
+<h3 id="bug-fixes-6"><a class="header" href="#bug-fixes-6">Bug Fixes</a></h3>
+<ul>
+<li>add comment about cf exec model (<a href="https://github.com/sevki/jetstream/commit/c979856a7406e0f612fc26adbfa200471034fbeb">c979856</a>)</li>
+<li>remove tracing from sink and stream (<a href="https://github.com/sevki/jetstream/commit/97ac0a59b3c0cd8aefb2b0af2804b81316ea6acf">97ac0a5</a>)</li>
+<li>remove unsafe code (<a href="https://github.com/sevki/jetstream/commit/a286d93fddc7bf8329defe77b5d01c0b6dbabd17">a286d93</a>)</li>
+</ul>
+<h2 id="942-2025-10-28"><a class="header" href="#942-2025-10-28">9.4.2 (2025-10-28)</a></h2>
+<h3 id="bug-fixes-7"><a class="header" href="#bug-fixes-7">Bug Fixes</a></h3>
+<ul>
+<li>dependency sudoku (<a href="https://github.com/sevki/jetstream/commit/7df5f9bdce4a3a830609fe5f50bfc3cdd278b5d2">7df5f9b</a>)</li>
+</ul>
+<h2 id="941-2025-10-17"><a class="header" href="#941-2025-10-17">9.4.1 (2025-10-17)</a></h2>
+<h3 id="bug-fixes-8"><a class="header" href="#bug-fixes-8">Bug Fixes</a></h3>
+<ul>
+<li>remove redundant io imports and use fully qualified paths (<a href="https://github.com/sevki/jetstream/commit/7de4b9ea0cece01326cde4af027eae8a3120f1f9">7de4b9e</a>)</li>
+<li>target os cfg attrs (<a href="https://github.com/sevki/jetstream/commit/16e5c849b2c1b7b962590dfab779f4429cf06445">16e5c84</a>)</li>
+</ul>
+<h2 id="940-2025-10-15"><a class="header" href="#940-2025-10-15">9.4.0 (2025-10-15)</a></h2>
+<h3 id="features-13"><a class="header" href="#features-13">Features</a></h3>
+<ul>
+<li>add context (<a href="https://github.com/sevki/jetstream/commit/4771c84d8a7f3a35ff1b8c25ebe0b0871dd7592d">4771c84</a>)</li>
+</ul>
+<h3 id="bug-fixes-9"><a class="header" href="#bug-fixes-9">Bug Fixes</a></h3>
+<ul>
+<li>cargo toml version issues (<a href="https://github.com/sevki/jetstream/commit/3481015e9fd2ffb3fc881168bb38ee03c72144d5">3481015</a>)</li>
+<li>collections can only be u16::MAX (<a href="https://github.com/sevki/jetstream/commit/6ada71a7222d16b0e3035837c76b8e3bcb51f627">6ada71a</a>)</li>
+<li>recursive self call (<a href="https://github.com/sevki/jetstream/commit/c51d455ececd5ac461561b8bd44709a92a45b2b7">c51d455</a>)</li>
+<li>wasm32 feature gates (<a href="https://github.com/sevki/jetstream/commit/755f9c1c6628fc46b1d4d3df03441106de3abdfd">755f9c1</a>)</li>
+</ul>
+<h2 id="930-2025-10-14"><a class="header" href="#930-2025-10-14">9.3.0 (2025-10-14)</a></h2>
+<h3 id="features-14"><a class="header" href="#features-14">Features</a></h3>
+<ul>
+<li>add tracing feature (<a href="https://github.com/sevki/jetstream/commit/5cb290799dd251c6e04ab4c2fe52089e3f32336c">5cb2907</a>)</li>
+</ul>
+<h2 id="920-2025-10-05"><a class="header" href="#920-2025-10-05">9.2.0 (2025-10-05)</a></h2>
+<h3 id="features-15"><a class="header" href="#features-15">Features</a></h3>
+<ul>
+<li>dt features, remove rustdoc_to_md_book (<a href="https://github.com/sevki/jetstream/commit/039815903e127055ec494a3dc3e1780b7afb4fe2">0398159</a>)</li>
+</ul>
+<h3 id="bug-fixes-10"><a class="header" href="#bug-fixes-10">Bug Fixes</a></h3>
+<ul>
+<li>iroh example needs -F iroh (<a href="https://github.com/sevki/jetstream/commit/5246fb234453964ebf0e0f12ad0437f23780032d">5246fb2</a>)</li>
+<li>wasm-pack build error. rm rustdoc2mdbook (<a href="https://github.com/sevki/jetstream/commit/68076ccbcf88d18d1dadb30355d8358283864b54">68076cc</a>)</li>
+</ul>
+<h2 id="912-2025-10-05"><a class="header" href="#912-2025-10-05">9.1.2 (2025-10-05)</a></h2>
+<h3 id="bug-fixes-11"><a class="header" href="#bug-fixes-11">Bug Fixes</a></h3>
+<ul>
+<li>failing docs (<a href="https://github.com/sevki/jetstream/commit/232ddee45d616dc08ea7e6dcd072db2c7f2cbba6">232ddee</a>)</li>
+</ul>
+<h2 id="911-2025-10-05"><a class="header" href="#911-2025-10-05">9.1.1 (2025-10-05)</a></h2>
+<h3 id="bug-fixes-12"><a class="header" href="#bug-fixes-12">Bug Fixes</a></h3>
+<ul>
+<li>benchmarks and add iroh_benchmarks (<a href="https://github.com/sevki/jetstream/commit/56dbc12c0938ed5aa1b22d8e4867beaaf7b0d587">56dbc12</a>)</li>
+<li>hide documentation for iroh (<a href="https://github.com/sevki/jetstream/commit/47b104d73ece751924c1e41a77a92a8317c968f9">47b104d</a>)</li>
+</ul>
+<h2 id="910-2025-10-02"><a class="header" href="#910-2025-10-02">9.1.0 (2025-10-02)</a></h2>
+<h3 id="features-16"><a class="header" href="#features-16">Features</a></h3>
+<ul>
+<li>introduce iroh examples (<a href="https://github.com/sevki/jetstream/commit/86e001f9195a28429e34670597347d3148ea22d9">86e001f</a>)</li>
+</ul>
+<h3 id="bug-fixes-13"><a class="header" href="#bug-fixes-13">Bug Fixes</a></h3>
+<ul>
+<li>add support for libc in windows and mac (<a href="https://github.com/sevki/jetstream/commit/1fb3b5ba61c36372db24231f66753453a05b149a">1fb3b5b</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/828d6be26328a938417b976cb8c8f63ddc1a9bea">828d6be</a>)</li>
+<li>disable running echo on windows (<a href="https://github.com/sevki/jetstream/commit/7f44956f965d5c906812e91b138e5c21597e37df">7f44956</a>)</li>
+</ul>
+<h2 id="900-2025-09-29"><a class="header" href="#900-2025-09-29">9.0.0 (2025-09-29)</a></h2>
+<h3 id="-breaking-changes-7"><a class="header" href="#-breaking-changes-7">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>move quic and webocket to their own crates.</li>
+</ul>
+<h3 id="features-17"><a class="header" href="#features-17">Features</a></h3>
+<ul>
+<li>move quic and webocket to their own crates. (<a href="https://github.com/sevki/jetstream/commit/7d0ba9fae68f1e4995d9ea6d1adcaf95b8dc983a">7d0ba9f</a>)</li>
+</ul>
+<h3 id="bug-fixes-14"><a class="header" href="#bug-fixes-14">Bug Fixes</a></h3>
+<ul>
+<li>simpler workflows for github actions (<a href="https://github.com/sevki/jetstream/commit/17185ddd3337fff27131f96a26eabcb0d1961155">17185dd</a>)</li>
+</ul>
+<h2 id="831-2025-06-06"><a class="header" href="#831-2025-06-06">8.3.1 (2025-06-06)</a></h2>
+<h3 id="bug-fixes-15"><a class="header" href="#bug-fixes-15">Bug Fixes</a></h3>
+<ul>
+<li>update docs (<a href="https://github.com/sevki/jetstream/commit/74e2867864e46b441ed01193220c22842fcf67a8">74e2867</a>)</li>
+</ul>
+<h2 id="830-2025-05-31"><a class="header" href="#830-2025-05-31">8.3.0 (2025-05-31)</a></h2>
+<h3 id="features-18"><a class="header" href="#features-18">Features</a></h3>
+<ul>
+<li>jetstream_libc (<a href="https://github.com/sevki/jetstream/commit/aba123bb7a027a97cad4d8a9d7731d18bb4059ca">aba123b</a>)</li>
+</ul>
+<h2 id="821-2025-05-29"><a class="header" href="#821-2025-05-29">8.2.1 (2025-05-29)</a></h2>
+<h3 id="bug-fixes-16"><a class="header" href="#bug-fixes-16">Bug Fixes</a></h3>
+<ul>
+<li>rustdoc to mdbook (<a href="https://github.com/sevki/jetstream/commit/2098ad11072e31ec329b42ae7df6dd380d993ff7">2098ad1</a>)</li>
+</ul>
+<h2 id="820-2025-05-29"><a class="header" href="#820-2025-05-29">8.2.0 (2025-05-29)</a></h2>
+<h3 id="features-19"><a class="header" href="#features-19">Features</a></h3>
+<ul>
+<li>jetstream distributed features (<a href="https://github.com/sevki/jetstream/commit/52b5e89e64b1e5559e600bed5fd91499cd051934">52b5e89</a>)</li>
+</ul>
+<h3 id="bug-fixes-17"><a class="header" href="#bug-fixes-17">Bug Fixes</a></h3>
+<ul>
+<li>Update lib.rs for extern crates (<a href="https://github.com/sevki/jetstream/commit/ffb677744364c3d44274be2d5eb20c30ecabb6b5">ffb6777</a>)</li>
+</ul>
+<h2 id="815-2025-04-05"><a class="header" href="#815-2025-04-05">8.1.5 (2025-04-05)</a></h2>
+<h3 id="bug-fixes-18"><a class="header" href="#bug-fixes-18">Bug Fixes</a></h3>
+<ul>
+<li>rollback toasty (<a href="https://github.com/sevki/jetstream/commit/ae0790b473fa81e1c67ec25003bec0f0d6082450">ae0790b</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/ca861a7ac9797925d208c3b08e8d195607d4d388">ca861a7</a>)</li>
+</ul>
+<h2 id="814-2025-04-04"><a class="header" href="#814-2025-04-04">8.1.4 (2025-04-04)</a></h2>
+<h3 id="bug-fixes-19"><a class="header" href="#bug-fixes-19">Bug Fixes</a></h3>
+<ul>
+<li>add toasty types fix skip (<a href="https://github.com/sevki/jetstream/commit/0fe936abdda512235343a77ff29fed7c972d3f96">0fe936a</a>)</li>
+<li>ci-builds, drop 1.76 (<a href="https://github.com/sevki/jetstream/commit/5664e571b607eb8ed3b6f9ee3488994b4cd568b9">5664e57</a>)</li>
+<li>pin toasty (<a href="https://github.com/sevki/jetstream/commit/03b6b18c6cce3cf9cdb274040bf29da21e1e5dd2">03b6b18</a>)</li>
+</ul>
+<h2 id="813-2025-04-04"><a class="header" href="#813-2025-04-04">8.1.3 (2025-04-04)</a></h2>
+<h3 id="bug-fixes-20"><a class="header" href="#bug-fixes-20">Bug Fixes</a></h3>
+<ul>
+<li>extern async_trait and trait_variant and lazy_static (<a href="https://github.com/sevki/jetstream/commit/71e93e2db32236e01bfc2cc923a6db10a788a730">71e93e2</a>)</li>
+<li>extern_more (<a href="https://github.com/sevki/jetstream/commit/1bd58d8150031c1394f94e7074afd2c1c60928de">1bd58d8</a>)</li>
+</ul>
+<h2 id="812-2025-02-15"><a class="header" href="#812-2025-02-15">8.1.2 (2025-02-15)</a></h2>
+<h3 id="bug-fixes-21"><a class="header" href="#bug-fixes-21">Bug Fixes</a></h3>
+<ul>
+<li>make websocket pub again (<a href="https://github.com/sevki/jetstream/commit/21acf4bd6f9269ff9c0ce3b4c3654bbfa2ca6d98">21acf4b</a>)</li>
+</ul>
+<h2 id="811-2025-02-15"><a class="header" href="#811-2025-02-15">8.1.1 (2025-02-15)</a></h2>
+<h3 id="bug-fixes-22"><a class="header" href="#bug-fixes-22">Bug Fixes</a></h3>
+<ul>
+<li>make websocket pub (<a href="https://github.com/sevki/jetstream/commit/6096ff9815b3b15dac1cfdd124821dc9d40218b0">6096ff9</a>)</li>
+</ul>
+<h2 id="810-2025-02-15"><a class="header" href="#810-2025-02-15">8.1.0 (2025-02-15)</a></h2>
+<h3 id="features-20"><a class="header" href="#features-20">Features</a></h3>
+<ul>
+<li>add websocket transport (<a href="https://github.com/sevki/jetstream/commit/3f4054c9ebe2253c11a2096c4983c7d75073da9a">3f4054c</a>)</li>
+<li>channels can now be split (<a href="https://github.com/sevki/jetstream/commit/ef646a590a5af13adc2c97c4871f19bca2a1d6b6">ef646a5</a>)</li>
+</ul>
+<h2 id="8010-2025-02-14"><a class="header" href="#8010-2025-02-14">8.0.10 (2025-02-14)</a></h2>
+<h3 id="bug-fixes-23"><a class="header" href="#bug-fixes-23">Bug Fixes</a></h3>
+<ul>
+<li>broken lock file (<a href="https://github.com/sevki/jetstream/commit/6148cf776ac29ab9941574422aeda44ed01450ee">6148cf7</a>)</li>
+</ul>
+<h2 id="809-2025-02-14"><a class="header" href="#809-2025-02-14">8.0.9 (2025-02-14)</a></h2>
+<h3 id="bug-fixes-24"><a class="header" href="#bug-fixes-24">Bug Fixes</a></h3>
+<ul>
+<li>remove prost (<a href="https://github.com/sevki/jetstream/commit/5a5ff9b7904f1023f5bbed6c5a6236ef01644c17">5a5ff9b</a>)</li>
+</ul>
+<h2 id="808-2025-02-01"><a class="header" href="#808-2025-02-01">8.0.8 (2025-02-01)</a></h2>
+<h3 id="bug-fixes-25"><a class="header" href="#bug-fixes-25">Bug Fixes</a></h3>
+<ul>
+<li>remove expects (<a href="https://github.com/sevki/jetstream/commit/8a58cf565453d755100b5298c1c89ed478dff11e">8a58cf5</a>)</li>
+</ul>
+<h2 id="807-2025-01-30"><a class="header" href="#807-2025-01-30">8.0.7 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-26"><a class="header" href="#bug-fixes-26">Bug Fixes</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/53a698b53ad31d12cc068ba8e921779b710a448e">53a698b</a>)</li>
+</ul>
+<h2 id="806-2025-01-30"><a class="header" href="#806-2025-01-30">8.0.6 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-27"><a class="header" href="#bug-fixes-27">Bug Fixes</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/92eeee530c2be541a31a46d86dcd67fd68b0c8a5">92eeee5</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/3a2f4df4bbec17361295a2839ba10e521656f94f">3a2f4df</a>)</li>
+</ul>
+<h2 id="805-2025-01-30"><a class="header" href="#805-2025-01-30">8.0.5 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-28"><a class="header" href="#bug-fixes-28">Bug Fixes</a></h3>
+<ul>
+<li>use cargo publish workspace (<a href="https://github.com/sevki/jetstream/commit/e28a0f75bfa9fca9a990c6f2b5527be5e25a3d16">e28a0f7</a>)</li>
+</ul>
+<h2 id="804-2025-01-30"><a class="header" href="#804-2025-01-30">8.0.4 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-29"><a class="header" href="#bug-fixes-29">Bug Fixes</a></h3>
+<ul>
+<li>dependency order and cycle (<a href="https://github.com/sevki/jetstream/commit/6a6c99778f90f8481d5792d560a6e97e0c5926bc">6a6c997</a>)</li>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/049e58478f81be41983bdeef4a661f12eb21215a">049e584</a>)</li>
+<li>reexport tokio_util from rpc (<a href="https://github.com/sevki/jetstream/commit/cf28c40a3783379ac89295fef4a55bd4212d4891">cf28c40</a>)</li>
+<li>rust.yml workflow (<a href="https://github.com/sevki/jetstream/commit/9dc7bc09ad8a341e8bcf19f945b8efa478b0d67d">9dc7bc0</a>)</li>
+</ul>
+<h2 id="803-2025-01-30"><a class="header" href="#803-2025-01-30">8.0.3 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-30"><a class="header" href="#bug-fixes-30">Bug Fixes</a></h3>
+<ul>
+<li>cargo lock resolver (<a href="https://github.com/sevki/jetstream/commit/327d8bdfe9d11f3d4d99e245de100ffae9e5d94b">327d8bd</a>)</li>
+<li>dependency order (<a href="https://github.com/sevki/jetstream/commit/9a0e1f979c85a45780bf71f669da4cc91ecd3f5b">9a0e1f9</a>)</li>
+</ul>
+<h2 id="802-2025-01-30"><a class="header" href="#802-2025-01-30">8.0.2 (2025-01-30)</a></h2>
+<h3 id="bug-fixes-31"><a class="header" href="#bug-fixes-31">Bug Fixes</a></h3>
+<ul>
+<li>criterion benchmark test, framed implementation (<a href="https://github.com/sevki/jetstream/commit/25b1611be97ffde52a1cb403ea4a55e3aa5f8e0b">25b1611</a>)</li>
+<li>failing serde tests (<a href="https://github.com/sevki/jetstream/commit/81db0ded08429489cf5d83d5540804b00fdb9802">81db0de</a>)</li>
+<li>reenable sccache (<a href="https://github.com/sevki/jetstream/commit/757bb7e248996a587ee13c2a8c21246d0e198a04">757bb7e</a>)</li>
+<li>service macro works correctly with client calls (<a href="https://github.com/sevki/jetstream/commit/eb1fd0f01bc899b7f0650dbfca29e2d77ec76720">eb1fd0f</a>)</li>
+<li>snapshots for macros (<a href="https://github.com/sevki/jetstream/commit/fab686df8c79710b5e9319519d8aa3d17b203847">fab686d</a>)</li>
+</ul>
+<h2 id="801-2025-01-28"><a class="header" href="#801-2025-01-28">8.0.1 (2025-01-28)</a></h2>
+<h3 id="bug-fixes-32"><a class="header" href="#bug-fixes-32">Bug Fixes</a></h3>
+<ul>
+<li>remove distributed (<a href="https://github.com/sevki/jetstream/commit/3aba1f6543493e107b079d35fa441d46611e637e">3aba1f6</a>)</li>
+</ul>
+<h2 id="800-2025-01-27"><a class="header" href="#800-2025-01-27">8.0.0 (2025-01-27)</a></h2>
+<h3 id="-breaking-changes-8"><a class="header" href="#-breaking-changes-8">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>use more futures</li>
+</ul>
+<h3 id="features-21"><a class="header" href="#features-21">Features</a></h3>
+<ul>
+<li>use more futures (<a href="https://github.com/sevki/jetstream/commit/467b6f56d0808e89f078c656f1e7c447738244ed">467b6f5</a>)</li>
+</ul>
+<h3 id="bug-fixes-33"><a class="header" href="#bug-fixes-33">Bug Fixes</a></h3>
+<ul>
+<li>formatting (<a href="https://github.com/sevki/jetstream/commit/04aace42d2d1338e614081954e32448ac3e5ec30">04aace4</a>)</li>
+</ul>
+<h2 id="740-2025-01-18"><a class="header" href="#740-2025-01-18">7.4.0 (2025-01-18)</a></h2>
+<h3 id="features-22"><a class="header" href="#features-22">Features</a></h3>
+<ul>
+<li>jetstream_rpc supports wasm (<a href="https://github.com/sevki/jetstream/commit/e97e6ca6a94067551fb7a98c4e34fa2a774ebdfd">e97e6ca</a>)</li>
+</ul>
+<h2 id="730-2025-01-17"><a class="header" href="#730-2025-01-17">7.3.0 (2025-01-17)</a></h2>
+<h3 id="features-23"><a class="header" href="#features-23">Features</a></h3>
+<ul>
+<li>wasm-support (<a href="https://github.com/sevki/jetstream/issues/260">#260</a>) (<a href="https://github.com/sevki/jetstream/commit/5cbff0daf95c780cd5962252aaa975d6248b524b">5cbff0d</a>)</li>
+</ul>
+<h2 id="721-2024-12-10"><a class="header" href="#721-2024-12-10">7.2.1 (2024-12-10)</a></h2>
+<h3 id="bug-fixes-34"><a class="header" href="#bug-fixes-34">Bug Fixes</a></h3>
+<ul>
+<li>keep reciver types as is in generated code (<a href="https://github.com/sevki/jetstream/commit/7d956718c4e4c1564b1aeeb2d6af635eb44ae220">7d95671</a>)</li>
+</ul>
+<h2 id="720-2024-12-09"><a class="header" href="#720-2024-12-09">7.2.0 (2024-12-09)</a></h2>
+<h3 id="features-24"><a class="header" href="#features-24">Features</a></h3>
+<ul>
+<li>Ip primitives (<a href="https://github.com/sevki/jetstream/commit/1c263b59494e2699ec2347727f6cbf77bdac3b67">1c263b5</a>)</li>
+</ul>
+<h2 id="712-2024-12-06"><a class="header" href="#712-2024-12-06">7.1.2 (2024-12-06)</a></h2>
+<h3 id="bug-fixes-35"><a class="header" href="#bug-fixes-35">Bug Fixes</a></h3>
+<ul>
+<li>elide lifetimes in ufs (<a href="https://github.com/sevki/jetstream/commit/b778ff9481bf9c9d1cf35fc691903b80483e8cdb">b778ff9</a>)</li>
+</ul>
+<h2 id="711-2024-11-25"><a class="header" href="#711-2024-11-25">7.1.1 (2024-11-25)</a></h2>
+<h3 id="bug-fixes-36"><a class="header" href="#bug-fixes-36">Bug Fixes</a></h3>
+<ul>
+<li>broken use statement for async_trait (<a href="https://github.com/sevki/jetstream/commit/cce4df6a5a594f25fcf71eb63e51534bf8b85c3b">cce4df6</a>)</li>
+</ul>
+<h2 id="710-2024-11-25"><a class="header" href="#710-2024-11-25">7.1.0 (2024-11-25)</a></h2>
+<h3 id="features-25"><a class="header" href="#features-25">Features</a></h3>
+<ul>
+<li>added async_trait support service macro (<a href="https://github.com/sevki/jetstream/commit/9a86185b07eb02cd05933920f9ad02792992c71c">9a86185</a>)</li>
+</ul>
+<h2 id="704-2024-11-23"><a class="header" href="#704-2024-11-23">7.0.4 (2024-11-23)</a></h2>
+<h3 id="bug-fixes-37"><a class="header" href="#bug-fixes-37">Bug Fixes</a></h3>
+<ul>
+<li>fuzz target (<a href="https://github.com/sevki/jetstream/commit/a494e15fca5b0ee1e66399d2b50cf0e1158b070c">a494e15</a>)</li>
+</ul>
+<h2 id="703-2024-11-21"><a class="header" href="#703-2024-11-21">7.0.3 (2024-11-21)</a></h2>
+<h3 id="bug-fixes-38"><a class="header" href="#bug-fixes-38">Bug Fixes</a></h3>
+<ul>
+<li>Delete CHANGELOG.md (<a href="https://github.com/sevki/jetstream/commit/abcc79dc0511230f4725ea5da20c624352635b65">abcc79d</a>)</li>
+<li>mdbook changelog (<a href="https://github.com/sevki/jetstream/commit/5f03b6b7e2fe7b2fb56f082f8ff56105066b0998">5f03b6b</a>)</li>
+</ul>
+<h2 id="701-2024-11-21"><a class="header" href="#701-2024-11-21">7.0.1 (2024-11-21)</a></h2>
+<h3 id="bug-fixes-39"><a class="header" href="#bug-fixes-39">Bug Fixes</a></h3>
+<ul>
+<li>ci (<a href="https://github.com/sevki/jetstream/commit/e7418e584a5b45965666f85bbfbf9795fc1a5b7c">e7418e5</a>)</li>
+<li>docs (<a href="https://github.com/sevki/jetstream/commit/995da2f79e1fc42eeb8a87811d070094b6e9e4b1">995da2f</a>)</li>
+</ul>
+<h2 id="700-2024-11-21"><a class="header" href="#700-2024-11-21">7.0.0 (2024-11-21)</a></h2>
+<h3 id="-breaking-changes-9"><a class="header" href="#-breaking-changes-9">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>fix proken publish</li>
+</ul>
+<h3 id="features-26"><a class="header" href="#features-26">Features</a></h3>
+<ul>
+<li>fix proken publish (<a href="https://github.com/sevki/jetstream/commit/a7272c0f3dc25aa10e89c8b7e9ad070d919a369d">a7272c0</a>)</li>
+</ul>
+<h2 id="662-2024-11-21"><a class="header" href="#662-2024-11-21">6.6.2 (2024-11-21)</a></h2>
+<h3 id="bug-fixes-40"><a class="header" href="#bug-fixes-40">Bug Fixes</a></h3>
+<ul>
+<li>bump okid (<a href="https://github.com/sevki/jetstream/commit/7ed29402ed7a2c41d2f88696cefec4a42c09ec38">7ed2940</a>)</li>
+</ul>
+<h2 id="661-2024-11-20"><a class="header" href="#661-2024-11-20">6.6.1 (2024-11-20)</a></h2>
+<h3 id="bug-fixes-41"><a class="header" href="#bug-fixes-41">Bug Fixes</a></h3>
+<ul>
+<li>broken okid lockfile (<a href="https://github.com/sevki/jetstream/commit/63bae5e68e8707273b13dd06a74981f635556923">63bae5e</a>)</li>
+</ul>
+<h2 id="660-2024-11-20"><a class="header" href="#660-2024-11-20">6.6.0 (2024-11-20)</a></h2>
+<h3 id="features-27"><a class="header" href="#features-27">Features</a></h3>
+<ul>
+<li>distributes jetsream (<a href="https://github.com/sevki/jetstream/commit/d1477d56e574ca4c76b967a27c84ce7ccc4d9396">d1477d5</a>)</li>
+<li><strong>jetstream_distributed:</strong> placement (<a href="https://github.com/sevki/jetstream/commit/8a93788e51a98807466aa868b13685ba81aa1d3e">8a93788</a>)</li>
+</ul>
+<h3 id="bug-fixes-42"><a class="header" href="#bug-fixes-42">Bug Fixes</a></h3>
+<ul>
+<li>change service shape (<a href="https://github.com/sevki/jetstream/commit/194252db4e3a58509845692a09a77fd9d1ccac2f">194252d</a>)</li>
+<li>typo (<a href="https://github.com/sevki/jetstream/commit/901ffbdda65336060410f348fe57c0ddc01a9fc4">901ffbd</a>)</li>
+</ul>
+<h2 id="650-2024-11-20"><a class="header" href="#650-2024-11-20">6.5.0 (2024-11-20)</a></h2>
+<h3 id="features-28"><a class="header" href="#features-28">Features</a></h3>
+<ul>
+<li>jetstream cluster (<a href="https://github.com/sevki/jetstream/commit/80b5727722b1b44d522eb793c18e5bf117660d8b">80b5727</a>)</li>
+<li>rustdoc_to_mdbook (<a href="https://github.com/sevki/jetstream/commit/32deadf98614a9365e9991c3cd76620280c85b5d">32deadf</a>)</li>
+</ul>
+<h3 id="bug-fixes-43"><a class="header" href="#bug-fixes-43">Bug Fixes</a></h3>
+<ul>
+<li>only build docs in release (<a href="https://github.com/sevki/jetstream/commit/02b02bc6348a3ec537683d9b18047c02e8b7c502">02b02bc</a>)</li>
+<li>update doc links (<a href="https://github.com/sevki/jetstream/commit/80a5e1efc9b2a275b8d49be7eedc832602914c0c">80a5e1e</a>)</li>
+</ul>
+<h2 id="642-2024-11-18"><a class="header" href="#642-2024-11-18">6.4.2 (2024-11-18)</a></h2>
+<h3 id="bug-fixes-44"><a class="header" href="#bug-fixes-44">Bug Fixes</a></h3>
+<ul>
+<li>bump deps (<a href="https://github.com/sevki/jetstream/commit/0dbd81b248e3d34aee458116f7aa82cddc31d570">0dbd81b</a>)</li>
+</ul>
+<h2 id="641-2024-11-11"><a class="header" href="#641-2024-11-11">6.4.1 (2024-11-11)</a></h2>
+<h3 id="bug-fixes-45"><a class="header" href="#bug-fixes-45">Bug Fixes</a></h3>
+<ul>
+<li>make the proto mod same vis as trait (<a href="https://github.com/sevki/jetstream/commit/a43c0a2e3fbcb2991f6f3396eba9e30c96a47663">a43c0a2</a>)</li>
+</ul>
+<h2 id="640-2024-11-10"><a class="header" href="#640-2024-11-10">6.4.0 (2024-11-10)</a></h2>
+<h3 id="features-29"><a class="header" href="#features-29">Features</a></h3>
+<ul>
+<li>Add support for bool in WireFormat (<a href="https://github.com/sevki/jetstream/commit/640c6ca3e22d0ed1dc7ec9c58af998e96efab235">640c6ca</a>)</li>
+<li>Add tests for jetstream modules (<a href="https://github.com/sevki/jetstream/commit/18462d96f8dd71b528d49441dc257d2038f3e39f">18462d9</a>)</li>
+</ul>
+<h3 id="bug-fixes-46"><a class="header" href="#bug-fixes-46">Bug Fixes</a></h3>
+<ul>
+<li>benchmarks (<a href="https://github.com/sevki/jetstream/commit/94767ddfbd2b43f9562621dbbd679b3ec2215da6">94767dd</a>)</li>
+<li>more tests (<a href="https://github.com/sevki/jetstream/commit/9a5071fb22c4a63e0af4fb1af9c7133f00cbc26e">9a5071f</a>)</li>
+<li>some tests (<a href="https://github.com/sevki/jetstream/commit/c65ded107a254d283e165563b0b97fa735741399">c65ded1</a>)</li>
+</ul>
+<h2 id="634-2024-11-10"><a class="header" href="#634-2024-11-10">6.3.4 (2024-11-10)</a></h2>
+<h3 id="bug-fixes-47"><a class="header" href="#bug-fixes-47">Bug Fixes</a></h3>
+<ul>
+<li>make qid eq,hash (<a href="https://github.com/sevki/jetstream/commit/522de0d41e5cbda8d29ea6a20f1cb2cba7b5bb82">522de0d</a>)</li>
+</ul>
+<h2 id="633-2024-11-10"><a class="header" href="#633-2024-11-10">6.3.3 (2024-11-10)</a></h2>
+<h3 id="bug-fixes-48"><a class="header" href="#bug-fixes-48">Bug Fixes</a></h3>
+<ul>
+<li>update 9p to use trait_variant (<a href="https://github.com/sevki/jetstream/commit/96db410d8e5e04c4beb9100be2b58c271cdd7b8c">96db410</a>)</li>
+</ul>
+<h2 id="632-2024-11-10"><a class="header" href="#632-2024-11-10">6.3.2 (2024-11-10)</a></h2>
+<h3 id="bug-fixes-49"><a class="header" href="#bug-fixes-49">Bug Fixes</a></h3>
+<ul>
+<li>option&lt;T&gt; support (<a href="https://github.com/sevki/jetstream/commit/2e224cad47d775fb2c967c4d37d33b8aabeb7470">2e224ca</a>)</li>
+</ul>
+<h2 id="631-2024-11-09"><a class="header" href="#631-2024-11-09">6.3.1 (2024-11-09)</a></h2>
+<h3 id="bug-fixes-50"><a class="header" href="#bug-fixes-50">Bug Fixes</a></h3>
+<ul>
+<li>ci workflows (<a href="https://github.com/sevki/jetstream/commit/4c12f046e9ff9a5d39f4f0619f6ed68b25edcfe7">4c12f04</a>)</li>
+</ul>
+<h2 id="630-2024-11-09"><a class="header" href="#630-2024-11-09">6.3.0 (2024-11-09)</a></h2>
+<h3 id="features-30"><a class="header" href="#features-30">Features</a></h3>
+<ul>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/ba741bd0d2aed8d33d2b5589ca2a3da83b1abce8">ba741bd</a>)</li>
+<li>enum support (<a href="https://github.com/sevki/jetstream/commit/c4552d8bd056debdbb7845145f964defae6f90d2">c4552d8</a>)</li>
+</ul>
+<h3 id="bug-fixes-51"><a class="header" href="#bug-fixes-51">Bug Fixes</a></h3>
+<ul>
+<li>remove jj (<a href="https://github.com/sevki/jetstream/commit/02fefd9e82f0f260d54f703daa0eb4667cdbce5d">02fefd9</a>)</li>
+</ul>
+<h2 id="620-2024-11-08"><a class="header" href="#620-2024-11-08">6.2.0 (2024-11-08)</a></h2>
+<h3 id="features-31"><a class="header" href="#features-31">Features</a></h3>
+<ul>
+<li>add i16,i32,i64,i128 types (<a href="https://github.com/sevki/jetstream/commit/3f0751a8588bf0fb5d189865f65417a717f414c4">3f0751a</a>)</li>
+</ul>
+<h2 id="610-2024-11-08"><a class="header" href="#610-2024-11-08">6.1.0 (2024-11-08)</a></h2>
+<h3 id="features-32"><a class="header" href="#features-32">Features</a></h3>
+<ul>
+<li>start quic server with config (<a href="https://github.com/sevki/jetstream/issues/159">#159</a>) (<a href="https://github.com/sevki/jetstream/commit/34339819f26044e0a19c5c668c2fb710734af564">3433981</a>)</li>
+</ul>
+<h2 id="602-2024-11-08"><a class="header" href="#602-2024-11-08">6.0.2 (2024-11-08)</a></h2>
+<h3 id="bug-fixes-52"><a class="header" href="#bug-fixes-52">Bug Fixes</a></h3>
+<ul>
+<li>ci/cd (<a href="https://github.com/sevki/jetstream/issues/157">#157</a>) (<a href="https://github.com/sevki/jetstream/commit/3f7ff1ea0b561136bc51c65f1acc0f683cfafb01">3f7ff1e</a>)</li>
+</ul>
+<h2 id="601-2024-11-08"><a class="header" href="#601-2024-11-08">6.0.1 (2024-11-08)</a></h2>
+<h3 id="bug-fixes-53"><a class="header" href="#bug-fixes-53">Bug Fixes</a></h3>
+<ul>
+<li>trait_variant use (<a href="https://github.com/sevki/jetstream/issues/155">#155</a>) (<a href="https://github.com/sevki/jetstream/commit/3cd5665454bb42c3e38606c4a3dd9355ef63fc9b">3cd5665</a>)</li>
+</ul>
+<h2 id="600-2024-11-07"><a class="header" href="#600-2024-11-07">6.0.0 (2024-11-07)</a></h2>
+<h3 id="-breaking-changes-10"><a class="header" href="#-breaking-changes-10">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>splits up packages</li>
+<li>move modules to sensible parents</li>
+<li>protocol -&gt; coding</li>
+<li>merge all the creates</li>
+</ul>
+<h3 id="features-33"><a class="header" href="#features-33">Features</a></h3>
+<ul>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+<li>modularize components (<a href="https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a">7262a66</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+<li>revamp service (<a href="https://github.com/sevki/jetstream/issues/147">#147</a>) (<a href="https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706">6d96be8</a>)</li>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+<li>use sccache (<a href="https://github.com/sevki/jetstream/issues/142">#142</a>) (<a href="https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6">89f96ab</a>)</li>
+<li>use serde_bytes::ByteBuf instead of Bytes (<a href="https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b">a1101d9</a>)</li>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+<li><strong>wireformat:</strong> add u128 (<a href="https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab">c76f6c4</a>)</li>
+</ul>
+<h3 id="bug-fixes-54"><a class="header" href="#bug-fixes-54">Bug Fixes</a></h3>
+<ul>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+<li>bothced update (<a href="https://github.com/sevki/jetstream/commit/b3b7003f565fc833804a70519aeb0741d03f34be">b3b7003</a>)</li>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>bump zero copy (<a href="https://github.com/sevki/jetstream/issues/140">#140</a>) (<a href="https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454">4bb933f</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+<li>readme (<a href="https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820">dc77722</a>)</li>
+<li>release again (<a href="https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2">3a6e65e</a>)</li>
+<li>release workflow (<a href="https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094">4abeb24</a>)</li>
+<li>revert serde_bytes to bytes with serde (<a href="https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54">2e02460</a>)</li>
+<li>unused git (<a href="https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68">3fe908e</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+<li>update release flow (<a href="https://github.com/sevki/jetstream/issues/144">#144</a>) (<a href="https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489">36dd4af</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/commit/b058b38367db97630b91af82e6bb11e26728708e">b058b38</a>)</li>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/issues/122">#122</a>) (<a href="https://github.com/sevki/jetstream/commit/566fe1f64c6d6f25d157a227b261c69c9b3e83b5">566fe1f</a>)</li>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945">822bf0e</a>)</li>
+<li>warnings (<a href="https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83">62d8013</a>)</li>
+<li><strong>wireformat:</strong> from_bytes doesn’t require a mutable buf (<a href="https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725">437c35c</a>)</li>
+</ul>
+<h3 id="code-refactoring-2"><a class="header" href="#code-refactoring-2">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+<li>move modules to sensible parents (<a href="https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b">4eba5fb</a>)</li>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="542-2024-11-07"><a class="header" href="#542-2024-11-07">5.4.2 (2024-11-07)</a></h2>
+<h3 id="bug-fixes-55"><a class="header" href="#bug-fixes-55">Bug Fixes</a></h3>
+<ul>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+</ul>
+<h2 id="542-2024-11-07-1"><a class="header" href="#542-2024-11-07-1">5.4.2 (2024-11-07)</a></h2>
+<h3 id="bug-fixes-56"><a class="header" href="#bug-fixes-56">Bug Fixes</a></h3>
+<ul>
+<li>auto-release (<a href="https://github.com/sevki/jetstream/commit/964036cd97bfbae055f3b52653387d65524f1972">964036c</a>)</li>
+</ul>
+<h2 id="541-2024-11-07"><a class="header" href="#541-2024-11-07">5.4.1 (2024-11-07)</a></h2>
+<h3 id="bug-fixes-57"><a class="header" href="#bug-fixes-57">Bug Fixes</a></h3>
+<ul>
+<li>readme (<a href="https://github.com/sevki/jetstream/commit/dc777223fe95ea79866320b7831e4e3c89631820">dc77722</a>)</li>
+</ul>
+<h2 id="540-2024-11-07"><a class="header" href="#540-2024-11-07">5.4.0 (2024-11-07)</a></h2>
+<h3 id="features-34"><a class="header" href="#features-34">Features</a></h3>
+<ul>
+<li>revamp service (<a href="https://github.com/sevki/jetstream/issues/147">#147</a>) (<a href="https://github.com/sevki/jetstream/commit/6d96be89affc75b9e534122ac9305257861be706">6d96be8</a>)</li>
+</ul>
+<h2 id="530-2024-10-23"><a class="header" href="#530-2024-10-23">5.3.0 (2024-10-23)</a></h2>
+<h3 id="features-35"><a class="header" href="#features-35">Features</a></h3>
+<ul>
+<li>use sccache (<a href="https://github.com/sevki/jetstream/issues/142">#142</a>) (<a href="https://github.com/sevki/jetstream/commit/89f96abf5b0527d45bf75e00fafd4cd197fff1d6">89f96ab</a>)</li>
+</ul>
+<h3 id="bug-fixes-58"><a class="header" href="#bug-fixes-58">Bug Fixes</a></h3>
+<ul>
+<li>update release flow (<a href="https://github.com/sevki/jetstream/issues/144">#144</a>) (<a href="https://github.com/sevki/jetstream/commit/36dd4af7686d405eeaa42d53e7eaac934d901489">36dd4af</a>)</li>
+</ul>
+<h2 id="523-2024-10-10"><a class="header" href="#523-2024-10-10">5.2.3 (2024-10-10)</a></h2>
+<h3 id="bug-fixes-59"><a class="header" href="#bug-fixes-59">Bug Fixes</a></h3>
+<ul>
+<li>bump zero copy (<a href="https://github.com/sevki/jetstream/issues/140">#140</a>) (<a href="https://github.com/sevki/jetstream/commit/4bb933f8ab6399e44e9a9ba4dc9ff92b43d69454">4bb933f</a>)</li>
+<li>unused git (<a href="https://github.com/sevki/jetstream/commit/3fe908e405bc870a8089b18e88dae245f41eeb68">3fe908e</a>)</li>
+</ul>
+<h2 id="522-2024-10-07"><a class="header" href="#522-2024-10-07">5.2.2 (2024-10-07)</a></h2>
+<h3 id="bug-fixes-60"><a class="header" href="#bug-fixes-60">Bug Fixes</a></h3>
+<ul>
+<li>revert serde_bytes to bytes with serde (<a href="https://github.com/sevki/jetstream/commit/2e02460c71890a59af315f29897d4edbe79f9c54">2e02460</a>)</li>
+</ul>
+<h2 id="521-2024-10-06"><a class="header" href="#521-2024-10-06">5.2.1 (2024-10-06)</a></h2>
+<h3 id="bug-fixes-61"><a class="header" href="#bug-fixes-61">Bug Fixes</a></h3>
+<ul>
+<li><strong>wireformat:</strong> from_bytes doesn’t require a mutable buf (<a href="https://github.com/sevki/jetstream/commit/437c35c2229cd5980f752573fda43c1d6dfae725">437c35c</a>)</li>
+</ul>
+<h2 id="520-2024-10-06"><a class="header" href="#520-2024-10-06">5.2.0 (2024-10-06)</a></h2>
+<h3 id="features-36"><a class="header" href="#features-36">Features</a></h3>
+<ul>
+<li>use serde_bytes::ByteBuf instead of Bytes (<a href="https://github.com/sevki/jetstream/commit/a1101d99fcfc60ddff2314cebd99a56da706cf7b">a1101d9</a>)</li>
+</ul>
+<h3 id="bug-fixes-62"><a class="header" href="#bug-fixes-62">Bug Fixes</a></h3>
+<ul>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+</ul>
+<h2 id="514-2024-10-03"><a class="header" href="#514-2024-10-03">5.1.4 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-63"><a class="header" href="#bug-fixes-63">Bug Fixes</a></h3>
+<ul>
+<li>lint errors (<a href="https://github.com/sevki/jetstream/commit/4f50d0b73ddcfeaee2e86a2d27d061d87a0c1134">4f50d0b</a>)</li>
+</ul>
+<h2 id="513-2024-10-03"><a class="header" href="#513-2024-10-03">5.1.3 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-64"><a class="header" href="#bug-fixes-64">Bug Fixes</a></h3>
+<ul>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/commit/b058b38367db97630b91af82e6bb11e26728708e">b058b38</a>)</li>
+</ul>
+<h2 id="512-2024-10-03"><a class="header" href="#512-2024-10-03">5.1.2 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-65"><a class="header" href="#bug-fixes-65">Bug Fixes</a></h3>
+<ul>
+<li>Update release.yml (<a href="https://github.com/sevki/jetstream/issues/122">#122</a>) (<a href="https://github.com/sevki/jetstream/commit/566fe1f64c6d6f25d157a227b261c69c9b3e83b5">566fe1f</a>)</li>
+</ul>
+<h2 id="511-2024-10-03"><a class="header" href="#511-2024-10-03">5.1.1 (2024-10-03)</a></h2>
+<h3 id="bug-fixes-66"><a class="header" href="#bug-fixes-66">Bug Fixes</a></h3>
+<ul>
+<li>release again (<a href="https://github.com/sevki/jetstream/commit/3a6e65e2d8181bcc93a41a577e2ca04c9ca70bf2">3a6e65e</a>)</li>
+<li>warnings (<a href="https://github.com/sevki/jetstream/commit/62d8013e3b9fa2c0120cd9269894ed640c03fb83">62d8013</a>)</li>
+</ul>
+<h2 id="510-2024-10-03"><a class="header" href="#510-2024-10-03">5.1.0 (2024-10-03)</a></h2>
+<h3 id="features-37"><a class="header" href="#features-37">Features</a></h3>
+<ul>
+<li><strong>wireformat:</strong> add u128 (<a href="https://github.com/sevki/jetstream/commit/c76f6c4c64fe57dd5948e522c8d68b8114b607ab">c76f6c4</a>)</li>
+</ul>
+<h3 id="bug-fixes-67"><a class="header" href="#bug-fixes-67">Bug Fixes</a></h3>
+<ul>
+<li>release workflow (<a href="https://github.com/sevki/jetstream/commit/4abeb24e99aec6ae9ddcc083136cc765b84ba094">4abeb24</a>)</li>
+</ul>
+<h2 id="500-2024-10-03"><a class="header" href="#500-2024-10-03">5.0.0 (2024-10-03)</a></h2>
+<h3 id="-breaking-changes-11"><a class="header" href="#-breaking-changes-11">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>splits up packages</li>
+</ul>
+<h3 id="features-38"><a class="header" href="#features-38">Features</a></h3>
+<ul>
+<li>modularize components (<a href="https://github.com/sevki/jetstream/commit/7262a6665993d0d7705191717d773fadcac5173a">7262a66</a>)</li>
+</ul>
+<h3 id="bug-fixes-68"><a class="header" href="#bug-fixes-68">Bug Fixes</a></h3>
+<ul>
+<li>version (<a href="https://github.com/sevki/jetstream/commit/822bf0ed14786912a6ca9a7329a577f6d2367945">822bf0e</a>)</li>
+</ul>
+<h2 id="400-2024-10-01"><a class="header" href="#400-2024-10-01">4.0.0 (2024-10-01)</a></h2>
+<h3 id="-breaking-changes-12"><a class="header" href="#-breaking-changes-12">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>move modules to sensible parents</li>
+</ul>
+<h3 id="code-refactoring-3"><a class="header" href="#code-refactoring-3">Code Refactoring</a></h3>
+<ul>
+<li>move modules to sensible parents (<a href="https://github.com/sevki/jetstream/commit/4eba5fb0105626fd56c42f2062c7cfbe7293279b">4eba5fb</a>)</li>
+</ul>
+<h2 id="300-2024-03-30"><a class="header" href="#300-2024-03-30">3.0.0 (2024-03-30)</a></h2>
+<h3 id="-breaking-changes-13"><a class="header" href="#-breaking-changes-13">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>protocol -&gt; coding</li>
+<li>merge all the creates</li>
+</ul>
+<h3 id="features-39"><a class="header" href="#features-39">Features</a></h3>
+<ul>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+</ul>
+<h3 id="bug-fixes-69"><a class="header" href="#bug-fixes-69">Bug Fixes</a></h3>
+<ul>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+<li>bothced update (<a href="https://github.com/sevki/jetstream/commit/b3b7003f565fc833804a70519aeb0741d03f34be">b3b7003</a>)</li>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+</ul>
+<h3 id="code-refactoring-4"><a class="header" href="#code-refactoring-4">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="202-2024-03-30"><a class="header" href="#202-2024-03-30">2.0.2 (2024-03-30)</a></h2>
+<h3 id="bug-fixes-70"><a class="header" href="#bug-fixes-70">Bug Fixes</a></h3>
+<ul>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/12a864e93e402c0145ff1f206589164bc920fbdd">12a864e</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/910c75ad120d6b699691dc194377138837b2a8f5">910c75a</a>)</li>
+<li>make data io::Read (<a href="https://github.com/sevki/jetstream/commit/77b3680ff8ac312b14303f864d92bb763659b64f">77b3680</a>)</li>
+</ul>
+<h2 id="201-2024-03-29"><a class="header" href="#201-2024-03-29">2.0.1 (2024-03-29)</a></h2>
+<h3 id="bug-fixes-71"><a class="header" href="#bug-fixes-71">Bug Fixes</a></h3>
+<ul>
+<li><strong>macros:</strong> protocol macro fix to spread fn args (<a href="https://github.com/sevki/jetstream/commit/b261a286e033e2f9ba1462dc8a5dd06adf4e5ca3">b261a28</a>)</li>
+</ul>
+<h2 id="200-2024-03-29"><a class="header" href="#200-2024-03-29">2.0.0 (2024-03-29)</a></h2>
+<h3 id="-breaking-changes-14"><a class="header" href="#-breaking-changes-14">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>protocol -&gt; coding</li>
+</ul>
+<h3 id="code-refactoring-5"><a class="header" href="#code-refactoring-5">Code Refactoring</a></h3>
+<ul>
+<li>protocol -&gt; coding (<a href="https://github.com/sevki/jetstream/commit/5f86bc78a85728091f8411ab00f5ad3e4a960df2">5f86bc7</a>)</li>
+</ul>
+<h2 id="111-2024-03-29"><a class="header" href="#111-2024-03-29">1.1.1 (2024-03-29)</a></h2>
+<h3 id="bug-fixes-72"><a class="header" href="#bug-fixes-72">Bug Fixes</a></h3>
+<ul>
+<li>ignore e2e tests (<a href="https://github.com/sevki/jetstream/commit/e066dde3f735c2524118ee0e8128555775d0eeb7">e066dde</a>)</li>
+</ul>
+<h2 id="110-2024-03-29"><a class="header" href="#110-2024-03-29">1.1.0 (2024-03-29)</a></h2>
+<h3 id="features-40"><a class="header" href="#features-40">Features</a></h3>
+<ul>
+<li><strong>macros:</strong> service macro to remove boilerplate code (<a href="https://github.com/sevki/jetstream/commit/e0a9295674327b5eea96922c3054d0e3be07c4a4">e0a9295</a>)</li>
+</ul>
+<h2 id="100-2024-03-25"><a class="header" href="#100-2024-03-25">1.0.0 (2024-03-25)</a></h2>
+<h3 id="-breaking-changes-15"><a class="header" href="#-breaking-changes-15">⚠ BREAKING CHANGES</a></h3>
+<ul>
+<li>merge all the creates</li>
+</ul>
+<h3 id="code-refactoring-6"><a class="header" href="#code-refactoring-6">Code Refactoring</a></h3>
+<ul>
+<li>merge all the creates (<a href="https://github.com/sevki/jetstream/commit/faa0a1a1194bac41d8e05efd0108e0c1821fa543">faa0a1a</a>)</li>
+</ul>
+<h2 id="060-2024-03-21"><a class="header" href="#060-2024-03-21">0.6.0 (2024-03-21)</a></h2>
+<h3 id="features-41"><a class="header" href="#features-41">Features</a></h3>
+<ul>
+<li>virtio support (<a href="https://github.com/sevki/jetstream/commit/ce13217e4429270226ef43661acab21619493351">ce13217</a>)</li>
+</ul>
+<h2 id="051-2024-03-15"><a class="header" href="#051-2024-03-15">0.5.1 (2024-03-15)</a></h2>
+<h3 id="bug-fixes-73"><a class="header" href="#bug-fixes-73">Bug Fixes</a></h3>
+<ul>
+<li>filesystem under feature flag, rm newline (<a href="https://github.com/sevki/jetstream/commit/de4cf791a89b794dbfcb48325b1a90f26e421616">de4cf79</a>)</li>
+<li>Update client_tests.rs (<a href="https://github.com/sevki/jetstream/commit/4c50132ba0d6afa46f849db7d0fa356e64947653">4c50132</a>)</li>
+</ul>
+<h2 id="050-2024-03-15"><a class="header" href="#050-2024-03-15">0.5.0 (2024-03-15)</a></h2>
+<h3 id="features-42"><a class="header" href="#features-42">Features</a></h3>
+<ul>
+<li>rust-clippy code scanning (<a href="https://github.com/sevki/jetstream/commit/3dfb39f1c4c9c887931a1686a7c1208fa1182e18">3dfb39f</a>)</li>
+</ul>
+<h3 id="bug-fixes-74"><a class="header" href="#bug-fixes-74">Bug Fixes</a></h3>
+<ul>
+<li>update to v2 upload sarif (<a href="https://github.com/sevki/jetstream/commit/e38bacb216db9b6560b3fe0e284b54425b4e251e">e38bacb</a>)</li>
+</ul>
+<h2 id="040-2024-03-14"><a class="header" href="#040-2024-03-14">0.4.0 (2024-03-14)</a></h2>
+<h3 id="features-43"><a class="header" href="#features-43">Features</a></h3>
+<ul>
+<li>autopub (<a href="https://github.com/sevki/jetstream/commit/73a0844e9a7fcc55bf39b39325587d237c549a6e">73a0844</a>)</li>
+<li>hide filesystem behind a feautre-flag (<a href="https://github.com/sevki/jetstream/commit/9aa880de8d51c88e64d08248f47ddf1d0137db98">9aa880d</a>)</li>
+</ul>
+<h2 id="032-2024-03-14"><a class="header" href="#032-2024-03-14">0.3.2 (2024-03-14)</a></h2>
+<h3 id="bug-fixes-75"><a class="header" href="#bug-fixes-75">Bug Fixes</a></h3>
+<ul>
+<li>auto-release feature (<a href="https://github.com/sevki/jetstream/commit/6505b0ff66ce16b1032efe722620d03fbe945769">6505b0f</a>)</li>
+</ul>
+<h2 id="031-2024-03-14"><a class="header" href="#031-2024-03-14">0.3.1 (2024-03-14)</a></h2>
+<h3 id="bug-fixes-76"><a class="header" href="#bug-fixes-76">Bug Fixes</a></h3>
+<ul>
+<li>broken release-please (<a href="https://github.com/sevki/jetstream/commit/089bb2277ba7025b61dbff32473d9b4b1836acd9">089bb22</a>)</li>
+<li>ci release-please (<a href="https://github.com/sevki/jetstream/commit/de391e58d30f5f08d89f2f9251e9f734bd945bb1">de391e5</a>)</li>
+</ul>
+<h2 id="030-2024-03-14"><a class="header" href="#030-2024-03-14">0.3.0 (2024-03-14)</a></h2>
+<h3 id="features-44"><a class="header" href="#features-44">Features</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/7d7beddcae75613433076a9f77156989b2de1f47">7d7bedd</a>)</li>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+</ul>
+<h2 id="020-2024-03-14"><a class="header" href="#020-2024-03-14">0.2.0 (2024-03-14)</a></h2>
+<h3 id="features-45"><a class="header" href="#features-45">Features</a></h3>
+<ul>
+<li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
+</ul>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="jetstream-cloudflare"><a class="header" href="#jetstream-cloudflare">JetStream Cloudflare</a></h1>
+<p>Let’s say you’ve defined a service like so</p>
+<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/lib.rs}}
+</code></pre>
+<p>The glue code for running it on Cloudflare Workers is</p>
+<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/server.rs}}
+</code></pre>
+<p>The code for connecting to it is as follows:</p>
+<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/bin/client.rs}}
+</code></pre>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-c2a407aa.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-a0b12cfe.js"></script>
+
+        <!-- Custom JS scripts -->
+
+        <script>
+        window.addEventListener('load', function() {
+            window.setTimeout(window.print, 100);
+        });
+        </script>
+
+
+    </div>
+    </body>
+</html>
