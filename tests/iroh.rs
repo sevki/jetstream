@@ -19,8 +19,17 @@ impl Echo for EchoServer {
     }
 }
 
-#[tokio::test]
+#[tokio::test(flavor = "multi_thread")]
 async fn test_iroh_echo_service() {
+    tokio::time::timeout(
+        std::time::Duration::from_secs(120),
+        test_iroh_echo_service_inner(),
+    )
+    .await
+    .expect("iroh echo test timed out after 120s");
+}
+
+async fn test_iroh_echo_service_inner() {
     // Build the server router with the echo service
     let router = jetstream_iroh::server_builder(EchoService {
         inner: EchoServer {},
