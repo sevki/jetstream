@@ -105,6 +105,7 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 rustls-pemfile = "2.2.0"
 sha256 = "1.6.0"
 term-transcript = "0.4.0"
+iroh = { workspace = true, features = ["test-utils"] }
 tokio = { version = "1.47.1", features = ["full"] }
 tokio-rustls = "0.26.4"
 tower = { version = "0.5.3", features = ["util"] }

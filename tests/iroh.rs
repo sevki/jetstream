@@ -1,7 +1,9 @@
 #![cfg(feature = "iroh")]
 
 use futures::{stream::FuturesUnordered, StreamExt};
+use iroh::{RelayMode, endpoint::presets, tls::CaTlsConfig};
 use jetstream::prelude::*;
+use jetstream_iroh::{IrohServer, IrohTransport, iroh::protocol::Router};
 
 use crate::echo_protocol::{EchoChannel, EchoService};
 
@@ -21,32 +23,50 @@ impl Echo for EchoServer {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_iroh_echo_service() {
-    test_iroh_echo_service_inner().await;
-}
+    // Start a local relay server so both endpoints connect without external network
+    let (relay_map, _relay_url, _relay_server) =
+        iroh::test_utils::run_relay_server().await.unwrap();
 
-async fn test_iroh_echo_service_inner() {
-    // Build the server router without external relay so the test works in CI
-    let router = jetstream_iroh::test_server_builder(EchoService {
-        inner: EchoServer {},
-    })
-    .await
-    .unwrap();
-
-    // Build the server's EndpointAddr from its public key and bound loopback
-    // sockets — no relay connection or address-discovery required.
-    let server_id = router.endpoint().id();
-    let server_sockets = router.endpoint().bound_sockets();
-    let server_addr = jetstream_iroh::iroh::EndpointAddr::from_parts(
-        server_id,
-        server_sockets
-            .into_iter()
-            .map(jetstream_iroh::iroh::TransportAddr::Ip),
-    );
-
-    // Build client transport using the relay-free test builder
-    let transport = jetstream_iroh::test_client_builder::<EchoChannel>(server_addr)
+    // Build the server endpoint with the local relay (self-signed cert, skip verify)
+    let server_endpoint = iroh::Endpoint::builder(presets::Minimal)
+        .relay_mode(RelayMode::Custom(relay_map.clone()))
+        .ca_tls_config(CaTlsConfig::insecure_skip_verify())
+        .alpns(vec![EchoChannel::NAME.as_bytes().to_vec()])
+        .bind()
         .await
         .unwrap();
+
+    let router = Router::builder(server_endpoint)
+        .accept(
+            EchoChannel::NAME.as_bytes(),
+            IrohServer::new(EchoService {
+                inner: EchoServer {},
+            }),
+        )
+        .spawn();
+
+    // Wait for the server endpoint to be reachable via the local relay
+    router.endpoint().online().await.unwrap();
+
+    // Retrieve the server's address (relay URL + any direct addrs)
+    let server_addr = router.endpoint().addr();
+
+    // Build the client endpoint with the same local relay
+    let client_endpoint = iroh::Endpoint::builder(presets::Minimal)
+        .relay_mode(RelayMode::Custom(relay_map))
+        .ca_tls_config(CaTlsConfig::insecure_skip_verify())
+        .alpns(vec![EchoChannel::NAME.as_bytes().to_vec()])
+        .bind()
+        .await
+        .unwrap();
+
+    // Connect to the server
+    let conn = client_endpoint
+        .connect(server_addr, EchoChannel::NAME.as_bytes())
+        .await
+        .unwrap();
+
+    let transport = IrohTransport::<EchoChannel>::from(conn.open_bi().await.unwrap());
 
     let ec = EchoChannel::new(10, Box::new(transport));
     let mut futures = FuturesUnordered::new();
@@ -59,11 +79,6 @@ async fn test_iroh_echo_service_inner() {
         assert_eq!(response, "pong".to_string());
     }
 
-    // sleeep
     tokio::time::sleep(std::time::Duration::from_millis(200)).await;
-
-    // Gracefully close the endpoint & protocols.
-    // This makes sure that remote nodes are notified about possibly still open connections
-    // and any data is written to disk fully (or any other shutdown procedure for protocols).
     router.shutdown().await.unwrap();
 }
