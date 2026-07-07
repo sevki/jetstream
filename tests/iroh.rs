@@ -21,28 +21,30 @@ impl Echo for EchoServer {
 
 #[tokio::test(flavor = "multi_thread")]
 async fn test_iroh_echo_service() {
-    tokio::time::timeout(
-        std::time::Duration::from_secs(120),
-        test_iroh_echo_service_inner(),
-    )
-    .await
-    .expect("iroh echo test timed out after 120s");
+    test_iroh_echo_service_inner().await;
 }
 
 async fn test_iroh_echo_service_inner() {
-    // Build the server router with the echo service
-    let router = jetstream_iroh::server_builder(EchoService {
+    // Build the server router without external relay so the test works in CI
+    let router = jetstream_iroh::test_server_builder(EchoService {
         inner: EchoServer {},
     })
     .await
     .unwrap();
 
-    // Wait until the endpoint is online (connected to relay) before getting address
-    router.endpoint().online().await;
-    let addr = router.endpoint().addr();
+    // Build the server's EndpointAddr from its public key and bound loopback
+    // sockets — no relay connection or address-discovery required.
+    let server_id = router.endpoint().id();
+    let server_sockets = router.endpoint().bound_sockets();
+    let server_addr = jetstream_iroh::iroh::EndpointAddr::from_parts(
+        server_id,
+        server_sockets
+            .into_iter()
+            .map(jetstream_iroh::iroh::TransportAddr::Ip),
+    );
 
-    // Build client transport and connect
-    let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
+    // Build client transport using the relay-free test builder
+    let transport = jetstream_iroh::test_client_builder::<EchoChannel>(server_addr)
         .await
         .unwrap();
 
