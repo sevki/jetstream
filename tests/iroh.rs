@@ -46,7 +46,7 @@ async fn test_iroh_echo_service() {
         .spawn();
 
     // Wait for the server endpoint to be reachable via the local relay
-    router.endpoint().online().await.unwrap();
+    router.endpoint().online().await;
 
     // Retrieve the server's address (relay URL + any direct addrs)
     let server_addr = router.endpoint().addr();
