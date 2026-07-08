@@ -1,6 +1,6 @@
 [package]
 name = "jetstream"
-version = "16.0.0"
+version = "16.1.0"
 edition = "2021"
 description = "Jetstream is a RPC framework for Rust, based on the 9P protocol and QUIC."
 documentation = "https://jetstream.rs"
@@ -57,19 +57,19 @@ name = "perf"
 [dependencies]
 async-trait = "0.1.89"
 futures = "0.3.31"
-jetstream_9p = { version = "16.0.0", path = "components/jetstream_9p", optional = true }
-jetstream_iroh = { version = "16.0.0", path = "components/jetstream_iroh", optional = true }
-jetstream_macros = { version = "16.0.0", path = "components/jetstream_macros" }
-jetstream_quic = { version = "16.0.0", path = "components/jetstream_quic", optional = true }
-jetstream_rpc = { version = "16.0.0", path = "components/jetstream_rpc" }
-jetstream_error = { version = "16.0.0", path = "components/jetstream_error" }
-jetstream_wireformat = { version = "16.0.0", path = "components/jetstream_wireformat" }
+jetstream_9p = { version = "16.1.0", path = "components/jetstream_9p", optional = true }
+jetstream_iroh = { version = "16.1.0", path = "components/jetstream_iroh", optional = true }
+jetstream_macros = { version = "16.1.0", path = "components/jetstream_macros" }
+jetstream_quic = { version = "16.1.0", path = "components/jetstream_quic", optional = true }
+jetstream_rpc = { version = "16.1.0", path = "components/jetstream_rpc" }
+jetstream_error = { version = "16.1.0", path = "components/jetstream_error" }
+jetstream_wireformat = { version = "16.1.0", path = "components/jetstream_wireformat" }
 lazy_static = "1.5.0"
 tracing = { version = "0.1.41", optional = true }
 tracing-subscriber = { version = "0.3.20", optional = true }
 trait-variant = "0.1.2"
 rand = "0.10.0"
-jetstream_http = { version = "16.0.0", path = "components/jetstream_http", optional = true }
+jetstream_http = { version = "16.1.0", path = "components/jetstream_http", optional = true }
 tower-http = { version = "0.6.8", features = ["fs"] }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
@@ -85,16 +85,16 @@ criterion = { version = "0.8.2", features = ["async_tokio"] }
 hyper = { version = "1.8.1", features = ["full"] }
 hyper-util = { version = "0.1.19", features = ["full"] }
 insta = "1.46.1"
-jetstream_error = { version = "16.0.0", path = "components/jetstream_error", features = [
+jetstream_error = { version = "16.1.0", path = "components/jetstream_error", features = [
   "quinn",
   "test-paths",
 ] }
 jetstream_http = { path = "components/jetstream_http" }
-jetstream_rpc = { version = "16.0.0", path = "components/jetstream_rpc", default-features=false, features = [
+jetstream_rpc = { version = "16.1.0", path = "components/jetstream_rpc", default-features=false, features = [
   "quinn",
   "turmoil",
 ] }
-jetstream_wireformat = { version = "16.0.0", path = "components/jetstream_wireformat", features = [
+jetstream_wireformat = { version = "16.1.0", path = "components/jetstream_wireformat", features = [
   "all",
 ] }
 miette = "7.6.0"
@@ -105,6 +105,7 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 rustls-pemfile = "2.2.0"
 sha256 = "1.6.0"
 term-transcript = "0.4.0"
+iroh = { workspace = true, features = ["test-utils"] }
 tokio = { version = "1.47.1", features = ["full"] }
 tokio-rustls = "0.26.4"
 tower = { version = "0.5.3", features = ["util"] }
@@ -156,9 +157,9 @@ repository = "https://github.com/sevki/jetstream"
 license = "BSD-3-Clause"
 
 [workspace.dependencies]
-iroh = "0.96.1"
+iroh = "1.0.2"
 worker-macros = "0.7.4"
 tokio-util = { version = "0.7.16", features = ["codec"] }
-turmoil = "0.7.1"
+turmoil = "0.7.2"
 url = "2.5.7"
 cfg_aliases = "0.2.1"

@@ -177,6 +177,11 @@ fn benchmarks(#[allow(unused)] c: &mut Criterion) {
             .await
             .unwrap();
 
+            // Wait for the server endpoint to be reachable via the relay
+            // before publishing its address, otherwise the client can dial
+            // before the relay connection is established and time out.
+            router.endpoint().online().await;
+
             let addr = router.endpoint().addr();
             let transport = jetstream_iroh::client_builder::<EchoChannel>(addr)
                 .await

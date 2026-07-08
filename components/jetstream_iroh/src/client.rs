@@ -4,13 +4,17 @@ use std::{
 };
 
 use futures::{Sink, SinkExt, Stream, StreamExt};
-use iroh::endpoint::{RecvStream, SendStream};
+use iroh::endpoint::{Connection, RecvStream, SendStream};
 use jetstream_rpc::{client::ClientCodec, Error, Protocol};
 use tokio_util::codec::{FramedRead, FramedWrite};
 
 pub struct IrohTransport<P: Protocol> {
     send_stream: FramedWrite<SendStream, ClientCodec<P>>,
     recv_stream: FramedRead<RecvStream, ClientCodec<P>>,
+    // Kept alive for as long as the transport is: iroh aborts the
+    // connection ungracefully if the `Connection`/`Endpoint` are dropped
+    // while streams opened from them are still in use.
+    _keepalive: Option<(Connection, iroh::Endpoint)>,
 }
 
 impl<P: Protocol> From<(SendStream, RecvStream)> for IrohTransport<P> {
@@ -21,7 +25,25 @@ impl<P: Protocol> From<(SendStream, RecvStream)> for IrohTransport<P> {
         Self {
             send_stream,
             recv_stream,
+            _keepalive: None,
         }
+    }
+}
+
+impl<P: Protocol> IrohTransport<P> {
+    /// Build a transport that keeps `connection` and `endpoint` alive for
+    /// as long as the transport itself is alive. Use this whenever the
+    /// caller doesn't otherwise hold on to the `Connection`/`Endpoint`
+    /// (e.g. inside a helper function that would otherwise drop them on
+    /// return).
+    pub fn new_owned(
+        streams: (SendStream, RecvStream),
+        connection: Connection,
+        endpoint: iroh::Endpoint,
+    ) -> Self {
+        let mut transport = Self::from(streams);
+        transport._keepalive = Some((connection, endpoint));
+        transport
     }
 }
 

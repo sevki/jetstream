@@ -648,8 +648,7 @@ mod tests {
         let ca_der = vendor_ca_cert_der();
         let verifier = verifier_for_ca(&ca_der);
         let server =
-            axum_test::TestServer::new(test_router_with_verifier(verifier))
-                .unwrap();
+            axum_test::TestServer::new(test_router_with_verifier(verifier));
         let der = vendor_client_cert_der();
         let b64 = base64::engine::general_purpose::STANDARD.encode(&der);
 
@@ -664,8 +663,7 @@ mod tests {
         let ca_der = vendor_ca_cert_der();
         let verifier = verifier_for_ca(&ca_der);
         let server =
-            axum_test::TestServer::new(test_router_with_verifier(verifier))
-                .unwrap();
+            axum_test::TestServer::new(test_router_with_verifier(verifier));
         let (_der, b64) = test_cert_der();
 
         let response = server.get("/pki").add_query_param("cert", &b64).await;
@@ -678,8 +676,7 @@ mod tests {
         let ca_der = vendor_ca_cert_der();
         let verifier = verifier_for_ca(&ca_der);
         let server =
-            axum_test::TestServer::new(test_router_with_verifier(verifier))
-                .unwrap();
+            axum_test::TestServer::new(test_router_with_verifier(verifier));
 
         let response = server.get("/pki").await;
 
@@ -691,8 +688,7 @@ mod tests {
         let ca_der = vendor_ca_cert_der();
         let verifier = verifier_for_ca(&ca_der);
         let server =
-            axum_test::TestServer::new(test_router_with_verifier(verifier))
-                .unwrap();
+            axum_test::TestServer::new(test_router_with_verifier(verifier));
 
         let response =
             server.get("/pki").add_query_param("cert", "garbage").await;

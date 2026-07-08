@@ -1,6 +1,24 @@
 # Changelog
 
 
+## [16.1.0](https://github.com/sevki/jetstream/compare/v16.0.0...v16.1.0) (2026-05-02)
+
+
+### Features
+
+* wireformat tuple support with 12 items ([cd442bb](https://github.com/sevki/jetstream/commit/cd442bb62048452de319fff6628f95a0fd9386bd))
+* wireformat tuple support with 12 items ([cf59a41](https://github.com/sevki/jetstream/commit/cf59a41b4f2dcf9b41afd378fd301f735a8560b7))
+
+
+### Bug Fixes
+
+* CI macos sed bug ([2fffa4a](https://github.com/sevki/jetstream/commit/2fffa4ae9a5e066542f4643435cc40581b8471e2))
+* **ci:** resolve benchmark workflow checkout failure on Cargo.lock conflict ([7c26430](https://github.com/sevki/jetstream/commit/7c26430c33491f541e5dc2bc81f8cb28bb07e5d2))
+* gen is reserved in rust 2024 ([075e3e2](https://github.com/sevki/jetstream/commit/075e3e2f049b056dd2d3ca4b7e7e568b7cc7116a))
+* **jetstream:** add hashbrown support to wireformat, update rcgen to 0.14, misc fixes ([f5659cb](https://github.com/sevki/jetstream/commit/f5659cb3f8655680dc2bec4218d669fa7518dab4))
+* single item tuple ([f727793](https://github.com/sevki/jetstream/commit/f727793c239e6a54434d6e57789d6cb664bedd35))
+* updated rcgen api ([016ada8](https://github.com/sevki/jetstream/commit/016ada8972ef044c73dc4317d8f1ee9ae0370e41))
+
 ## [16.0.0](https://github.com/sevki/jetstream/compare/v15.2.0...v16.0.0) (2026-02-22)
 
 
