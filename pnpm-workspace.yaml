@@ -2,3 +2,7 @@ packages:
   - "packages/*"
   - "examples/app"
   - "tests/jetstream_interop/helpers/ts"
+allowBuilds:
+  esbuild: true
+onlyBuiltDependencies:
+  - esbuild
