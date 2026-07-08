@@ -16,8 +16,8 @@
         <link rel="icon" href="favicon-de23e50b.svg">
         <link rel="shortcut icon" href="favicon-8114d1fc.png">
         <link rel="stylesheet" href="css/variables-8adf115d.css">
-        <link rel="stylesheet" href="css/general-0392ca55.css">
-        <link rel="stylesheet" href="css/chrome-fc474251.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
         <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
 
         <!-- Fonts -->
@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3bf6b997.js";
+            window.path_to_searchindex_js = "searchindex-d2da05da.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-1154eef0.js"></script>
@@ -181,7 +181,7 @@
   <img width="200px" alt="Fallback image description" src="https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png">
 </picture>
 <h1 id="jetstream"><a class="header" href="#jetstream">JetStream</a></h1>
-<p><a href="https://crates.io/crates/jetstream"><img src="https://img.shields.io/crates/v/jetstream.svg" alt="crates.io"></a> <a href="https://docs.rs/jetstream"><img src="https://docs.rs/jetstream/badge.svg" alt="docs.rs"></a> <!--gh actions--> <img src="https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg" alt="Build Status"> <a href="https://github.com/sevki/jetstream/actions/workflows/release-please.yml"><img src="https://github.com/sevki/jetstream/actions/workflows/release-please.yml/badge.svg" alt="Release Please🙏!"></a> <a href="https://github.com/sevki/jetstream/actions/workflows/benchmarks.yml"><img src="https://github.com/sevki/jetstream/actions/workflows/benchmarks.yml/badge.svg" alt="benchmark pull requests"></a> <a href="https://crates.io/crates/jetstream"><img src="https://img.shields.io/crates/d/jetstream.svg" alt="crates.io downloads"></a></p>
+<p><a href="https://crates.io/crates/jetstream"><img src="https://img.shields.io/crates/v/jetstream.svg" alt="crates.io"></a> <a href="https://docs.rs/jetstream"><img src="https://docs.rs/jetstream/badge.svg" alt="docs.rs"></a> <!--gh actions--> <label class="checkbox-label"><input class="checkbox-img" type="checkbox"><img src="https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg" alt="Build Status"><span class="img-wrapper"><img src="https://github.com/sevki/jetstream/actions/workflows/rust.yml/badge.svg" alt="Build Status"></span></label> <a href="https://github.com/sevki/jetstream/actions/workflows/release-please.yml"><img src="https://github.com/sevki/jetstream/actions/workflows/release-please.yml/badge.svg" alt="Release Please🙏!"></a> <a href="https://github.com/sevki/jetstream/actions/workflows/benchmarks.yml"><img src="https://github.com/sevki/jetstream/actions/workflows/benchmarks.yml/badge.svg" alt="benchmark pull requests"></a> <a href="https://crates.io/crates/jetstream"><img src="https://img.shields.io/crates/d/jetstream.svg" alt="crates.io downloads"></a></p>
 <p>JetStream is an RPC framework designed to be a high performance, low latency, secure, and reliable RPC framework.</p>
 <h2 id="transport-backends"><a class="header" href="#transport-backends">Transport Backends</a></h2>
 <p>JetStream supports multiple transport backends:</p>
@@ -257,6 +257,11 @@ async fn main() {
     })
     .await
     .unwrap();
+
+    // Wait for the server endpoint to be reachable via the relay before
+    // publishing its address, otherwise clients can dial before the
+    // relay connection is established and time out.
+    router.endpoint().online().await;
 
     // get our own address. At this point we have a running router
     // that's ready to accept connections.
@@ -2877,7 +2882,7 @@ let response = try await mux.rpc(request)
 
         <script src="clipboard-1626706a.min.js"></script>
         <script src="highlight-abc7f01d.js"></script>
-        <script src="book-c22b7243.js"></script>
+        <script src="book-609e4cb8.js"></script>
 
         <!-- Custom JS scripts -->
 

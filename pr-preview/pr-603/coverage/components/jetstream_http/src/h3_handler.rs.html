@@ -10453,7 +10453,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier))</pre>
+                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier));</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10469,7 +10469,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">                .unwrap();</pre>
+                <pre class="has-background-white py-0 px-2">        let der = vendor_client_cert_der();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10485,7 +10485,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let der = vendor_client_cert_der();</pre>
+                <pre class="has-background-white py-0 px-2">        let b64 = base64::engine::general_purpose::STANDARD.encode(&amp;der);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10501,7 +10501,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let b64 = base64::engine::general_purpose::STANDARD.encode(&amp;der);</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10517,7 +10517,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        let response = server.get(&quot;&#x2F;pki&quot;).add_query_param(&quot;cert&quot;, &amp;b64).await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10533,7 +10533,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let response = server.get(&quot;&#x2F;pki&quot;).add_query_param(&quot;cert&quot;, &amp;b64).await;</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10549,7 +10549,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        response.assert_status_ok();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10565,7 +10565,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        response.assert_status_ok();</pre>
+                <pre class="has-background-white py-0 px-2">        response.assert_text(&quot;test@example.com&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10581,7 +10581,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        response.assert_text(&quot;test@example.com&quot;);</pre>
+                <pre class="has-background-white py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10597,7 +10597,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10613,7 +10613,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    #[tokio::test]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10629,7 +10629,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    #[tokio::test]</pre>
+                <pre class="has-background-white py-0 px-2">    async fn axum_test_self_signed_cert_rejected() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10645,7 +10645,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    async fn axum_test_self_signed_cert_rejected() {</pre>
+                <pre class="has-background-white py-0 px-2">        let ca_der = vendor_ca_cert_der();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10661,7 +10661,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let ca_der = vendor_ca_cert_der();</pre>
+                <pre class="has-background-white py-0 px-2">        let verifier = verifier_for_ca(&amp;ca_der);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10677,7 +10677,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let verifier = verifier_for_ca(&amp;ca_der);</pre>
+                <pre class="has-background-white py-0 px-2">        let server =</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10693,7 +10693,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let server =</pre>
+                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier));</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10709,7 +10709,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier))</pre>
+                <pre class="has-background-white py-0 px-2">        let (_der, b64) = test_cert_der();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10725,7 +10725,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">                .unwrap();</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10741,7 +10741,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let (_der, b64) = test_cert_der();</pre>
+                <pre class="has-background-white py-0 px-2">        let response = server.get(&quot;&#x2F;pki&quot;).add_query_param(&quot;cert&quot;, &amp;b64).await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10773,7 +10773,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let response = server.get(&quot;&#x2F;pki&quot;).add_query_param(&quot;cert&quot;, &amp;b64).await;</pre>
+                <pre class="has-background-white py-0 px-2">        response.assert_status(http::StatusCode::UNAUTHORIZED);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10789,7 +10789,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10805,7 +10805,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        response.assert_status(http::StatusCode::UNAUTHORIZED);</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10821,7 +10821,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">    #[tokio::test]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10837,7 +10837,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    async fn axum_test_no_cert_returns_error() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10853,7 +10853,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    #[tokio::test]</pre>
+                <pre class="has-background-white py-0 px-2">        let ca_der = vendor_ca_cert_der();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10869,7 +10869,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    async fn axum_test_no_cert_returns_error() {</pre>
+                <pre class="has-background-white py-0 px-2">        let verifier = verifier_for_ca(&amp;ca_der);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10885,7 +10885,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let ca_der = vendor_ca_cert_der();</pre>
+                <pre class="has-background-white py-0 px-2">        let server =</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10901,7 +10901,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let verifier = verifier_for_ca(&amp;ca_der);</pre>
+                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier));</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10917,7 +10917,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let server =</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10933,7 +10933,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier))</pre>
+                <pre class="has-background-white py-0 px-2">        let response = server.get(&quot;&#x2F;pki&quot;).await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10949,7 +10949,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">                .unwrap();</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10965,7 +10965,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        response.assert_status(http::StatusCode::UNAUTHORIZED);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -10981,7 +10981,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let response = server.get(&quot;&#x2F;pki&quot;).await;</pre>
+                <pre class="has-background-white py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11013,7 +11013,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        response.assert_status(http::StatusCode::UNAUTHORIZED);</pre>
+                <pre class="has-background-white py-0 px-2">    #[tokio::test]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11029,7 +11029,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">    async fn axum_test_invalid_cert_returns_error() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11045,7 +11045,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        let ca_der = vendor_ca_cert_der();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11061,7 +11061,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    #[tokio::test]</pre>
+                <pre class="has-background-white py-0 px-2">        let verifier = verifier_for_ca(&amp;ca_der);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11077,7 +11077,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    async fn axum_test_invalid_cert_returns_error() {</pre>
+                <pre class="has-background-white py-0 px-2">        let server =</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11093,7 +11093,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let ca_der = vendor_ca_cert_der();</pre>
+                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier));</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11109,7 +11109,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let verifier = verifier_for_ca(&amp;ca_der);</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11125,7 +11125,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let server =</pre>
+                <pre class="has-background-white py-0 px-2">        let response =</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11141,7 +11141,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            axum_test::TestServer::new(test_router_with_verifier(verifier))</pre>
+                <pre class="has-background-white py-0 px-2">            server.get(&quot;&#x2F;pki&quot;).add_query_param(&quot;cert&quot;, &quot;garbage&quot;).await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11157,7 +11157,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">                .unwrap();</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11173,7 +11173,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        response.assert_status(http::StatusCode::UNAUTHORIZED);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11189,7 +11189,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let response =</pre>
+                <pre class="has-background-white py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -11205,70 +11205,6 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            server.get(&quot;&#x2F;pki&quot;).add_query_param(&quot;cert&quot;, &quot;garbage&quot;).await;</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="699"
-                role="cell">
-                <a href="#699">699</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="700"
-                role="cell">
-                <a href="#700">700</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
-                <pre class="has-background-white py-0 px-2">        response.assert_status(http::StatusCode::UNAUTHORIZED);</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="701"
-                role="cell">
-                <a href="#701">701</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
-                <pre class="has-background-white py-0 px-2">    }</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="702"
-                role="cell">
-                <a href="#702">702</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
                 <pre class="has-background-white py-0 px-2">}</pre>
             </div>
         </div></div>
@@ -11276,7 +11212,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-06-01 23:59</p>
+                    <p class="heading">Date: 2026-07-08 07:47</p>
                 </div>
             
         </footer>
