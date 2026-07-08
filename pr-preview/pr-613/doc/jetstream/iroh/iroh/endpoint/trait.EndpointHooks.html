@@ -10,14 +10,14 @@
     ) -&gt; impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html" title="trait core::future::future::Future">Future</a>&lt;Output = <a class="enum" href="enum.BeforeConnectOutcome.html" title="enum jetstream::iroh::iroh::endpoint::BeforeConnectOutcome">BeforeConnectOutcome</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + 'a { ... }
 <span class="item-spacer"></span>    fn <a href="#method.after_handshake" class="fn">after_handshake</a>&lt;'a&gt;(
         &amp;'a self,
-        _conn: &amp;'a <a class="struct" href="struct.ConnectionInfo.html" title="struct jetstream::iroh::iroh::endpoint::ConnectionInfo">ConnectionInfo</a>,
+        _conn: &amp;'a <a class="struct" href="struct.Connection.html" title="struct jetstream::iroh::iroh::endpoint::Connection">Connection</a>,
     ) -&gt; impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html" title="trait core::future::future::Future">Future</a>&lt;Output = <a class="enum" href="enum.AfterHandshakeOutcome.html" title="enum jetstream::iroh::iroh::endpoint::AfterHandshakeOutcome">AfterHandshakeOutcome</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + 'a { ... }
 }</code></pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>EndpointHooks intercept the connection establishment process of an <a href="../struct.Endpoint.html" title="struct jetstream::iroh::iroh::Endpoint"><code>Endpoint</code></a>.</p>
 <p>Use <a href="struct.Builder.html#method.hooks" title="method jetstream::iroh::iroh::endpoint::Builder::hooks"><code>Builder::hooks</code></a> to install hooks onto an endpoint.</p>
 <p>For each hook, all installed hooks are invoked in the order they were installed on
 the endpoint builder. If a hook returns <code>Accept</code>, processing continues with the next
 hook. If a hook returns <code>Reject</code>, processing is aborted and further hooks
-are not invoked for this hook.</p>
+are not invoked for this hook point.</p>
 <h3 id="notes-to-implementers"><a class="doc-anchor" href="#notes-to-implementers">§</a>Notes to implementers</h3>
 <p>As hooks are stored on the endpoint, you must make sure to never store an <a href="../struct.Endpoint.html" title="struct jetstream::iroh::iroh::Endpoint"><code>Endpoint</code></a>
 on the hook struct itself, as this would create reference counting loop and cause the
@@ -33,9 +33,16 @@ or <a href="../struct.Endpoint.html#method.connect_with_opts" title="method jets
 before any packets are sent to the remote.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.after_handshake" class="method"><h4 class="code-header">fn <a href="#method.after_handshake" class="fn">after_handshake</a>&lt;'a&gt;(
     &amp;'a self,
-    _conn: &amp;'a <a class="struct" href="struct.ConnectionInfo.html" title="struct jetstream::iroh::iroh::endpoint::ConnectionInfo">ConnectionInfo</a>,
+    _conn: &amp;'a <a class="struct" href="struct.Connection.html" title="struct jetstream::iroh::iroh::endpoint::Connection">Connection</a>,
 ) -&gt; impl <a class="trait" href="https://doc.rust-lang.org/nightly/core/future/future/trait.Future.html" title="trait core::future::future::Future">Future</a>&lt;Output = <a class="enum" href="enum.AfterHandshakeOutcome.html" title="enum jetstream::iroh::iroh::endpoint::AfterHandshakeOutcome">AfterHandshakeOutcome</a>&gt; + <a class="trait" href="https://doc.rust-lang.org/nightly/core/marker/trait.Send.html" title="trait core::marker::Send">Send</a> + 'a</h4></section></summary><div class="docblock"><p>Intercept both incoming and outgoing connections once the TLS handshake has completed.</p>
 <p>At this point in time, we know the remote’s endpoint id and ALPN. If any hook returns
 <a href="enum.AfterHandshakeOutcome.html#variant.Reject" title="variant jetstream::iroh::iroh::endpoint::AfterHandshakeOutcome::Reject"><code>AfterHandshakeOutcome::Reject</code></a>, the connection is closed with the provided error code
 and reason.</p>
+<p>The hook receives the <a href="struct.Connection.html" title="struct jetstream::iroh::iroh::endpoint::Connection"><code>Connection</code></a> by reference so that implementations can read any
+information they need synchronously. Do not clone the <a href="struct.Connection.html" title="struct jetstream::iroh::iroh::endpoint::Connection"><code>Connection</code></a> out of the hook:
+holding a strong <a href="struct.Connection.html" title="struct jetstream::iroh::iroh::endpoint::Connection"><code>Connection</code></a> handle keeps the connection alive and disables
+close-on-drop, which the primary use sites of the connection might rely on. If you need to
+keep a reference for later (for example to wait for the connection to close, or to
+look up the connection in a map), call <a href="struct.Connection.html#method.weak_handle" title="method jetstream::iroh::iroh::endpoint::Connection::weak_handle"><code>Connection::weak_handle</code></a> and store the
+resulting <a href="struct.WeakConnectionHandle.html" title="struct jetstream::iroh::iroh::endpoint::WeakConnectionHandle"><code>WeakConnectionHandle</code></a> instead.</p>
 </div></details></div><h2 id="dyn-compatibility" class="section-header">Dyn Compatibility<a href="#dyn-compatibility" class="anchor">§</a></h2><div class="dyn-compatibility-info"><p>This trait is <b>not</b> <a href="https://doc.rust-lang.org/nightly/reference/items/traits.html#dyn-compatibility">dyn compatible</a>.</p><p><i>In older versions of Rust, dyn compatibility was called "object safety".</i></p></div><h2 id="implementors" class="section-header">Implementors<a href="#implementors" class="anchor">§</a></h2><div id="implementors-list"></div><script src="../../../../trait.impl/iroh/endpoint/hooks/trait.EndpointHooks.js" async></script></section></div></main></body></html>
