@@ -37,6 +37,11 @@ async fn main() {
     .await
     .unwrap();
 
+    // Wait for the server endpoint to be reachable via the relay before
+    // publishing its address, otherwise clients can dial before the
+    // relay connection is established and time out.
+    router.endpoint().online().await;
+
     // get our own address. At this point we have a running router
     // that's ready to accept connections.
     let addr = router.endpoint().addr();

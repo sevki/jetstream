@@ -55,7 +55,8 @@ pub async fn client_builder<P: Protocol>(
         .connect(addr, P::NAME.as_bytes())
         .await
         .map_err(Box::new)?;
-    Ok(IrohTransport::from(conn.open_bi().await?))
+    let streams = conn.open_bi().await?;
+    Ok(IrohTransport::new_owned(streams, conn, endpoint))
 }
 
 pub async fn server_builder<P: Server + Protocol + Debug + Clone + 'static>(
