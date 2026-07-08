@@ -13,8 +13,8 @@ use std::fmt::Debug;
 pub use client::IrohTransport;
 use iroh::{
     address_lookup::{
+        AddressLookupBuilder,
         pkarr::{PkarrPublisher, PkarrResolver},
-        IntoAddressLookup,
     },
     protocol::Router,
     EndpointAddr, RelayConfig, RelayMap, RelayUrl,
@@ -29,21 +29,18 @@ lazy_static::lazy_static!(
     static ref DISCOVERY_URL: url::Url = url::Url::parse("https://discovery.jetstream.rs").unwrap();
 );
 
-fn jetstream_resolver() -> impl IntoAddressLookup {
+fn jetstream_resolver() -> impl AddressLookupBuilder {
     PkarrResolver::builder(DISCOVERY_URL.clone())
 }
 
-fn jetstream_publisher_builder() -> impl IntoAddressLookup {
+fn jetstream_publisher_builder() -> impl AddressLookupBuilder {
     PkarrPublisher::builder(DISCOVERY_URL.clone())
 }
 
 pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
-    iroh::Endpoint::builder()
+    iroh::Endpoint::builder(iroh::endpoint::presets::Minimal)
         .relay_mode(iroh::RelayMode::Custom(RelayMap::from_iter([
-            RelayConfig {
-                url: RELAY_URL.clone(),
-                quic: None,
-            },
+            RelayConfig::new(RELAY_URL.clone(), None),
         ])))
         .alpns(vec![P::NAME.as_bytes().to_vec()])
         .address_lookup(jetstream_publisher_builder())
@@ -58,7 +55,8 @@ pub async fn client_builder<P: Protocol>(
         .connect(addr, P::NAME.as_bytes())
         .await
         .map_err(Box::new)?;
-    Ok(IrohTransport::from(conn.open_bi().await?))
+    let streams = conn.open_bi().await?;
+    Ok(IrohTransport::new_owned(streams, conn, endpoint))
 }
 
 pub async fn server_builder<P: Server + Protocol + Debug + Clone + 'static>(

@@ -105,6 +105,7 @@ rustls = { version = "0.23", default-features = false, features = ["ring", "std"
 rustls-pemfile = "2.2.0"
 sha256 = "1.6.0"
 term-transcript = "0.4.0"
+iroh = { workspace = true, features = ["test-utils"] }
 tokio = { version = "1.47.1", features = ["full"] }
 tokio-rustls = "0.26.4"
 tower = { version = "0.5.3", features = ["util"] }
@@ -156,7 +157,7 @@ repository = "https://github.com/sevki/jetstream"
 license = "BSD-3-Clause"
 
 [workspace.dependencies]
-iroh = "0.96.1"
+iroh = "1.0.2"
 worker-macros = "0.7.4"
 tokio-util = { version = "0.7.16", features = ["codec"] }
 turmoil = "0.7.2"
