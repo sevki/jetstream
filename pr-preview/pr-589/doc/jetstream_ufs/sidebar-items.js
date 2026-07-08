@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":["syscall"],"mod":["ufs"],"struct":["Config","Server"],"type":["ServerGidMap","ServerIdMap","ServerUidMap"]};
+window.SIDEBAR_ITEMS = {"macro":[["syscall",1]],"mod":["ufs"],"struct":["Config","Server"],"type":["ServerGidMap","ServerIdMap","ServerUidMap"]};

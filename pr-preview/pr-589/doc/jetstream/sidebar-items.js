@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":["prost_wireformat"],"mod":["http","iroh","macros","p9","prelude","quic"]};
+window.SIDEBAR_ITEMS = {"macro":[["prost_wireformat",1]],"mod":["http","iroh","macros","p9","prelude","quic"]};
