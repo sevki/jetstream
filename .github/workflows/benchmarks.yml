@@ -8,7 +8,7 @@ jobs:
   runBenchmark:
     name: run benchmark
     runs-on: ubuntu-latest
-    timeout-minutes: 7
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v3
         with:
