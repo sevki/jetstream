@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_macros"
-version = "16.1.0"
+version = "16.1.1"
 edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
@@ -16,7 +16,7 @@ sha256 = "1.5.0"
 lazy_static = "1.5.0"
 prettyplease = "0.2.34"
 ident_case = "1.0.1"
-jetstream_codegen = { version = "16.1.0", path = "../jetstream_codegen" }
+jetstream_codegen = { version = "16.1.1", path = "../jetstream_codegen" }
 
 [lib]
 proc-macro = true
