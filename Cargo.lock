@@ -1780,7 +1780,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -2719,7 +2719,7 @@ checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
 name = "jetstream"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.15.6",
  "async-trait",
@@ -2763,7 +2763,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros",
@@ -2775,7 +2775,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_codegen"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "argh",
  "cargo_metadata",
@@ -2790,7 +2790,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_error"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.16.0",
  "axum",
@@ -2812,7 +2812,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_http"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.16.0",
  "async-trait",
@@ -2846,7 +2846,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_interop"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "jetstream_macros",
  "jetstream_wireformat",
@@ -2855,7 +2855,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "futures",
  "iroh",
@@ -2869,7 +2869,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2877,7 +2877,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "convert_case 0.11.0",
  "futures",
@@ -2898,7 +2898,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.16.0",
  "async-trait",
@@ -2918,7 +2918,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2949,7 +2949,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -2963,7 +2963,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "bytes",
  "futures",
@@ -3247,7 +3247,7 @@ checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
 
 [[package]]
 name = "mdbook-changelog"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "anyhow",
  "mdbook-core",

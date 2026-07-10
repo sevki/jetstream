@@ -1,6 +1,17 @@
 # Changelog
 
 
+## [16.1.1](https://github.com/sevki/jetstream/compare/v16.1.0...v16.1.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* add test-specific iroh builders that don't require external relay ([3e19eb3](https://github.com/sevki/jetstream/commit/3e19eb36b9d322488f6c2ce1813a6670cc9d1338))
+* correct pnpm allowBuilds config to actually approve esbuild's postinstall script ([67c4d96](https://github.com/sevki/jetstream/commit/67c4d96e85639d9a26fac7407a646903c00e6992))
+* keep iroh Connection/Endpoint alive in client_builder to stop examples hanging ([303e955](https://github.com/sevki/jetstream/commit/303e9558aabec9cc355c880b93386123dd83cc70))
+* resolve compile errors from iroh 1.0.2 and axum-test 20.0.0 API changes, fix pnpm build approval config ([b6a8aef](https://github.com/sevki/jetstream/commit/b6a8aefddf92c3f2368bb9c9879c51c4815510fe))
+* wait for iroh endpoint to come online in benchmark, same as example ([e195701](https://github.com/sevki/jetstream/commit/e19570100aa7fb9196a859dda5e851707b31c686))
+
 ## [16.1.0](https://github.com/sevki/jetstream/compare/v16.0.0...v16.1.0) (2026-05-02)
 
 
