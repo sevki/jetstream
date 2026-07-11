@@ -1780,7 +1780,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -2719,7 +2719,7 @@ checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
 name = "jetstream"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.15.6",
  "async-trait",
@@ -2763,7 +2763,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros",
@@ -2775,7 +2775,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_codegen"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "argh",
  "cargo_metadata",
@@ -2790,7 +2790,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_error"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.16.0",
  "axum",
@@ -2812,7 +2812,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_http"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.16.0",
  "async-trait",
@@ -2846,7 +2846,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_interop"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "jetstream_macros",
  "jetstream_wireformat",
@@ -2855,7 +2855,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "futures",
  "iroh",
@@ -2869,7 +2869,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2877,7 +2877,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "convert_case 0.11.0",
  "futures",
@@ -2898,7 +2898,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "askama 0.16.0",
  "async-trait",
@@ -2918,7 +2918,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2949,7 +2949,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -2963,7 +2963,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "bytes",
  "futures",
@@ -3247,7 +3247,7 @@ checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
 
 [[package]]
 name = "mdbook-changelog"
-version = "16.1.0"
+version = "16.1.1"
 dependencies = [
  "anyhow",
  "mdbook-core",
@@ -4602,9 +4602,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.12.3"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e10754a14b9137dd7b1e3e5b0493cc9171fdd105e0ab477f51b72e7f3ac0e276"
+checksum = "2a0e75113e14dc5acb068cd0786884f214f1312650a3d36d269f5c4f3cdee8a2"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -4625,9 +4625,9 @@ dependencies = [
 
 [[package]]
 name = "regex-syntax"
-version = "0.8.9"
+version = "0.8.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a96887878f22d7bad8a3b6dc5b7440e0ada9a245242924394987b21cf2210a4c"
+checksum = "d6f6ff9a378485b298a5286656da665ba74413d36db0979633275d2e708145d4"
 
 [[package]]
 name = "reloadable-core"
@@ -5516,9 +5516,9 @@ checksum = "b7401a30af6cb5818bb64852270bb722533397edcfc7344954a38f420819ece2"
 
 [[package]]
 name = "syn"
-version = "2.0.117"
+version = "2.0.118"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e665b8803e7b1d2a727f4023456bbbbe74da67099c585258af0ad9c5013b9b99"
+checksum = "1b9ae57f904213ebb649ce6895b8a66c66f0203b9319718f69a5612a065b1422"
 dependencies = [
  "proc-macro2",
  "quote",
