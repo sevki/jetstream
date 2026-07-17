@@ -162,4 +162,4 @@ worker-macros = "0.7.4"
 tokio-util = { version = "0.7.16", features = ["codec"] }
 turmoil = "0.7.2"
 url = "2.5.7"
-cfg_aliases = "0.2.1"
+cfg_aliases = "0.2.2"

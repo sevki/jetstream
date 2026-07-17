@@ -15,4 +15,4 @@ bench = false
 [dependencies]
 libc = { version = "0.2.186", default-features = false }
 [build-dependencies]
-cfg_aliases = "0.2.1"
+cfg_aliases = "0.2.2"

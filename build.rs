@@ -12,5 +12,5 @@ fn main() {
         wasm_browser: { all(target_family = "wasm", target_os = "unknown") },
         cloudflare: { all(target_arch = "wasm32", target_os = "unknown", feature = "worker") },
         unix_with_tokio: { all(unix, feature = "tokio") },
-    };
+    }
 }
