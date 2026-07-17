@@ -1,6 +1,15 @@
 # Changelog
 
 
+## [16.1.2](https://github.com/sevki/jetstream/compare/v16.1.1...v16.1.2) (2026-07-17)
+
+
+### Bug Fixes
+
+* **build:** silence trailing-semicolon-in-macro lint from cfg_aliases! ([a979f0a](https://github.com/sevki/jetstream/commit/a979f0ae06bf2e8235095db221fe37b6f4d45805))
+* **build:** silence trailing-semicolon-in-macro lint from cfg_aliases! ([6f6047f](https://github.com/sevki/jetstream/commit/6f6047fdd11534b4e6afe0e4885cf578bfc0d0e5))
+* **deps:** bump cfg_aliases to 0.2.2 to fix nightly build ([c07c7b9](https://github.com/sevki/jetstream/commit/c07c7b925df3781892f3a3fe287b4fbdf6d1fa81))
+
 ## [16.1.1](https://github.com/sevki/jetstream/compare/v16.1.0...v16.1.1) (2026-07-10)
 
 

@@ -1,6 +1,6 @@
 [package]
 name = "jetstream_iroh"
-version = "16.1.1"
+version = "16.1.2"
 edition.workspace = true
 description.workspace = true
 license.workspace = true
@@ -10,7 +10,7 @@ readme.workspace = true
 
 [dependencies]
 futures = "0.3.32"
-jetstream_rpc = { version = "16.1.1", path = "../jetstream_rpc", features = [
+jetstream_rpc = { version = "16.1.2", path = "../jetstream_rpc", features = [
   "iroh",
 ] }
 tokio = { version = "1.47.1", features = ["full"] }
