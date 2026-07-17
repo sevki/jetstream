@@ -1622,9 +1622,9 @@ dependencies = [
 
 [[package]]
 name = "flume"
-version = "0.11.1"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da0e4dd2a88388a1f4ccc7c9ce104604dab68d9f408dc34cd45823d5a9069095"
+checksum = "5e139bc46ca777eb5efaf62df0ab8cc5fd400866427e56c68b22e414e53bd3be"
 dependencies = [
  "futures-core",
  "futures-sink",
@@ -2042,11 +2042,11 @@ dependencies = [
 
 [[package]]
 name = "hashlink"
-version = "0.12.1"
+version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "32069d97bb81e38fa67eab65e3393bf804bb85969f2bc06bf13f64aef5aba248"
+checksum = "824e001ac4f3012dd16a264bec811403a67ca9deb6c102fc5049b32c4574b35f"
 dependencies = [
- "hashbrown 0.17.0",
+ "hashbrown 0.16.1",
 ]
 
 [[package]]
@@ -2234,7 +2234,6 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower-service",
- "webpki-roots",
 ]
 
 [[package]]
@@ -2528,7 +2527,7 @@ dependencies = [
  "portable-atomic",
  "portmapper",
  "rand 0.10.1",
- "reqwest 0.13.4",
+ "reqwest",
  "rustc-hash",
  "rustls",
  "rustls-pki-types",
@@ -2600,7 +2599,7 @@ dependencies = [
  "itoa",
  "n0-error",
  "portable-atomic",
- "reqwest 0.13.4",
+ "reqwest",
  "rustls",
  "rustls-platform-verifier 0.7.0",
  "ryu",
@@ -2655,7 +2654,7 @@ dependencies = [
  "rand 0.10.1",
  "rcgen",
  "reloadable-state",
- "reqwest 0.13.4",
+ "reqwest",
  "rustls",
  "rustls-cert-file-reader",
  "rustls-cert-reloadable-resolver",
@@ -3126,9 +3125,9 @@ checksum = "b6d2cec3eae94f9f509c767b45932f1ada8350c4bdb85af2fcab4a3c14807981"
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.38.1"
+version = "0.36.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6c19a05435c21ac299d71b6a9c13db3e3f47c520517d58990a462a1397a61db"
+checksum = "95b4103cffefa72eb8428cb6b47d6627161e51c2739fc5e3b734584157bc642a"
 dependencies = [
  "cc",
  "pkg-config",
@@ -3210,9 +3209,9 @@ checksum = "d3d25b0e0b648a86960ac23b7ad4abb9717601dec6f66c165f5b037f3f03065f"
 
 [[package]]
 name = "mainline"
-version = "6.0.1"
+version = "6.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6ff27d378ca495eaf3be8616d5d7319c1c18e93fd60e13698fcdc7e19448f1a4"
+checksum = "25fd96e1eb0cff23f7048801d1561336c2e3c9f2b468d0271f27ad3463f583bf"
 dependencies = [
  "crc",
  "document-features",
@@ -3220,7 +3219,7 @@ dependencies = [
  "ed25519-dalek",
  "flume",
  "futures-lite",
- "getrandom 0.3.4",
+ "getrandom 0.4.1",
  "lru 0.16.3",
  "serde",
  "serde_bencode",
@@ -4101,9 +4100,9 @@ checksum = "3b3cff922bd51709b605d9ead9aa71031d81447142d828eb4a6eba76fe619f9b"
 
 [[package]]
 name = "pkarr"
-version = "5.0.2"
+version = "5.0.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1d346b545765a0ef58b6a7e160e17ddaa7427f439b7b9a287df6c88c9e04bf2"
+checksum = "2f950360d31be432c0c9467fba5024a94f55128e7f32bc9d32db140369f24c77"
 dependencies = [
  "async-compat",
  "base32",
@@ -4114,12 +4113,12 @@ dependencies = [
  "ed25519-dalek",
  "futures-buffered",
  "futures-lite",
- "getrandom 0.3.4",
+ "getrandom 0.4.1",
  "log",
  "lru 0.16.3",
  "mainline",
  "ntimestamp",
- "reqwest 0.12.28",
+ "reqwest",
  "self_cell",
  "serde",
  "sha1_smol",
@@ -4428,6 +4427,7 @@ version = "0.11.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "434b42fec591c96ef50e21e886936e66d3cc3f737104fdb9b737c40ffb94c098"
 dependencies = [
+ "aws-lc-rs",
  "bytes",
  "fastbloom",
  "getrandom 0.3.4",
@@ -4648,44 +4648,6 @@ dependencies = [
 
 [[package]]
 name = "reqwest"
-version = "0.12.28"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eddd3ca559203180a307f12d114c268abf583f59b03cb906fd0b3ff8646c1147"
-dependencies = [
- "base64",
- "bytes",
- "futures-core",
- "http",
- "http-body",
- "http-body-util",
- "hyper",
- "hyper-rustls",
- "hyper-util",
- "js-sys",
- "log",
- "percent-encoding",
- "pin-project-lite",
- "quinn",
- "rustls",
- "rustls-pki-types",
- "serde",
- "serde_json",
- "serde_urlencoded",
- "sync_wrapper",
- "tokio",
- "tokio-rustls",
- "tower",
- "tower-http",
- "tower-service",
- "url",
- "wasm-bindgen",
- "wasm-bindgen-futures",
- "web-sys",
- "webpki-roots",
-]
-
-[[package]]
-name = "reqwest"
 version = "0.13.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "219c5811de6525e5416c7d5d53bb656d3afdbc6c5af816e0802bcfa42dbdc1c3"
@@ -4704,6 +4666,7 @@ dependencies = [
  "log",
  "percent-encoding",
  "pin-project-lite",
+ "quinn",
  "rustls",
  "rustls-pki-types",
  "rustls-platform-verifier 0.7.0",
@@ -4764,9 +4727,9 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.40.1"
+version = "0.38.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11438310b19e3109b6446c33d1ed5e889428cf2e278407bc7896bc4aaea43323"
+checksum = "f1c93dd1c9683b438c392c492109cb702b8090b2bfc8fed6f6e4eb4523f17af3"
 dependencies = [
  "bitflags",
  "fallible-iterator",
@@ -5808,7 +5771,7 @@ dependencies = [
  "pem",
  "proc-macro2",
  "rcgen",
- "reqwest 0.13.4",
+ "reqwest",
  "ring",
  "rustls",
  "serde",
