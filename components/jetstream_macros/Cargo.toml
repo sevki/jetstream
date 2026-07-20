@@ -14,7 +14,7 @@ proc-macro2 = { version = "1.0.92", features = ["span-locations"] }
 convert_case = "0.11.0"
 sha256 = "1.5.0"
 lazy_static = "1.5.0"
-prettyplease = "0.2.34"
+prettyplease = "0.3.0"
 ident_case = "1.0.1"
 jetstream_codegen = { version = "16.1.2", path = "../jetstream_codegen" }
 
