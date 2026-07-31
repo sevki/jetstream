@@ -14,8 +14,9 @@ implementation of this preset into your own and setting the appropriate crypto
 provider there.</p>
 <p>The default address lookup service publishes to and resolves from the
 n0.computer dns server <code>iroh.link</code>.</p>
-<p>This is equivalent to adding both a <a href="../../address_lookup/struct.PkarrPublisher.html" title="struct jetstream::iroh::iroh::address_lookup::PkarrPublisher"><code>crate::address_lookup::PkarrPublisher</code></a>
-and a <a href="../../address_lookup/struct.DnsAddressLookup.html" title="struct jetstream::iroh::iroh::address_lookup::DnsAddressLookup"><code>crate::address_lookup::DnsAddressLookup</code></a>, both configured to use the
+<p>This is equivalent to adding a <a href="../../address_lookup/struct.PkarrPublisher.html" title="struct jetstream::iroh::iroh::address_lookup::PkarrPublisher"><code>crate::address_lookup::PkarrPublisher</code></a>,
+a <a href="../../address_lookup/struct.PkarrResolver.html" title="struct jetstream::iroh::iroh::address_lookup::PkarrResolver"><code>crate::address_lookup::PkarrResolver</code></a>, and (outside browsers) a
+<a href="../../address_lookup/struct.DnsAddressLookup.html" title="struct jetstream::iroh::iroh::address_lookup::DnsAddressLookup"><code>crate::address_lookup::DnsAddressLookup</code></a>, all configured to use the
 n0.computer dns server.</p>
 <p>This will by default use <a href="../../address_lookup/constant.N0_DNS_PKARR_RELAY_PROD.html" title="constant jetstream::iroh::iroh::address_lookup::N0_DNS_PKARR_RELAY_PROD"><code>N0_DNS_PKARR_RELAY_PROD</code></a>.
 When in tests, or when the <code>test-utils</code> feature is enabled, this will use the

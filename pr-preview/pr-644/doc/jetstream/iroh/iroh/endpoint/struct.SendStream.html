@@ -85,6 +85,8 @@ closing the stream is no longer meaningful.</p>
 <p>For a variety of reasons, the peer may not send acknowledgements immediately upon receiving
 data. As such, relying on <code>stopped</code> to know when the peer has read a stream to completion
 may introduce more latency than using an application-level response of some sort.</p>
+<p>Clients may wish to await this after finishing a unidirectional 0-RTT stream to reliably
+determine whether the stream was rejected.</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.id" class="method"><h4 class="code-header">pub fn <a href="#method.id" class="fn">id</a>(&amp;self) -&gt; <a class="struct" href="struct.StreamId.html" title="struct jetstream::iroh::iroh::endpoint::StreamId">StreamId</a></h4></section></summary><div class="docblock"><p>Get the identity of this stream</p>
 </div></details><details class="toggle method-toggle" open><summary><section id="method.poll_write" class="method"><h4 class="code-header">pub fn <a href="#method.poll_write" class="fn">poll_write</a>(
     self: <a class="struct" href="https://doc.rust-lang.org/nightly/core/pin/struct.Pin.html" title="struct core::pin::Pin">Pin</a>&lt;&amp;mut <a class="struct" href="struct.SendStream.html" title="struct jetstream::iroh::iroh::endpoint::SendStream">SendStream</a>&gt;,
