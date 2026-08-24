@@ -38,6 +38,9 @@ on:
       - "components/jetstream_wireformat/**"
       - ".github/workflows/bazel.yml"
 
+permissions:
+  contents: read
+
 jobs:
   bazel:
     runs-on: ubuntu-latest
