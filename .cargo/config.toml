@@ -1,4 +1,5 @@
 [registry]
+default = "crates-io"
 
 [net]
 git-fetch-with-cli = true
