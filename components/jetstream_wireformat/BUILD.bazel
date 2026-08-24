@@ -1,0 +1,19 @@
+load("@crates//:defs.bzl", "aliases", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "jetstream_wireformat",
+    srcs = glob(["src/**/*.rs"]),
+    aliases = aliases(),
+    crate_features = [
+        "async",
+        "std",
+    ],
+    edition = "2021",
+    proc_macro_deps = all_crate_deps(proc_macro = True) + [
+        "//components/jetstream_macros:jetstream_macros",
+    ],
+    deps = all_crate_deps(normal = True),
+)
