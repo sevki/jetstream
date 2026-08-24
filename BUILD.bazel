@@ -23,7 +23,8 @@ rust_library(
 
 rust_test(
     name = "bazel_smoke_test",
-    srcs = ["tests/bazel_smoke.rs"],
+    srcs = ["//tests:bazel_smoke.rs"],
+    crate_root = "//tests:bazel_smoke.rs",
     edition = "2021",
     deps = [":jetstream"],
 )

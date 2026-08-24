@@ -6,6 +6,7 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "jetstream_error",
     srcs = glob(["src/**/*.rs"]),
+    compile_data = glob(["src/**/*.svg"]),
     aliases = aliases(),
     crate_features = [
         "miette",
