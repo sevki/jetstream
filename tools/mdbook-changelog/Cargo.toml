@@ -1,6 +1,6 @@
 [package]
 name = "mdbook-changelog"
-version = "16.1.2"
+version = "16.1.3"
 edition = "2021"
 publish = false
 

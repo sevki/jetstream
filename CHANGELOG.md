@@ -1,6 +1,16 @@
 # Changelog
 
 
+## [16.1.3](https://github.com/sevki/jetstream/compare/v16.1.2...v16.1.3) (2026-08-24)
+
+
+### Bug Fixes
+
+* **bazel:** add crate annotation to link serde dep for chrono ([7e1c939](https://github.com/sevki/jetstream/commit/7e1c939e6600d07f00d49bf625cec7e92f7655a7))
+* **bazel:** upgrade Rust toolchain to 1.89.0, fix SVG compile_data, fix test file staging ([ae13cb5](https://github.com/sevki/jetstream/commit/ae13cb581b182229e4812db31fb1649995f8fe75))
+* **bazel:** use deps instead of extra_deps in crate.annotation for chrono ([834e73b](https://github.com/sevki/jetstream/commit/834e73b3779de4c316196679924372bb3118fbb1))
+* **bazel:** wire serde dep for chrono via crate annotation ([7d1c06e](https://github.com/sevki/jetstream/commit/7d1c06ebea9c2841c12b70d4aa2e99e799b4ef94))
+
 ## [16.1.2](https://github.com/sevki/jetstream/compare/v16.1.1...v16.1.2) (2026-07-17)
 
 
