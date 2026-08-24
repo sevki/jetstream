@@ -1,6 +1,24 @@
 name: "Bazel Build & Test"
 
 on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".bazelrc"
+      - "BUILD.bazel"
+      - "MODULE.bazel"
+      - ".cargo/config.toml"
+      - "Cargo.toml"
+      - "Cargo.lock"
+      - "src/**"
+      - "tests/bazel_smoke.rs"
+      - "components/jetstream_codegen/**"
+      - "components/jetstream_error/**"
+      - "components/jetstream_libc/**"
+      - "components/jetstream_macros/**"
+      - "components/jetstream_rpc/**"
+      - "components/jetstream_wireformat/**"
+      - ".github/workflows/bazel.yml"
   pull_request:
     branches: ["main"]
     paths:
