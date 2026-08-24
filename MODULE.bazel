@@ -17,4 +17,13 @@ crate.from_cargo(
     cargo_lockfile = "//:Cargo.lock",
     manifests = ["//:Cargo.toml"],
 )
+
+# rules_rust 0.68.1 crate_universe does not correctly propagate the `serde`
+# feature-gated dep for chrono. Add it unconditionally so the build succeeds.
+crate.annotation(
+    crate = "chrono",
+    version = "*",
+    extra_deps = ["@crates//:serde"],
+)
+
 use_repo(crate, "crates")
