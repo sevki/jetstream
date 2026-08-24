@@ -1,0 +1,22 @@
+load("@crates//:defs.bzl", "aliases", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_library")
+
+package(default_visibility = ["//visibility:public"])
+
+rust_library(
+    name = "jetstream_rpc",
+    srcs = glob(["src/**/*.rs"]),
+    aliases = aliases(),
+    edition = "2021",
+    proc_macro_deps = all_crate_deps(proc_macro = True),
+    rustc_flags = [
+        "--cfg=native",
+        "--cfg=notify",
+        "--cfg=tokio_unix",
+    ],
+    deps = all_crate_deps(normal = True) + [
+        "//components/jetstream_error:jetstream_error",
+        "//components/jetstream_libc:jetstream_libc",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+    ],
+)

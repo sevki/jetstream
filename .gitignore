@@ -1,4 +1,6 @@
 /target
+/.cache
+/bazel-*
 /book
 /docs/crates
 book/

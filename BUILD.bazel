@@ -1,0 +1,30 @@
+load("@crates//:defs.bzl", "aliases", "all_crate_deps")
+load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+
+package(default_visibility = ["//visibility:public"])
+
+exports_files([".cargo/config.toml"])
+
+rust_library(
+    name = "jetstream",
+    srcs = glob(["src/**/*.rs"]),
+    aliases = aliases(),
+    crate_features = ["tracing"],
+    edition = "2021",
+    proc_macro_deps = all_crate_deps(proc_macro = True) + [
+        "//components/jetstream_macros:jetstream_macros",
+    ],
+    deps = all_crate_deps(normal = True) + [
+        "//components/jetstream_error:jetstream_error",
+        "//components/jetstream_rpc:jetstream_rpc",
+        "//components/jetstream_wireformat:jetstream_wireformat",
+    ],
+)
+
+rust_test(
+    name = "bazel_smoke_test",
+    srcs = ["//tests:bazel_smoke.rs"],
+    crate_root = "//tests:bazel_smoke.rs",
+    edition = "2021",
+    deps = [":jetstream"],
+)
