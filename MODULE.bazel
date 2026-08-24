@@ -23,7 +23,7 @@ crate.from_cargo(
 crate.annotation(
     crate = "chrono",
     version = "*",
-    extra_deps = ["@crates//:serde"],
+    deps = ["@crates//:serde"],
 )
 
 use_repo(crate, "crates")
