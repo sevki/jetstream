@@ -261,6 +261,16 @@ impl<P: Protocol, C, S> SingleLaneSession<P, C, S> {
     }
 }
 
+/// r[impl jetstream.session.lifetime]
+/// A lane must not outlive its session, so a session that goes away
+/// without `close` — dropped during error unwinding, say — terminates
+/// its lane just the same.
+impl<P: Protocol, C, S> Drop for SingleLaneSession<P, C, S> {
+    fn drop(&mut self) {
+        self.cancel.cancel();
+    }
+}
+
 #[async_trait::async_trait]
 impl<P, C, S> Session<P> for SingleLaneSession<P, C, S>
 where
