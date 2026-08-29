@@ -7,6 +7,13 @@ use crate::{session::capabilities::Capability, Error};
 /// Every variant carries a stable code, reachable both from
 /// [`SessionError::code`] and from [`Error::code`] once converted, so
 /// that callers can inspect the reason instead of matching on a message.
+///
+/// [`SessionError::Transport`] is the one variant whose converted code
+/// may differ: it carries an error the transport produced, and that
+/// error's own code is more specific than a session-level one, so it is
+/// kept when present. The session code is stamped only when the inner
+/// error carries none, which is why a converted transport error always
+/// has *a* code but not always this one.
 #[derive(Debug, Clone, thiserror::Error)]
 pub enum SessionError {
     /// r[impl jetstream.session.single-lane]
@@ -57,6 +64,10 @@ pub enum SessionError {
 }
 
 impl SessionError {
+    /// The code stamped on a transport error that carries none of its
+    /// own.
+    pub const TRANSPORT_CODE: &'static str = "jetstream::session::transport";
+
     /// The stable code for this error.
     pub fn code(&self) -> &'static str {
         match self {
@@ -75,7 +86,7 @@ impl SessionError {
             SessionError::DatagramTooLarge { .. } => {
                 "jetstream::session::datagram_too_large"
             }
-            SessionError::Transport(_) => "jetstream::session::transport",
+            SessionError::Transport(_) => Self::TRANSPORT_CODE,
         }
     }
 }
@@ -83,7 +94,18 @@ impl SessionError {
 impl From<SessionError> for Error {
     fn from(err: SessionError) -> Self {
         match err {
-            SessionError::Transport(inner) => inner,
+            // Keep the transport's own code, span trace and backtrace:
+            // "the QUIC connection was reset" tells a caller more than
+            // "a session transport failed". Stamp the session code only
+            // when there is nothing to lose by it, so that a converted
+            // transport error is never left uninspectable.
+            SessionError::Transport(inner) => {
+                if inner.code().is_some() {
+                    inner
+                } else {
+                    inner.set_code(SessionError::TRANSPORT_CODE)
+                }
+            }
             other => {
                 let code = other.code();
                 Error::with_code(other.to_string(), code)
