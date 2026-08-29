@@ -12,10 +12,14 @@ use std::{
     fmt,
     marker::PhantomData,
     pin::Pin,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Mutex as StdMutex,
+    },
     task::{Context as TaskContext, Poll},
 };
 
-use futures::{Sink, Stream};
+use futures::{channel::oneshot, Sink, Stream};
 use tokio::sync::Mutex;
 
 use crate::{
@@ -25,6 +29,7 @@ use crate::{
     session::{
         capabilities::{Capabilities, IdentityKind, LaneSupport},
         error::SessionError,
+        lifetime::LaneGuard,
         Session,
     },
     Error, Frame, Protocol,
@@ -116,7 +121,7 @@ pub struct NoServiceLane<P: Protocol> {
 }
 
 impl<P: Protocol> Sink<Frame<P::Response>> for NoServiceLane<P> {
-    type Error = P::Error;
+    type Error = Error;
 
     fn poll_ready(
         self: Pin<&mut Self>,
@@ -148,7 +153,7 @@ impl<P: Protocol> Sink<Frame<P::Response>> for NoServiceLane<P> {
 }
 
 impl<P: Protocol> Stream for NoServiceLane<P> {
-    type Item = Result<Frame<P::Request>, P::Error>;
+    type Item = Result<Frame<P::Request>, Error>;
 
     fn poll_next(
         self: Pin<&mut Self>,
@@ -171,6 +176,11 @@ impl<P: Protocol> Contextual for NoServiceLane<P> {
 pub struct SingleLaneSession<P: Protocol, C, S> {
     client: Mutex<Option<C>>,
     service: Mutex<Option<S>>,
+    /// r[impl jetstream.session.lifetime]
+    /// The token half for the lane once it has been handed out. Held by
+    /// the session so that `close` reaches a lane the caller owns.
+    tokens: StdMutex<Vec<oneshot::Sender<()>>>,
+    closed: AtomicBool,
     opens: bool,
     accepts: bool,
     identity: IdentityKind,
@@ -184,6 +194,8 @@ impl<P: Protocol, C> SingleLaneSession<P, C, NoServiceLane<P>> {
         Self {
             client: Mutex::new(Some(lane)),
             service: Mutex::new(None),
+            tokens: StdMutex::new(Vec::new()),
+            closed: AtomicBool::new(false),
             opens: true,
             accepts: false,
             identity: IdentityKind::None,
@@ -199,6 +211,8 @@ impl<P: Protocol, S> SingleLaneSession<P, NoClientLane<P>, S> {
         Self {
             client: Mutex::new(None),
             service: Mutex::new(Some(lane)),
+            tokens: StdMutex::new(Vec::new()),
+            closed: AtomicBool::new(false),
             opens: false,
             accepts: true,
             identity: IdentityKind::None,
@@ -209,6 +223,21 @@ impl<P: Protocol, S> SingleLaneSession<P, NoClientLane<P>, S> {
 }
 
 impl<P: Protocol, C, S> SingleLaneSession<P, C, S> {
+    fn is_closed(&self) -> bool {
+        self.closed.load(Ordering::SeqCst)
+    }
+
+    /// r[impl jetstream.session.lifetime]
+    /// Mint the token this session will drop on close.
+    fn token(&self) -> oneshot::Receiver<()> {
+        let (tx, rx) = oneshot::channel();
+        self.tokens
+            .lock()
+            .expect("session tokens poisoned")
+            .push(tx);
+        rx
+    }
+
     /// Report a peer identity model other than
     /// [`IdentityKind::None`] — a TLS stream authenticates its peer even
     /// though it carries one lane.
@@ -227,12 +256,14 @@ impl<P: Protocol, C, S> SingleLaneSession<P, C, S> {
 #[async_trait::async_trait]
 impl<P, C, S> Session<P> for SingleLaneSession<P, C, S>
 where
-    P: Protocol,
+    P: Protocol<Error = Error>,
     C: ClientTransport<P>,
-    S: ServiceTransport<P>,
+    // `Contextual` is what the blanket `ServiceTransport` impl is built
+    // on; naming it here lets the guard forward the peer identity.
+    S: ServiceTransport<P> + Contextual,
 {
-    type ClientLane = C;
-    type ServiceLane = S;
+    type ClientLane = LaneGuard<C>;
+    type ServiceLane = LaneGuard<S>;
 
     fn capabilities(&self) -> Capabilities {
         Capabilities {
@@ -248,27 +279,37 @@ where
     }
 
     async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
-        self.client.lock().await.take().ok_or(if self.opens {
+        if self.is_closed() {
+            return Err(SessionError::Closed);
+        }
+        let lane = self.client.lock().await.take().ok_or(if self.opens {
             SessionError::LaneLimitReached
         } else {
             SessionError::OpenUnsupported
-        })
+        })?;
+        Ok(LaneGuard::new(lane, self.token()))
     }
 
     async fn accept_lane(&self) -> Result<Self::ServiceLane, SessionError> {
-        self.service.lock().await.take().ok_or(if self.accepts {
+        if self.is_closed() {
+            return Err(SessionError::Closed);
+        }
+        let lane = self.service.lock().await.take().ok_or(if self.accepts {
             SessionError::LaneLimitReached
         } else {
             SessionError::AcceptUnsupported
-        })
+        })?;
+        Ok(LaneGuard::new(lane, self.token()))
     }
 
-    /// Drops the lane if it has not been handed out yet.
-    ///
-    /// A byte-stream session *is* its lane: once the caller holds it,
-    /// closing the session is closing the lane, and the caller does that
-    /// by dropping what it holds.
+    /// r[impl jetstream.session.lifetime]
+    /// Terminates the lane whether or not it has been handed out:
+    /// dropping the token reaches a lane the caller already owns, so a
+    /// call in flight on it fails rather than continuing to run on a
+    /// session that has closed.
     async fn close(&self) {
+        self.closed.store(true, Ordering::SeqCst);
+        self.tokens.lock().expect("session tokens poisoned").clear();
         self.client.lock().await.take();
         self.service.lock().await.take();
     }

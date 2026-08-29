@@ -22,17 +22,18 @@ use std::{
 };
 
 use futures::{
-    channel::{mpsc, oneshot},
+    channel::oneshot,
     future::{select, Either},
-    pin_mut, Future, Sink, SinkExt, Stream, StreamExt,
+    pin_mut, Sink, Stream,
 };
-use tokio::sync::{Mutex, Notify};
+use tokio::sync::{mpsc, Mutex, Notify};
+use tokio_util::sync::PollSender;
 
 use crate::{
     context::{Context, Contextual},
     session::{
-        capabilities::Capabilities, error::SessionError, order::LaneOrder,
-        OrderTicket, Session,
+        capabilities::Capabilities, error::SessionError,
+        lifetime::LaneLifetime, order::LaneOrder, OrderTicket, Session,
     },
     Error, Frame, Protocol,
 };
@@ -43,6 +44,16 @@ use crate::{
 /// The lane's `Sink` reports pending once this many frames are
 /// undelivered, rather than buffering without bound.
 pub const DEFAULT_LANE_CAPACITY: usize = 64;
+
+/// The lane's send half.
+///
+/// `PollSender` rather than a `Sink` over `futures::channel::mpsc`
+/// deliberately: a `futures` sender whose send future is dropped while
+/// pending — a `select!` arm that loses, a write under a timeout —
+/// refuses every later write on that sender, which would wedge a lane
+/// for the ordinary act of cancelling a write. `PollSender` holds the
+/// reservation across the drop instead.
+type LaneSender<T> = PollSender<T>;
 
 /// What one peer hands the other when it opens a lane: the callee's two
 /// halves of the new lane.
@@ -101,8 +112,8 @@ impl<P: Protocol> LocalSession<P> {
     /// A connected pair whose lanes hold `capacity` frames before
     /// applying backpressure.
     pub fn pair_with_capacity(capacity: usize) -> LocalSessionPair<P> {
-        let (client_offers, from_client) = mpsc::unbounded();
-        let (server_offers, from_server) = mpsc::unbounded();
+        let (client_offers, from_client) = mpsc::unbounded_channel();
+        let (server_offers, from_server) = mpsc::unbounded_channel();
         LocalSessionPair {
             client: LocalSession {
                 inner: Arc::new(SessionInner::new(
@@ -135,8 +146,31 @@ impl<P: Protocol> LocalSession<P> {
         if self.is_closed() {
             return Err(SessionError::Closed);
         }
+        // A lane that has been dropped has cancelled its half of the
+        // token; its entry is dead weight, so drop it here rather than
+        // holding one allocation per lane the session has ever opened.
+        lanes.retain(|token| !token.is_canceled());
         lanes.push(tx);
         Ok(LaneLifetime::new(rx))
+    }
+
+    /// How many lanes this session is currently keeping alive. Prunes
+    /// the entries of lanes that have since been dropped.
+    pub fn live_lanes(&self) -> usize {
+        let mut lanes =
+            self.inner.lanes.lock().expect("session lanes poisoned");
+        lanes.retain(|token| !token.is_canceled());
+        lanes.len()
+    }
+
+    /// Raw token slots, pruned or not — what a leak would grow.
+    #[cfg(test)]
+    pub(crate) fn token_slots(&self) -> usize {
+        self.inner
+            .lanes
+            .lock()
+            .expect("session lanes poisoned")
+            .len()
     }
 }
 
@@ -213,11 +247,12 @@ where
 
         self.inner
             .peer_offers
-            .unbounded_send((responses_tx, requests_rx))
+            .send((responses_tx, requests_rx))
             .map_err(|_| SessionError::Closed)?;
 
         Ok(LocalClientLane {
-            tx: requests_tx,
+            tx: PollSender::new(requests_tx.clone()),
+            sender: requests_tx,
             rx: responses_rx,
             order: LaneOrder::new(),
             lifetime,
@@ -231,7 +266,15 @@ where
         }
         let offer = {
             let mut offers = self.inner.offers.lock().await;
-            let next = offers.next();
+            // r[impl jetstream.session.lifetime]
+            // Re-check under the lock: a task that waited here while
+            // another held the lock would otherwise build its `notified`
+            // future after `close` had already woken the waiters, and
+            // wait for a notification that had already been sent.
+            if self.is_closed() {
+                return Err(SessionError::Closed);
+            }
+            let next = offers.recv();
             let closing = self.inner.closing.notified();
             pin_mut!(next);
             pin_mut!(closing);
@@ -244,7 +287,7 @@ where
         let (tx, rx) = offer.ok_or(SessionError::Closed)?;
         let lifetime = self.register_lane()?;
         Ok(LocalServiceLane {
-            tx,
+            tx: PollSender::new(tx),
             rx,
             lifetime,
             _p: PhantomData,
@@ -266,38 +309,11 @@ where
     }
 }
 
-/// A lane's share of its session's lifetime.
-struct LaneLifetime {
-    token: Option<oneshot::Receiver<()>>,
-    reported: bool,
-}
-
-impl LaneLifetime {
-    fn new(token: oneshot::Receiver<()>) -> Self {
-        Self {
-            token: Some(token),
-            reported: false,
-        }
-    }
-
-    /// Whether the session has closed, registering `cx` if it has not.
-    fn poll_closed(&mut self, cx: &mut TaskContext<'_>) -> bool {
-        let Some(token) = self.token.as_mut() else {
-            return true;
-        };
-        match Pin::new(token).poll(cx) {
-            Poll::Ready(_) => {
-                self.token = None;
-                true
-            }
-            Poll::Pending => false,
-        }
-    }
-}
-
 /// The caller's end of an in-process lane.
 pub struct LocalClientLane<P: Protocol> {
-    tx: mpsc::Sender<Frame<P::Request>>,
+    tx: LaneSender<Frame<P::Request>>,
+    /// A spare handle on the same channel, for [`OrderedSender`] clones.
+    sender: mpsc::Sender<Frame<P::Request>>,
     rx: mpsc::Receiver<Frame<P::Response>>,
     order: LaneOrder,
     lifetime: LaneLifetime,
@@ -312,7 +328,7 @@ impl<P: Protocol> LocalClientLane<P> {
     /// producers do: use one or the other on a given lane, not both.
     pub fn ordered_sender(&self) -> OrderedSender<P> {
         OrderedSender {
-            tx: Arc::new(Mutex::new(self.tx.clone())),
+            tx: self.sender.clone(),
             order: self.order.clone(),
         }
     }
@@ -326,7 +342,7 @@ impl<P: Protocol> LocalClientLane<P> {
 /// to [`OrderedSender::deliver`]. A ticket dropped without delivering
 /// passes its place on rather than releasing it.
 pub struct OrderedSender<P: Protocol> {
-    tx: Arc<Mutex<mpsc::Sender<Frame<P::Request>>>>,
+    tx: mpsc::Sender<Frame<P::Request>>,
     order: LaneOrder,
 }
 
@@ -352,10 +368,7 @@ impl<P: Protocol> OrderedSender<P> {
         frame: Frame<P::Request>,
     ) -> Result<(), SessionError> {
         ticket.wait().await;
-        let result = {
-            let mut tx = self.tx.lock().await;
-            tx.send(frame).await
-        };
+        let result = self.tx.send(frame).await;
         ticket.complete();
         result.map_err(|_| SessionError::LaneClosed)
     }
@@ -371,7 +384,7 @@ impl<P: Protocol> OrderedSender<P> {
     }
 }
 
-impl<P: Protocol> Sink<Frame<P::Request>> for LocalClientLane<P> {
+impl<P: Protocol + 'static> Sink<Frame<P::Request>> for LocalClientLane<P> {
     type Error = Error;
 
     fn poll_ready(
@@ -430,19 +443,19 @@ impl<P: Protocol> Stream for LocalClientLane<P> {
             this.lifetime.reported = true;
             return Poll::Ready(Some(Err(SessionError::Closed.into())));
         }
-        Pin::new(&mut this.rx).poll_next(cx).map(|f| f.map(Ok))
+        this.rx.poll_recv(cx).map(|frame| frame.map(Ok))
     }
 }
 
 /// The callee's end of an in-process lane.
 pub struct LocalServiceLane<P: Protocol> {
-    tx: mpsc::Sender<Frame<P::Response>>,
+    tx: LaneSender<Frame<P::Response>>,
     rx: mpsc::Receiver<Frame<P::Request>>,
     lifetime: LaneLifetime,
     _p: PhantomData<fn() -> P>,
 }
 
-impl<P: Protocol> Sink<Frame<P::Response>> for LocalServiceLane<P> {
+impl<P: Protocol + 'static> Sink<Frame<P::Response>> for LocalServiceLane<P> {
     type Error = Error;
 
     fn poll_ready(
@@ -501,7 +514,7 @@ impl<P: Protocol> Stream for LocalServiceLane<P> {
             this.lifetime.reported = true;
             return Poll::Ready(Some(Err(SessionError::Closed.into())));
         }
-        Pin::new(&mut this.rx).poll_next(cx).map(|f| f.map(Ok))
+        this.rx.poll_recv(cx).map(|frame| frame.map(Ok))
     }
 }
 

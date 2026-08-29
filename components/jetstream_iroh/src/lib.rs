@@ -20,7 +20,7 @@ use iroh::{
     protocol::Router,
     EndpointAddr, RelayConfig, RelayMap, RelayUrl,
 };
-use jetstream_rpc::{server::Server, session::Session, Protocol};
+use jetstream_rpc::{server::Server, Protocol};
 pub use server::{IrohRouter, IrohServer};
 pub use session::{IrohServiceLane, IrohSession};
 
@@ -67,19 +67,22 @@ pub async fn session_builder<P: Protocol>(
 ///
 /// r[impl jetstream.session.compat.existing-clients]
 /// This is the pre-session shape: one lane, tag-multiplexed by whatever
-/// the caller wraps it in. It stays conforming, and is now a session
-/// with one lane opened on it rather than a connection with its extra
-/// lanes thrown away — the lane keeps the session alive, so a caller
-/// that wants a second lane can ask for a session instead.
-pub async fn client_builder<P>(
+/// the caller wraps it in, and it stays conforming. Its bound is
+/// deliberately just `P: Protocol` — the returned lane never touches
+/// `P::Error`, so routing it through [`IrohSession`], whose service side
+/// does, would narrow this signature and break callers whose protocol
+/// carries its own error type. Callers that want more than one lane ask
+/// for a session with [`session_builder`] instead.
+pub async fn client_builder<P: Protocol>(
     addr: EndpointAddr,
-) -> Result<client::IrohTransport<P>, Box<dyn std::error::Error + 'static>>
-where
-    P: Protocol<Error = jetstream_rpc::Error> + 'static,
-{
-    let session = session_builder::<P>(addr).await?;
-    let lane = session.open_lane().await.map_err(Box::new)?;
-    Ok(lane)
+) -> Result<client::IrohTransport<P>, Box<dyn std::error::Error + 'static>> {
+    let endpoint = endpoint_builder::<P>().bind().await.map_err(Box::new)?;
+    let conn = endpoint
+        .connect(addr, P::NAME.as_bytes())
+        .await
+        .map_err(Box::new)?;
+    let streams = conn.open_bi().await?;
+    Ok(IrohTransport::new_owned(streams, conn, endpoint))
 }
 
 pub async fn server_builder<P: Server + Protocol + Debug + Clone + 'static>(
