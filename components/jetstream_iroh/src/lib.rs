@@ -7,6 +7,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 mod client;
 mod server;
+mod session;
 
 use std::fmt::Debug;
 
@@ -19,8 +20,9 @@ use iroh::{
     protocol::Router,
     EndpointAddr, RelayConfig, RelayMap, RelayUrl,
 };
-use jetstream_rpc::{server::Server, Protocol};
+use jetstream_rpc::{server::Server, session::Session, Protocol};
 pub use server::{IrohRouter, IrohServer};
+pub use session::{IrohServiceLane, IrohSession};
 
 pub extern crate iroh;
 
@@ -47,16 +49,37 @@ pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
         .address_lookup(jetstream_resolver())
 }
 
-pub async fn client_builder<P: Protocol>(
+/// r[impl jetstream.session.conformance.iroh]
+/// Dial `addr` and keep the connection as a session, so the caller can
+/// open as many lanes as it wants rather than being handed one.
+pub async fn session_builder<P: Protocol>(
     addr: EndpointAddr,
-) -> Result<client::IrohTransport<P>, Box<dyn std::error::Error + 'static>> {
+) -> Result<IrohSession<P>, Box<dyn std::error::Error + 'static>> {
     let endpoint = endpoint_builder::<P>().bind().await.map_err(Box::new)?;
     let conn = endpoint
         .connect(addr, P::NAME.as_bytes())
         .await
         .map_err(Box::new)?;
-    let streams = conn.open_bi().await?;
-    Ok(IrohTransport::new_owned(streams, conn, endpoint))
+    Ok(IrohSession::new_owned(conn, endpoint))
+}
+
+/// Dial `addr` and open one lane on it.
+///
+/// r[impl jetstream.session.compat.existing-clients]
+/// This is the pre-session shape: one lane, tag-multiplexed by whatever
+/// the caller wraps it in. It stays conforming, and is now a session
+/// with one lane opened on it rather than a connection with its extra
+/// lanes thrown away — the lane keeps the session alive, so a caller
+/// that wants a second lane can ask for a session instead.
+pub async fn client_builder<P>(
+    addr: EndpointAddr,
+) -> Result<client::IrohTransport<P>, Box<dyn std::error::Error + 'static>>
+where
+    P: Protocol<Error = jetstream_rpc::Error> + 'static,
+{
+    let session = session_builder::<P>(addr).await?;
+    let lane = session.open_lane().await.map_err(Box::new)?;
+    Ok(lane)
 }
 
 pub async fn server_builder<P: Server + Protocol + Debug + Clone + 'static>(

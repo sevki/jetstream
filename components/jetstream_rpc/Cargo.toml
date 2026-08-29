@@ -56,6 +56,12 @@ tokio = { version = "1.47.1", features = ["net"] }
 bytes = "1.11.1"
 anyhow = "1.0.102"
 proptest = "1.11.0"
+tokio = { version = "1.47.1", features = [
+  "macros",
+  "rt",
+  "rt-multi-thread",
+  "time",
+] }
 
 
 [features]

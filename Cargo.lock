@@ -2895,9 +2895,11 @@ dependencies = [
 name = "jetstream_iroh"
 version = "16.1.3"
 dependencies = [
+ "async-trait",
  "futures",
  "iroh",
  "jetstream_rpc",
+ "jetstream_wireformat",
  "lazy_static",
  "pkarr",
  "tokio",
