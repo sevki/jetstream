@@ -872,3 +872,71 @@ async fn dropping_a_single_lane_session_terminates_its_lane() {
         .expect_err("as an error");
     assert_eq!(err.code(), Some("jetstream::session::closed"));
 }
+
+// Regression: `LaneGuard::start_send` forwarded unconditionally. The
+// round-three patch that was meant to add this check silently failed to
+// apply — the two lane sinks got it, the guard did not, and the reply
+// claiming otherwise was wrong.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn a_guarded_write_committed_after_close_fails() {
+    use futures::Sink;
+
+    let pair = LocalSession::<TestProtocol>::pair();
+    let inner = pair.client.open_lane().await.unwrap();
+    let session = SingleLaneSession::<TestProtocol, _, _>::client(inner);
+    let mut lane = session.open_lane().await.unwrap();
+
+    futures::future::poll_fn(|cx| {
+        Sink::<Frame<Ping>>::poll_ready(Pin::new(&mut lane), cx)
+    })
+    .await
+    .unwrap();
+
+    session.close().await;
+
+    assert!(
+        Sink::<Frame<Ping>>::start_send(Pin::new(&mut lane), frame(9)).is_err(),
+        "a guarded write committed after close must not succeed"
+    );
+}
+
+// A send admitted before a close, delivered after it, must fail.
+//
+// Note what this does and does not cover: the added pre-check catches
+// this case, so the test passes with or without the `select(closing,
+// sending)` re-ordering that accompanies it. That re-ordering guards the
+// residual window where the close lands between the pre-check and the
+// poll, which is not reachable deterministically from here.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn an_ordered_send_admitted_before_a_close_fails() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let lane = pair.client.open_lane().await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+    let sender = lane.ordered_sender();
+
+    let ticket = sender.admit();
+    pair.client.close().await;
+
+    let err = timeout(Duration::from_secs(5), sender.deliver(ticket, frame(1)))
+        .await
+        .expect("must not hang")
+        .expect_err("a closed session must refuse the send");
+    assert!(matches!(err, SessionError::Closed));
+
+    let escaped = timeout(Duration::from_millis(100), served.next()).await;
+    if let Ok(Some(Ok(frame))) = escaped {
+        panic!("frame {:?} escaped a closed session", frame.msg);
+    }
+}
+
+// r[impl jetstream.lane.backpressure]
+#[test]
+#[should_panic(expected = "at least one frame")]
+fn a_zero_capacity_lane_is_rejected_at_construction() {
+    // Zero capacity cannot apply backpressure, only deadlock, and the
+    // channel underneath rejects it. Say so here rather than panicking
+    // inside the first open.
+    let _ = LocalSession::<TestProtocol>::pair_with_capacity(0);
+}

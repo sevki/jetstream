@@ -110,7 +110,15 @@ impl<P: Protocol> LocalSession<P> {
 
     /// A connected pair whose lanes hold `capacity` frames before
     /// applying backpressure.
+    /// # Panics
+    ///
+    /// If `capacity` is zero. A lane with no room for a frame cannot
+    /// apply backpressure, it can only deadlock, and the bounded channel
+    /// underneath rejects it — better to say so at construction than to
+    /// panic inside the first `open_lane`.
     pub fn pair_with_capacity(capacity: usize) -> LocalSessionPair<P> {
+        assert!(capacity > 0, "a lane needs room for at least one frame");
+
         let (client_offers, from_client) = mpsc::unbounded_channel();
         let (server_offers, from_server) = mpsc::unbounded_channel();
 
@@ -394,14 +402,26 @@ impl<P: Protocol> OrderedSender<P> {
             }
         }
 
+        // r[impl jetstream.session.lifetime]
+        // Checked again here: the wait above can have handed back a turn
+        // that the session outlived.
+        if self.cancel.is_cancelled() {
+            ticket.complete();
+            return Err(SessionError::Closed);
+        }
+
         let result = {
             let sending = self.tx.send(frame);
             let closing = self.cancel.cancelled();
             pin_mut!(sending);
             pin_mut!(closing);
-            match select(sending, closing).await {
-                Either::Left((result, _)) => result,
-                Either::Right(_) => {
+            // Cancellation is the left arm deliberately. `select` polls
+            // left first, so when a close and a ready channel are both
+            // available the close wins rather than the frame going out
+            // on a session that has already ended.
+            match select(closing, sending).await {
+                Either::Right((result, _)) => result,
+                Either::Left(_) => {
                     // The place still passes on: the lane is gone, but
                     // nothing may overtake what this ticket held.
                     ticket.complete();
