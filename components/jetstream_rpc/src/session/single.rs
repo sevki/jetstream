@@ -17,13 +17,16 @@ use std::{
 };
 
 use futures::{Sink, Stream};
-use tokio::sync::Mutex;
-use tokio_util::sync::CancellationToken;
+use tokio::{
+    io::{AsyncRead, AsyncWrite},
+    sync::Mutex,
+};
+use tokio_util::{codec::Framed, sync::CancellationToken};
 
 use crate::{
-    client::ClientTransport,
+    client::{ClientCodec, ClientTransport},
     context::{Context, Contextual},
-    server::ServiceTransport,
+    server::{ServerCodec, ServiceTransport},
     session::{
         capabilities::{Capabilities, IdentityKind, LaneSupport},
         error::SessionError,
@@ -219,6 +222,39 @@ impl<P: Protocol, S> SingleLaneSession<P, NoClientLane<P>, S> {
             context: None,
             _p: PhantomData,
         }
+    }
+}
+
+/// A byte stream framed as this peer's one lane.
+pub type ByteStreamLane<P, T> = Framed<T, ClientCodec<P>>;
+
+/// A byte stream framed as the one lane this peer serves.
+pub type ByteStreamServiceLane<P, T> = Framed<T, ServerCodec<P>>;
+
+impl<P, T> SingleLaneSession<P, ByteStreamLane<P, T>, NoServiceLane<P>>
+where
+    P: Protocol,
+    T: AsyncRead + AsyncWrite + Send + Sync + Unpin,
+{
+    /// r[impl jetstream.session.conformance.single-stream]
+    /// Frame a byte stream — TCP, TLS, a unix socket, stdio — as the one
+    /// lane this peer can open. Its capabilities are
+    /// [`Capabilities::byte_stream`] unless the caller reports an
+    /// identity the stream established, as a TLS stream would.
+    pub fn client_io(io: T) -> Self {
+        Self::client(Framed::new(io, ClientCodec::default()))
+    }
+}
+
+impl<P, T> SingleLaneSession<P, NoClientLane<P>, ByteStreamServiceLane<P, T>>
+where
+    P: Protocol,
+    T: AsyncRead + AsyncWrite + Send + Sync + Unpin,
+{
+    /// r[impl jetstream.session.conformance.single-stream]
+    /// Frame an accepted byte stream as the one lane this peer serves.
+    pub fn service_io(io: T) -> Self {
+        Self::service(Framed::new(io, ServerCodec::new()))
     }
 }
 

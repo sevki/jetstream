@@ -9,6 +9,7 @@ use futures::{SinkExt, StreamExt};
 use tokio::time::timeout;
 
 use crate::{
+    context::Contextual,
     session::{
         check_datagram_size, local::LocalSessionPair, Capabilities, Capability,
         IdentityKind, LaneOrder, LaneSupport, LocalSession, Session,
@@ -194,6 +195,54 @@ async fn a_client_side_single_lane_session_accepts_nothing() {
 
     let err = session.accept_lane().await.expect_err("no accept side");
     assert!(matches!(err, SessionError::AcceptUnsupported));
+}
+
+// r[impl jetstream.session.conformance.single-stream]
+#[tokio::test]
+async fn a_byte_stream_is_a_session_with_one_lane() {
+    use tokio::net::{TcpListener, TcpStream};
+
+    let listener = TcpListener::bind("127.0.0.1:0").await.unwrap();
+    let addr = listener.local_addr().unwrap();
+    let (connected, accepted) =
+        tokio::join!(TcpStream::connect(addr), listener.accept());
+    let client_io = connected.unwrap();
+    let (server_io, _) = accepted.unwrap();
+
+    let client = SingleLaneSession::<TestProtocol, _, _>::client_io(client_io);
+    let server = SingleLaneSession::<TestProtocol, _, _>::service_io(server_io);
+
+    assert_eq!(client.capabilities().lanes, LaneSupport::One);
+    assert_eq!(client.capabilities().identity, IdentityKind::None);
+    assert!(!client.capabilities().datagrams);
+
+    let mut lane = client.open_lane().await.unwrap();
+    let mut served = server.accept_lane().await.unwrap();
+
+    // r[impl jetstream.lane.delivery-order]
+    for n in 0..4 {
+        lane.send(frame(n)).await.unwrap();
+    }
+    for n in 0..4 {
+        let got = served.next().await.unwrap().unwrap();
+        assert_eq!(got.msg, Ping(n));
+    }
+
+    // r[impl jetstream.session.identity]
+    // TCP authenticates nothing, so only the address is reported.
+    let context = Contextual::context(&served);
+    assert!(context.remote().is_some());
+    assert!(context.peer().is_none());
+
+    // r[impl jetstream.session.single-lane]
+    assert!(matches!(
+        client.open_lane().await,
+        Err(SessionError::LaneLimitReached)
+    ));
+    assert!(matches!(
+        server.accept_lane().await,
+        Err(SessionError::LaneLimitReached)
+    ));
 }
 
 // r[impl jetstream.session.capabilities.degradation]

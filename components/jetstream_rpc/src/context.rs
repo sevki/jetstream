@@ -530,6 +530,21 @@ impl<U> Contextual for Framed<UnixStream, U> {
     }
 }
 
+// r[impl jetstream.session.identity]
+// A plain TCP stream authenticates nothing, so the peer is `None` and
+// only the remote address is reported.
+#[cfg(tokio_unix)]
+impl<U> Contextual for Framed<tokio::net::TcpStream, U> {
+    fn context(&self) -> Context {
+        let remote = self
+            .get_ref()
+            .peer_addr()
+            .ok()
+            .map(|addr| RemoteAddr::IpAddr(addr.ip()));
+        Context { remote, peer: None }
+    }
+}
+
 #[cfg(feature = "turmoil")]
 impl<U> Contextual for Framed<turmoil::net::TcpStream, U> {
     fn context(&self) -> Context {

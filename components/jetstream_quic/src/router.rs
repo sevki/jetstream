@@ -1,10 +1,10 @@
 use std::{collections::HashMap, sync::Arc};
 
-use jetstream_rpc::context::{Peer, RemoteAddr, TlsPeer};
+use jetstream_rpc::context::RemoteAddr;
 use quinn::{crypto::rustls::HandshakeData, Incoming};
-use tracing::{error, info, warn};
+use tracing::{error, info};
 
-use crate::quic_handler::QuicHandler;
+use crate::{quic_handler::QuicHandler, session::peer_from_connection};
 
 #[derive(Clone, Default)]
 pub struct Router {
@@ -34,36 +34,7 @@ impl Router {
     pub async fn handle_incoming(&self, incoming: Incoming) {
         match incoming.await {
             Ok(conn) => {
-                // For the rustls TlsSession, the Any type is Vec<rustls::pki_types::CertificateDer>
-                // The dynamic type returned is determined by the configured Session. For the default rustls session, the return value can be downcast to a Vec<rustls::pki_types::CertificateDer>
-                // Extract peer certificates and parse them
-                let peer = if let Some(identity) = conn.peer_identity() {
-                    match identity
-                        .downcast::<Vec<rustls::pki_types::CertificateDer>>()
-                    {
-                        Ok(certs) => {
-                            // Parse the certificate chain
-                            match TlsPeer::from_der_chain(
-                                &certs
-                                    .iter()
-                                    .map(|c| c.as_ref())
-                                    .collect::<Vec<_>>(),
-                            ) {
-                                Ok(tls_peer) => Some(Peer::Tls(tls_peer)),
-                                Err(e) => {
-                                    warn!(
-                                        "failed to parse peer certificates: {}",
-                                        e
-                                    );
-                                    None
-                                }
-                            }
-                        }
-                        Err(_) => None,
-                    }
-                } else {
-                    None
-                };
+                let peer = peer_from_connection(&conn);
 
                 let ctx = jetstream_rpc::context::Context::new(
                     Some(RemoteAddr::IpAddr(conn.remote_address().ip())),

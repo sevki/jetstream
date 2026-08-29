@@ -2896,6 +2896,7 @@ dependencies = [
  "h3-quinn",
  "http",
  "jetstream_rpc",
+ "jetstream_wireformat",
  "quinn",
  "rustls",
  "rustls-pemfile",
