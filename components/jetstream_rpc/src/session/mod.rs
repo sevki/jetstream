@@ -16,6 +16,7 @@
 
 mod capabilities;
 mod error;
+pub mod lifetime;
 pub mod local;
 mod order;
 mod single;
@@ -28,6 +29,7 @@ use jetstream_wireformat::WireFormat;
 pub use self::{
     capabilities::{Capabilities, Capability, IdentityKind, LaneSupport},
     error::SessionError,
+    lifetime::LaneGuard,
     local::{LocalSession, LocalSessionPair},
     order::{LaneOrder, OrderTicket},
     single::{NoClientLane, NoServiceLane, SingleLaneSession},
