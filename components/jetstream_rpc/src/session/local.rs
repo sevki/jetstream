@@ -15,19 +15,18 @@ use std::{
     marker::PhantomData,
     pin::Pin,
     sync::{
-        atomic::{AtomicBool, Ordering as AtomicOrdering},
-        Arc, Mutex as StdMutex,
+        atomic::{AtomicUsize, Ordering as AtomicOrdering},
+        Arc,
     },
     task::{Context as TaskContext, Poll},
 };
 
 use futures::{
-    channel::oneshot,
     future::{select, Either},
     pin_mut, Sink, Stream,
 };
-use tokio::sync::{mpsc, Mutex, Notify};
-use tokio_util::sync::PollSender;
+use tokio::sync::{mpsc, Mutex};
+use tokio_util::sync::{CancellationToken, PollSender};
 
 use crate::{
     context::{Context, Contextual},
@@ -67,11 +66,11 @@ struct SessionInner<P: Protocol> {
     peer_offers: mpsc::UnboundedSender<LaneOffer<P>>,
     /// Lanes the peer opened, waiting to be accepted.
     offers: Mutex<mpsc::UnboundedReceiver<LaneOffer<P>>>,
-    /// One token per live lane. Dropping a token terminates its lane.
-    lanes: StdMutex<Vec<oneshot::Sender<()>>>,
-    /// Wakes anything parked in `accept_lane` when the session closes.
-    closing: Notify,
-    closed: AtomicBool,
+    /// r[impl jetstream.session.lifetime]
+    /// Cancelled by `close`. Every lane holds a child of it, and so does
+    /// every [`OrderedSender`] taken from a lane.
+    cancel: CancellationToken,
+    live: Arc<AtomicUsize>,
     capacity: usize,
 }
 
@@ -133,44 +132,28 @@ impl<P: Protocol> LocalSession<P> {
     }
 
     fn is_closed(&self) -> bool {
-        self.inner.closed.load(AtomicOrdering::SeqCst)
+        self.inner.cancel.is_cancelled()
     }
 
     /// r[impl jetstream.session.lifetime]
-    /// Every lane holds a token owned by its session, so a lane cannot
-    /// outlive the session that opened it.
+    /// A lane's share of this session's lifetime. A child taken from an
+    /// already-cancelled token is born cancelled, so a lane opened
+    /// concurrently with `close` cannot escape it, and a dropped child
+    /// deregisters itself, so a session that opens many short-lived
+    /// lanes does not accumulate an entry per lane it has ever opened.
     fn register_lane(&self) -> Result<LaneLifetime, SessionError> {
-        let (tx, rx) = oneshot::channel();
-        let mut lanes =
-            self.inner.lanes.lock().expect("session lanes poisoned");
         if self.is_closed() {
             return Err(SessionError::Closed);
         }
-        // A lane that has been dropped has cancelled its half of the
-        // token; its entry is dead weight, so drop it here rather than
-        // holding one allocation per lane the session has ever opened.
-        lanes.retain(|token| !token.is_canceled());
-        lanes.push(tx);
-        Ok(LaneLifetime::new(rx))
+        Ok(LaneLifetime::new(
+            self.inner.cancel.child_token(),
+            self.inner.live.clone(),
+        ))
     }
 
-    /// How many lanes this session is currently keeping alive. Prunes
-    /// the entries of lanes that have since been dropped.
+    /// How many lanes this session is currently keeping alive.
     pub fn live_lanes(&self) -> usize {
-        let mut lanes =
-            self.inner.lanes.lock().expect("session lanes poisoned");
-        lanes.retain(|token| !token.is_canceled());
-        lanes.len()
-    }
-
-    /// Raw token slots, pruned or not — what a leak would grow.
-    #[cfg(test)]
-    pub(crate) fn token_slots(&self) -> usize {
-        self.inner
-            .lanes
-            .lock()
-            .expect("session lanes poisoned")
-            .len()
+        self.inner.live.load(AtomicOrdering::SeqCst)
     }
 }
 
@@ -183,9 +166,8 @@ impl<P: Protocol> SessionInner<P> {
         Self {
             peer_offers,
             offers: Mutex::new(offers),
-            lanes: StdMutex::new(Vec::new()),
-            closing: Notify::new(),
-            closed: AtomicBool::new(false),
+            cancel: CancellationToken::new(),
+            live: Arc::new(AtomicUsize::new(0)),
             capacity,
         }
     }
@@ -255,6 +237,7 @@ where
             sender: requests_tx,
             rx: responses_rx,
             order: LaneOrder::new(),
+            cancel: self.inner.cancel.child_token(),
             lifetime,
             _p: PhantomData,
         })
@@ -275,7 +258,7 @@ where
                 return Err(SessionError::Closed);
             }
             let next = offers.recv();
-            let closing = self.inner.closing.notified();
+            let closing = self.inner.cancel.cancelled();
             pin_mut!(next);
             pin_mut!(closing);
             match select(next, closing).await {
@@ -299,13 +282,7 @@ where
     /// opened or accepted: their streams end and their sinks fail, so a
     /// call in flight fails rather than hanging.
     async fn close(&self) {
-        self.inner.closed.store(true, AtomicOrdering::SeqCst);
-        self.inner
-            .lanes
-            .lock()
-            .expect("session lanes poisoned")
-            .clear();
-        self.inner.closing.notify_waiters();
+        self.inner.cancel.cancel();
     }
 }
 
@@ -316,6 +293,9 @@ pub struct LocalClientLane<P: Protocol> {
     sender: mpsc::Sender<Frame<P::Request>>,
     rx: mpsc::Receiver<Frame<P::Response>>,
     order: LaneOrder,
+    /// Shared with every [`OrderedSender`] this lane hands out, so they
+    /// observe the session's closure too.
+    cancel: CancellationToken,
     lifetime: LaneLifetime,
     _p: PhantomData<fn() -> P>,
 }
@@ -330,6 +310,7 @@ impl<P: Protocol> LocalClientLane<P> {
         OrderedSender {
             tx: self.sender.clone(),
             order: self.order.clone(),
+            cancel: self.cancel.clone(),
         }
     }
 }
@@ -344,6 +325,11 @@ impl<P: Protocol> LocalClientLane<P> {
 pub struct OrderedSender<P: Protocol> {
     tx: mpsc::Sender<Frame<P::Request>>,
     order: LaneOrder,
+    /// r[impl jetstream.session.lifetime]
+    /// A sender outlives the lane value it was taken from, so it has to
+    /// observe the session's closure itself: otherwise closing a session
+    /// would leave behind a handle that could still reach the peer.
+    cancel: CancellationToken,
 }
 
 impl<P: Protocol> Clone for OrderedSender<P> {
@@ -351,6 +337,7 @@ impl<P: Protocol> Clone for OrderedSender<P> {
         Self {
             tx: self.tx.clone(),
             order: self.order.clone(),
+            cancel: self.cancel.clone(),
         }
     }
 }
@@ -367,8 +354,38 @@ impl<P: Protocol> OrderedSender<P> {
         ticket: OrderTicket,
         frame: Frame<P::Request>,
     ) -> Result<(), SessionError> {
-        ticket.wait().await;
-        let result = self.tx.send(frame).await;
+        if self.cancel.is_cancelled() {
+            return Err(SessionError::Closed);
+        }
+
+        // r[impl jetstream.session.lifetime]
+        // Waiting for this ticket's turn, and then for room on the
+        // lane, both have to give up if the session closes underneath.
+        {
+            let waiting = ticket.wait();
+            let closing = self.cancel.cancelled();
+            pin_mut!(waiting);
+            pin_mut!(closing);
+            if matches!(select(waiting, closing).await, Either::Right(_)) {
+                return Err(SessionError::Closed);
+            }
+        }
+
+        let result = {
+            let sending = self.tx.send(frame);
+            let closing = self.cancel.cancelled();
+            pin_mut!(sending);
+            pin_mut!(closing);
+            match select(sending, closing).await {
+                Either::Left((result, _)) => result,
+                Either::Right(_) => {
+                    // The place still passes on: the lane is gone, but
+                    // nothing may overtake what this ticket held.
+                    ticket.complete();
+                    return Err(SessionError::Closed);
+                }
+            }
+        };
         ticket.complete();
         result.map_err(|_| SessionError::LaneClosed)
     }
