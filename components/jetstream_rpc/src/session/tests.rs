@@ -384,10 +384,11 @@ async fn concurrent_accepts_all_terminate_when_the_session_closes() {
 }
 
 // Regression: every lane ever opened used to leave a token behind, so a
-// session that opened many short-lived lanes grew without bound.
+// session that opened many short-lived lanes grew without bound. Lanes
+// now hold a child cancellation token, which deregisters on drop.
 // r[impl jetstream.session.lifetime]
 #[tokio::test]
-async fn dropped_lanes_do_not_accumulate_tokens() {
+async fn dropped_lanes_do_not_accumulate() {
     let pair = LocalSession::<TestProtocol>::pair();
 
     for _ in 0..64 {
@@ -397,12 +398,8 @@ async fn dropped_lanes_do_not_accumulate_tokens() {
         drop(served);
     }
 
-    assert!(
-        pair.client.token_slots() <= 2,
-        "token slots should track live lanes, not historical ones: {}",
-        pair.client.token_slots()
-    );
     assert_eq!(pair.client.live_lanes(), 0);
+    assert_eq!(pair.server.live_lanes(), 0);
 
     // Live lanes are still counted.
     let _held = pair.client.open_lane().await.unwrap();
@@ -595,4 +592,136 @@ async fn a_cancelled_write_does_not_wedge_the_lane() {
         .unwrap()
         .unwrap();
     assert_eq!(got.msg, Ping(2));
+}
+
+// Regression: an `OrderedSender` held only a channel handle, so after
+// its session closed it could still deliver to the peer.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn an_ordered_sender_stops_when_its_session_closes() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let lane = pair.client.open_lane().await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+    let sender = lane.ordered_sender();
+
+    sender.send(frame(1)).await.unwrap();
+    let got = served.next().await.unwrap().unwrap();
+    assert_eq!(got.msg, Ping(1));
+
+    pair.client.close().await;
+
+    let err = timeout(Duration::from_secs(5), sender.send(frame(2)))
+        .await
+        .expect("a closed session must not leave the sender hanging")
+        .expect_err("and the send must fail");
+    assert!(matches!(err, SessionError::Closed));
+
+    // Nothing reached the peer after the close.
+    let quiet = timeout(Duration::from_millis(100), served.next()).await;
+    match quiet {
+        Err(_) => {}
+        Ok(None) => {}
+        Ok(Some(Err(_))) => {}
+        Ok(Some(Ok(frame))) => {
+            panic!("frame {:?} escaped a closed session", frame.msg)
+        }
+    }
+}
+
+// Regression: a pending ordered send used to stay parked when the
+// session closed underneath it.
+// r[impl jetstream.session.lifetime]
+#[tokio::test(flavor = "multi_thread")]
+async fn a_parked_ordered_send_gives_up_when_the_session_closes() {
+    let pair = LocalSession::<TestProtocol>::pair_with_capacity(1);
+    let lane = pair.client.open_lane().await.unwrap();
+    let _served = pair.server.accept_lane().await.unwrap();
+    let sender = lane.ordered_sender();
+
+    // Fill the lane so the next send has to wait for room.
+    sender.send(frame(0)).await.unwrap();
+
+    let parked = {
+        let sender = sender.clone();
+        tokio::spawn(async move { sender.send(frame(1)).await })
+    };
+    tokio::time::sleep(Duration::from_millis(50)).await;
+
+    pair.client.close().await;
+
+    let outcome = timeout(Duration::from_secs(5), parked)
+        .await
+        .expect("a parked send must give up when the session closes")
+        .unwrap();
+    assert!(matches!(outcome, Err(SessionError::Closed)));
+}
+
+// Regression: an accepted lane reported the framed stream's context, so
+// identity the session established during a handshake the stream never
+// saw — a TLS adapter's peer certificate — was lost before the handler.
+// r[impl jetstream.session.identity]
+#[tokio::test]
+async fn an_accepted_lane_reports_the_session_identity() {
+    use crate::context::{Context, Contextual, RemoteAddr};
+
+    let pair = LocalSession::<TestProtocol>::pair();
+    let _lane = pair.client.open_lane().await.unwrap();
+    let inner = pair.server.accept_lane().await.unwrap();
+
+    let session_context = Context::new(
+        Some(RemoteAddr::IpAddr("203.0.113.7".parse().unwrap())),
+        None,
+    );
+    let session = SingleLaneSession::<TestProtocol, _, _>::service(inner)
+        .with_identity(IdentityKind::Certificate)
+        .with_context(session_context.clone());
+
+    let served = session.accept_lane().await.unwrap();
+    assert_eq!(
+        Contextual::context(&served).remote(),
+        session_context.remote(),
+        "the handler must see the identity the session established"
+    );
+
+    // Without a session identity the lane's own context still stands.
+    let pair = LocalSession::<TestProtocol>::pair();
+    let _lane = pair.client.open_lane().await.unwrap();
+    let inner = pair.server.accept_lane().await.unwrap();
+    let plain = SingleLaneSession::<TestProtocol, _, _>::service(inner);
+    let served = plain.accept_lane().await.unwrap();
+    assert!(Contextual::context(&served).remote().is_none());
+}
+
+// Regression: a lane handed out concurrently with `close` could register
+// its token after `close` had cleared them, escaping cancellation.
+// r[impl jetstream.session.lifetime]
+#[tokio::test(flavor = "multi_thread")]
+async fn a_lane_opened_while_closing_is_born_closed() {
+    for _ in 0..64 {
+        let pair = LocalSession::<TestProtocol>::pair();
+        let client = pair.client.clone();
+
+        let opening = tokio::spawn(async move { client.open_lane().await });
+        pair.client.close().await;
+
+        if let Ok(mut lane) = opening.await.unwrap() {
+            // If a lane did come back, it must already be terminated
+            // rather than still usable on a closed session.
+            let outcome = timeout(Duration::from_secs(5), lane.next())
+                .await
+                .expect("a lane from a closed session must not hang");
+            match outcome {
+                Some(Err(err)) => {
+                    assert_eq!(err.code(), Some("jetstream::session::closed"))
+                }
+                None => {}
+                Some(Ok(frame)) => {
+                    panic!(
+                        "closed session yielded a live lane: {:?}",
+                        frame.msg
+                    )
+                }
+            }
+        }
+    }
 }

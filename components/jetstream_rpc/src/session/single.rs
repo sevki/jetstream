@@ -12,15 +12,13 @@ use std::{
     fmt,
     marker::PhantomData,
     pin::Pin,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Mutex as StdMutex,
-    },
+    sync::{atomic::AtomicUsize, Arc},
     task::{Context as TaskContext, Poll},
 };
 
-use futures::{channel::oneshot, Sink, Stream};
+use futures::{Sink, Stream};
 use tokio::sync::Mutex;
+use tokio_util::sync::CancellationToken;
 
 use crate::{
     client::ClientTransport,
@@ -29,7 +27,7 @@ use crate::{
     session::{
         capabilities::{Capabilities, IdentityKind, LaneSupport},
         error::SessionError,
-        lifetime::LaneGuard,
+        lifetime::{LaneGuard, LaneLifetime},
         Session,
     },
     Error, Frame, Protocol,
@@ -177,14 +175,16 @@ pub struct SingleLaneSession<P: Protocol, C, S> {
     client: Mutex<Option<C>>,
     service: Mutex<Option<S>>,
     /// r[impl jetstream.session.lifetime]
-    /// The token half for the lane once it has been handed out. Held by
-    /// the session so that `close` reaches a lane the caller owns.
-    tokens: StdMutex<Vec<oneshot::Sender<()>>>,
-    closed: AtomicBool,
+    /// Cancelled by `close`. Every lane holds a child of it, so closing
+    /// reaches a lane the caller already owns.
+    cancel: CancellationToken,
+    live: Arc<AtomicUsize>,
     opens: bool,
     accepts: bool,
     identity: IdentityKind,
-    context: Context,
+    /// The identity the session established, where the lane underneath
+    /// does not know it. `None` leaves the lane's own context alone.
+    context: Option<Context>,
     _p: PhantomData<fn() -> P>,
 }
 
@@ -194,12 +194,12 @@ impl<P: Protocol, C> SingleLaneSession<P, C, NoServiceLane<P>> {
         Self {
             client: Mutex::new(Some(lane)),
             service: Mutex::new(None),
-            tokens: StdMutex::new(Vec::new()),
-            closed: AtomicBool::new(false),
+            cancel: CancellationToken::new(),
+            live: Arc::new(AtomicUsize::new(0)),
             opens: true,
             accepts: false,
             identity: IdentityKind::None,
-            context: Context::default(),
+            context: None,
             _p: PhantomData,
         }
     }
@@ -211,12 +211,12 @@ impl<P: Protocol, S> SingleLaneSession<P, NoClientLane<P>, S> {
         Self {
             client: Mutex::new(None),
             service: Mutex::new(Some(lane)),
-            tokens: StdMutex::new(Vec::new()),
-            closed: AtomicBool::new(false),
+            cancel: CancellationToken::new(),
+            live: Arc::new(AtomicUsize::new(0)),
             opens: false,
             accepts: true,
             identity: IdentityKind::None,
-            context: Context::default(),
+            context: None,
             _p: PhantomData,
         }
     }
@@ -224,18 +224,21 @@ impl<P: Protocol, S> SingleLaneSession<P, NoClientLane<P>, S> {
 
 impl<P: Protocol, C, S> SingleLaneSession<P, C, S> {
     fn is_closed(&self) -> bool {
-        self.closed.load(Ordering::SeqCst)
+        self.cancel.is_cancelled()
     }
 
     /// r[impl jetstream.session.lifetime]
-    /// Mint the token this session will drop on close.
-    fn token(&self) -> oneshot::Receiver<()> {
-        let (tx, rx) = oneshot::channel();
-        self.tokens
-            .lock()
-            .expect("session tokens poisoned")
-            .push(tx);
-        rx
+    /// A lane's share of this session's lifetime. Taking a child of an
+    /// already-cancelled token yields an already-cancelled child, so a
+    /// lane handed out concurrently with `close` is born terminated
+    /// rather than escaping it.
+    fn lifetime(&self) -> LaneLifetime {
+        LaneLifetime::new(self.cancel.child_token(), self.live.clone())
+    }
+
+    /// How many lanes this session is currently keeping alive.
+    pub fn live_lanes(&self) -> usize {
+        self.live.load(std::sync::atomic::Ordering::SeqCst)
     }
 
     /// Report a peer identity model other than
@@ -247,8 +250,13 @@ impl<P: Protocol, C, S> SingleLaneSession<P, C, S> {
     }
 
     /// Attach the peer identity the transport established.
+    ///
+    /// r[impl jetstream.session.identity]
+    /// A lane accepted from this session reports this identity rather
+    /// than whatever the framed stream underneath knows, so a TLS
+    /// adapter's authenticated peer reaches the handler.
     pub fn with_context(mut self, context: Context) -> Self {
-        self.context = context;
+        self.context = Some(context);
         self
     }
 }
@@ -275,7 +283,7 @@ where
     }
 
     fn context(&self) -> Context {
-        self.context.clone()
+        self.context.clone().unwrap_or_default()
     }
 
     async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
@@ -287,7 +295,7 @@ where
         } else {
             SessionError::OpenUnsupported
         })?;
-        Ok(LaneGuard::new(lane, self.token()))
+        Ok(LaneGuard::new(lane, self.lifetime()))
     }
 
     async fn accept_lane(&self) -> Result<Self::ServiceLane, SessionError> {
@@ -299,17 +307,23 @@ where
         } else {
             SessionError::AcceptUnsupported
         })?;
-        Ok(LaneGuard::new(lane, self.token()))
+        // r[impl jetstream.session.identity]
+        // The handler sees the session's identity where there is one.
+        Ok(LaneGuard::with_context(
+            lane,
+            self.lifetime(),
+            self.context.clone(),
+        ))
     }
 
     /// r[impl jetstream.session.lifetime]
     /// Terminates the lane whether or not it has been handed out:
-    /// dropping the token reaches a lane the caller already owns, so a
-    /// call in flight on it fails rather than continuing to run on a
-    /// session that has closed.
+    /// cancelling reaches a lane the caller already owns, so a call in
+    /// flight on it fails rather than continuing to run on a session
+    /// that has closed. A lane handed out concurrently with this call is
+    /// born cancelled rather than escaping it.
     async fn close(&self) {
-        self.closed.store(true, Ordering::SeqCst);
-        self.tokens.lock().expect("session tokens poisoned").clear();
+        self.cancel.cancel();
         self.client.lock().await.take();
         self.service.lock().await.take();
     }
