@@ -1010,3 +1010,56 @@ fn a_converted_transport_error_is_always_inspectable() {
     let closed: Error = SessionError::Closed.into();
     assert_eq!(closed.code(), Some("jetstream::session::closed"));
 }
+
+// Regression: `service_io` only produced a usable session for the few
+// stream types with a `Contextual` impl — a unix or TCP socket. A TLS
+// stream, stdio, or an in-memory duplex got a session with no `Session`
+// impl at all, so the advertised generic byte-stream server binding did
+// not exist for them.
+// r[impl jetstream.session.conformance.single-stream]
+#[tokio::test]
+async fn any_byte_stream_can_serve_a_lane() {
+    use crate::context::{Context, Contextual, Peer, WebCredentials};
+
+    // A duplex stream stands in for the streams that cannot report a
+    // peer themselves: TLS before the handshake is handed over, stdio,
+    // anything in memory.
+    let (client_io, server_io) = tokio::io::duplex(4096);
+
+    let client = SingleLaneSession::<TestProtocol, _, _>::client_io(client_io);
+
+    // The caller states the identity the stream cannot.
+    let identity = Context::new(
+        None,
+        Some(Peer::WebCredentials(WebCredentials(
+            http::HeaderValue::from_static("peer-from-handshake"),
+        ))),
+    );
+    let server =
+        SingleLaneSession::<TestProtocol, _, _>::service_io_with_context(
+            server_io,
+            identity.clone(),
+        );
+
+    let mut lane = client.open_lane().await.unwrap();
+    let mut served = server.accept_lane().await.unwrap();
+
+    lane.send(frame(4)).await.unwrap();
+    let got = served.next().await.unwrap().unwrap();
+    assert_eq!(got.msg, Ping(4));
+
+    // r[impl jetstream.session.identity]
+    assert_eq!(
+        Contextual::context(&served).peer(),
+        identity.peer(),
+        "the handler sees the identity the caller supplied"
+    );
+
+    // The session reports it too, so a caller can inspect the peer
+    // before accepting a lane rather than only through the lane.
+    assert_eq!(
+        Session::context(&server).peer(),
+        identity.peer(),
+        "the session reports the identity it was constructed with"
+    );
+}

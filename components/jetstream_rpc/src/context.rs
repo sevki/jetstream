@@ -11,7 +11,7 @@ use std::{fmt::Display, net::IpAddr};
 use jetstream_wireformat::{JetStreamWireFormat, WireFormat};
 #[cfg(tokio_unix)]
 use tokio::net::{unix::UCred, UnixStream};
-#[cfg(any(feature = "turmoil", tokio_unix))]
+#[cfg(any(feature = "turmoil", tokio_unix, native))]
 use tokio_util::codec::Framed;
 #[cfg(any(feature = "iroh", feature = "x509"))]
 use url::Url;
@@ -533,7 +533,11 @@ impl<U> Contextual for Framed<UnixStream, U> {
 // r[impl jetstream.session.identity]
 // A plain TCP stream authenticates nothing, so the peer is `None` and
 // only the remote address is reported.
-#[cfg(tokio_unix)]
+//
+// Gated on having a network stack rather than on unix sockets: tokio's
+// TCP is cross-platform, and gating it with the `UnixStream` impls would
+// leave `SingleLaneSession::service_io` unusable with TCP on Windows.
+#[cfg(native)]
 impl<U> Contextual for Framed<tokio::net::TcpStream, U> {
     fn context(&self) -> Context {
         let remote = self

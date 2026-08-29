@@ -11,15 +11,15 @@
 use std::{
     marker::PhantomData,
     pin::Pin,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Arc,
-    },
+    sync::Arc,
     task::{Context as TaskContext, Poll},
 };
 
 use bytes::Bytes;
-use futures::{Sink, SinkExt, Stream, StreamExt};
+use futures::{
+    future::{select, Either},
+    pin_mut, Sink, SinkExt, Stream, StreamExt,
+};
 use h3::quic;
 use h3_webtransport::server::{
     AcceptedBi, WebTransportSession as H3WebTransportSession,
@@ -31,7 +31,10 @@ use jetstream_rpc::{
     session::{Capabilities, Session, SessionError},
     Error, Frame, Protocol,
 };
-use tokio_util::codec::{FramedRead, FramedWrite};
+use tokio_util::{
+    codec::{FramedRead, FramedWrite},
+    sync::CancellationToken,
+};
 
 /// The h3 connection a JetStream WebTransport session runs over.
 type WtConnection = h3_quinn::Connection;
@@ -53,7 +56,10 @@ type WtRecvStream = <WtBidiStream as quic::BidiStream<Bytes>>::RecvStream;
 pub struct WebTransportSession<P: Protocol> {
     session: Arc<H3WebTransportSession<WtConnection, Bytes>>,
     context: Context,
-    closed: Arc<AtomicBool>,
+    /// r[impl jetstream.session.lifetime]
+    /// A token rather than a flag: an accept parked inside `accept_bi`
+    /// has to be woken by `close`, not merely told about it afterwards.
+    cancel: CancellationToken,
     _p: PhantomData<fn() -> P>,
 }
 
@@ -62,7 +68,7 @@ impl<P: Protocol> Clone for WebTransportSession<P> {
         Self {
             session: self.session.clone(),
             context: self.context.clone(),
-            closed: self.closed.clone(),
+            cancel: self.cancel.clone(),
             _p: PhantomData,
         }
     }
@@ -80,7 +86,7 @@ impl<P: Protocol> WebTransportSession<P> {
         Self {
             session,
             context,
-            closed: Arc::new(AtomicBool::new(false)),
+            cancel: CancellationToken::new(),
             _p: PhantomData,
         }
     }
@@ -91,7 +97,7 @@ impl<P: Protocol> WebTransportSession<P> {
     }
 
     fn is_closed(&self) -> bool {
-        self.closed.load(Ordering::SeqCst)
+        self.cancel.is_cancelled()
     }
 }
 
@@ -126,15 +132,27 @@ where
             return Err(SessionError::Closed);
         }
 
-        let stream = self
-            .session
-            .open_bi(self.session.session_id())
-            .await
-            .map_err(|err| {
+        // r[impl jetstream.session.lifetime]
+        // `open_bi` waits for stream credit when the peer has none left,
+        // which is another place a close would otherwise never be seen.
+        let opening = self.session.open_bi(self.session.session_id());
+        let closing = self.cancel.cancelled();
+        pin_mut!(opening);
+        pin_mut!(closing);
+
+        let stream = match select(opening, closing).await {
+            Either::Left((result, _)) => result.map_err(|err| {
                 SessionError::Transport(Error::from(std::io::Error::other(
                     err.to_string(),
                 )))
-            })?;
+            })?,
+            Either::Right(_) => return Err(SessionError::Closed),
+        };
+
+        // The session may have closed while the stream was arriving.
+        if self.is_closed() {
+            return Err(SessionError::Closed);
+        }
 
         let (send, recv) = quic::BidiStream::split(stream);
         Ok(WebTransportClientLane {
@@ -154,11 +172,28 @@ where
                 return Err(SessionError::Closed);
             }
 
-            let accepted = self.session.accept_bi().await.map_err(|err| {
-                SessionError::Transport(Error::from(std::io::Error::other(
-                    err.to_string(),
-                )))
-            })?;
+            // r[impl jetstream.session.lifetime]
+            // An idle peer leaves this parked inside `accept_bi`, where
+            // a closed flag alone would never be observed. Close has to
+            // wake it.
+            let accepting = self.session.accept_bi();
+            let closing = self.cancel.cancelled();
+            pin_mut!(accepting);
+            pin_mut!(closing);
+
+            let accepted = match select(accepting, closing).await {
+                Either::Left((result, _)) => result.map_err(|err| {
+                    SessionError::Transport(Error::from(std::io::Error::other(
+                        err.to_string(),
+                    )))
+                })?,
+                Either::Right(_) => return Err(SessionError::Closed),
+            };
+
+            // The session may have closed while a lane was arriving.
+            if self.is_closed() {
+                return Err(SessionError::Closed);
+            }
 
             match accepted {
                 Some(AcceptedBi::BidiStream(_, stream)) => {
@@ -179,15 +214,17 @@ where
     /// Stop opening and accepting lanes on this session.
     ///
     /// r[impl jetstream.session.lifetime]
-    /// Partial: `h3-webtransport` 0.1 exposes no way to close a
-    /// WebTransport session, so this marks the session closed — further
-    /// opens and accepts fail with [`SessionError::Closed`] — but lanes
-    /// already handed out are terminated by dropping them or by the
-    /// underlying QUIC connection going away, not by this call. Said
-    /// plainly rather than emulated: a lane here can outlive its
-    /// session, which the other two bindings do not allow.
+    /// Partial, and worth stating precisely. This cancels the session:
+    /// further opens fail, and an accept already parked inside
+    /// `accept_bi` wakes and returns [`SessionError::Closed`] rather
+    /// than waiting on an idle peer forever. What it cannot do is
+    /// terminate lanes already handed out — `h3-webtransport` 0.1
+    /// exposes no way to close a WebTransport session, so those end by
+    /// being dropped or by the underlying QUIC connection going away. A
+    /// lane here can therefore outlive its session, which the iroh,
+    /// QUIC and in-process bindings all prevent.
     async fn close(&self) {
-        self.closed.store(true, Ordering::SeqCst);
+        self.cancel.cancel();
     }
 }
 

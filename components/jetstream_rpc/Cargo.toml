@@ -48,8 +48,7 @@ jetstream_wireformat = { version = "16.1.3", path = "../jetstream_wireformat", d
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 jetstream_wireformat = { version = "16.1.3", path = "../jetstream_wireformat" }
-
-[target.'cfg(unix)'.dependencies]
+# TCP is cross-platform, so the network feature is not unix-only.
 tokio = { version = "1.47.1", features = ["net"] }
 
 [dev-dependencies]

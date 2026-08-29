@@ -225,6 +225,83 @@ impl<P: Protocol, S> SingleLaneSession<P, NoClientLane<P>, S> {
     }
 }
 
+/// A lane that reports an identity supplied by its builder.
+///
+/// r[impl jetstream.session.identity]
+/// `Contextual` is implemented for a framed unix or TCP socket, which
+/// know their peer. A TLS stream, stdio, or an in-memory duplex does
+/// not: the identity either comes from a handshake the framed bytes
+/// never see, or does not exist. Wrapping the lane lets those become
+/// service lanes at all, with the caller stating what it knows.
+pub struct ContextualLane<L> {
+    lane: L,
+    context: Context,
+}
+
+impl<L> ContextualLane<L> {
+    /// Wrap `lane`, reporting `context` as its peer identity.
+    pub fn new(lane: L, context: Context) -> Self {
+        Self { lane, context }
+    }
+
+    /// The wrapped lane.
+    pub fn get_ref(&self) -> &L {
+        &self.lane
+    }
+}
+
+impl<L, Item> Sink<Item> for ContextualLane<L>
+where
+    L: Sink<Item, Error = Error> + Unpin,
+{
+    type Error = Error;
+
+    fn poll_ready(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
+        Pin::new(&mut self.get_mut().lane).poll_ready(cx)
+    }
+
+    fn start_send(self: Pin<&mut Self>, item: Item) -> Result<(), Self::Error> {
+        Pin::new(&mut self.get_mut().lane).start_send(item)
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
+        Pin::new(&mut self.get_mut().lane).poll_flush(cx)
+    }
+
+    fn poll_close(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
+        Pin::new(&mut self.get_mut().lane).poll_close(cx)
+    }
+}
+
+impl<L, T> Stream for ContextualLane<L>
+where
+    L: Stream<Item = Result<T, Error>> + Unpin,
+{
+    type Item = Result<T, Error>;
+
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Option<Self::Item>> {
+        Pin::new(&mut self.get_mut().lane).poll_next(cx)
+    }
+}
+
+impl<L> Contextual for ContextualLane<L> {
+    fn context(&self) -> Context {
+        self.context.clone()
+    }
+}
+
 /// A byte stream framed as this peer's one lane.
 pub type ByteStreamLane<P, T> = Framed<T, ClientCodec<P>>;
 
@@ -250,11 +327,49 @@ impl<P, T> SingleLaneSession<P, NoClientLane<P>, ByteStreamServiceLane<P, T>>
 where
     P: Protocol,
     T: AsyncRead + AsyncWrite + Send + Sync + Unpin,
+    // Named here rather than left to the `Session` impl so that a stream
+    // which cannot report its peer fails at this constructor, pointing
+    // at `service_io_with_context`, instead of at a missing `Session`
+    // impl further away.
+    ByteStreamServiceLane<P, T>: Contextual,
 {
     /// r[impl jetstream.session.conformance.single-stream]
     /// Frame an accepted byte stream as the one lane this peer serves.
+    ///
+    /// For a stream that knows its peer — a unix socket or TCP. Anything
+    /// else wants [`Self::service_io_with_context`].
     pub fn service_io(io: T) -> Self {
         Self::service(Framed::new(io, ServerCodec::new()))
+    }
+}
+
+impl<P, T>
+    SingleLaneSession<
+        P,
+        NoClientLane<P>,
+        ContextualLane<ByteStreamServiceLane<P, T>>,
+    >
+where
+    P: Protocol,
+    T: AsyncRead + AsyncWrite + Send + Sync + Unpin,
+{
+    /// r[impl jetstream.session.conformance.single-stream]
+    /// Frame an accepted byte stream whose peer identity the caller
+    /// supplies rather than the stream knowing it.
+    ///
+    /// r[impl jetstream.session.identity]
+    /// This is the path for a TLS stream, whose peer is established by a
+    /// handshake the framed bytes never see, and for stdio or an
+    /// in-memory stream, which have no peer at all — pass
+    /// [`Context::default`] for those.
+    pub fn service_io_with_context(io: T, context: Context) -> Self {
+        Self::service(ContextualLane::new(
+            Framed::new(io, ServerCodec::new()),
+            context.clone(),
+        ))
+        // The session reports it too, so a caller can inspect the peer
+        // before accepting rather than only through the lane.
+        .with_context(context)
     }
 }
 
