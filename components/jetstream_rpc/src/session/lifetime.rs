@@ -166,7 +166,13 @@ where
     }
 
     fn start_send(self: Pin<&mut Self>, item: Item) -> Result<(), Self::Error> {
-        Pin::new(&mut self.get_mut().lane).start_send(item)
+        let this = self.get_mut();
+        // r[impl jetstream.session.lifetime]
+        // `poll_ready` may have said yes before the session closed.
+        if this.lifetime.is_closed() {
+            return Err(SessionError::Closed.into());
+        }
+        Pin::new(&mut this.lane).start_send(item)
     }
 
     fn poll_flush(
