@@ -20,6 +20,7 @@ pub mod framer;
 mod mux;
 mod router;
 pub mod server;
+pub mod session;
 mod tag;
 mod version;
 pub use any_server::AnyServer;
