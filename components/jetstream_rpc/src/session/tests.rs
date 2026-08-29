@@ -940,3 +940,24 @@ fn a_zero_capacity_lane_is_rejected_at_construction() {
     // inside the first open.
     let _ = LocalSession::<TestProtocol>::pair_with_capacity(0);
 }
+
+// Regression: converting `SessionError::Transport` into `Error` returned
+// the inner error untouched, so the code the docs promised was never
+// there — a converted transport error was usually uninspectable.
+// r[impl jetstream.session.single-lane]
+#[test]
+fn a_converted_transport_error_is_always_inspectable() {
+    // An inner error with no code of its own gets the session's.
+    let bare: Error = SessionError::Transport(Error::new("boom")).into();
+    assert_eq!(bare.code(), Some(SessionError::TRANSPORT_CODE));
+
+    // An inner error that names itself keeps its own code, which says
+    // more than the session-level one would.
+    let specific: Error =
+        SessionError::Transport(Error::with_code("boom", "quic::reset")).into();
+    assert_eq!(specific.code(), Some("quic::reset"));
+
+    // Every other variant reports exactly its own code.
+    let closed: Error = SessionError::Closed.into();
+    assert_eq!(closed.code(), Some("jetstream::session::closed"));
+}
