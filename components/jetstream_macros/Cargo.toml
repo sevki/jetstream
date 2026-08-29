@@ -5,7 +5,7 @@ edition = { workspace = true }
 description = { workspace = true }
 license = { workspace = true }
 repository = { workspace = true }
-readme = { workspace = true }
+readme = "README.md"
 documentation = { workspace = true }
 [dependencies]
 syn = { version = "2.0.117", features = ["full", "extra-traits"] }
