@@ -61,6 +61,15 @@ impl LaneLifetime {
         }
     }
 
+    /// Whether the session has closed, without needing a waker.
+    ///
+    /// r[impl jetstream.session.lifetime]
+    /// `start_send` commits a write and has no context to register, so
+    /// it needs a synchronous answer.
+    pub(crate) fn is_closed(&self) -> bool {
+        self.token.is_cancelled()
+    }
+
     /// Whether the session has closed, registering `cx` if it has not.
     pub(crate) fn poll_closed(&mut self, cx: &mut TaskContext<'_>) -> bool {
         if self.token.is_cancelled() {

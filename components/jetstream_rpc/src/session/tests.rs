@@ -1,5 +1,6 @@
 use std::{
     io::{self, Read, Write},
+    pin::Pin,
     sync::{Arc, Mutex},
     time::Duration,
 };
@@ -9,8 +10,9 @@ use tokio::time::timeout;
 
 use crate::{
     session::{
-        check_datagram_size, Capabilities, Capability, IdentityKind, LaneOrder,
-        LaneSupport, LocalSession, Session, SessionError, SingleLaneSession,
+        check_datagram_size, local::LocalSessionPair, Capabilities, Capability,
+        IdentityKind, LaneOrder, LaneSupport, LocalSession, Session,
+        SessionError, SingleLaneSession,
     },
     Error, Frame, Framer, Protocol,
 };
@@ -132,9 +134,20 @@ async fn closing_a_session_terminates_its_lanes() {
     let opened = pair.client.open_lane().await;
     assert!(matches!(opened, Err(SessionError::Closed)));
 
-    // The peer's end of the lane is unaffected by our close: its own
-    // session is still open, and it sees the lane end.
-    let _ = timeout(Duration::from_millis(200), served.next()).await;
+    // r[impl jetstream.session.lifetime]
+    // The peer's end terminates too. A lane has two ends, and leaving
+    // the far one waiting on a lane whose opener has gone is the hang
+    // this requirement exists to prevent.
+    let peer = timeout(Duration::from_millis(500), served.next())
+        .await
+        .expect("the peer's end must not hang on a closed session");
+    match peer {
+        Some(Err(err)) => {
+            assert_eq!(err.code(), Some("jetstream::session::closed"))
+        }
+        None => {}
+        Some(Ok(frame)) => panic!("unexpected frame {:?}", frame.msg),
+    }
 }
 
 // r[impl jetstream.session.lifetime]
@@ -724,4 +737,138 @@ async fn a_lane_opened_while_closing_is_born_closed() {
             }
         }
     }
+}
+
+// Regression: each end of a pair had its own token, so closing one side
+// left the peer's accepted lane live and its reads pending, and let the
+// closing side keep opening lanes nobody could ever accept.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn closing_one_end_terminates_the_peers_lanes() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let _lane = pair.client.open_lane().await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+
+    // The client lane is deliberately still held: its channel handles
+    // alone used to keep the peer's read pending forever.
+    pair.client.close().await;
+
+    let peer = timeout(Duration::from_millis(500), served.next())
+        .await
+        .expect("the peer's lane must terminate, not hang");
+    match peer {
+        Some(Err(err)) => {
+            assert_eq!(err.code(), Some("jetstream::session::closed"))
+        }
+        None => {}
+        Some(Ok(frame)) => panic!("unexpected frame {:?}", frame.msg),
+    }
+
+    // And the association is over for the peer as well: it neither
+    // accepts nor opens.
+    assert!(matches!(
+        pair.server.open_lane().await,
+        Err(SessionError::Closed)
+    ));
+    assert!(matches!(
+        timeout(Duration::from_millis(500), pair.server.accept_lane())
+            .await
+            .expect("accept must not hang after the peer closed"),
+        Err(SessionError::Closed)
+    ));
+}
+
+// Regression: closing the server used to leave the client happily
+// opening lanes that could never be accepted.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn closing_the_server_stops_the_client_opening() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    pair.server.close().await;
+
+    assert!(matches!(
+        pair.client.open_lane().await,
+        Err(SessionError::Closed)
+    ));
+}
+
+// Regression: `poll_ready` could say yes, the session close, and
+// `start_send` then commit the write anyway and report success.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn a_write_committed_after_close_fails() {
+    use futures::Sink;
+
+    let pair = LocalSession::<TestProtocol>::pair();
+    let mut lane = pair.client.open_lane().await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+
+    // Reserve capacity first, exactly as a caller would before writing.
+    futures::future::poll_fn(|cx| {
+        Sink::<Frame<Ping>>::poll_ready(Pin::new(&mut lane), cx)
+    })
+    .await
+    .unwrap();
+
+    // The session closes between the reservation and the write.
+    pair.client.close().await;
+
+    let committed =
+        Sink::<Frame<Ping>>::start_send(Pin::new(&mut lane), frame(9));
+    assert!(
+        committed.is_err(),
+        "a write committed after close must not succeed"
+    );
+
+    // ...and nothing reached the peer.
+    let peer = timeout(Duration::from_millis(200), served.next()).await;
+    if let Ok(Some(Ok(frame))) = peer {
+        panic!("frame {:?} escaped a closed session", frame.msg);
+    }
+}
+
+// Regression: dropping the last session handle left its lanes usable,
+// because dropping a cancellation token does not cancel it.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn dropping_the_last_session_handle_terminates_its_lanes() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let mut lane = pair.client.open_lane().await.unwrap();
+    let sender = lane.ordered_sender();
+
+    let LocalSessionPair { client, server } = pair;
+    drop(client);
+    drop(server);
+
+    let err = timeout(Duration::from_millis(500), lane.next())
+        .await
+        .expect("a lane whose session is gone must not hang")
+        .expect("it reports the closure")
+        .expect_err("as an error");
+    assert_eq!(err.code(), Some("jetstream::session::closed"));
+
+    // Handles derived from the lane are done too.
+    let err = timeout(Duration::from_millis(500), sender.send(frame(1)))
+        .await
+        .expect("a derived sender must not hang either")
+        .expect_err("and must fail");
+    assert!(matches!(err, SessionError::Closed));
+}
+
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn dropping_a_single_lane_session_terminates_its_lane() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let inner = pair.client.open_lane().await.unwrap();
+    let session = SingleLaneSession::<TestProtocol, _, _>::client(inner);
+    let mut lane = session.open_lane().await.unwrap();
+
+    drop(session);
+
+    let err = timeout(Duration::from_millis(500), lane.next())
+        .await
+        .expect("a lane whose session is gone must not hang")
+        .expect("it reports the closure")
+        .expect_err("as an error");
+    assert_eq!(err.code(), Some("jetstream::session::closed"));
 }

@@ -113,12 +113,22 @@ impl<P: Protocol> LocalSession<P> {
     pub fn pair_with_capacity(capacity: usize) -> LocalSessionPair<P> {
         let (client_offers, from_client) = mpsc::unbounded_channel();
         let (server_offers, from_server) = mpsc::unbounded_channel();
+
+        // r[impl jetstream.session.lifetime]
+        // One token for the association, not one per end. A lane has two
+        // ends, and closing from either has to terminate both: a peer
+        // left holding the far end of a lane whose opener has gone would
+        // wait on it forever. This is what a transport-backed session
+        // gets for free — the connection goes away for both peers.
+        let cancel = CancellationToken::new();
+
         LocalSessionPair {
             client: LocalSession {
                 inner: Arc::new(SessionInner::new(
                     client_offers,
                     from_server,
                     capacity,
+                    cancel.clone(),
                 )),
             },
             server: LocalSession {
@@ -126,6 +136,7 @@ impl<P: Protocol> LocalSession<P> {
                     server_offers,
                     from_client,
                     capacity,
+                    cancel,
                 )),
             },
         }
@@ -162,11 +173,12 @@ impl<P: Protocol> SessionInner<P> {
         peer_offers: mpsc::UnboundedSender<LaneOffer<P>>,
         offers: mpsc::UnboundedReceiver<LaneOffer<P>>,
         capacity: usize,
+        cancel: CancellationToken,
     ) -> Self {
         Self {
             peer_offers,
             offers: Mutex::new(offers),
-            cancel: CancellationToken::new(),
+            cancel,
             live: Arc::new(AtomicUsize::new(0)),
             capacity,
         }
@@ -199,6 +211,17 @@ impl<P: Protocol> fmt::Debug for OrderedSender<P> {
         f.debug_struct("OrderedSender")
             .field("turn", &self.order.turn())
             .finish_non_exhaustive()
+    }
+}
+
+/// r[impl jetstream.session.lifetime]
+/// Dropping the last handle on a session ends it. A cancellation token
+/// does not cancel when it is dropped, so without this a session that
+/// went away during error unwinding — rather than through `close` —
+/// would leave its lanes usable and its pending calls waiting.
+impl<P: Protocol> Drop for SessionInner<P> {
+    fn drop(&mut self) {
+        self.cancel.cancel();
     }
 }
 
@@ -421,7 +444,13 @@ impl<P: Protocol + 'static> Sink<Frame<P::Request>> for LocalClientLane<P> {
         self: Pin<&mut Self>,
         item: Frame<P::Request>,
     ) -> Result<(), Self::Error> {
-        Pin::new(&mut self.get_mut().tx)
+        let this = self.get_mut();
+        // r[impl jetstream.session.lifetime]
+        // `poll_ready` may have said yes before the session closed.
+        if this.lifetime.is_closed() {
+            return Err(SessionError::Closed.into());
+        }
+        Pin::new(&mut this.tx)
             .start_send(item)
             .map_err(|_| SessionError::LaneClosed.into())
     }
@@ -492,7 +521,13 @@ impl<P: Protocol + 'static> Sink<Frame<P::Response>> for LocalServiceLane<P> {
         self: Pin<&mut Self>,
         item: Frame<P::Response>,
     ) -> Result<(), Self::Error> {
-        Pin::new(&mut self.get_mut().tx)
+        let this = self.get_mut();
+        // r[impl jetstream.session.lifetime]
+        // `poll_ready` may have said yes before the session closed.
+        if this.lifetime.is_closed() {
+            return Err(SessionError::Closed.into());
+        }
+        Pin::new(&mut this.tx)
             .start_send(item)
             .map_err(|_| SessionError::LaneClosed.into())
     }
