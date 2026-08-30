@@ -1336,3 +1336,37 @@ async fn a_frame_queued_as_the_lane_closes_still_arrives() {
         assert_eq!(seen, 1, "a frame whose send succeeded must arrive");
     }
 }
+
+// Regression: every lane's `admit` returns the same `OrderTicket` type,
+// so handing one lane's ticket to another compiled — and then waited on
+// the wrong lane's sequence while writing to this one.
+// r[impl jetstream.session.local.order-handoff]
+#[tokio::test]
+#[should_panic(expected = "ticket from another lane")]
+async fn a_ticket_from_another_lane_is_rejected() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let first = pair.client.open_lane().await.unwrap();
+    let second = pair.client.open_lane().await.unwrap();
+    let _served_first = pair.server.accept_lane().await.unwrap();
+    let _served_second = pair.server.accept_lane().await.unwrap();
+
+    let first_sender = first.ordered_sender().unwrap();
+    let second_sender = second.ordered_sender().unwrap();
+
+    // A place in the first lane's order, delivered on the second.
+    let stolen = first_sender.admit();
+    let _ = second_sender.deliver(stolen, frame(1)).await;
+}
+
+// r[impl jetstream.session.local.order-handoff]
+#[tokio::test]
+async fn a_lane_accepts_its_own_ticket() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let lane = pair.client.open_lane().await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+    let sender = lane.ordered_sender().unwrap();
+
+    let ticket = sender.admit();
+    assert!(sender.deliver(ticket, frame(3)).await.is_ok());
+    assert_eq!(served.next().await.unwrap().unwrap().msg, Ping(3));
+}

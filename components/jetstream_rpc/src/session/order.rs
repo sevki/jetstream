@@ -76,6 +76,19 @@ impl LaneOrder {
         Self::default()
     }
 
+    /// Whether this order issued `ticket`.
+    ///
+    /// r[impl jetstream.session.local.order-handoff]
+    /// A ticket names a place in *one* lane's order. Every lane's
+    /// `admit` returns the same type, so nothing but this stops a
+    /// caller holding senders for two lanes from handing one lane's
+    /// ticket to the other — which would wait on the wrong sequence and
+    /// write to the wrong lane, either stalling behind a place it does
+    /// not hold or overtaking one it should have waited for.
+    pub fn issued(&self, ticket: &OrderTicket) -> bool {
+        Arc::ptr_eq(&self.inner, &ticket.inner)
+    }
+
     /// Take the next place in line.
     ///
     /// This is deliberately synchronous: it must run where the order is

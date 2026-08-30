@@ -411,6 +411,17 @@ impl<P: Protocol> OrderedSender<P> {
     }
 
     /// Deliver `frame` when its ticket's turn comes.
+    ///
+    /// # Panics
+    ///
+    /// r[impl jetstream.session.local.order-handoff]
+    /// If `ticket` came from another lane's order. Every lane's
+    /// `admit` returns the same type, so the mix-up is not a type
+    /// error; it is a caller bug, and a silent one — the delivery would
+    /// wait on the other lane's sequence while writing to this one,
+    /// stalling behind a place it does not hold or overtaking one it
+    /// should have waited for. Rejected here rather than honoured,
+    /// for the same reason a zero-capacity lane is.
     /// Why this sender stopped: the session ending, or only its lane.
     ///
     /// r[impl jetstream.session.lifetime]
@@ -430,6 +441,11 @@ impl<P: Protocol> OrderedSender<P> {
         ticket: OrderTicket,
         frame: Frame<P::Request>,
     ) -> Result<(), SessionError> {
+        assert!(
+            self.order.issued(&ticket),
+            "an ordered send was given a ticket from another lane"
+        );
+
         if self.cancel.is_cancelled() {
             return Err(self.ended());
         }
