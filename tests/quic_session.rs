@@ -15,14 +15,14 @@ use jetstream_quic::QuicSession;
 use jetstream_rpc::{
     context::{Contextual, Peer, RemoteAddr},
     session::{
-        Capabilities, Capability, Datagrams, IdentityKind, LaneSupport,
-        Session, SessionError,
+        decode_datagram, Capabilities, Capability, Datagrams, IdentityKind,
+        LaneSupport, Session, SessionError,
     },
     Frame,
 };
 use jetstream_wireformat::WireFormat;
 use rustls::pki_types::{CertificateDer, PrivateKeyDer};
-use session_common::{frame, response, Ask, TestProtocol};
+use session_common::{frame, response, Ask, Say, TestProtocol};
 use tokio::time::timeout;
 
 static CA_CERT_PEM: &str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
@@ -403,11 +403,13 @@ async fn a_datagram_round_trips() {
         .await
         .unwrap();
 
-    let got =
-        timeout(Duration::from_secs(5), pair.server.recv_request_datagram())
+    let got: Frame<Ask> = decode_datagram(
+        timeout(Duration::from_secs(5), pair.server.recv_datagram_bytes())
             .await
             .expect("the request datagram should have arrived")
-            .unwrap();
+            .unwrap(),
+    )
+    .unwrap();
     assert_eq!(got.tag, 7);
     assert_eq!(got.msg.as_str(), "asked");
 
@@ -418,11 +420,13 @@ async fn a_datagram_round_trips() {
         .await
         .unwrap();
 
-    let got =
-        timeout(Duration::from_secs(5), pair.client.recv_response_datagram())
+    let got: Frame<Say> = decode_datagram(
+        timeout(Duration::from_secs(5), pair.client.recv_datagram_bytes())
             .await
             .expect("the response datagram should have arrived")
-            .unwrap();
+            .unwrap(),
+    )
+    .unwrap();
     assert_eq!(got.tag, 7);
     assert_eq!(got.msg.as_str(), "answered");
 }
@@ -462,10 +466,12 @@ async fn a_datagram_with_trailing_bytes_is_rejected() {
 
     pair.client.connection().send_datagram(buf.into()).unwrap();
 
-    let got =
-        timeout(Duration::from_secs(5), pair.server.recv_request_datagram())
+    let bytes =
+        timeout(Duration::from_secs(5), pair.server.recv_datagram_bytes())
             .await
-            .expect("the datagram should have arrived");
+            .expect("the datagram should have arrived")
+            .unwrap();
+    let got = decode_datagram::<Ask>(bytes);
     assert!(
         got.is_err(),
         "a datagram with trailing bytes is not a complete frame"
