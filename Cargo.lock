@@ -2729,6 +2729,7 @@ dependencies = [
  "lazy_static",
  "miette",
  "prost",
+ "quinn",
  "rand 0.10.2",
  "rcgen",
  "rusqlite",

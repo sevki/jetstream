@@ -180,10 +180,24 @@ where
             .map_err(|err| SessionError::Transport(err.into_error()))?;
 
         // r[impl jetstream.session.datagrams]
-        // A datagram carries a complete frame or it is discarded.
+        // A datagram carries a complete frame or it is discarded; there
+        // is nothing to reassemble it from. Trailing bytes after the
+        // frame mean it is not a complete frame either — decoding would
+        // succeed on the prefix and hand back something the peer never
+        // sent.
         let mut reader = std::io::Cursor::new(datagram.as_ref());
-        Frame::<P::Response>::decode(&mut reader)
-            .map_err(|err| SessionError::Transport(Error::from(err)))
+        let frame = Frame::<P::Response>::decode(&mut reader)
+            .map_err(|err| SessionError::Transport(Error::from(err)))?;
+
+        let consumed = reader.position() as usize;
+        if consumed != datagram.len() {
+            return Err(SessionError::Transport(Error::new(format!(
+                "datagram has {} trailing bytes after the frame",
+                datagram.len() - consumed
+            ))));
+        }
+
+        Ok(frame)
     }
 }
 
