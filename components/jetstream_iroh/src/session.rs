@@ -136,8 +136,20 @@ where
     type ServiceLane = IrohServiceLane<P>;
 
     /// r[impl jetstream.session.capabilities]
+    /// r[impl jetstream.session.capabilities.degradation]
+    /// The conformance row says iroh *can* carry datagrams. This
+    /// connection may not: a peer that never advertised DATAGRAM
+    /// support, or a transport configuration with them switched off,
+    /// leaves `max_datagram_size` empty and every send failing. A
+    /// capability is what this session has, not what its transport is
+    /// capable of in general — reporting the row unconditionally would
+    /// let `require(Capability::Datagrams)` succeed on a session that
+    /// cannot carry one.
     fn capabilities(&self) -> Capabilities {
-        Capabilities::iroh()
+        Capabilities {
+            datagrams: self.inner.connection.max_datagram_size().is_some(),
+            ..Capabilities::iroh()
+        }
     }
 
     /// r[impl jetstream.session.identity]
