@@ -23,7 +23,9 @@ use jetstream_rpc::{
     session::{Capabilities, Datagrams, Session, SessionError},
     Error, Frame, IntoError, Protocol,
 };
-use quinn::{Connection, Endpoint, RecvStream, SendStream, VarInt};
+use quinn::{
+    Connection, ConnectionError, Endpoint, RecvStream, SendStream, VarInt,
+};
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::warn;
 
@@ -52,6 +54,25 @@ pub fn peer_from_connection(connection: &Connection) -> Option<Peer> {
             warn!("failed to parse peer certificates: {}", err);
             None
         }
+    }
+}
+
+/// r[impl jetstream.session.lifetime]
+/// A connection error that means the session ended deliberately, rather
+/// than failed.
+///
+/// `SessionError::Closed` is what a caller branches on to stop
+/// retrying, so mapping every `ConnectionError` to `Transport` told it
+/// that our own `close` — and a peer's — was a transport fault.
+/// `LocallyClosed` is this end calling `close`; `ApplicationClosed` is
+/// the far end doing the same, since `close` sends an application code.
+/// Everything else — a reset, an idle timeout, a protocol violation —
+/// really is a failure and keeps its own error.
+fn lane_error(err: ConnectionError) -> SessionError {
+    match err {
+        ConnectionError::LocallyClosed
+        | ConnectionError::ApplicationClosed(_) => SessionError::Closed,
+        other => SessionError::Transport(other.into_error()),
     }
 }
 
@@ -232,12 +253,8 @@ where
     /// Every lane is its own QUIC stream, so one lane's stalled frame
     /// does not delay another's.
     async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
-        let streams = self
-            .inner
-            .connection
-            .open_bi()
-            .await
-            .map_err(|err| SessionError::Transport(err.into_error()))?;
+        let streams =
+            self.inner.connection.open_bi().await.map_err(lane_error)?;
 
         Ok(QuicTransport::from(streams))
     }
@@ -250,7 +267,7 @@ where
             .connection
             .accept_bi()
             .await
-            .map_err(|err| SessionError::Transport(err.into_error()))?;
+            .map_err(lane_error)?;
 
         Ok(QuicServiceLane {
             send_stream: FramedWrite::new(send_stream, ServerCodec::new()),

@@ -335,10 +335,30 @@ async fn closing_a_session_terminates_its_lanes() {
     );
 
     // ...and so does the next lane open.
+    // r[impl jetstream.session.lifetime]
+    // ...and says the session closed, rather than reporting a
+    // deliberate close as a transport fault. `Closed` is what a caller
+    // branches on to stop retrying.
     let opened = timeout(Duration::from_secs(5), pair.client.open_lane())
         .await
         .expect("opening on a closed session should not hang");
-    assert!(opened.is_err(), "a closed session should not open a lane");
+    assert!(
+        matches!(opened, Err(SessionError::Closed)),
+        "a peer's close should report Closed, got {:?}",
+        opened.err()
+    );
+
+    // The same from the end that called `close`, which quinn reports
+    // differently underneath — `LocallyClosed` rather than
+    // `ApplicationClosed`.
+    let opened = timeout(Duration::from_secs(5), pair.server.open_lane())
+        .await
+        .expect("opening on a closed session should not hang");
+    assert!(
+        matches!(opened, Err(SessionError::Closed)),
+        "our own close should report Closed, got {:?}",
+        opened.err()
+    );
 }
 
 // What `new_owned` is and is not for.
