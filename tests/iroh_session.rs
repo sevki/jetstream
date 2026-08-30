@@ -22,7 +22,7 @@ use jetstream_rpc::{
     Frame,
 };
 use jetstream_wireformat::WireFormat;
-use session_common::{frame, Blob, TestProtocol};
+use session_common::{frame, response, Ask, TestProtocol};
 use tokio::time::timeout;
 
 const ALPN: &[u8] = b"jetstream-session-test";
@@ -126,7 +126,7 @@ async fn each_lane_is_its_own_stream() {
     assert!(quiet.is_err(), "the first lane should be waiting");
 
     // r[impl jetstream.session.symmetric]
-    served_second.send(frame(2, "answered")).await.unwrap();
+    served_second.send(response(2, "answered")).await.unwrap();
     let got = second.next().await.unwrap().unwrap();
     assert_eq!(got.msg.as_str(), "answered");
 }
@@ -180,22 +180,82 @@ async fn closing_a_session_terminates_its_lanes() {
     assert!(opened.is_err(), "a closed session should not open a lane");
 }
 
+// Regression: `IrohSession` held the connection directly, so dropping
+// the last handle left the QUIC association up — every lane carries its
+// own clone of the connection, and those clones kept it alive. The local
+// and single-lane sessions got drop paths a round earlier; this one was
+// reported as fixed when it was not.
+// r[impl jetstream.session.lifetime]
+#[tokio::test(flavor = "multi_thread")]
+async fn dropping_the_last_session_handle_closes_the_connection() {
+    let pair = pair().await;
+
+    let mut lane = pair.client.open_lane().await.unwrap();
+    lane.send(frame(1, "hello")).await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+    assert_eq!(served.next().await.unwrap().unwrap().msg.as_str(), "hello");
+
+    // A clone is not the last handle, so the association survives it.
+    drop(pair.client.clone());
+    served.send(response(1, "still here")).await.unwrap();
+    assert_eq!(
+        lane.next().await.unwrap().unwrap().msg.as_str(),
+        "still here"
+    );
+
+    // The last one is. Note the lane is deliberately still alive: it
+    // holds its own clone of the connection, which is what used to keep
+    // the association up after its session had gone.
+    let Pair { client, .. } = pair;
+    drop(client);
+
+    let ended = timeout(Duration::from_secs(10), lane.next())
+        .await
+        .expect("the lane should have terminated, not hung");
+    assert!(
+        matches!(ended, Some(Err(_))),
+        "a lane whose session was dropped should fail, got {ended:?}"
+    );
+}
+
 // r[impl jetstream.session.datagrams]
 #[tokio::test(flavor = "multi_thread")]
 async fn a_datagram_round_trips() {
     let pair = pair().await;
 
+    // r[impl jetstream.session.symmetric]
+    // The caller sends a request and the callee receives a request. The
+    // API named the roles the other way round until this test's protocol
+    // stopped sharing one type between them.
     pair.client
-        .send_datagram(frame(7, "unordered"))
+        .send_request_datagram(frame(7, "asked"))
         .await
         .unwrap();
 
-    let got = timeout(Duration::from_secs(10), pair.server.recv_datagram())
-        .await
-        .expect("the datagram should have arrived")
-        .unwrap();
+    let got =
+        timeout(Duration::from_secs(10), pair.server.recv_request_datagram())
+            .await
+            .expect("the request datagram should have arrived")
+            .unwrap();
     assert_eq!(got.tag, 7);
-    assert_eq!(got.msg.as_str(), "unordered");
+    assert_eq!(got.msg.as_str(), "asked");
+
+    // ...and back the other way, which is the direction a session that
+    // decoded by the wrong role would have got right by accident.
+    pair.server
+        .send_response_datagram(response(7, "answered"))
+        .await
+        .unwrap();
+
+    let got = timeout(
+        Duration::from_secs(10),
+        pair.client.recv_response_datagram(),
+    )
+    .await
+    .expect("the response datagram should have arrived")
+    .unwrap();
+    assert_eq!(got.tag, 7);
+    assert_eq!(got.msg.as_str(), "answered");
 }
 
 // r[impl jetstream.session.datagrams]
@@ -208,11 +268,11 @@ async fn an_oversized_datagram_is_rejected_at_the_sender() {
 
     let too_big = Frame {
         tag: 1,
-        msg: Blob::of(limit as usize + 1),
+        msg: Ask::of(limit as usize + 1),
     };
     assert!(WireFormat::byte_size(&too_big) > limit);
 
-    match pair.client.send_datagram(too_big).await {
+    match pair.client.send_request_datagram(too_big).await {
         Err(SessionError::DatagramTooLarge { limit: got, .. }) => {
             assert_eq!(got, limit)
         }
@@ -233,9 +293,10 @@ async fn a_datagram_with_trailing_bytes_is_rejected() {
 
     pair.client.connection().send_datagram(buf.into()).unwrap();
 
-    let got = timeout(Duration::from_secs(10), pair.server.recv_datagram())
-        .await
-        .expect("the datagram should have arrived");
+    let got =
+        timeout(Duration::from_secs(10), pair.server.recv_request_datagram())
+            .await
+            .expect("the datagram should have arrived");
     assert!(
         got.is_err(),
         "a datagram with trailing bytes is not a complete frame"

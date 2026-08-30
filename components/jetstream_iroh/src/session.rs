@@ -11,6 +11,7 @@
 use std::{
     marker::PhantomData,
     pin::Pin,
+    sync::Arc,
     task::{Context as TaskContext, Poll},
 };
 
@@ -22,12 +23,9 @@ use iroh::{
 use jetstream_rpc::{
     context::{Context, Contextual, NodeId},
     server::ServerCodec,
-    session::{
-        check_datagram_size, Capabilities, Datagrams, Session, SessionError,
-    },
+    session::{Capabilities, Datagrams, Session, SessionError},
     Error, Frame, IntoError, Protocol,
 };
-use jetstream_wireformat::WireFormat;
 use tokio_util::{
     bytes::Bytes,
     codec::{FramedRead, FramedWrite},
@@ -38,27 +36,76 @@ use crate::IrohTransport;
 /// The code an iroh connection is closed with when its session closes.
 const SESSION_CLOSED: u32 = 0;
 
-/// A JetStream session over an iroh connection.
+/// What every handle on one session shares.
 ///
-/// Cloning the session is cheap and every clone addresses the same
-/// connection, so lanes can be opened from several tasks at once.
-#[derive(Debug, Clone)]
-pub struct IrohSession<P: Protocol> {
+/// r[impl jetstream.session.lifetime]
+/// A lane must not outlive its session, and every lane carries its own
+/// clone of the connection — deliberately, so iroh does not tear the
+/// connection down under a live stream. Those clones would keep the
+/// association up after the session that made it had gone, so the
+/// connection lives here and the last handle away closes it.
+#[derive(Debug)]
+struct SessionInner {
     connection: Connection,
     // Held for as long as the session is, for the same reason
     // `IrohTransport` holds them: iroh tears the connection down
     // ungracefully if the `Endpoint` is dropped while streams opened
     // from it are still in use.
     endpoint: Option<Endpoint>,
+}
+
+impl Drop for SessionInner {
+    /// r[impl jetstream.session.lifetime]
+    /// A session that goes away during unwinding, rather than through
+    /// `close`, ends its lanes just the same.
+    fn drop(&mut self) {
+        self.connection
+            .close(VarInt::from_u32(SESSION_CLOSED), b"session dropped");
+    }
+}
+
+/// A JetStream session over an iroh connection.
+///
+/// Cloning the session is cheap and every clone addresses the same
+/// connection, so lanes can be opened from several tasks at once. The
+/// connection closes when the last clone goes away.
+pub struct IrohSession<P: Protocol> {
+    inner: Arc<SessionInner>,
     _p: PhantomData<fn() -> P>,
+}
+
+// Written out rather than derived: a derive would require `P: Clone`
+// and `P: Debug`, which a session neither holds nor needs — the
+// protocol appears only as a `PhantomData` marker.
+impl<P: Protocol> Clone for IrohSession<P> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            _p: PhantomData,
+        }
+    }
+}
+
+impl<P: Protocol> std::fmt::Debug for IrohSession<P> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("IrohSession")
+            .field("connection", &self.inner.connection)
+            .finish_non_exhaustive()
+    }
 }
 
 impl<P: Protocol> IrohSession<P> {
     /// Wrap a connection whose endpoint the caller keeps alive.
+    ///
+    /// The session takes ownership of the connection's lifetime: when
+    /// the last handle is dropped the connection closes, even if the
+    /// caller holds a clone of it.
     pub fn new(connection: Connection) -> Self {
         Self {
-            connection,
-            endpoint: None,
+            inner: Arc::new(SessionInner {
+                connection,
+                endpoint: None,
+            }),
             _p: PhantomData,
         }
     }
@@ -66,15 +113,17 @@ impl<P: Protocol> IrohSession<P> {
     /// Wrap a connection and keep `endpoint` alive alongside it.
     pub fn new_owned(connection: Connection, endpoint: Endpoint) -> Self {
         Self {
-            connection,
-            endpoint: Some(endpoint),
+            inner: Arc::new(SessionInner {
+                connection,
+                endpoint: Some(endpoint),
+            }),
             _p: PhantomData,
         }
     }
 
     /// The underlying connection.
     pub fn connection(&self) -> &Connection {
-        &self.connection
+        &self.inner.connection
     }
 }
 
@@ -95,7 +144,7 @@ where
     /// iroh establishes the peer's public key during the handshake, so
     /// the identity is available without the peer asserting anything.
     fn context(&self) -> Context {
-        Context::from(NodeId::from(self.connection.remote_id()))
+        Context::from(NodeId::from(self.inner.connection.remote_id()))
     }
 
     /// r[impl jetstream.lane.independence]
@@ -103,15 +152,16 @@ where
     /// does not delay another's.
     async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
         let streams = self
+            .inner
             .connection
             .open_bi()
             .await
             .map_err(|err| SessionError::Transport(err.into_error()))?;
 
-        Ok(match &self.endpoint {
+        Ok(match &self.inner.endpoint {
             Some(endpoint) => IrohTransport::new_owned(
                 streams,
-                self.connection.clone(),
+                self.inner.connection.clone(),
                 endpoint.clone(),
             ),
             None => IrohTransport::from(streams),
@@ -123,6 +173,7 @@ where
     /// that accepts is not doing anything unusual.
     async fn accept_lane(&self) -> Result<Self::ServiceLane, SessionError> {
         let (send_stream, recv_stream) = self
+            .inner
             .connection
             .accept_bi()
             .await
@@ -140,69 +191,46 @@ where
     /// terminate with the session rather than outliving it, and calls in
     /// flight on them fail rather than hang.
     async fn close(&self) {
-        self.connection
+        self.inner
+            .connection
             .close(VarInt::from_u32(SESSION_CLOSED), b"session closed");
     }
 }
 
 /// r[impl jetstream.session.datagrams]
 /// iroh carries QUIC datagrams, which belong to the connection and not
-/// to any stream on it.
+/// to any stream on it. Only the raw channel is bound here; framing is
+/// the model's, so both peers agree on it.
 #[async_trait::async_trait]
 impl<P> Datagrams<P> for IrohSession<P>
 where
     P: Protocol<Error = Error> + 'static,
+    P::Request: 'static,
+    P::Response: 'static,
 {
     fn max_datagram_size(&self) -> Option<u32> {
-        self.connection
+        self.inner
+            .connection
             .max_datagram_size()
             .map(|size| size.min(u32::MAX as usize) as u32)
     }
 
-    async fn send_datagram(
+    async fn send_datagram_bytes(
         &self,
-        frame: Frame<P::Request>,
+        bytes: Bytes,
     ) -> Result<(), SessionError> {
-        // r[impl jetstream.session.datagrams]
-        // Rejected here rather than fragmented.
-        check_datagram_size(&frame, self.max_datagram_size())?;
-
-        let mut buf = Vec::with_capacity(frame.byte_size() as usize);
-        frame
-            .encode(&mut buf)
-            .map_err(|err| SessionError::Transport(Error::from(err)))?;
-
-        self.connection
-            .send_datagram(Bytes::from(buf))
+        self.inner
+            .connection
+            .send_datagram(bytes)
             .map_err(|err| SessionError::Transport(err.into_error()))
     }
 
-    async fn recv_datagram(&self) -> Result<Frame<P::Response>, SessionError> {
-        let datagram = self
+    async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError> {
+        self.inner
             .connection
             .read_datagram()
             .await
-            .map_err(|err| SessionError::Transport(err.into_error()))?;
-
-        // r[impl jetstream.session.datagrams]
-        // A datagram carries a complete frame or it is discarded; there
-        // is nothing to reassemble it from. Trailing bytes after the
-        // frame mean it is not a complete frame either — decoding would
-        // succeed on the prefix and hand back something the peer never
-        // sent.
-        let mut reader = std::io::Cursor::new(datagram.as_ref());
-        let frame = Frame::<P::Response>::decode(&mut reader)
-            .map_err(|err| SessionError::Transport(Error::from(err)))?;
-
-        let consumed = reader.position() as usize;
-        if consumed != datagram.len() {
-            return Err(SessionError::Transport(Error::new(format!(
-                "datagram has {} trailing bytes after the frame",
-                datagram.len() - consumed
-            ))));
-        }
-
-        Ok(frame)
+            .map_err(|err| SessionError::Transport(err.into_error()))
     }
 }
 
