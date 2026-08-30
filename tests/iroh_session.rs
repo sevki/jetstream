@@ -91,9 +91,18 @@ async fn an_iroh_session_reports_its_row() {
 
     assert_eq!(caps, Capabilities::iroh());
     assert_eq!(caps.lanes, LaneSupport::Many);
-    assert!(caps.datagrams);
     assert_eq!(caps.identity, IdentityKind::Key);
     assert!(caps.migration);
+
+    // r[impl jetstream.session.capabilities.degradation]
+    // Datagrams are reported from the connection rather than from the
+    // row, so this asserts the peers actually negotiated them rather
+    // than that iroh supports them in principle.
+    assert!(caps.datagrams);
+    assert!(
+        Datagrams::<TestProtocol>::max_datagram_size(&pair.client).is_some(),
+        "the reported capability should match the connection"
+    );
 
     // r[impl jetstream.session.identity.addressing]
     // The key is the address, so a caller never has to carry placement
