@@ -1,12 +1,13 @@
 use std::{
     io::{self, Read, Write},
     pin::Pin,
-    sync::{Arc, Mutex},
+    sync::{atomic::AtomicUsize, Arc, Mutex},
     time::Duration,
 };
 
 use futures::{SinkExt, StreamExt};
 use tokio::time::timeout;
+use tokio_util::sync::CancellationToken;
 
 use crate::{
     context::Contextual,
@@ -1061,5 +1062,77 @@ async fn any_byte_stream_can_serve_a_lane() {
         Session::context(&server).peer(),
         identity.peer(),
         "the session reports the identity it was constructed with"
+    );
+}
+
+// Regression: `LaneGuard::poll_close` was the one sink method that did
+// not consult the lifetime, so a close already parked on the wrapped
+// lane never woke when the session closed. Every other method — ready,
+// send, flush, next — did.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn a_parked_guarded_close_gives_up_when_the_session_closes() {
+    use std::task::Poll;
+
+    use futures::Sink;
+
+    use crate::session::lifetime::{LaneGuard, LaneLifetime};
+
+    /// A lane whose close never finishes, standing in for a transport
+    /// wedged behind a peer that has stopped reading.
+    struct NeverCloses;
+
+    impl Sink<Frame<Ping>> for NeverCloses {
+        type Error = Error;
+
+        fn poll_ready(
+            self: Pin<&mut Self>,
+            _: &mut std::task::Context<'_>,
+        ) -> Poll<Result<(), Error>> {
+            Poll::Ready(Ok(()))
+        }
+
+        fn start_send(
+            self: Pin<&mut Self>,
+            _: Frame<Ping>,
+        ) -> Result<(), Error> {
+            Ok(())
+        }
+
+        fn poll_flush(
+            self: Pin<&mut Self>,
+            _: &mut std::task::Context<'_>,
+        ) -> Poll<Result<(), Error>> {
+            Poll::Ready(Ok(()))
+        }
+
+        fn poll_close(
+            self: Pin<&mut Self>,
+            _: &mut std::task::Context<'_>,
+        ) -> Poll<Result<(), Error>> {
+            Poll::Pending
+        }
+    }
+
+    let token = CancellationToken::new();
+    let live = Arc::new(AtomicUsize::new(0));
+    let mut guard = LaneGuard::new(
+        NeverCloses,
+        LaneLifetime::new(token.child_token(), live),
+    );
+
+    // The close parks, since the lane never finishes closing.
+    let parked = timeout(Duration::from_millis(50), guard.close()).await;
+    assert!(parked.is_err(), "the close should still be waiting");
+
+    // Closing the session has to reach it.
+    token.cancel();
+
+    let ended = timeout(Duration::from_secs(5), guard.close())
+        .await
+        .expect("a parked close must give up when its session closes");
+    assert_eq!(
+        ended.unwrap_err().code(),
+        Some("jetstream::session::closed")
     );
 }

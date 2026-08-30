@@ -190,7 +190,16 @@ where
         self: Pin<&mut Self>,
         cx: &mut TaskContext<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Pin::new(&mut self.get_mut().lane).poll_close(cx)
+        let this = self.get_mut();
+        // r[impl jetstream.session.lifetime]
+        // A close already parked on the wrapped lane is not reachable
+        // from the session, which handed the lane out. Without this the
+        // one operation that cannot be abandoned — closing — is also
+        // the one that would hang forever behind a stuck transport.
+        if this.lifetime.poll_closed(cx) {
+            return Poll::Ready(Err(SessionError::Closed.into()));
+        }
+        Pin::new(&mut this.lane).poll_close(cx)
     }
 }
 

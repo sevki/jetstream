@@ -16,12 +16,9 @@ use futures::{Sink, SinkExt, Stream, StreamExt};
 use jetstream_rpc::{
     context::{Context, Contextual, Peer, RemoteAddr, TlsPeer},
     server::ServerCodec,
-    session::{
-        check_datagram_size, Capabilities, Datagrams, Session, SessionError,
-    },
+    session::{Capabilities, Datagrams, Session, SessionError},
     Error, Frame, IntoError, Protocol,
 };
-use jetstream_wireformat::WireFormat;
 use quinn::{Connection, RecvStream, SendStream, VarInt};
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::warn;
@@ -143,10 +140,14 @@ where
 
 /// r[impl jetstream.session.datagrams]
 /// QUIC datagrams belong to the connection, not to any stream on it.
+/// Only the raw channel is bound here; framing is the model's, so both
+/// peers agree on it.
 #[async_trait::async_trait]
 impl<P> Datagrams<P> for QuicSession<P>
 where
     P: Protocol<Error = Error> + 'static,
+    P::Request: 'static,
+    P::Response: 'static,
 {
     fn max_datagram_size(&self) -> Option<u32> {
         self.connection
@@ -154,50 +155,20 @@ where
             .map(|size| size.min(u32::MAX as usize) as u32)
     }
 
-    async fn send_datagram(
+    async fn send_datagram_bytes(
         &self,
-        frame: Frame<P::Request>,
+        bytes: Bytes,
     ) -> Result<(), SessionError> {
-        // r[impl jetstream.session.datagrams]
-        // Rejected here rather than fragmented.
-        check_datagram_size(&frame, self.max_datagram_size())?;
-
-        let mut buf = Vec::with_capacity(frame.byte_size() as usize);
-        frame
-            .encode(&mut buf)
-            .map_err(|err| SessionError::Transport(Error::from(err)))?;
-
         self.connection
-            .send_datagram(Bytes::from(buf))
+            .send_datagram(bytes)
             .map_err(|err| SessionError::Transport(err.into_error()))
     }
 
-    async fn recv_datagram(&self) -> Result<Frame<P::Response>, SessionError> {
-        let datagram = self
-            .connection
+    async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError> {
+        self.connection
             .read_datagram()
             .await
-            .map_err(|err| SessionError::Transport(err.into_error()))?;
-
-        // r[impl jetstream.session.datagrams]
-        // A datagram carries a complete frame or it is discarded; there
-        // is nothing to reassemble it from. Trailing bytes after the
-        // frame mean it is not a complete frame either — decoding would
-        // succeed on the prefix and hand back something the peer never
-        // sent.
-        let mut reader = std::io::Cursor::new(datagram.as_ref());
-        let frame = Frame::<P::Response>::decode(&mut reader)
-            .map_err(|err| SessionError::Transport(Error::from(err)))?;
-
-        let consumed = reader.position() as usize;
-        if consumed != datagram.len() {
-            return Err(SessionError::Transport(Error::new(format!(
-                "datagram has {} trailing bytes after the frame",
-                datagram.len() - consumed
-            ))));
-        }
-
-        Ok(frame)
+            .map_err(|err| SessionError::Transport(err.into_error()))
     }
 }
 
