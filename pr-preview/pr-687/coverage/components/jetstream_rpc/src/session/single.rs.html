@@ -15,7 +15,7 @@
         <div>
             <p class="heading">Lines</p>
             <p class="title has-text-danger">
-                <abbr title="0 / 173">0 %</abbr></p>
+                <abbr title="0 / 175">0 %</abbr></p>
         </div>
     </div>
 
@@ -5509,7 +5509,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        Self::service(Framed::new(io, ServerCodec::new()))</pre>
+                <pre class="has-background-danger-light py-0 px-2">        let lane = Framed::new(io, ServerCodec::new());</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5519,13 +5519,13 @@
                 <a href="#343">343</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5541,7 +5541,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">}</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; The session reports what the lane knows, so a caller can</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5557,7 +5557,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; inspect the peer before accepting rather than only through the</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5573,7 +5573,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">impl&lt;P, T&gt;</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; lane. Without this the two disagreed: the accepted lane named</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5589,7 +5589,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    SingleLaneSession&lt;</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; the remote address and the session it came from named nothing.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5599,13 +5599,13 @@
                 <a href="#348">348</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        P,</pre>
+                <pre class="has-background-danger-light py-0 px-2">        let context = Contextual::context(&amp;lane);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5615,13 +5615,13 @@
                 <a href="#349">349</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        NoClientLane&lt;P&gt;,</pre>
+                <pre class="has-background-danger-light py-0 px-2">        Self::service(lane).with_context(context)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5631,13 +5631,13 @@
                 <a href="#350">350</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        ContextualLane&lt;ByteStreamServiceLane&lt;P, T&gt;&gt;,</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5653,7 +5653,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &gt;</pre>
+                <pre class="has-background-white py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5669,7 +5669,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">where</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5685,7 +5685,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    P: Protocol,</pre>
+                <pre class="has-background-white py-0 px-2">impl&lt;P, T&gt;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5701,7 +5701,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    T: AsyncRead + AsyncWrite + Send + Sync + Unpin,</pre>
+                <pre class="has-background-white py-0 px-2">    SingleLaneSession&lt;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5717,7 +5717,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">{</pre>
+                <pre class="has-background-white py-0 px-2">        P,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5733,7 +5733,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.conformance.single-stream]</pre>
+                <pre class="has-background-white py-0 px-2">        NoClientLane&lt;P&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5749,7 +5749,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Frame an accepted byte stream whose peer identity the caller</pre>
+                <pre class="has-background-white py-0 px-2">        ContextualLane&lt;ByteStreamServiceLane&lt;P, T&gt;&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5765,7 +5765,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; supplies rather than the stream knowing it.</pre>
+                <pre class="has-background-white py-0 px-2">    &gt;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5781,7 +5781,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">where</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5797,7 +5797,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
+                <pre class="has-background-white py-0 px-2">    P: Protocol,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5813,7 +5813,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; This is the path for a TLS stream, whose peer is established by a</pre>
+                <pre class="has-background-white py-0 px-2">    T: AsyncRead + AsyncWrite + Send + Sync + Unpin,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5829,7 +5829,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; handshake the framed bytes never see, and for stdio or an</pre>
+                <pre class="has-background-white py-0 px-2">{</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5845,7 +5845,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; in-memory stream, which have no peer at all — pass</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.conformance.single-stream]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5861,7 +5861,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; [`Context::default`] for those.</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Frame an accepted byte stream whose peer identity the caller</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5871,13 +5871,13 @@
                 <a href="#365">365</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    pub fn service_io_with_context(io: T, context: Context) -&gt; Self {</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; supplies rather than the stream knowing it.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5887,13 +5887,13 @@
                 <a href="#366">366</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        Self::service(ContextualLane::new(</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5903,13 +5903,13 @@
                 <a href="#367">367</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            Framed::new(io, ServerCodec::new()),</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5919,13 +5919,13 @@
                 <a href="#368">368</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            context.clone(),</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; This is the path for a TLS stream, whose peer is established by a</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5941,7 +5941,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        ))</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; handshake the framed bytes never see, and for stdio or an</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5957,7 +5957,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; The session reports it too, so a caller can inspect the peer</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; in-memory stream, which have no peer at all — pass</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5973,7 +5973,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; before accepting rather than only through the lane.</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; [`Context::default`] for those.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5989,7 +5989,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        .with_context(context)</pre>
+                <pre class="has-background-danger-light py-0 px-2">    pub fn service_io_with_context(io: T, context: Context) -&gt; Self {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6005,7 +6005,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-danger-light py-0 px-2">        Self::service(ContextualLane::new(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6015,13 +6015,13 @@
                 <a href="#374">374</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">}</pre>
+                <pre class="has-background-danger-light py-0 px-2">            Framed::new(io, ServerCodec::new()),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6031,13 +6031,13 @@
                 <a href="#375">375</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-danger-light py-0 px-2">            context.clone(),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6053,7 +6053,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">impl&lt;P: Protocol, C, S&gt; SingleLaneSession&lt;P, C, S&gt; {</pre>
+                <pre class="has-background-white py-0 px-2">        ))</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6063,13 +6063,13 @@
                 <a href="#377">377</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    fn is_closed(&amp;self) -&gt; bool {</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; The session reports it too, so a caller can inspect the peer</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6079,13 +6079,13 @@
                 <a href="#378">378</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        self.cancel.is_cancelled()</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; before accepting rather than only through the lane.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6101,7 +6101,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-danger-light py-0 px-2">        .with_context(context)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6111,13 +6111,13 @@
                 <a href="#380">380</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6133,7 +6133,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
+                <pre class="has-background-white py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6149,7 +6149,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; A lane&#x27;s share of this session&#x27;s lifetime. Taking a child of an</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6165,7 +6165,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; already-cancelled token yields an already-cancelled child, so a</pre>
+                <pre class="has-background-white py-0 px-2">impl&lt;P: Protocol, C, S&gt; SingleLaneSession&lt;P, C, S&gt; {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6175,13 +6175,13 @@
                 <a href="#384">384</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; lane handed out concurrently with `close` is born terminated</pre>
+                <pre class="has-background-danger-light py-0 px-2">    fn is_closed(&amp;self) -&gt; bool {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6191,13 +6191,13 @@
                 <a href="#385">385</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; rather than escaping it.</pre>
+                <pre class="has-background-danger-light py-0 px-2">        self.cancel.is_cancelled()</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6213,7 +6213,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    fn lifetime(&amp;self) -&gt; LaneLifetime {</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6223,13 +6223,13 @@
                 <a href="#387">387</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        LaneLifetime::new(self.cancel.child_token(), self.live.clone())</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6239,13 +6239,13 @@
                 <a href="#388">388</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6261,7 +6261,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; A lane&#x27;s share of this session&#x27;s lifetime. Taking a child of an</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6277,7 +6277,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; How many lanes this session is currently keeping alive.</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; already-cancelled token yields an already-cancelled child, so a</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6287,13 +6287,13 @@
                 <a href="#391">391</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    pub fn live_lanes(&amp;self) -&gt; usize {</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; lane handed out concurrently with `close` is born terminated</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6303,13 +6303,13 @@
                 <a href="#392">392</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        self.live.load(std::sync::atomic::Ordering::SeqCst)</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; rather than escaping it.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6325,7 +6325,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-danger-light py-0 px-2">    fn lifetime(&amp;self) -&gt; LaneLifetime {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6335,13 +6335,13 @@
                 <a href="#394">394</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-danger-light py-0 px-2">        LaneLifetime::new(self.cancel.child_token(), self.live.clone())</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6351,13 +6351,13 @@
                 <a href="#395">395</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Report a peer identity model other than</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6373,7 +6373,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; [`IdentityKind::None`] — a TLS stream authenticates its peer even</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6389,7 +6389,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; though it carries one lane.</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; How many lanes this session is currently keeping alive.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6405,7 +6405,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    pub fn with_identity(mut self, identity: IdentityKind) -&gt; Self {</pre>
+                <pre class="has-background-danger-light py-0 px-2">    pub fn live_lanes(&amp;self) -&gt; usize {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6421,7 +6421,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        self.identity = identity;</pre>
+                <pre class="has-background-danger-light py-0 px-2">        self.live.load(std::sync::atomic::Ordering::SeqCst)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6437,7 +6437,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        self</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6447,13 +6447,13 @@
                 <a href="#401">401</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6469,7 +6469,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Report a peer identity model other than</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6485,7 +6485,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Attach the peer identity the transport established.</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; [`IdentityKind::None`] — a TLS stream authenticates its peer even</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6501,7 +6501,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; though it carries one lane.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6511,13 +6511,13 @@
                 <a href="#405">405</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
+                <pre class="has-background-danger-light py-0 px-2">    pub fn with_identity(mut self, identity: IdentityKind) -&gt; Self {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6527,13 +6527,13 @@
                 <a href="#406">406</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; A lane accepted from this session reports this identity rather</pre>
+                <pre class="has-background-danger-light py-0 px-2">        self.identity = identity;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6541,70 +6541,6 @@
                 id="407"
                 role="cell">
                 <a href="#407">407</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; than whatever the framed stream underneath knows, so a TLS</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="408"
-                role="cell">
-                <a href="#408">408</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; adapter&#x27;s authenticated peer reaches the handler.</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="409"
-                role="cell">
-                <a href="#409">409</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
-                
-            </div>
-            <div class="column has-background-danger-light p-0"
-                 role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    pub fn with_context(mut self, context: Context) -&gt; Self {</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="410"
-                role="cell">
-                <a href="#410">410</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
-                
-            </div>
-            <div class="column has-background-danger-light p-0"
-                 role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        self.context = Some(context);</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="411"
-                role="cell">
-                <a href="#411">411</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
@@ -6618,9 +6554,9 @@
         </div><div class="columns p-0 m-0" role="row">
             <div
                 class="column is-1 is-narrow p-0 has-text-centered"
-                id="412"
+                id="408"
                 role="cell">
-                <a href="#412">412</a>
+                <a href="#408">408</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
@@ -6630,6 +6566,70 @@
             <div class="column has-background-danger-light p-0"
                  role="cell">
                 <pre class="has-background-danger-light py-0 px-2">    }</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="409"
+                role="cell">
+                <a href="#409">409</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="410"
+                role="cell">
+                <a href="#410">410</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Attach the peer identity the transport established.</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="411"
+                role="cell">
+                <a href="#411">411</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F;</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="412"
+                role="cell">
+                <a href="#412">412</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6645,7 +6645,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">}</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; A lane accepted from this session reports this identity rather</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6661,7 +6661,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; than whatever the framed stream underneath knows, so a TLS</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6677,7 +6677,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; adapter&#x27;s authenticated peer reaches the handler.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6687,13 +6687,13 @@
                 <a href="#416">416</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; A lane must not outlive its session, so a session that goes away</pre>
+                <pre class="has-background-danger-light py-0 px-2">    pub fn with_context(mut self, context: Context) -&gt; Self {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6703,13 +6703,13 @@
                 <a href="#417">417</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; without `close` — dropped during error unwinding, say — terminates</pre>
+                <pre class="has-background-danger-light py-0 px-2">        self.context = Some(context);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6719,13 +6719,13 @@
                 <a href="#418">418</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; its lane just the same.</pre>
+                <pre class="has-background-danger-light py-0 px-2">        self</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6735,13 +6735,13 @@
                 <a href="#419">419</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">impl&lt;P: Protocol, C, S&gt; Drop for SingleLaneSession&lt;P, C, S&gt; {</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6751,13 +6751,13 @@
                 <a href="#420">420</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    fn drop(&amp;mut self) {</pre>
+                <pre class="has-background-white py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6767,13 +6767,13 @@
                 <a href="#421">421</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        self.cancel.cancel();</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6783,13 +6783,13 @@
                 <a href="#422">422</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6805,7 +6805,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">}</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; A lane must not outlive its session, so a session that goes away</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6821,7 +6821,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; without `close` — dropped during error unwinding, say — terminates</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6837,7 +6837,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[async_trait::async_trait]</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; its lane just the same.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6853,7 +6853,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">impl&lt;P, C, S&gt; Session&lt;P&gt; for SingleLaneSession&lt;P, C, S&gt;</pre>
+                <pre class="has-background-white py-0 px-2">impl&lt;P: Protocol, C, S&gt; Drop for SingleLaneSession&lt;P, C, S&gt; {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6863,13 +6863,13 @@
                 <a href="#427">427</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">where</pre>
+                <pre class="has-background-danger-light py-0 px-2">    fn drop(&amp;mut self) {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6879,13 +6879,13 @@
                 <a href="#428">428</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    P: Protocol&lt;Error = Error&gt;,</pre>
+                <pre class="has-background-danger-light py-0 px-2">        self.cancel.cancel();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6895,13 +6895,13 @@
                 <a href="#429">429</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    C: ClientTransport&lt;P&gt;,</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6917,7 +6917,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; `Contextual` is what the blanket `ServiceTransport` impl is built</pre>
+                <pre class="has-background-white py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6933,7 +6933,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; on; naming it here lets the guard forward the peer identity.</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6949,7 +6949,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    S: ServiceTransport&lt;P&gt; + Contextual,</pre>
+                <pre class="has-background-white py-0 px-2">#[async_trait::async_trait]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6965,7 +6965,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">{</pre>
+                <pre class="has-background-white py-0 px-2">impl&lt;P, C, S&gt; Session&lt;P&gt; for SingleLaneSession&lt;P, C, S&gt;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6981,7 +6981,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    type ClientLane = LaneGuard&lt;C&gt;;</pre>
+                <pre class="has-background-white py-0 px-2">where</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -6997,7 +6997,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    type ServiceLane = LaneGuard&lt;S&gt;;</pre>
+                <pre class="has-background-white py-0 px-2">    P: Protocol&lt;Error = Error&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7013,7 +7013,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    C: ClientTransport&lt;P&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7023,13 +7023,13 @@
                 <a href="#437">437</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    fn capabilities(&amp;self) -&gt; Capabilities {</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; `Contextual` is what the blanket `ServiceTransport` impl is built</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7039,13 +7039,13 @@
                 <a href="#438">438</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        Capabilities {</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; on; naming it here lets the guard forward the peer identity.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7055,13 +7055,13 @@
                 <a href="#439">439</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            lanes: LaneSupport::One,</pre>
+                <pre class="has-background-white py-0 px-2">    S: ServiceTransport&lt;P&gt; + Contextual,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7071,13 +7071,13 @@
                 <a href="#440">440</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            datagrams: false,</pre>
+                <pre class="has-background-white py-0 px-2">{</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7087,13 +7087,13 @@
                 <a href="#441">441</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            identity: self.identity,</pre>
+                <pre class="has-background-white py-0 px-2">    type ClientLane = LaneGuard&lt;C&gt;;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7103,13 +7103,13 @@
                 <a href="#442">442</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">            migration: false,</pre>
+                <pre class="has-background-white py-0 px-2">    type ServiceLane = LaneGuard&lt;S&gt;;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7119,13 +7119,13 @@
                 <a href="#443">443</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        }</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7141,7 +7141,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-danger-light py-0 px-2">    fn capabilities(&amp;self) -&gt; Capabilities {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7151,13 +7151,13 @@
                 <a href="#445">445</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-danger-light py-0 px-2">        Capabilities {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7173,7 +7173,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    fn context(&amp;self) -&gt; Context {</pre>
+                <pre class="has-background-danger-light py-0 px-2">            lanes: LaneSupport::One,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7189,7 +7189,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        self.context.clone().unwrap_or_default()</pre>
+                <pre class="has-background-danger-light py-0 px-2">            datagrams: false,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7205,7 +7205,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-danger-light py-0 px-2">            identity: self.identity,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7215,13 +7215,13 @@
                 <a href="#449">449</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-danger-light py-0 px-2">            migration: false,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7237,7 +7237,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    async fn open_lane(&amp;self) -&gt; Result&lt;Self::ClientLane, SessionError&gt; {</pre>
+                <pre class="has-background-danger-light py-0 px-2">        }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7247,13 +7247,13 @@
                 <a href="#451">451</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        if self.is_closed() {</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7269,7 +7269,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            return Err(SessionError::Closed);</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7279,13 +7279,13 @@
                 <a href="#453">453</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        }</pre>
+                <pre class="has-background-danger-light py-0 px-2">    fn context(&amp;self) -&gt; Context {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7295,13 +7295,13 @@
                 <a href="#454">454</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let lane = self.client.lock().await.take().ok_or(if self.opens {</pre>
+                <pre class="has-background-danger-light py-0 px-2">        self.context.clone().unwrap_or_default()</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7311,13 +7311,13 @@
                 <a href="#455">455</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            SessionError::LaneLimitReached</pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7333,7 +7333,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        } else {</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7343,13 +7343,13 @@
                 <a href="#457">457</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            SessionError::OpenUnsupported</pre>
+                <pre class="has-background-danger-light py-0 px-2">    async fn open_lane(&amp;self) -&gt; Result&lt;Self::ClientLane, SessionError&gt; {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7365,7 +7365,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        })?;</pre>
+                <pre class="has-background-white py-0 px-2">        if self.is_closed() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7381,7 +7381,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        Ok(LaneGuard::new(lane, self.lifetime()))</pre>
+                <pre class="has-background-white py-0 px-2">            return Err(SessionError::Closed);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7391,13 +7391,13 @@
                 <a href="#460">460</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">        }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7413,7 +7413,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        let mut slot = self.client.lock().await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7423,13 +7423,13 @@
                 <a href="#462">462</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    async fn accept_lane(&amp;self) -&gt; Result&lt;Self::ServiceLane, SessionError&gt; {</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7445,7 +7445,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        if self.is_closed() {</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; `close` cancels and then empties the slots, so a task that</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7461,7 +7461,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            return Err(SessionError::Closed);</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; passed the check above and waited here finds an empty slot.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7477,7 +7477,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        }</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; Without this it would report `LaneLimitReached` — &quot;you have</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7493,7 +7493,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        let lane = self.service.lock().await.take().ok_or(if self.accepts {</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; already had your one lane&quot; — for a session that closed, which</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7509,7 +7509,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            SessionError::LaneLimitReached</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; is a different thing to tell a caller deciding whether to</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7525,7 +7525,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        } else {</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; retry. The ordering in `close` is what makes this sound: the</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7541,7 +7541,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            SessionError::AcceptUnsupported</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; cancel is visible before the slot is empty.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7557,7 +7557,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        })?;</pre>
+                <pre class="has-background-white py-0 px-2">        if self.is_closed() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7573,7 +7573,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
+                <pre class="has-background-white py-0 px-2">            return Err(SessionError::Closed);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7589,7 +7589,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; The handler sees the session&#x27;s identity where there is one.</pre>
+                <pre class="has-background-white py-0 px-2">        }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7605,7 +7605,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        Ok(LaneGuard::with_context(</pre>
+                <pre class="has-background-white py-0 px-2">        let lane = slot.take().ok_or(if self.opens {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7621,7 +7621,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            lane,</pre>
+                <pre class="has-background-white py-0 px-2">            SessionError::LaneLimitReached</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7637,7 +7637,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            self.lifetime(),</pre>
+                <pre class="has-background-white py-0 px-2">        } else {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7653,7 +7653,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            self.context.clone(),</pre>
+                <pre class="has-background-white py-0 px-2">            SessionError::OpenUnsupported</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7669,7 +7669,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        ))</pre>
+                <pre class="has-background-white py-0 px-2">        })?;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7679,13 +7679,13 @@
                 <a href="#478">478</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">        Ok(LaneGuard::new(lane, self.lifetime()))</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7695,13 +7695,13 @@
                 <a href="#479">479</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7717,7 +7717,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7727,13 +7727,13 @@
                 <a href="#481">481</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
                 
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Terminates the lane whether or not it has been handed out:</pre>
+                <pre class="has-background-danger-light py-0 px-2">    async fn accept_lane(&amp;self) -&gt; Result&lt;Self::ServiceLane, SessionError&gt; {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7749,7 +7749,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; cancelling reaches a lane the caller already owns, so a call in</pre>
+                <pre class="has-background-white py-0 px-2">        if self.is_closed() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7765,7 +7765,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; flight on it fails rather than continuing to run on a session</pre>
+                <pre class="has-background-white py-0 px-2">            return Err(SessionError::Closed);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7781,7 +7781,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; that has closed. A lane handed out concurrently with this call is</pre>
+                <pre class="has-background-white py-0 px-2">        }</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7797,7 +7797,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; born cancelled rather than escaping it.</pre>
+                <pre class="has-background-white py-0 px-2">        let mut slot = self.service.lock().await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7807,13 +7807,13 @@
                 <a href="#486">486</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    async fn close(&amp;self) {</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7829,7 +7829,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        self.cancel.cancel();</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; As in `open_lane`: a waiter must not read an emptied slot as</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7845,7 +7845,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        self.client.lock().await.take();</pre>
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; a limit when what happened was a close.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7861,7 +7861,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        self.service.lock().await.take();</pre>
+                <pre class="has-background-white py-0 px-2">        if self.is_closed() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7871,13 +7871,13 @@
                 <a href="#490">490</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
-                role="cell" aria-label="0">
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
                 
             </div>
-            <div class="column has-background-danger-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+                <pre class="has-background-white py-0 px-2">            return Err(SessionError::Closed);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -7893,6 +7893,422 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
+                <pre class="has-background-white py-0 px-2">        }</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="492"
+                role="cell">
+                <a href="#492">492</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        let lane = slot.take().ok_or(if self.accepts {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="493"
+                role="cell">
+                <a href="#493">493</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">            SessionError::LaneLimitReached</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="494"
+                role="cell">
+                <a href="#494">494</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        } else {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="495"
+                role="cell">
+                <a href="#495">495</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">            SessionError::AcceptUnsupported</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="496"
+                role="cell">
+                <a href="#496">496</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        })?;</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="497"
+                role="cell">
+                <a href="#497">497</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="498"
+                role="cell">
+                <a href="#498">498</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        &#x2F;&#x2F; The handler sees the session&#x27;s identity where there is one.</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="499"
+                role="cell">
+                <a href="#499">499</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        Ok(LaneGuard::with_context(</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="500"
+                role="cell">
+                <a href="#500">500</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">            lane,</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="501"
+                role="cell">
+                <a href="#501">501</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">            self.lifetime(),</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="502"
+                role="cell">
+                <a href="#502">502</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">            self.context.clone(),</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="503"
+                role="cell">
+                <a href="#503">503</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        ))</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="504"
+                role="cell">
+                <a href="#504">504</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
+                
+            </div>
+            <div class="column has-background-danger-light p-0"
+                 role="cell">
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="505"
+                role="cell">
+                <a href="#505">505</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="506"
+                role="cell">
+                <a href="#506">506</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="507"
+                role="cell">
+                <a href="#507">507</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Terminates the lane whether or not it has been handed out:</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="508"
+                role="cell">
+                <a href="#508">508</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; cancelling reaches a lane the caller already owns, so a call in</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="509"
+                role="cell">
+                <a href="#509">509</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; flight on it fails rather than continuing to run on a session</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="510"
+                role="cell">
+                <a href="#510">510</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; that has closed. A lane handed out concurrently with this call is</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="511"
+                role="cell">
+                <a href="#511">511</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; born cancelled rather than escaping it.</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="512"
+                role="cell">
+                <a href="#512">512</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
+                
+            </div>
+            <div class="column has-background-danger-light p-0"
+                 role="cell">
+                <pre class="has-background-danger-light py-0 px-2">    async fn close(&amp;self) {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="513"
+                role="cell">
+                <a href="#513">513</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        self.cancel.cancel();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="514"
+                role="cell">
+                <a href="#514">514</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        self.client.lock().await.take();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="515"
+                role="cell">
+                <a href="#515">515</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        self.service.lock().await.take();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="516"
+                role="cell">
+                <a href="#516">516</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
+                
+            </div>
+            <div class="column has-background-danger-light p-0"
+                 role="cell">
+                <pre class="has-background-danger-light py-0 px-2">    }</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="517"
+                role="cell">
+                <a href="#517">517</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
                 <pre class="has-background-white py-0 px-2">}</pre>
             </div>
         </div></div>
@@ -7900,7 +8316,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-08-30 13:42</p>
+                    <p class="heading">Date: 2026-08-30 14:19</p>
                 </div>
             
         </footer>
