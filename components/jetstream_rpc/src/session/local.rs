@@ -264,8 +264,7 @@ where
             .map_err(|_| SessionError::Closed)?;
 
         Ok(LocalClientLane {
-            tx: PollSender::new(requests_tx.clone()),
-            sender: requests_tx,
+            tx: PollSender::new(requests_tx),
             rx: responses_rx,
             order: LaneOrder::new(),
             cancel: self.inner.cancel.child_token(),
@@ -320,8 +319,6 @@ where
 /// The caller's end of an in-process lane.
 pub struct LocalClientLane<P: Protocol> {
     tx: LaneSender<Frame<P::Request>>,
-    /// A spare handle on the same channel, for [`OrderedSender`] clones.
-    sender: mpsc::Sender<Frame<P::Request>>,
     rx: mpsc::Receiver<Frame<P::Response>>,
     order: LaneOrder,
     /// Shared with every [`OrderedSender`] this lane hands out, so they
@@ -337,12 +334,16 @@ impl<P: Protocol> LocalClientLane<P> {
     /// r[impl jetstream.session.local.order-handoff]
     /// The lane's own `Sink` is sequential and needs no help. Concurrent
     /// producers do: use one or the other on a given lane, not both.
-    pub fn ordered_sender(&self) -> OrderedSender<P> {
-        OrderedSender {
-            tx: self.sender.clone(),
+    /// A closed lane hands out no more writers: the sink's `poll_close`
+    /// retires the channel handle, and `PollSender` reports that by
+    /// giving nothing back.
+    pub fn ordered_sender(&self) -> Result<OrderedSender<P>, SessionError> {
+        let tx = self.tx.get_ref().ok_or(SessionError::LaneClosed)?.clone();
+        Ok(OrderedSender {
+            tx,
             order: self.order.clone(),
             cancel: self.cancel.clone(),
-        }
+        })
     }
 }
 
@@ -488,7 +489,16 @@ impl<P: Protocol + 'static> Sink<Frame<P::Request>> for LocalClientLane<P> {
         self: Pin<&mut Self>,
         cx: &mut TaskContext<'_>,
     ) -> Poll<Result<(), Self::Error>> {
-        Pin::new(&mut self.get_mut().tx)
+        let this = self.get_mut();
+        // r[impl jetstream.lane.definition]
+        // Closing the lane has to retire every writer on it, not just
+        // this sink. An `OrderedSender` already handed out holds a clone
+        // of the channel, so without cancelling here the peer would
+        // never see the end of the lane and a "closed" lane would go on
+        // accepting writes. This is the lane's own token, a child of the
+        // session's: closing a lane does not close its session.
+        this.cancel.cancel();
+        Pin::new(&mut this.tx)
             .poll_close(cx)
             .map_err(|_| SessionError::LaneClosed.into())
     }
