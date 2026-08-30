@@ -15,8 +15,8 @@ use jetstream_quic::QuicSession;
 use jetstream_rpc::{
     context::{Contextual, Peer, RemoteAddr},
     session::{
-        Capabilities, Datagrams, IdentityKind, LaneSupport, Session,
-        SessionError,
+        Capabilities, Capability, Datagrams, IdentityKind, LaneSupport,
+        Session, SessionError,
     },
     Frame,
 };
@@ -63,6 +63,13 @@ struct Pair {
 
 /// A bound server endpoint, and the address to reach it on.
 fn server_endpoint() -> (quinn::Endpoint, SocketAddr) {
+    server_endpoint_with(true)
+}
+
+/// As above, but able to refuse datagrams — a peer that does not
+/// advertise DATAGRAM support leaves the other end's
+/// `max_datagram_size` empty.
+fn server_endpoint_with(datagrams: bool) -> (quinn::Endpoint, SocketAddr) {
     rustls::crypto::ring::default_provider()
         .install_default()
         .ok();
@@ -80,9 +87,14 @@ fn server_endpoint() -> (quinn::Endpoint, SocketAddr) {
         .unwrap();
     tls.alpn_protocols = vec![ALPN.to_vec()];
 
-    let config = quinn::ServerConfig::with_crypto(Arc::new(
+    let mut config = quinn::ServerConfig::with_crypto(Arc::new(
         quinn::crypto::rustls::QuicServerConfig::try_from(tls).unwrap(),
     ));
+    if !datagrams {
+        let mut transport = quinn::TransportConfig::default();
+        transport.datagram_receive_buffer_size(None);
+        config.transport_config(Arc::new(transport));
+    }
     let endpoint =
         quinn::Endpoint::server(config, "127.0.0.1:0".parse().unwrap())
             .unwrap();
@@ -145,13 +157,63 @@ async fn a_quic_session_reports_its_row() {
 
     assert_eq!(caps, Capabilities::quic());
     assert_eq!(caps.lanes, LaneSupport::Many);
-    assert!(caps.datagrams);
     assert_eq!(caps.identity, IdentityKind::Certificate);
     assert!(caps.migration);
+
+    // r[impl jetstream.session.capabilities.degradation]
+    // Datagrams are reported from the connection rather than from the
+    // row, so this asserts the peers actually negotiated them.
+    assert!(caps.datagrams);
+    assert!(
+        Datagrams::<TestProtocol>::max_datagram_size(&pair.client).is_some(),
+        "the reported capability should match the connection"
+    );
 
     // r[impl jetstream.session.identity.addressing]
     // A certificate says who answered, not where to find them.
     assert!(caps.identity.requires_address());
+}
+
+// Regression: `capabilities()` returned the conformance row whole, so
+// `datagrams` was true even on a connection that cannot carry one, and
+// `require(Capability::Datagrams)` succeeded where every send would
+// fail. The row is what QUIC can do; a capability is what this session
+// has.
+// r[impl jetstream.session.capabilities.degradation]
+#[tokio::test]
+async fn a_session_whose_peer_refuses_datagrams_says_so() {
+    let (server, server_addr) = server_endpoint_with(false);
+    let client = client_endpoint();
+
+    let accepting = tokio::spawn(async move {
+        let connection = server.accept().await.unwrap().await.unwrap();
+        QuicSession::<TestProtocol>::new_owned(connection, server)
+    });
+    let connection = client
+        .connect(server_addr, "localhost")
+        .unwrap()
+        .await
+        .unwrap();
+    let session = QuicSession::<TestProtocol>::new_owned(connection, client);
+    let _served = accepting.await.unwrap();
+
+    let caps = Session::<TestProtocol>::capabilities(&session);
+    assert!(
+        Datagrams::<TestProtocol>::max_datagram_size(&session).is_none(),
+        "the peer should not have advertised datagram support"
+    );
+    assert!(
+        !caps.datagrams,
+        "a session that cannot carry a datagram must not claim it can"
+    );
+    assert!(matches!(
+        caps.require(Capability::Datagrams),
+        Err(SessionError::Unsupported(Capability::Datagrams))
+    ));
+
+    // The rest of the row is unaffected: this is still a QUIC session.
+    assert_eq!(caps.lanes, LaneSupport::Many);
+    assert_eq!(caps.identity, IdentityKind::Certificate);
 }
 
 // r[impl jetstream.lane.independence]

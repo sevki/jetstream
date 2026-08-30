@@ -162,8 +162,21 @@ where
     type ServiceLane = QuicServiceLane<P>;
 
     /// r[impl jetstream.session.capabilities]
+    /// r[impl jetstream.session.capabilities.degradation]
+    /// The conformance row says QUIC *can* carry datagrams. This
+    /// connection may not: a peer that never advertised DATAGRAM
+    /// support, or a transport configuration with them switched off,
+    /// leaves `max_datagram_size` empty and every send failing with
+    /// `Disabled` or `UnsupportedByPeer`. A capability is what this
+    /// session has, not what its transport is capable of in general —
+    /// reporting the row unconditionally would let
+    /// `require(Capability::Datagrams)` succeed on a session that
+    /// cannot carry one.
     fn capabilities(&self) -> Capabilities {
-        Capabilities::quic()
+        Capabilities {
+            datagrams: self.inner.connection.max_datagram_size().is_some(),
+            ..Capabilities::quic()
+        }
     }
 
     /// r[impl jetstream.session.identity.addressing]
