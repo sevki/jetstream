@@ -300,7 +300,19 @@ where
         if self.is_closed() {
             return Err(SessionError::Closed);
         }
-        let lane = self.client.lock().await.take().ok_or(if self.opens {
+        let mut slot = self.client.lock().await;
+        // r[impl jetstream.session.lifetime]
+        // `close` cancels and then empties the slots, so a task that
+        // passed the check above and waited here finds an empty slot.
+        // Without this it would report `LaneLimitReached` — "you have
+        // already had your one lane" — for a session that closed, which
+        // is a different thing to tell a caller deciding whether to
+        // retry. The ordering in `close` is what makes this sound: the
+        // cancel is visible before the slot is empty.
+        if self.is_closed() {
+            return Err(SessionError::Closed);
+        }
+        let lane = slot.take().ok_or(if self.opens {
             SessionError::LaneLimitReached
         } else {
             SessionError::OpenUnsupported
@@ -312,7 +324,14 @@ where
         if self.is_closed() {
             return Err(SessionError::Closed);
         }
-        let lane = self.service.lock().await.take().ok_or(if self.accepts {
+        let mut slot = self.service.lock().await;
+        // r[impl jetstream.session.lifetime]
+        // As in `open_lane`: a waiter must not read an emptied slot as
+        // a limit when what happened was a close.
+        if self.is_closed() {
+            return Err(SessionError::Closed);
+        }
+        let lane = slot.take().ok_or(if self.accepts {
             SessionError::LaneLimitReached
         } else {
             SessionError::AcceptUnsupported
