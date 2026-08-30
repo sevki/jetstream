@@ -312,7 +312,7 @@ async fn an_ordered_sender_writes_in_admission_order() {
     let pair = LocalSession::<TestProtocol>::pair();
     let lane = pair.client.open_lane().await.unwrap();
     let mut served = pair.server.accept_lane().await.unwrap();
-    let sender = lane.ordered_sender();
+    let sender = lane.ordered_sender().unwrap();
 
     let admitted: Vec<_> =
         (0..8).map(|n| (n, sender.admit())).collect::<Vec<_>>();
@@ -616,7 +616,7 @@ async fn an_ordered_sender_stops_when_its_session_closes() {
     let pair = LocalSession::<TestProtocol>::pair();
     let lane = pair.client.open_lane().await.unwrap();
     let mut served = pair.server.accept_lane().await.unwrap();
-    let sender = lane.ordered_sender();
+    let sender = lane.ordered_sender().unwrap();
 
     sender.send(frame(1)).await.unwrap();
     let got = served.next().await.unwrap().unwrap();
@@ -650,7 +650,7 @@ async fn a_parked_ordered_send_gives_up_when_the_session_closes() {
     let pair = LocalSession::<TestProtocol>::pair_with_capacity(1);
     let lane = pair.client.open_lane().await.unwrap();
     let _served = pair.server.accept_lane().await.unwrap();
-    let sender = lane.ordered_sender();
+    let sender = lane.ordered_sender().unwrap();
 
     // Fill the lane so the next send has to wait for room.
     sender.send(frame(0)).await.unwrap();
@@ -835,7 +835,7 @@ async fn a_write_committed_after_close_fails() {
 async fn dropping_the_last_session_handle_terminates_its_lanes() {
     let pair = LocalSession::<TestProtocol>::pair();
     let mut lane = pair.client.open_lane().await.unwrap();
-    let sender = lane.ordered_sender();
+    let sender = lane.ordered_sender().unwrap();
 
     let LocalSessionPair { client, server } = pair;
     drop(client);
@@ -915,7 +915,7 @@ async fn an_ordered_send_admitted_before_a_close_fails() {
     let pair = LocalSession::<TestProtocol>::pair();
     let lane = pair.client.open_lane().await.unwrap();
     let mut served = pair.server.accept_lane().await.unwrap();
-    let sender = lane.ordered_sender();
+    let sender = lane.ordered_sender().unwrap();
 
     let ticket = sender.admit();
     pair.client.close().await;
@@ -1033,4 +1033,100 @@ async fn a_parked_guarded_close_gives_up_when_the_session_closes() {
         ended.unwrap_err().code(),
         Some("jetstream::session::closed")
     );
+}
+
+// Regression: the lane kept a second handle on its channel for
+// `OrderedSender` clones, and `poll_close` closed only the sink's. The
+// peer therefore never saw the end of the lane, and a "closed" lane went
+// on handing out writers.
+// r[impl jetstream.lane.definition]
+#[tokio::test]
+async fn closing_a_lane_ends_it_for_the_peer() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let mut lane = pair.client.open_lane().await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+
+    lane.send(frame(1)).await.unwrap();
+    assert_eq!(served.next().await.unwrap().unwrap().msg, Ping(1));
+
+    lane.close().await.unwrap();
+
+    // The peer sees the end rather than waiting on a channel that a
+    // spare handle was holding open.
+    let ended = timeout(Duration::from_secs(5), served.next())
+        .await
+        .expect("the peer should see the lane end, not hang");
+    assert!(ended.is_none(), "expected the lane to end, got {ended:?}");
+
+    // ...and the closed lane hands out no new writers.
+    assert!(matches!(
+        lane.ordered_sender(),
+        Err(SessionError::LaneClosed)
+    ));
+
+    // r[impl jetstream.session.lifetime]
+    // Closing a lane does not close its session: another one opens.
+    assert!(pair.client.open_lane().await.is_ok());
+}
+
+// r[impl jetstream.lane.definition]
+#[tokio::test]
+async fn closing_a_lane_stops_a_sender_already_handed_out() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let mut lane = pair.client.open_lane().await.unwrap();
+    let _served = pair.server.accept_lane().await.unwrap();
+
+    let sender = lane.ordered_sender().unwrap();
+    lane.close().await.unwrap();
+
+    let ticket = sender.admit();
+    let err = timeout(Duration::from_secs(5), sender.deliver(ticket, frame(1)))
+        .await
+        .expect("a send on a closed lane must not hang")
+        .expect_err("a send on a closed lane must fail");
+    assert!(matches!(err, SessionError::Closed));
+}
+
+// Regression: `close` cancels and then empties the lane slots, so an
+// open that had already passed the closed check and was waiting on the
+// lock found an empty slot and reported `LaneLimitReached` — "you have
+// already had your one lane" — for a session that had closed.
+//
+// Being straight about what this covers: **it does not reproduce the
+// window.** Reaching it needs the open parked on the lock at the moment
+// `close` takes it, and from outside the module there is no way to hold
+// that lock — the open either wins outright or sees the closure at the
+// check above. I ran it against the unfixed code three times and it
+// passed every time, so it is not a regression test for this fix.
+//
+// It stays because the invariant it asserts is worth pinning against
+// changes of another shape: an open that fails on a closing session
+// says `Closed`, never the limit. Verifying the fix itself would need a
+// test-only hook into the lock, which is not worth the public surface.
+// r[impl jetstream.session.lifetime]
+#[tokio::test(flavor = "multi_thread")]
+async fn an_open_that_loses_to_a_close_reports_closed() {
+    for _ in 0..64 {
+        let pair = LocalSession::<TestProtocol>::pair();
+        let inner = pair.client.open_lane().await.unwrap();
+        let session =
+            Arc::new(SingleLaneSession::<TestProtocol, _, _>::client(inner));
+
+        let opener = {
+            let session = session.clone();
+            tokio::spawn(async move { session.open_lane().await.err() })
+        };
+        let closer = {
+            let session = session.clone();
+            tokio::spawn(async move { session.close().await })
+        };
+
+        let (opened, _) = tokio::join!(opener, closer);
+        if let Some(err) = opened.unwrap() {
+            assert!(
+                matches!(err, SessionError::Closed),
+                "an open losing to a close must say so, got {err:?}"
+            );
+        }
+    }
 }
