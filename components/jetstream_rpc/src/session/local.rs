@@ -31,7 +31,8 @@ use tokio_util::sync::{CancellationToken, PollSender};
 use crate::{
     context::{Context, Contextual},
     session::{
-        capabilities::Capabilities, error::SessionError,
+        capabilities::Capabilities,
+        error::SessionError,
         lifetime::{CancelWatch, LaneLifetime},
         order::LaneOrder,
         OrderTicket, Session,
@@ -625,10 +626,20 @@ impl<P: Protocol> Stream for LocalServiceLane<P> {
             // open: whether the lane is over is a property of the lane,
             // not of how many handles happen to survive.
             Poll::Pending => {
-                if this.peer_closed.poll_cancelled(cx) {
-                    Poll::Ready(None)
-                } else {
-                    Poll::Pending
+                if !this.peer_closed.poll_cancelled(cx) {
+                    return Poll::Pending;
+                }
+                // r[impl jetstream.lane.definition]
+                // Read again before reporting the end. A frame can be
+                // queued between the empty read above and the
+                // cancellation here, and returning `None` at that point
+                // would end the stream while a frame the opener sent —
+                // and whose send returned success — is still sitting in
+                // it. The wake that enqueue posts is no help once the
+                // stream has said it is over.
+                match this.rx.poll_recv(cx) {
+                    Poll::Ready(frame) => Poll::Ready(frame.map(Ok)),
+                    Poll::Pending => Poll::Ready(None),
                 }
             }
         }
