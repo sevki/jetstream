@@ -35,12 +35,44 @@ use crate::{
     Error,
 };
 
+/// Watches one cancellation token, registering a waker on first poll.
+///
+/// The waiter is built lazily, so a lane that is never polled costs
+/// nothing.
+pub(crate) struct CancelWatch {
+    token: CancellationToken,
+    waiter: Option<Pin<Box<WaitForCancellationFutureOwned>>>,
+}
+
+impl CancelWatch {
+    pub(crate) fn new(token: CancellationToken) -> Self {
+        Self {
+            token,
+            waiter: None,
+        }
+    }
+
+    /// Whether the token has been cancelled, without needing a waker.
+    pub(crate) fn is_cancelled(&self) -> bool {
+        self.token.is_cancelled()
+    }
+
+    /// Whether the token has been cancelled, registering `cx` if not.
+    pub(crate) fn poll_cancelled(&mut self, cx: &mut TaskContext<'_>) -> bool {
+        if self.token.is_cancelled() {
+            return true;
+        }
+        if self.waiter.is_none() {
+            self.waiter = Some(Box::pin(self.token.clone().cancelled_owned()));
+        }
+        let waiter = self.waiter.as_mut().expect("waiter was just constructed");
+        matches!(waiter.as_mut().poll(cx), Poll::Ready(()))
+    }
+}
+
 /// One lane's share of its session's lifetime.
 pub(crate) struct LaneLifetime {
-    token: CancellationToken,
-    /// Built on first poll, so that a lane which is never polled costs
-    /// nothing.
-    waiter: Option<Pin<Box<WaitForCancellationFutureOwned>>>,
+    watch: CancelWatch,
     /// Whether the closure has already been reported to the reader, so
     /// that a closed lane reports once and then ends.
     pub(crate) reported: bool,
@@ -54,8 +86,7 @@ impl LaneLifetime {
     ) -> Self {
         live.fetch_add(1, Ordering::SeqCst);
         Self {
-            token,
-            waiter: None,
+            watch: CancelWatch::new(token),
             reported: false,
             live,
         }
@@ -67,19 +98,12 @@ impl LaneLifetime {
     /// `start_send` commits a write and has no context to register, so
     /// it needs a synchronous answer.
     pub(crate) fn is_closed(&self) -> bool {
-        self.token.is_cancelled()
+        self.watch.is_cancelled()
     }
 
     /// Whether the session has closed, registering `cx` if it has not.
     pub(crate) fn poll_closed(&mut self, cx: &mut TaskContext<'_>) -> bool {
-        if self.token.is_cancelled() {
-            return true;
-        }
-        if self.waiter.is_none() {
-            self.waiter = Some(Box::pin(self.token.clone().cancelled_owned()));
-        }
-        let waiter = self.waiter.as_mut().expect("waiter was just constructed");
-        matches!(waiter.as_mut().poll(cx), Poll::Ready(()))
+        self.watch.poll_cancelled(cx)
     }
 }
 

@@ -32,7 +32,9 @@ use crate::{
     context::{Context, Contextual},
     session::{
         capabilities::Capabilities, error::SessionError,
-        lifetime::LaneLifetime, order::LaneOrder, OrderTicket, Session,
+        lifetime::{CancelWatch, LaneLifetime},
+        order::LaneOrder,
+        OrderTicket, Session,
     },
     Error, Frame, Protocol,
 };
@@ -56,9 +58,18 @@ type LaneSender<T> = PollSender<T>;
 
 /// What one peer hands the other when it opens a lane: the callee's two
 /// halves of the new lane.
+/// What one end of a lane hands to the other: the two channel halves,
+/// and a token cancelled when the opener closes its end.
+///
+/// r[impl jetstream.lane.definition]
+/// The token is there because whether the far end has seen the last
+/// frame cannot be left to how many channel handles happen to survive:
+/// an `OrderedSender` the opener still holds would otherwise keep the
+/// peer waiting on a lane that is closed.
 type LaneOffer<P> = (
     mpsc::Sender<Frame<<P as Protocol>::Response>>,
     mpsc::Receiver<Frame<<P as Protocol>::Request>>,
+    CancellationToken,
 );
 
 struct SessionInner<P: Protocol> {
@@ -257,17 +268,18 @@ where
         let (requests_tx, requests_rx) = mpsc::channel(capacity);
         let (responses_tx, responses_rx) = mpsc::channel(capacity);
         let lifetime = self.register_lane()?;
+        let cancel = self.inner.cancel.child_token();
 
         self.inner
             .peer_offers
-            .send((responses_tx, requests_rx))
+            .send((responses_tx, requests_rx, cancel.clone()))
             .map_err(|_| SessionError::Closed)?;
 
         Ok(LocalClientLane {
             tx: PollSender::new(requests_tx),
             rx: responses_rx,
             order: LaneOrder::new(),
-            cancel: self.inner.cancel.child_token(),
+            cancel,
             lifetime,
             _p: PhantomData,
         })
@@ -297,11 +309,12 @@ where
                 Either::Right(_) => return Err(SessionError::Closed),
             }
         };
-        let (tx, rx) = offer.ok_or(SessionError::Closed)?;
+        let (tx, rx, peer_closed) = offer.ok_or(SessionError::Closed)?;
         let lifetime = self.register_lane()?;
         Ok(LocalServiceLane {
             tx: PollSender::new(tx),
             rx,
+            peer_closed: CancelWatch::new(peer_closed),
             lifetime,
             _p: PhantomData,
         })
@@ -527,6 +540,9 @@ impl<P: Protocol> Stream for LocalClientLane<P> {
 pub struct LocalServiceLane<P: Protocol> {
     tx: LaneSender<Frame<P::Response>>,
     rx: mpsc::Receiver<Frame<P::Request>>,
+    /// r[impl jetstream.lane.definition]
+    /// Cancelled when the opener closed its end of this lane.
+    peer_closed: CancelWatch,
     lifetime: LaneLifetime,
     _p: PhantomData<fn() -> P>,
 }
@@ -596,7 +612,26 @@ impl<P: Protocol> Stream for LocalServiceLane<P> {
             this.lifetime.reported = true;
             return Poll::Ready(Some(Err(SessionError::Closed.into())));
         }
-        this.rx.poll_recv(cx).map(|frame| frame.map(Ok))
+        match this.rx.poll_recv(cx) {
+            Poll::Ready(frame) => Poll::Ready(frame.map(Ok)),
+            // r[impl jetstream.lane.definition]
+            // Nothing queued *and* the opener has closed: the lane is
+            // finished. Checked in this order so that frames already
+            // written before the close are still delivered — a close
+            // says "no more items", not "discard the ones I sent".
+            //
+            // The token rather than the channel's own end-of-stream,
+            // because a writer the opener still holds keeps the channel
+            // open: whether the lane is over is a property of the lane,
+            // not of how many handles happen to survive.
+            Poll::Pending => {
+                if this.peer_closed.poll_cancelled(cx) {
+                    Poll::Ready(None)
+                } else {
+                    Poll::Pending
+                }
+            }
+        }
     }
 }
 
