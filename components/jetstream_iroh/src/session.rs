@@ -71,6 +71,10 @@ impl Drop for SessionInner {
 /// connection closes when the last clone goes away.
 pub struct IrohSession<P: Protocol> {
     inner: Arc<SessionInner>,
+    /// r[impl jetstream.session.capabilities]
+    /// Cleared by [`IrohSession::without_datagrams`]; see there for why
+    /// the connection cannot answer this by itself.
+    datagrams: bool,
     _p: PhantomData<fn() -> P>,
 }
 
@@ -81,6 +85,7 @@ impl<P: Protocol> Clone for IrohSession<P> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
+            datagrams: self.datagrams,
             _p: PhantomData,
         }
     }
@@ -106,6 +111,7 @@ impl<P: Protocol> IrohSession<P> {
                 connection,
                 endpoint: None,
             }),
+            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -117,6 +123,7 @@ impl<P: Protocol> IrohSession<P> {
                 connection,
                 endpoint: Some(endpoint),
             }),
+            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -124,6 +131,21 @@ impl<P: Protocol> IrohSession<P> {
     /// The underlying connection.
     pub fn connection(&self) -> &Connection {
         &self.inner.connection
+    }
+
+    /// Report this session as carrying no datagrams.
+    ///
+    /// r[impl jetstream.session.capabilities]
+    /// [`Session::capabilities`] derives datagram support from
+    /// `max_datagram_size`, which underneath reads the *peer's*
+    /// advertised limit and the path MTU. It is silent about this
+    /// endpoint's own configuration: an endpoint built with datagrams
+    /// switched off still sees a size, while every send fails and
+    /// nothing can arrive. There is no way to read that back from the
+    /// connection, so the caller that turned them off says so here.
+    pub fn without_datagrams(mut self) -> Self {
+        self.datagrams = false;
+        self
     }
 }
 
@@ -147,7 +169,8 @@ where
     /// cannot carry one.
     fn capabilities(&self) -> Capabilities {
         Capabilities {
-            datagrams: self.inner.connection.max_datagram_size().is_some(),
+            datagrams: <Self as Datagrams<P>>::max_datagram_size(self)
+                .is_some(),
             ..Capabilities::iroh()
         }
     }
@@ -221,6 +244,9 @@ where
     P::Response: 'static,
 {
     fn max_datagram_size(&self) -> Option<u32> {
+        if !self.datagrams {
+            return None;
+        }
         self.inner
             .connection
             .max_datagram_size()
