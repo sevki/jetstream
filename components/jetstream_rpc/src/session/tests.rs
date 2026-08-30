@@ -1159,3 +1159,48 @@ async fn closing_a_lane_ends_it_even_with_a_writer_outstanding() {
 
     drop(retained);
 }
+
+// A frame queued while the lane closes is delivered, not dropped.
+//
+// The window is narrow: the reader has to find the queue empty, then
+// the opener has to enqueue *and* close before the reader checks the
+// token. Racing a send against a close is the only way to reach it from
+// outside the module, so this is a probabilistic probe rather than a
+// regression test, and the numbers are worth recording.
+//
+// Against the unfixed code it caught the dropped frame in one run out
+// of three at 256 iterations. Raising it to 2048 made it stop catching
+// it altogether — five runs, no failures — because the race wants a
+// cold runtime and warms out of it. So 256, deliberately, and not more.
+//
+// With the fix it passes every time, since the recheck removes the race
+// rather than narrowing it. A test that is never red on correct code
+// and sometimes red on broken code is worth keeping; one that is
+// sometimes red either way is not.
+// r[impl jetstream.lane.definition]
+#[tokio::test(flavor = "multi_thread")]
+async fn a_frame_queued_as_the_lane_closes_still_arrives() {
+    for _ in 0..256 {
+        let pair = LocalSession::<TestProtocol>::pair();
+        let mut lane = pair.client.open_lane().await.unwrap();
+        let mut served = pair.server.accept_lane().await.unwrap();
+
+        let reader = tokio::spawn(async move {
+            let mut seen = 0;
+            while let Some(frame) = served.next().await {
+                frame.expect("the lane should not error");
+                seen += 1;
+            }
+            seen
+        });
+
+        let sent = tokio::spawn(async move {
+            lane.send(frame(1)).await.unwrap();
+            lane.close().await.unwrap();
+        });
+
+        sent.await.unwrap();
+        let seen = reader.await.unwrap();
+        assert_eq!(seen, 1, "a frame whose send succeeded must arrive");
+    }
+}
