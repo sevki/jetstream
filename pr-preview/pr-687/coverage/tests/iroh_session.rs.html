@@ -15,7 +15,7 @@
         <div>
             <p class="heading">Lines</p>
             <p class="title has-text-success">
-                <abbr title="183 / 183">100 %</abbr></p>
+                <abbr title="208 / 209">99.52 %</abbr></p>
         </div>
     </div>
 
@@ -23,7 +23,7 @@
         <div>
             <p class="heading">Functions</p>
             <p class="title has-text-success">
-                <abbr title="19 / 19">100 %</abbr></p>
+                <abbr title="20 / 20">100 %</abbr></p>
         </div>
     </div>
 
@@ -1839,13 +1839,13 @@
                 <a href="#113">113</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let quiet = pair.client.clone().without_datagrams();</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The override is shared, so a clone taken *before* it follows too</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1855,13 +1855,13 @@
                 <a href="#114">114</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(!Session::&lt;TestProtocol&gt;::capabilities(&amp;quiet).datagrams);</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; — otherwise a handle held elsewhere would keep claiming a channel</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1871,13 +1871,13 @@
                 <a href="#115">115</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(Datagrams::&lt;TestProtocol&gt;::max_datagram_size(&amp;quiet).is_none());</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; that carries nothing.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1893,7 +1893,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(matches!(</pre>
+                <pre class="has-background-success-light py-0 px-2">    let earlier_clone = pair.client.clone();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1909,7 +1909,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        Session::&lt;TestProtocol&gt;::capabilities(&amp;quiet)</pre>
+                <pre class="has-background-success-light py-0 px-2">    let quiet = pair.client.clone().without_datagrams();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1925,7 +1925,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .require(Capability::Datagrams),</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(!Session::&lt;TestProtocol&gt;::capabilities(&amp;quiet).datagrams);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1935,13 +1935,13 @@
                 <a href="#119">119</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        Err(SessionError::Unsupported(Capability::Datagrams))</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1951,13 +1951,13 @@
                 <a href="#120">120</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    ));</pre>
+                <pre class="has-background-success-light py-0 px-2">        !Session::&lt;TestProtocol&gt;::capabilities(&amp;earlier_clone).datagrams,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1973,7 +1973,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        &quot;a clone taken before the override must follow it&quot;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1989,7 +1989,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.identity.addressing]</pre>
+                <pre class="has-background-white py-0 px-2">    );</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1999,13 +1999,13 @@
                 <a href="#123">123</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The key is the address, so a caller never has to carry placement</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(Datagrams::&lt;TestProtocol&gt;::max_datagram_size(&amp;quiet).is_none());</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2015,13 +2015,13 @@
                 <a href="#124">124</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; information alongside it.</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(matches!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2037,7 +2037,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(!caps.identity.requires_address());</pre>
+                <pre class="has-background-success-light py-0 px-2">        Session::&lt;TestProtocol&gt;::capabilities(&amp;quiet)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2053,7 +2053,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">}</pre>
+                <pre class="has-background-success-light py-0 px-2">            .require(Capability::Datagrams),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2069,7 +2069,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        Err(SessionError::Unsupported(Capability::Datagrams))</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2085,7 +2085,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.lane.independence]</pre>
+                <pre class="has-background-white py-0 px-2">    ));</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2101,7 +2101,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2111,13 +2111,13 @@
                 <a href="#130">130</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">async fn each_lane_is_its_own_stream() {</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.identity.addressing]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2127,13 +2127,13 @@
                 <a href="#131">131</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The key is the address, so a caller never has to carry placement</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2149,7 +2149,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; information alongside it.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2165,7 +2165,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut first = pair.client.open_lane().await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(!caps.identity.requires_address());</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2181,7 +2181,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut second = pair.client.open_lane().await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2213,7 +2213,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A QUIC stream reaches the peer on its first write, so both lanes</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.lane.independence]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2229,7 +2229,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; are announced before either is accepted.</pre>
+                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2245,7 +2245,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    first.send(frame(1, &quot;first&quot;)).await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">async fn each_lane_is_its_own_stream() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2261,7 +2261,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    second.send(frame(2, &quot;second&quot;)).await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2293,7 +2293,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut served_first = pair.server.accept_lane().await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut first = pair.client.open_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2309,7 +2309,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut served_second = pair.server.accept_lane().await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut second = pair.client.open_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2335,13 +2335,13 @@
                 <a href="#144">144</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let got = served_first.next().await.unwrap().unwrap();</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A QUIC stream reaches the peer on its first write, so both lanes</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2351,13 +2351,13 @@
                 <a href="#145">145</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;first&quot;);</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; are announced before either is accepted.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2373,7 +2373,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let got = served_second.next().await.unwrap().unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    first.send(frame(1, &quot;first&quot;)).await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2389,7 +2389,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;second&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">    second.send(frame(2, &quot;second&quot;)).await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2421,7 +2421,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let quiet = timeout(Duration::from_millis(50), served_first.next()).await;</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut served_first = pair.server.accept_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2437,7 +2437,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(quiet.is_err(), &quot;the first lane should be waiting&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut served_second = pair.server.accept_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2463,13 +2463,13 @@
                 <a href="#152">152</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.symmetric]</pre>
+                <pre class="has-background-success-light py-0 px-2">    let got = served_first.next().await.unwrap().unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2485,7 +2485,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    served_second.send(response(2, &quot;answered&quot;)).await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;first&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2501,7 +2501,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let got = second.next().await.unwrap().unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    let got = served_second.next().await.unwrap().unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2517,7 +2517,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;answered&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;second&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2525,22 +2525,6 @@
                 id="156"
                 role="cell">
                 <a href="#156">156</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
-            </div>
-            <div class="column has-background-success-light p-0"
-                 role="cell">
-                <pre class="has-background-success-light py-0 px-2">}</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="157"
-                role="cell">
-                <a href="#157">157</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
@@ -2554,18 +2538,34 @@
         </div><div class="columns p-0 m-0" role="row">
             <div
                 class="column is-1 is-narrow p-0 has-text-centered"
+                id="157"
+                role="cell">
+                <a href="#157">157</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let quiet = timeout(Duration::from_millis(50), served_first.next()).await;</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
                 id="158"
                 role="cell">
                 <a href="#158">158</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(quiet.is_err(), &quot;the first lane should be waiting&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2581,7 +2581,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2591,13 +2591,13 @@
                 <a href="#160">160</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">async fn both_ends_of_a_session_know_the_other() {</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.symmetric]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2613,7 +2613,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+                <pre class="has-background-success-light py-0 px-2">    served_second.send(response(2, &quot;answered&quot;)).await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2621,6 +2621,54 @@
                 id="162"
                 role="cell">
                 <a href="#162">162</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let got = second.next().await.unwrap().unwrap();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="163"
+                role="cell">
+                <a href="#163">163</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;answered&quot;);</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="164"
+                role="cell">
+                <a href="#164">164</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">}</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="165"
+                role="cell">
+                <a href="#165">165</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
@@ -2634,66 +2682,18 @@
         </div><div class="columns p-0 m-0" role="row">
             <div
                 class="column is-1 is-narrow p-0 has-text-centered"
-                id="163"
-                role="cell">
-                <a href="#163">163</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; iroh authenticates both peers during the handshake, so unlike a</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="164"
-                role="cell">
-                <a href="#164">164</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
-            </div>
-            <div class="column has-background-white p-0"
-                 role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; one-sided TLS connection the caller is named too.</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="165"
-                role="cell">
-                <a href="#165">165</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
-            </div>
-            <div class="column has-background-success-light p-0"
-                 role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let server_view = Session::&lt;TestProtocol&gt;::context(&amp;pair.server);</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
                 id="166"
                 role="cell">
                 <a href="#166">166</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let client_view = Session::&lt;TestProtocol&gt;::context(&amp;pair.client);</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.identity]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2709,7 +2709,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2725,7 +2725,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(matches!(server_view.peer(), Some(Peer::NodeId(_))));</pre>
+                <pre class="has-background-success-light py-0 px-2">async fn both_ends_of_a_session_know_the_other() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2741,7 +2741,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(matches!(client_view.peer(), Some(Peer::NodeId(_))));</pre>
+                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2751,13 +2751,13 @@
                 <a href="#170">170</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(server_view.to_string(), pair.client_id);</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2767,13 +2767,13 @@
                 <a href="#171">171</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(client_view.to_string(), pair.server_id);</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; iroh authenticates both peers during the handshake, so unlike a</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2789,7 +2789,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; one-sided TLS connection the caller is named too.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2799,13 +2799,13 @@
                 <a href="#173">173</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A lane carries the session&#x27;s identity, so a handler reading only</pre>
+                <pre class="has-background-success-light py-0 px-2">    let server_view = Session::&lt;TestProtocol&gt;::context(&amp;pair.server);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2815,13 +2815,13 @@
                 <a href="#174">174</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; the lane sees the same peer.</pre>
+                <pre class="has-background-success-light py-0 px-2">    let client_view = Session::&lt;TestProtocol&gt;::context(&amp;pair.client);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2831,13 +2831,13 @@
                 <a href="#175">175</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut lane = pair.client.open_lane().await.unwrap();</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2853,7 +2853,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    lane.send(frame(1, &quot;hello&quot;)).await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(matches!(server_view.peer(), Some(Peer::NodeId(_))));</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2869,7 +2869,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let served = pair.server.accept_lane().await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(matches!(client_view.peer(), Some(Peer::NodeId(_))));</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2885,7 +2885,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(Contextual::context(&amp;served), server_view);</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(server_view.to_string(), pair.client_id);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2901,7 +2901,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">}</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(client_view.to_string(), pair.server_id);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2933,7 +2933,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A lane carries the session&#x27;s identity, so a handler reading only</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2949,7 +2949,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; the lane sees the same peer.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2965,7 +2965,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">async fn closing_a_session_terminates_its_lanes() {</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut lane = pair.client.open_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2981,7 +2981,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+                <pre class="has-background-success-light py-0 px-2">    lane.send(frame(1, &quot;hello&quot;)).await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -2991,13 +2991,13 @@
                 <a href="#185">185</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">    let served = pair.server.accept_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3013,7 +3013,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut lane = pair.client.open_lane().await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(Contextual::context(&amp;served), server_view);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3029,7 +3029,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    lane.send(frame(1, &quot;hello&quot;)).await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3039,13 +3039,13 @@
                 <a href="#188">188</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut served = pair.server.accept_lane().await.unwrap();</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3055,13 +3055,13 @@
                 <a href="#189">189</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(served.next().await.unwrap().unwrap().msg.as_str(), &quot;hello&quot;);</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3077,7 +3077,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3093,7 +3093,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    Session::&lt;TestProtocol&gt;::close(&amp;pair.server).await;</pre>
+                <pre class="has-background-success-light py-0 px-2">async fn closing_a_session_terminates_its_lanes() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3103,13 +3103,13 @@
                 <a href="#192">192</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3119,13 +3119,13 @@
                 <a href="#193">193</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let ended = timeout(Duration::from_secs(10), lane.next())</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3141,7 +3141,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .await</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut lane = pair.client.open_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3157,7 +3157,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;the lane should have terminated, not hung&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">    lane.send(frame(1, &quot;hello&quot;)).await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3173,7 +3173,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut served = pair.server.accept_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3189,7 +3189,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        matches!(ended, Some(Err(_))),</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(served.next().await.unwrap().unwrap().msg.as_str(), &quot;hello&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3205,7 +3205,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        &quot;a lane on a closed session should fail, got {ended:?}&quot;</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3221,7 +3221,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    );</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3237,7 +3237,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A datagram receive parked across the close ends the same way a</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3247,13 +3247,13 @@
                 <a href="#201">201</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let opened = timeout(Duration::from_secs(10), pair.client.open_lane())</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; lane does: the session closed, it did not fail.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3269,7 +3269,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .await</pre>
+                <pre class="has-background-success-light py-0 px-2">    let parked = {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3285,7 +3285,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;opening on a closed session should not hang&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">        let server = pair.server.clone();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3301,7 +3301,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(opened.is_err(), &quot;a closed session should not open a lane&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">        tokio::spawn(async move { server.recv_datagram_bytes().await })</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3311,13 +3311,13 @@
                 <a href="#205">205</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">}</pre>
+                <pre class="has-background-white py-0 px-2">    };</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3327,13 +3327,13 @@
                 <a href="#206">206</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">    tokio::time::sleep(Duration::from_millis(50)).await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3349,7 +3349,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; Regression: `IrohSession` held the connection directly, so dropping</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3359,13 +3359,13 @@
                 <a href="#208">208</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; the last handle left the QUIC association up — every lane carries its</pre>
+                <pre class="has-background-success-light py-0 px-2">    Session::&lt;TestProtocol&gt;::close(&amp;pair.server).await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3381,7 +3381,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; own clone of the connection, and those clones kept it alive. The local</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3391,13 +3391,13 @@
                 <a href="#210">210</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; and single-lane sessions got drop paths a round earlier; this one was</pre>
+                <pre class="has-background-success-light py-0 px-2">    let ended = timeout(Duration::from_secs(10), parked)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3407,13 +3407,13 @@
                 <a href="#211">211</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; reported as fixed when it was not.</pre>
+                <pre class="has-background-success-light py-0 px-2">        .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3423,13 +3423,13 @@
                 <a href="#212">212</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
+                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;a parked datagram receive should not hang&quot;)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3439,13 +3439,13 @@
                 <a href="#213">213</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+                <pre class="has-background-success-light py-0 px-2">        .unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3461,7 +3461,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">async fn dropping_the_last_session_handle_closes_the_connection() {</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3477,7 +3477,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+                <pre class="has-background-success-light py-0 px-2">        matches!(ended, Err(SessionError::Closed)),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3493,7 +3493,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">        &quot;a parked receive should report Closed, got {ended:?}&quot;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3503,13 +3503,13 @@
                 <a href="#217">217</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut lane = pair.client.open_lane().await.unwrap();</pre>
+                <pre class="has-background-white py-0 px-2">    );</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3519,13 +3519,13 @@
                 <a href="#218">218</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    lane.send(frame(1, &quot;hello&quot;)).await.unwrap();</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3541,7 +3541,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut served = pair.server.accept_lane().await.unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    let ended = timeout(Duration::from_secs(10), lane.next())</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3557,7 +3557,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(served.next().await.unwrap().unwrap().msg.as_str(), &quot;hello&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">        .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3567,13 +3567,13 @@
                 <a href="#221">221</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;the lane should have terminated, not hung&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3583,13 +3583,13 @@
                 <a href="#222">222</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A clone is not the last handle, so the association survives it.</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3605,7 +3605,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    drop(pair.client.clone());</pre>
+                <pre class="has-background-success-light py-0 px-2">        matches!(ended, Some(Err(_))),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3615,13 +3615,13 @@
                 <a href="#224">224</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    served.send(response(1, &quot;still here&quot;)).await.unwrap();</pre>
+                <pre class="has-background-white py-0 px-2">        &quot;a lane on a closed session should fail, got {ended:?}&quot;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3631,13 +3631,13 @@
                 <a href="#225">225</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(</pre>
+                <pre class="has-background-white py-0 px-2">    );</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3647,13 +3647,13 @@
                 <a href="#226">226</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        lane.next().await.unwrap().unwrap().msg.as_str(),</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3669,7 +3669,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">        &quot;still here&quot;</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3685,7 +3685,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    );</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; ...and says the session closed, rather than reporting a deliberate</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3701,7 +3701,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; close as a transport fault. `Closed` is what a caller branches on</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3717,7 +3717,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The last one is. Note the lane is deliberately still alive: it</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; to stop retrying.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3727,13 +3727,13 @@
                 <a href="#231">231</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; holds its own clone of the connection, which is what used to keep</pre>
+                <pre class="has-background-success-light py-0 px-2">    let opened = timeout(Duration::from_secs(10), pair.client.open_lane())</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3743,13 +3743,13 @@
                 <a href="#232">232</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; the association up after its session had gone.</pre>
+                <pre class="has-background-success-light py-0 px-2">        .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3765,7 +3765,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let Pair { client, .. } = pair;</pre>
+                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;opening on a closed session should not hang&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3781,7 +3781,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    drop(client);</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3789,6 +3789,70 @@
                 id="235"
                 role="cell">
                 <a href="#235">235</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        matches!(opened, Err(SessionError::Closed)),</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="236"
+                role="cell">
+                <a href="#236">236</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">        &quot;a peer&#x27;s close should report Closed, got {:?}&quot;,</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="237"
+                role="cell">
+                <a href="#237">237</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-danger-light has-background-danger"
+                role="cell" aria-label="0">
+                
+            </div>
+            <div class="column has-background-danger-light p-0"
+                 role="cell">
+                <pre class="has-background-danger-light py-0 px-2">        opened.err()</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="238"
+                role="cell">
+                <a href="#238">238</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    );</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="239"
+                role="cell">
+                <a href="#239">239</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
@@ -3802,82 +3866,18 @@
         </div><div class="columns p-0 m-0" role="row">
             <div
                 class="column is-1 is-narrow p-0 has-text-centered"
-                id="236"
-                role="cell">
-                <a href="#236">236</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
-            </div>
-            <div class="column has-background-success-light p-0"
-                 role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let ended = timeout(Duration::from_secs(10), lane.next())</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="237"
-                role="cell">
-                <a href="#237">237</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
-            </div>
-            <div class="column has-background-success-light p-0"
-                 role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .await</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="238"
-                role="cell">
-                <a href="#238">238</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
-            </div>
-            <div class="column has-background-success-light p-0"
-                 role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;the lane should have terminated, not hung&quot;);</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
-                id="239"
-                role="cell">
-                <a href="#239">239</a>
-            </div>
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
-            </div>
-            <div class="column has-background-success-light p-0"
-                 role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
-            </div>
-        </div><div class="columns p-0 m-0" role="row">
-            <div
-                class="column is-1 is-narrow p-0 has-text-centered"
                 id="240"
                 role="cell">
                 <a href="#240">240</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        matches!(ended, Some(Err(_))),</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The same from the end that called `close`, which iroh reports</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3887,13 +3887,13 @@
                 <a href="#241">241</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        &quot;a lane whose session was dropped should fail, got {ended:?}&quot;</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; differently underneath — `LocallyClosed` rather than</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3903,13 +3903,13 @@
                 <a href="#242">242</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    );</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; `ApplicationClosed`.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3925,7 +3925,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">}</pre>
+                <pre class="has-background-success-light py-0 px-2">    let opened = timeout(Duration::from_secs(10), pair.server.open_lane())</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3935,13 +3935,13 @@
                 <a href="#244">244</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">        .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3951,13 +3951,13 @@
                 <a href="#245">245</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.datagrams]</pre>
+                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;opening on a closed session should not hang&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3967,13 +3967,13 @@
                 <a href="#246">246</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3989,7 +3989,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">async fn a_datagram_round_trips() {</pre>
+                <pre class="has-background-success-light py-0 px-2">        matches!(opened, Err(SessionError::Closed)),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4005,7 +4005,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+                <pre class="has-background-success-light py-0 px-2">        &quot;our own close should report Closed, got {:?}&quot;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4015,13 +4015,13 @@
                 <a href="#249">249</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">        opened.err()</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4031,13 +4031,13 @@
                 <a href="#250">250</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.symmetric]</pre>
+                <pre class="has-background-success-light py-0 px-2">    );</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4047,13 +4047,13 @@
                 <a href="#251">251</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The caller sends a request and the callee receives a request. The</pre>
+                <pre class="has-background-success-light py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4069,7 +4069,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; API named the roles the other way round until this test&#x27;s protocol</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4085,7 +4085,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; stopped sharing one type between them.</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; Regression: `IrohSession` held the connection directly, so dropping</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4095,13 +4095,13 @@
                 <a href="#254">254</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    pair.client</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; the last handle left the QUIC association up — every lane carries its</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4111,13 +4111,13 @@
                 <a href="#255">255</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .send_request_datagram(frame(7, &quot;asked&quot;))</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; own clone of the connection, and those clones kept it alive. The local</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4127,13 +4127,13 @@
                 <a href="#256">256</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .await</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; and single-lane sessions got drop paths a round earlier; this one was</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4143,13 +4143,13 @@
                 <a href="#257">257</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .unwrap();</pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; reported as fixed when it was not.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4165,7 +4165,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.lifetime]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4175,13 +4175,13 @@
                 <a href="#259">259</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let got: Frame&lt;Ask&gt; = decode_datagram(</pre>
+                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4197,7 +4197,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        timeout(Duration::from_secs(10), pair.server.recv_datagram_bytes())</pre>
+                <pre class="has-background-success-light py-0 px-2">async fn dropping_the_last_session_handle_closes_the_connection() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4213,7 +4213,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .await</pre>
+                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4223,13 +4223,13 @@
                 <a href="#262">262</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .expect(&quot;the request datagram should have arrived&quot;)</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4245,7 +4245,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .unwrap(),</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut lane = pair.client.open_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4255,13 +4255,13 @@
                 <a href="#264">264</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    )</pre>
+                <pre class="has-background-success-light py-0 px-2">    lane.send(frame(1, &quot;hello&quot;)).await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4277,7 +4277,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    .unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    let mut served = pair.server.accept_lane().await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4293,7 +4293,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.tag, 7);</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(served.next().await.unwrap().unwrap().msg.as_str(), &quot;hello&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4303,13 +4303,13 @@
                 <a href="#267">267</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;asked&quot;);</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4325,7 +4325,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A clone is not the last handle, so the association survives it.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4335,13 +4335,13 @@
                 <a href="#269">269</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; ...and back the other way, which is the direction a session that</pre>
+                <pre class="has-background-success-light py-0 px-2">    drop(pair.client.clone());</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4351,13 +4351,13 @@
                 <a href="#270">270</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; decoded by the wrong role would have got right by accident.</pre>
+                <pre class="has-background-success-light py-0 px-2">    served.send(response(1, &quot;still here&quot;)).await.unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4373,7 +4373,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    pair.server</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4389,7 +4389,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .send_response_datagram(response(7, &quot;answered&quot;))</pre>
+                <pre class="has-background-success-light py-0 px-2">        lane.next().await.unwrap().unwrap().msg.as_str(),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4399,13 +4399,13 @@
                 <a href="#273">273</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .await</pre>
+                <pre class="has-background-white py-0 px-2">        &quot;still here&quot;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4415,13 +4415,13 @@
                 <a href="#274">274</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .unwrap();</pre>
+                <pre class="has-background-white py-0 px-2">    );</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4447,13 +4447,13 @@
                 <a href="#276">276</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let got: Frame&lt;Say&gt; = decode_datagram(</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The last one is. Note the lane is deliberately still alive: it</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4463,13 +4463,13 @@
                 <a href="#277">277</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        timeout(Duration::from_secs(10), pair.client.recv_datagram_bytes())</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; holds its own clone of the connection, which is what used to keep</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4479,13 +4479,13 @@
                 <a href="#278">278</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .await</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; the association up after its session had gone.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4501,7 +4501,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .expect(&quot;the response datagram should have arrived&quot;)</pre>
+                <pre class="has-background-success-light py-0 px-2">    let Pair { client, .. } = pair;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4517,7 +4517,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .unwrap(),</pre>
+                <pre class="has-background-success-light py-0 px-2">    drop(client);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4533,7 +4533,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    )</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4549,7 +4549,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    .unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    let ended = timeout(Duration::from_secs(10), lane.next())</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4565,7 +4565,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.tag, 7);</pre>
+                <pre class="has-background-success-light py-0 px-2">        .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4581,7 +4581,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;answered&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;the lane should have terminated, not hung&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4597,7 +4597,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">}</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4607,13 +4607,13 @@
                 <a href="#286">286</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">        matches!(ended, Some(Err(_))),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4623,13 +4623,13 @@
                 <a href="#287">287</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.datagrams]</pre>
+                <pre class="has-background-success-light py-0 px-2">        &quot;a lane whose session was dropped should fail, got {ended:?}&quot;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4639,13 +4639,13 @@
                 <a href="#288">288</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+                <pre class="has-background-success-light py-0 px-2">    );</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4661,7 +4661,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">async fn an_oversized_datagram_is_rejected_at_the_sender() {</pre>
+                <pre class="has-background-success-light py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4671,13 +4671,13 @@
                 <a href="#290">290</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4693,7 +4693,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.datagrams]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4703,13 +4703,13 @@
                 <a href="#292">292</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let limit = Datagrams::&lt;TestProtocol&gt;::max_datagram_size(&amp;pair.client)</pre>
+                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4725,7 +4725,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;iroh should report a datagram limit&quot;);</pre>
+                <pre class="has-background-success-light py-0 px-2">async fn a_datagram_round_trips() {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4735,13 +4735,13 @@
                 <a href="#294">294</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4751,13 +4751,13 @@
                 <a href="#295">295</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let too_big = Frame {</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4767,13 +4767,13 @@
                 <a href="#296">296</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        tag: 1,</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; r[impl jetstream.session.symmetric]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4783,13 +4783,13 @@
                 <a href="#297">297</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        msg: Ask::of(limit as usize + 1),</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; The caller sends a request and the callee receives a request. The</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4799,13 +4799,13 @@
                 <a href="#298">298</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    };</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; API named the roles the other way round until this test&#x27;s protocol</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4815,13 +4815,13 @@
                 <a href="#299">299</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(WireFormat::byte_size(&amp;too_big) &gt; limit);</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; stopped sharing one type between them.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4831,13 +4831,13 @@
                 <a href="#300">300</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">    pair.client</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4853,7 +4853,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    match pair.client.send_request_datagram(too_big).await {</pre>
+                <pre class="has-background-success-light py-0 px-2">        .send_request_datagram(frame(7, &quot;asked&quot;))</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4869,7 +4869,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        Err(SessionError::DatagramTooLarge { limit: got, .. }) =&gt; {</pre>
+                <pre class="has-background-success-light py-0 px-2">        .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4885,7 +4885,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            assert_eq!(got, limit)</pre>
+                <pre class="has-background-success-light py-0 px-2">        .unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4895,13 +4895,13 @@
                 <a href="#304">304</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        }</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4917,7 +4917,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        other =&gt; panic!(&quot;expected DatagramTooLarge, got {other:?}&quot;),</pre>
+                <pre class="has-background-success-light py-0 px-2">    let got: Frame&lt;Ask&gt; = decode_datagram(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4933,7 +4933,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    }</pre>
+                <pre class="has-background-success-light py-0 px-2">        timeout(Duration::from_secs(10), pair.server.recv_datagram_bytes())</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4949,7 +4949,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">}</pre>
+                <pre class="has-background-success-light py-0 px-2">            .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4959,13 +4959,13 @@
                 <a href="#308">308</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">            .expect(&quot;the request datagram should have arrived&quot;)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4975,13 +4975,13 @@
                 <a href="#309">309</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.datagrams]</pre>
+                <pre class="has-background-success-light py-0 px-2">            .unwrap(),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -4997,7 +4997,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+                <pre class="has-background-white py-0 px-2">    )</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5013,7 +5013,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">async fn a_datagram_with_trailing_bytes_is_rejected() {</pre>
+                <pre class="has-background-success-light py-0 px-2">    .unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5029,7 +5029,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.tag, 7);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5039,13 +5039,13 @@
                 <a href="#313">313</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;asked&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5061,7 +5061,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A frame, then a byte that is not part of it. Decoding the prefix</pre>
+                <pre class="has-background-white py-0 px-2"></pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5077,7 +5077,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; would succeed and hand back something the peer never sent.</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; ...and back the other way, which is the direction a session that</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5087,13 +5087,13 @@
                 <a href="#316">316</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let mut buf = Vec::new();</pre>
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; decoded by the wrong role would have got right by accident.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5109,7 +5109,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    WireFormat::encode(&amp;frame(3, &quot;whole&quot;), &amp;mut buf).unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">    pair.server</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5125,7 +5125,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    buf.push(0xff);</pre>
+                <pre class="has-background-success-light py-0 px-2">        .send_response_datagram(response(7, &quot;answered&quot;))</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5135,13 +5135,13 @@
                 <a href="#319">319</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
-                role="cell" aria-label="no coverage">
-                
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
             </div>
-            <div class="column has-background-white p-0"
+            <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2"></pre>
+                <pre class="has-background-success-light py-0 px-2">        .await</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5157,7 +5157,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    pair.client.connection().send_datagram(buf.into()).unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">        .unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5189,7 +5189,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let bytes =</pre>
+                <pre class="has-background-success-light py-0 px-2">    let got: Frame&lt;Say&gt; = decode_datagram(</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5205,7 +5205,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        timeout(Duration::from_secs(10), pair.server.recv_datagram_bytes())</pre>
+                <pre class="has-background-success-light py-0 px-2">        timeout(Duration::from_secs(10), pair.client.recv_datagram_bytes())</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5237,7 +5237,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .expect(&quot;the datagram should have arrived&quot;)</pre>
+                <pre class="has-background-success-light py-0 px-2">            .expect(&quot;the response datagram should have arrived&quot;)</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5253,7 +5253,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">            .unwrap();</pre>
+                <pre class="has-background-success-light py-0 px-2">            .unwrap(),</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5263,13 +5263,13 @@
                 <a href="#327">327</a>
             </div>
             <div
-                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="1">
-                1
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
             </div>
-            <div class="column has-background-success-light p-0"
+            <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    let got = decode_datagram::&lt;Ask&gt;(bytes);</pre>
+                <pre class="has-background-white py-0 px-2">    )</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5285,7 +5285,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
+                <pre class="has-background-success-light py-0 px-2">    .unwrap();</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5301,7 +5301,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        got.is_err(),</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.tag, 7);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5317,7 +5317,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        &quot;a datagram with trailing bytes is not a complete frame&quot;</pre>
+                <pre class="has-background-success-light py-0 px-2">    assert_eq!(got.msg.as_str(), &quot;answered&quot;);</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5333,7 +5333,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">    );</pre>
+                <pre class="has-background-success-light py-0 px-2">}</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -5341,6 +5341,886 @@
                 id="332"
                 role="cell">
                 <a href="#332">332</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="333"
+                role="cell">
+                <a href="#333">333</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.datagrams]</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="334"
+                role="cell">
+                <a href="#334">334</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="335"
+                role="cell">
+                <a href="#335">335</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">async fn an_oversized_datagram_is_rejected_at_the_sender() {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="336"
+                role="cell">
+                <a href="#336">336</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="337"
+                role="cell">
+                <a href="#337">337</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="338"
+                role="cell">
+                <a href="#338">338</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; Sized past anything QUIC can ever carry, rather than one byte</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="339"
+                role="cell">
+                <a href="#339">339</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; over the limit read a moment ago. That is how this test first</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="340"
+                role="cell">
+                <a href="#340">340</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; failed on Windows CI: the limit is bounded by the path MTU, MTU</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="341"
+                role="cell">
+                <a href="#341">341</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; discovery raised it between the read and the send, and a frame</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="342"
+                role="cell">
+                <a href="#342">342</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; that had been one byte too large fit. A datagram cannot exceed</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="343"
+                role="cell">
+                <a href="#343">343</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; 65527 bytes under any MTU, so this one is over by construction.</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="344"
+                role="cell">
+                <a href="#344">344</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let too_big = Frame {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="345"
+                role="cell">
+                <a href="#345">345</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        tag: 1,</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="346"
+                role="cell">
+                <a href="#346">346</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        msg: Ask::of(u16::MAX as usize),</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="347"
+                role="cell">
+                <a href="#347">347</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    };</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="348"
+                role="cell">
+                <a href="#348">348</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="349"
+                role="cell">
+                <a href="#349">349</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let limit = Datagrams::&lt;TestProtocol&gt;::max_datagram_size(&amp;pair.client)</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="350"
+                role="cell">
+                <a href="#350">350</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        .expect(&quot;iroh should report a datagram limit&quot;);</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="351"
+                role="cell">
+                <a href="#351">351</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    assert!(WireFormat::byte_size(&amp;too_big) &gt; limit);</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="352"
+                role="cell">
+                <a href="#352">352</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="353"
+                role="cell">
+                <a href="#353">353</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    match pair.client.send_request_datagram(too_big).await {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="354"
+                role="cell">
+                <a href="#354">354</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        Err(SessionError::DatagramTooLarge { size, limit: got }) =&gt; {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="355"
+                role="cell">
+                <a href="#355">355</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">            assert!(</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="356"
+                role="cell">
+                <a href="#356">356</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">                size &gt; got,</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="357"
+                role="cell">
+                <a href="#357">357</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">                &quot;the refusal should name a frame over the limit&quot;</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="358"
+                role="cell">
+                <a href="#358">358</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">            );</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="359"
+                role="cell">
+                <a href="#359">359</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        }</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="360"
+                role="cell">
+                <a href="#360">360</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        other =&gt; panic!(&quot;expected DatagramTooLarge, got {other:?}&quot;),</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="361"
+                role="cell">
+                <a href="#361">361</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    }</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="362"
+                role="cell">
+                <a href="#362">362</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">}</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="363"
+                role="cell">
+                <a href="#363">363</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="364"
+                role="cell">
+                <a href="#364">364</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.session.datagrams]</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="365"
+                role="cell">
+                <a href="#365">365</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">#[tokio::test(flavor = &quot;multi_thread&quot;)]</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="366"
+                role="cell">
+                <a href="#366">366</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">async fn a_datagram_with_trailing_bytes_is_rejected() {</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="367"
+                role="cell">
+                <a href="#367">367</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let pair = pair().await;</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="368"
+                role="cell">
+                <a href="#368">368</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="369"
+                role="cell">
+                <a href="#369">369</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; A frame, then a byte that is not part of it. Decoding the prefix</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="370"
+                role="cell">
+                <a href="#370">370</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; would succeed and hand back something the peer never sent.</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="371"
+                role="cell">
+                <a href="#371">371</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let mut buf = Vec::new();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="372"
+                role="cell">
+                <a href="#372">372</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    WireFormat::encode(&amp;frame(3, &quot;whole&quot;), &amp;mut buf).unwrap();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="373"
+                role="cell">
+                <a href="#373">373</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    buf.push(0xff);</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="374"
+                role="cell">
+                <a href="#374">374</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="375"
+                role="cell">
+                <a href="#375">375</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    pair.client.connection().send_datagram(buf.into()).unwrap();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="376"
+                role="cell">
+                <a href="#376">376</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-white has-background-white"
+                role="cell" aria-label="no coverage">
+                
+            </div>
+            <div class="column has-background-white p-0"
+                 role="cell">
+                <pre class="has-background-white py-0 px-2"></pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="377"
+                role="cell">
+                <a href="#377">377</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let bytes =</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="378"
+                role="cell">
+                <a href="#378">378</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        timeout(Duration::from_secs(10), pair.server.recv_datagram_bytes())</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="379"
+                role="cell">
+                <a href="#379">379</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">            .await</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="380"
+                role="cell">
+                <a href="#380">380</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">            .expect(&quot;the datagram should have arrived&quot;)</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="381"
+                role="cell">
+                <a href="#381">381</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">            .unwrap();</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="382"
+                role="cell">
+                <a href="#382">382</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    let got = decode_datagram::&lt;Ask&gt;(bytes);</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="383"
+                role="cell">
+                <a href="#383">383</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    assert!(</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="384"
+                role="cell">
+                <a href="#384">384</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        got.is_err(),</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="385"
+                role="cell">
+                <a href="#385">385</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">        &quot;a datagram with trailing bytes is not a complete frame&quot;</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="386"
+                role="cell">
+                <a href="#386">386</a>
+            </div>
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
+                role="cell" aria-label="1">
+                1
+            </div>
+            <div class="column has-background-success-light p-0"
+                 role="cell">
+                <pre class="has-background-success-light py-0 px-2">    );</pre>
+            </div>
+        </div><div class="columns p-0 m-0" role="row">
+            <div
+                class="column is-1 is-narrow p-0 has-text-centered"
+                id="387"
+                role="cell">
+                <a href="#387">387</a>
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
@@ -5356,7 +6236,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-08-30 14:19</p>
+                    <p class="heading">Date: 2026-08-30 14:56</p>
                 </div>
             
         </footer>
