@@ -11,7 +11,10 @@
 use std::{
     marker::PhantomData,
     pin::Pin,
-    sync::Arc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     task::{Context as TaskContext, Poll},
 };
 
@@ -47,6 +50,12 @@ const SESSION_CLOSED: u32 = 0;
 #[derive(Debug)]
 struct SessionInner {
     connection: Connection,
+    /// r[impl jetstream.session.capabilities]
+    /// Cleared by [`IrohSession::without_datagrams`]. Shared rather than
+    /// per-handle: whether this *connection* carries datagrams is a
+    /// property of the connection, so a clone taken before the override
+    /// must not go on claiming they work.
+    datagrams: AtomicBool,
     // Held for as long as the session is, for the same reason
     // `IrohTransport` holds them: iroh tears the connection down
     // ungracefully if the `Endpoint` is dropped while streams opened
@@ -71,10 +80,6 @@ impl Drop for SessionInner {
 /// connection closes when the last clone goes away.
 pub struct IrohSession<P: Protocol> {
     inner: Arc<SessionInner>,
-    /// r[impl jetstream.session.capabilities]
-    /// Cleared by [`IrohSession::without_datagrams`]; see there for why
-    /// the connection cannot answer this by itself.
-    datagrams: bool,
     _p: PhantomData<fn() -> P>,
 }
 
@@ -85,7 +90,6 @@ impl<P: Protocol> Clone for IrohSession<P> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
-            datagrams: self.datagrams,
             _p: PhantomData,
         }
     }
@@ -110,8 +114,8 @@ impl<P: Protocol> IrohSession<P> {
             inner: Arc::new(SessionInner {
                 connection,
                 endpoint: None,
+                datagrams: AtomicBool::new(true),
             }),
-            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -122,8 +126,8 @@ impl<P: Protocol> IrohSession<P> {
             inner: Arc::new(SessionInner {
                 connection,
                 endpoint: Some(endpoint),
+                datagrams: AtomicBool::new(true),
             }),
-            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -143,8 +147,13 @@ impl<P: Protocol> IrohSession<P> {
     /// switched off still sees a size, while every send fails and
     /// nothing can arrive. There is no way to read that back from the
     /// connection, so the caller that turned them off says so here.
-    pub fn without_datagrams(mut self) -> Self {
-        self.datagrams = false;
+    ///
+    /// The override is shared by every handle on this connection,
+    /// including clones taken before the call: a clone that went on
+    /// claiming datagrams work would recreate exactly the mismatch this
+    /// is here to prevent.
+    pub fn without_datagrams(self) -> Self {
+        self.inner.datagrams.store(false, Ordering::SeqCst);
         self
     }
 }
@@ -244,7 +253,7 @@ where
     P::Response: 'static,
 {
     fn max_datagram_size(&self) -> Option<u32> {
-        if !self.datagrams {
+        if !self.inner.datagrams.load(Ordering::SeqCst) {
             return None;
         }
         self.inner

@@ -110,8 +110,16 @@ async fn an_iroh_session_reports_its_row() {
     // switched datagrams off locally says so, and both the capability
     // and the size follow — otherwise the size would keep saying yes
     // while every send failed.
+    // The override is shared, so a clone taken *before* it follows too
+    // — otherwise a handle held elsewhere would keep claiming a channel
+    // that carries nothing.
+    let earlier_clone = pair.client.clone();
     let quiet = pair.client.clone().without_datagrams();
     assert!(!Session::<TestProtocol>::capabilities(&quiet).datagrams);
+    assert!(
+        !Session::<TestProtocol>::capabilities(&earlier_clone).datagrams,
+        "a clone taken before the override must follow it"
+    );
     assert!(Datagrams::<TestProtocol>::max_datagram_size(&quiet).is_none());
     assert!(matches!(
         Session::<TestProtocol>::capabilities(&quiet)
@@ -289,18 +297,27 @@ async fn a_datagram_round_trips() {
 async fn an_oversized_datagram_is_rejected_at_the_sender() {
     let pair = pair().await;
 
-    let limit = Datagrams::<TestProtocol>::max_datagram_size(&pair.client)
-        .expect("iroh should report a datagram limit");
-
+    // Sized past anything QUIC can ever carry, rather than one byte
+    // over the limit read a moment ago. That is how this test first
+    // failed on Windows CI: the limit is bounded by the path MTU, MTU
+    // discovery raised it between the read and the send, and a frame
+    // that had been one byte too large fit. A datagram cannot exceed
+    // 65527 bytes under any MTU, so this one is over by construction.
     let too_big = Frame {
         tag: 1,
-        msg: Ask::of(limit as usize + 1),
+        msg: Ask::of(u16::MAX as usize),
     };
+
+    let limit = Datagrams::<TestProtocol>::max_datagram_size(&pair.client)
+        .expect("iroh should report a datagram limit");
     assert!(WireFormat::byte_size(&too_big) > limit);
 
     match pair.client.send_request_datagram(too_big).await {
-        Err(SessionError::DatagramTooLarge { limit: got, .. }) => {
-            assert_eq!(got, limit)
+        Err(SessionError::DatagramTooLarge { size, limit: got }) => {
+            assert!(
+                size > got,
+                "the refusal should name a frame over the limit"
+            );
         }
         other => panic!("expected DatagramTooLarge, got {other:?}"),
     }
