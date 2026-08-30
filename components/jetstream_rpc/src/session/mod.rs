@@ -24,6 +24,7 @@ mod single;
 #[cfg(test)]
 mod tests;
 
+use bytes::Bytes;
 use jetstream_wireformat::WireFormat;
 
 pub use self::{
@@ -35,8 +36,8 @@ pub use self::{
     single::{NoClientLane, NoServiceLane, SingleLaneSession},
 };
 use crate::{
-    client::ClientTransport, context::Context, server::ServiceTransport, Frame,
-    Framer, Protocol,
+    client::ClientTransport, context::Context, server::ServiceTransport, Error,
+    Frame, Framer, Protocol,
 };
 
 /// An association with a peer, from which lanes are obtained.
@@ -94,19 +95,84 @@ pub trait Session<P: Protocol>: Send + Sync {
 /// r[impl jetstream.session.datagrams.not-a-lane]
 /// This is deliberately not a [`ClientTransport`]: a datagram channel is
 /// not a lane, and none of the lane ordering requirements apply to it.
+///
+/// A transport implements the three raw methods; the four framed ones
+/// are provided. That is deliberate. Every framed method has to check
+/// the path limit before sending and reject a datagram carrying
+/// anything after its frame, and when each transport wrote those out
+/// itself the two implementations drifted — iroh rejected trailing
+/// bytes and QUIC accepted them. Encoding and decoding belong to the
+/// model, not to the transport.
+///
+/// r[impl jetstream.session.symmetric]
+/// The channel belongs to the connection, so both directions exist at
+/// both ends and the methods name the direction rather than assuming
+/// one. A session is not fixed to a role — the peer that opens a lane
+/// is the caller *on that lane* — so a datagram API that only sent
+/// requests and only received responses was wrong at whichever end was
+/// serving: a callee decoded its peer's requests as responses, which
+/// for any protocol whose two message types differ means rejecting or
+/// misreading every datagram it receives.
 #[async_trait::async_trait]
-pub trait Datagrams<P: Protocol>: Send + Sync {
+pub trait Datagrams<P: Protocol>: Send + Sync
+where
+    // The framed methods are provided rather than required, so their
+    // bodies own a frame across an await and need the message types to
+    // outlive it. Every real protocol's messages are owned values, so
+    // this costs nothing but has to be said.
+    P::Request: 'static,
+    P::Response: 'static,
+{
     /// The largest frame the path will carry, if the transport knows it.
     fn max_datagram_size(&self) -> Option<u32>;
 
-    /// Send one frame, or fail. Never fragmented, never retried.
-    async fn send_datagram(
+    /// Send one already-encoded datagram, or fail. Never fragmented,
+    /// never retried.
+    async fn send_datagram_bytes(
         &self,
-        frame: Frame<P::Request>,
+        bytes: Bytes,
     ) -> Result<(), SessionError>;
 
-    /// Receive the next frame that arrived intact.
-    async fn recv_datagram(&self) -> Result<Frame<P::Response>, SessionError>;
+    /// Receive the bytes of the next datagram that arrived intact.
+    async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError>;
+
+    /// Send a request, as the caller.
+    async fn send_request_datagram(
+        &self,
+        frame: Frame<P::Request>,
+    ) -> Result<(), SessionError> {
+        self.send_datagram_bytes(encode_datagram(
+            &frame,
+            self.max_datagram_size(),
+        )?)
+        .await
+    }
+
+    /// Receive the next request, as the callee.
+    async fn recv_request_datagram(
+        &self,
+    ) -> Result<Frame<P::Request>, SessionError> {
+        decode_datagram(self.recv_datagram_bytes().await?)
+    }
+
+    /// Send a response, as the callee.
+    async fn send_response_datagram(
+        &self,
+        frame: Frame<P::Response>,
+    ) -> Result<(), SessionError> {
+        self.send_datagram_bytes(encode_datagram(
+            &frame,
+            self.max_datagram_size(),
+        )?)
+        .await
+    }
+
+    /// Receive the next response, as the caller.
+    async fn recv_response_datagram(
+        &self,
+    ) -> Result<Frame<P::Response>, SessionError> {
+        decode_datagram(self.recv_datagram_bytes().await?)
+    }
 }
 
 /// r[impl jetstream.session.datagrams]
@@ -125,4 +191,42 @@ pub fn check_datagram_size<T: Framer>(
         return Err(SessionError::DatagramTooLarge { size, limit });
     }
     Ok(())
+}
+
+/// r[impl jetstream.session.datagrams]
+/// Encode a frame for the datagram channel, refusing one the path
+/// cannot carry.
+pub fn encode_datagram<T: Framer>(
+    frame: &Frame<T>,
+    limit: Option<u32>,
+) -> Result<Bytes, SessionError> {
+    check_datagram_size(frame, limit)?;
+
+    let mut buf = Vec::with_capacity(WireFormat::byte_size(frame) as usize);
+    WireFormat::encode(frame, &mut buf)
+        .map_err(|err| SessionError::Transport(Error::from(err)))?;
+    Ok(Bytes::from(buf))
+}
+
+/// r[impl jetstream.session.datagrams]
+/// Decode one datagram, which carries a complete frame or is discarded.
+/// There is nothing to reassemble it from, so bytes after the frame mean
+/// it is not a complete frame either: decoding would succeed on the
+/// prefix and hand back something the peer never sent.
+pub fn decode_datagram<T: Framer>(
+    datagram: Bytes,
+) -> Result<Frame<T>, SessionError> {
+    let mut reader = std::io::Cursor::new(datagram.as_ref());
+    let frame = <Frame<T> as WireFormat>::decode(&mut reader)
+        .map_err(|err| SessionError::Transport(Error::from(err)))?;
+
+    let consumed = reader.position() as usize;
+    if consumed != datagram.len() {
+        return Err(SessionError::Transport(Error::new(format!(
+            "datagram has {} trailing bytes after the frame",
+            datagram.len() - consumed
+        ))));
+    }
+
+    Ok(frame)
 }
