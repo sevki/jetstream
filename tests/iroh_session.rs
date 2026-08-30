@@ -16,8 +16,8 @@ use jetstream_iroh::IrohSession;
 use jetstream_rpc::{
     context::{Contextual, Peer},
     session::{
-        decode_datagram, Capabilities, Datagrams, IdentityKind, LaneSupport,
-        Session, SessionError,
+        decode_datagram, Capabilities, Capability, Datagrams, IdentityKind,
+        LaneSupport, Session, SessionError,
     },
     Frame,
 };
@@ -103,6 +103,21 @@ async fn an_iroh_session_reports_its_row() {
         Datagrams::<TestProtocol>::max_datagram_size(&pair.client).is_some(),
         "the reported capability should match the connection"
     );
+
+    // r[impl jetstream.session.capabilities]
+    // `max_datagram_size` reads the *peer's* advertised limit, so it
+    // cannot see this endpoint's own configuration. A caller that
+    // switched datagrams off locally says so, and both the capability
+    // and the size follow — otherwise the size would keep saying yes
+    // while every send failed.
+    let quiet = pair.client.clone().without_datagrams();
+    assert!(!Session::<TestProtocol>::capabilities(&quiet).datagrams);
+    assert!(Datagrams::<TestProtocol>::max_datagram_size(&quiet).is_none());
+    assert!(matches!(
+        Session::<TestProtocol>::capabilities(&quiet)
+            .require(Capability::Datagrams),
+        Err(SessionError::Unsupported(Capability::Datagrams))
+    ));
 
     // r[impl jetstream.session.identity.addressing]
     // The key is the address, so a caller never has to carry placement
