@@ -106,13 +106,12 @@ pub trait Session<P: Protocol>: Send + Sync {
 ///
 /// r[impl jetstream.session.symmetric]
 /// The channel belongs to the connection, so both directions exist at
-/// both ends and the methods name the direction rather than assuming
-/// one. A session is not fixed to a role — the peer that opens a lane
-/// is the caller *on that lane* — so a datagram API that only sent
+/// both ends. A session is not fixed to a role — the peer that opens a
+/// lane is the caller *on that lane* — so a datagram API that only sent
 /// requests and only received responses was wrong at whichever end was
-/// serving: a callee decoded its peer's requests as responses, which
-/// for any protocol whose two message types differ means rejecting or
-/// misreading every datagram it receives.
+/// serving: a callee encoded its answers as questions, and decoded its
+/// peer's questions as answers. Sending therefore names the direction.
+/// Receiving cannot, and does not: see `recv_datagram_bytes`.
 #[async_trait::async_trait]
 pub trait Datagrams<P: Protocol>: Send + Sync
 where
@@ -133,7 +132,24 @@ where
         bytes: Bytes,
     ) -> Result<(), SessionError>;
 
-    /// Receive the bytes of the next datagram that arrived intact.
+    /// Receive the next datagram that arrived intact.
+    ///
+    /// r[impl jetstream.session.datagrams]
+    /// Receiving is deliberately untyped, and deliberately singular.
+    /// The channel is one unordered queue belonging to the connection,
+    /// so every reader competes for the same packets — a typed
+    /// `recv_request` and a typed `recv_response` used at once would
+    /// each take datagrams meant for the other, fail to decode them,
+    /// and discard them for good. Nothing in a datagram says which
+    /// direction it is; the frame's message type does, but only a
+    /// protocol that partitions the type space can be read that way,
+    /// and `Protocol` does not require it.
+    ///
+    /// So a session hands out the bytes and the caller says what it
+    /// expects, with [`decode_datagram`]. A peer that receives in one
+    /// role — which is the usual case — writes one turbofish. A peer
+    /// that receives in both needs a discriminator of its own, and the
+    /// API says so by not pretending otherwise.
     async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError>;
 
     /// Send a request, as the caller.
@@ -148,13 +164,6 @@ where
         .await
     }
 
-    /// Receive the next request, as the callee.
-    async fn recv_request_datagram(
-        &self,
-    ) -> Result<Frame<P::Request>, SessionError> {
-        decode_datagram(self.recv_datagram_bytes().await?)
-    }
-
     /// Send a response, as the callee.
     async fn send_response_datagram(
         &self,
@@ -165,13 +174,6 @@ where
             self.max_datagram_size(),
         )?)
         .await
-    }
-
-    /// Receive the next response, as the caller.
-    async fn recv_response_datagram(
-        &self,
-    ) -> Result<Frame<P::Response>, SessionError> {
-        decode_datagram(self.recv_datagram_bytes().await?)
     }
 }
 
