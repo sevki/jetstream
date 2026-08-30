@@ -1130,3 +1130,32 @@ async fn an_open_that_loses_to_a_close_reports_closed() {
         }
     }
 }
+
+// Regression: cancelling the lane token made `deliver` refuse, but an
+// `OrderedSender` the caller still held kept its channel handle alive,
+// so the peer went on waiting for a lane that was closed. The two
+// earlier tests each checked one half — EOF with no retained sender,
+// refusal without checking EOF — and neither combined them.
+// r[impl jetstream.lane.definition]
+#[tokio::test]
+async fn closing_a_lane_ends_it_even_with_a_writer_outstanding() {
+    let pair = LocalSession::<TestProtocol>::pair();
+    let mut lane = pair.client.open_lane().await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+
+    let retained = lane.ordered_sender().unwrap();
+    lane.send(frame(1)).await.unwrap();
+    lane.close().await.unwrap();
+
+    // A frame written before the close still arrives: closing says "no
+    // more items", not "discard the ones I sent".
+    assert_eq!(served.next().await.unwrap().unwrap().msg, Ping(1));
+
+    // ...and then the lane ends, with the writer still alive.
+    let ended = timeout(Duration::from_secs(5), served.next())
+        .await
+        .expect("the peer should see the lane end, not hang");
+    assert!(ended.is_none(), "expected the lane to end, got {ended:?}");
+
+    drop(retained);
+}
