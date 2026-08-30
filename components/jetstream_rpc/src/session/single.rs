@@ -339,7 +339,14 @@ where
     /// For a stream that knows its peer — a unix socket or TCP. Anything
     /// else wants [`Self::service_io_with_context`].
     pub fn service_io(io: T) -> Self {
-        Self::service(Framed::new(io, ServerCodec::new()))
+        let lane = Framed::new(io, ServerCodec::new());
+        // r[impl jetstream.session.identity]
+        // The session reports what the lane knows, so a caller can
+        // inspect the peer before accepting rather than only through the
+        // lane. Without this the two disagreed: the accepted lane named
+        // the remote address and the session it came from named nothing.
+        let context = Contextual::context(&lane);
+        Self::service(lane).with_context(context)
     }
 }
 

@@ -235,6 +235,16 @@ async fn a_byte_stream_is_a_session_with_one_lane() {
     assert!(context.remote().is_some());
     assert!(context.peer().is_none());
 
+    // The session reports the same thing the lane does. It used to
+    // report nothing, so which answer a caller got depended on which
+    // handle it asked — the inconsistency `service_io_with_context`
+    // was fixed for, in the constructor that was left behind.
+    assert_eq!(
+        Session::context(&server),
+        context,
+        "the session should report what its lane knows"
+    );
+
     // r[impl jetstream.session.single-lane]
     assert!(matches!(
         client.open_lane().await,

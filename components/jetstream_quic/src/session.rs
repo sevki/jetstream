@@ -8,6 +8,7 @@
 use std::{
     marker::PhantomData,
     pin::Pin,
+    sync::Arc,
     task::{Context as TaskContext, Poll},
 };
 
@@ -19,7 +20,7 @@ use jetstream_rpc::{
     session::{Capabilities, Datagrams, Session, SessionError},
     Error, Frame, IntoError, Protocol,
 };
-use quinn::{Connection, RecvStream, SendStream, VarInt};
+use quinn::{Connection, Endpoint, RecvStream, SendStream, VarInt};
 use tokio_util::codec::{FramedRead, FramedWrite};
 use tracing::warn;
 
@@ -54,25 +55,101 @@ pub fn peer_from_connection(connection: &Connection) -> Option<Peer> {
 /// A JetStream session over a QUIC connection.
 ///
 /// Cloning is cheap and every clone addresses the same connection, so
-/// lanes can be opened from several tasks at once.
-#[derive(Debug, Clone)]
+/// lanes can be opened from several tasks at once. The connection
+/// closes when the last clone goes away.
 pub struct QuicSession<P: Protocol> {
-    connection: Connection,
+    inner: Arc<SessionInner>,
     _p: PhantomData<fn() -> P>,
 }
 
+/// What every handle on one session shares.
+///
+/// r[impl jetstream.session.lifetime]
+/// A lane must not outlive its session, and every lane holds streams
+/// opened from the connection, so the connection lives here and the
+/// last handle away closes it.
+#[derive(Debug)]
+struct SessionInner {
+    connection: Connection,
+    // Dropping the last `quinn::Endpoint` handle closes every
+    // connection made from it, so a session built inside a helper that
+    // owns the endpoint would be dead on return. Held here for the
+    // caller that has nowhere else to keep it.
+    endpoint: Option<Endpoint>,
+}
+
+impl Drop for SessionInner {
+    /// r[impl jetstream.session.lifetime]
+    /// A session that goes away during unwinding, rather than through
+    /// `close`, ends its lanes just the same.
+    fn drop(&mut self) {
+        self.connection
+            .close(VarInt::from_u32(SESSION_CLOSED), b"session dropped");
+    }
+}
+
+// Written out rather than derived: a derive would require `P: Clone`
+// and `P: Debug`, which a session neither holds nor needs — the
+// protocol appears only as a `PhantomData` marker.
+impl<P: Protocol> Clone for QuicSession<P> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            _p: PhantomData,
+        }
+    }
+}
+
+impl<P: Protocol> std::fmt::Debug for QuicSession<P> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("QuicSession")
+            .field("connection", &self.inner.connection)
+            .finish_non_exhaustive()
+    }
+}
+
 impl<P: Protocol> QuicSession<P> {
-    /// Wrap an established connection.
+    /// Wrap a connection whose endpoint the caller keeps alive.
+    ///
+    /// The session takes ownership of the connection's lifetime: when
+    /// the last handle is dropped the connection closes, even if the
+    /// caller holds a clone of it.
     pub fn new(connection: Connection) -> Self {
         Self {
-            connection,
+            inner: Arc::new(SessionInner {
+                connection,
+                endpoint: None,
+            }),
+            _p: PhantomData,
+        }
+    }
+
+    /// Wrap a connection and keep `endpoint` alive alongside it.
+    ///
+    /// Use this whenever the caller does not otherwise hold the
+    /// endpoint the connection came from — returning a session from a
+    /// helper that built its own [`crate::Client`], say. A
+    /// `quinn::Endpoint` closes every connection made from it when its
+    /// last handle drops, so a session built with [`Self::new`] in that
+    /// position is unusable before the caller ever sees it.
+    pub fn new_owned(connection: Connection, endpoint: Endpoint) -> Self {
+        Self {
+            inner: Arc::new(SessionInner {
+                connection,
+                endpoint: Some(endpoint),
+            }),
             _p: PhantomData,
         }
     }
 
     /// The underlying connection.
     pub fn connection(&self) -> &Connection {
-        &self.connection
+        &self.inner.connection
+    }
+
+    /// The endpoint this session keeps alive, if it was given one.
+    pub fn endpoint(&self) -> Option<&Endpoint> {
+        self.inner.endpoint.as_ref()
     }
 }
 
@@ -94,8 +171,10 @@ where
     /// what reaches it, so both are reported.
     fn context(&self) -> Context {
         Context::new(
-            Some(RemoteAddr::IpAddr(self.connection.remote_address().ip())),
-            peer_from_connection(&self.connection),
+            Some(RemoteAddr::IpAddr(
+                self.inner.connection.remote_address().ip(),
+            )),
+            peer_from_connection(&self.inner.connection),
         )
     }
 
@@ -104,6 +183,7 @@ where
     /// does not delay another's.
     async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
         let streams = self
+            .inner
             .connection
             .open_bi()
             .await
@@ -116,6 +196,7 @@ where
     /// Either peer may open a lane on a QUIC connection.
     async fn accept_lane(&self) -> Result<Self::ServiceLane, SessionError> {
         let (send_stream, recv_stream) = self
+            .inner
             .connection
             .accept_bi()
             .await
@@ -133,7 +214,8 @@ where
     /// terminate with the session and calls in flight on them fail
     /// rather than hang.
     async fn close(&self) {
-        self.connection
+        self.inner
+            .connection
             .close(VarInt::from_u32(SESSION_CLOSED), b"session closed");
     }
 }
@@ -150,7 +232,8 @@ where
     P::Response: 'static,
 {
     fn max_datagram_size(&self) -> Option<u32> {
-        self.connection
+        self.inner
+            .connection
             .max_datagram_size()
             .map(|size| size.min(u32::MAX as usize) as u32)
     }
@@ -159,13 +242,15 @@ where
         &self,
         bytes: Bytes,
     ) -> Result<(), SessionError> {
-        self.connection
+        self.inner
+            .connection
             .send_datagram(bytes)
             .map_err(|err| SessionError::Transport(err.into_error()))
     }
 
     async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError> {
-        self.connection
+        self.inner
+            .connection
             .read_datagram()
             .await
             .map_err(|err| SessionError::Transport(err.into_error()))

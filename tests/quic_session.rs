@@ -53,80 +53,87 @@ fn load_key(path: &str) -> PrivateKeyDer<'static> {
 
 /// A connected pair of sessions over one mTLS QUIC connection.
 ///
-/// The endpoints are returned alongside so that they outlive the
-/// connection: dropping a quinn `Endpoint` tears down everything opened
-/// from it.
+/// Each session owns its endpoint, since dropping the last handle on a
+/// quinn `Endpoint` closes every connection opened from it. That is what
+/// `new_owned` is for; nothing outside the session needs to hold them.
 struct Pair {
     client: QuicSession<TestProtocol>,
     server: QuicSession<TestProtocol>,
-    _client_endpoint: quinn::Endpoint,
-    _server_endpoint: quinn::Endpoint,
 }
 
-async fn pair() -> Pair {
+/// A bound server endpoint, and the address to reach it on.
+fn server_endpoint() -> (quinn::Endpoint, SocketAddr) {
     rustls::crypto::ring::default_provider()
         .install_default()
         .ok();
 
-    let ca_cert = load_certs(CA_CERT_PEM).pop().unwrap();
-
     let mut roots = rustls::RootCertStore::empty();
-    roots.add(ca_cert.clone()).unwrap();
+    roots.add(load_certs(CA_CERT_PEM).pop().unwrap()).unwrap();
     let client_verifier =
         rustls::server::WebPkiClientVerifier::builder(Arc::new(roots))
             .build()
             .unwrap();
 
-    let mut server_tls = rustls::ServerConfig::builder()
+    let mut tls = rustls::ServerConfig::builder()
         .with_client_cert_verifier(client_verifier)
         .with_single_cert(load_certs(SERVER_CERT_PEM), load_key(SERVER_KEY_PEM))
         .unwrap();
-    server_tls.alpn_protocols = vec![ALPN.to_vec()];
+    tls.alpn_protocols = vec![ALPN.to_vec()];
 
-    let server_config = quinn::ServerConfig::with_crypto(Arc::new(
-        quinn::crypto::rustls::QuicServerConfig::try_from(server_tls).unwrap(),
+    let config = quinn::ServerConfig::with_crypto(Arc::new(
+        quinn::crypto::rustls::QuicServerConfig::try_from(tls).unwrap(),
     ));
-    let bind: SocketAddr = "127.0.0.1:0".parse().unwrap();
-    let server_endpoint = quinn::Endpoint::server(server_config, bind).unwrap();
-    let server_addr = server_endpoint.local_addr().unwrap();
+    let endpoint =
+        quinn::Endpoint::server(config, "127.0.0.1:0".parse().unwrap())
+            .unwrap();
+    let addr = endpoint.local_addr().unwrap();
+    (endpoint, addr)
+}
+
+/// A client endpoint that presents the test client certificate.
+fn client_endpoint() -> quinn::Endpoint {
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
 
     let mut roots = rustls::RootCertStore::empty();
-    roots.add(ca_cert).unwrap();
-    let mut client_tls = rustls::ClientConfig::builder()
+    roots.add(load_certs(CA_CERT_PEM).pop().unwrap()).unwrap();
+    let mut tls = rustls::ClientConfig::builder()
         .with_root_certificates(roots)
         .with_client_auth_cert(
             load_certs(CLIENT_CERT_PEM),
             load_key(CLIENT_KEY_PEM),
         )
         .unwrap();
-    client_tls.alpn_protocols = vec![ALPN.to_vec()];
+    tls.alpn_protocols = vec![ALPN.to_vec()];
 
-    let mut client_endpoint = quinn::Endpoint::client(bind).unwrap();
-    client_endpoint.set_default_client_config(quinn::ClientConfig::new(
-        Arc::new(
-            quinn::crypto::rustls::QuicClientConfig::try_from(client_tls)
-                .unwrap(),
-        ),
-    ));
+    let mut endpoint =
+        quinn::Endpoint::client("127.0.0.1:0".parse().unwrap()).unwrap();
+    endpoint.set_default_client_config(quinn::ClientConfig::new(Arc::new(
+        quinn::crypto::rustls::QuicClientConfig::try_from(tls).unwrap(),
+    )));
+    endpoint
+}
+
+async fn pair() -> Pair {
+    let (server, server_addr) = server_endpoint();
+    let client = client_endpoint();
 
     let accepting = tokio::spawn(async move {
-        let incoming = server_endpoint.accept().await.unwrap();
-        let connection = incoming.await.unwrap();
-        (server_endpoint, connection)
+        let connection = server.accept().await.unwrap().await.unwrap();
+        (server, connection)
     });
 
-    let client_connection = client_endpoint
+    let client_connection = client
         .connect(server_addr, "localhost")
         .unwrap()
         .await
         .unwrap();
-    let (server_endpoint, server_connection) = accepting.await.unwrap();
+    let (server, server_connection) = accepting.await.unwrap();
 
     Pair {
-        client: QuicSession::new(client_connection),
-        server: QuicSession::new(server_connection),
-        _client_endpoint: client_endpoint,
-        _server_endpoint: server_endpoint,
+        client: QuicSession::new_owned(client_connection, client),
+        server: QuicSession::new_owned(server_connection, server),
     }
 }
 
@@ -234,6 +241,90 @@ async fn closing_a_session_terminates_its_lanes() {
         .await
         .expect("opening on a closed session should not hang");
     assert!(opened.is_err(), "a closed session should not open a lane");
+}
+
+// What `new_owned` is and is not for.
+//
+// The review finding this answers said a session built inside a helper
+// that owned its endpoint would be dead on return, because dropping the
+// last `quinn::Endpoint` handle closes every connection made from it.
+// That is true of iroh, which is why `IrohTransport` holds an endpoint
+// clone — but it is **not** true of quinn. Its endpoint driver finishes
+// only when the handle count reaches zero *and* it has no connections
+// left (`EndpointDriver::poll` in quinn 0.11), so a live `Connection`
+// keeps the driver running on its own.
+//
+// So this test passes with or without `new_owned` retaining anything —
+// checked, by making `new_owned` drop the endpoint on the floor. It is
+// here to pin the quinn behaviour the API decision rests on, not as a
+// regression test, and it is named for what it actually asserts.
+// `new_owned` stays as a convenience that mirrors the iroh binding and
+// spares a caller the question.
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn a_quic_connection_survives_its_endpoint_handles() {
+    let (server, server_addr) = server_endpoint();
+
+    let accepting = tokio::spawn(async move {
+        let connection = server.accept().await.unwrap().await.unwrap();
+        QuicSession::<TestProtocol>::new_owned(connection, server)
+    });
+
+    // A helper that builds its own client and hands back a session. The
+    // endpoint goes out of scope on the way out.
+    async fn dial(addr: SocketAddr) -> QuicSession<TestProtocol> {
+        let endpoint = client_endpoint();
+        let connection =
+            endpoint.connect(addr, "localhost").unwrap().await.unwrap();
+        QuicSession::new_owned(connection, endpoint)
+    }
+
+    let session = dial(server_addr).await;
+    let served = accepting.await.unwrap();
+
+    let mut lane = session.open_lane().await.unwrap();
+    lane.send(frame(1, "still connected")).await.unwrap();
+
+    let mut served_lane = timeout(Duration::from_secs(5), served.accept_lane())
+        .await
+        .expect("the peer should still be reachable")
+        .unwrap();
+    assert_eq!(
+        served_lane.next().await.unwrap().unwrap().msg.as_str(),
+        "still connected"
+    );
+}
+
+// r[impl jetstream.session.lifetime]
+#[tokio::test]
+async fn dropping_the_last_session_handle_closes_the_connection() {
+    let pair = pair().await;
+
+    let mut lane = pair.client.open_lane().await.unwrap();
+    lane.send(frame(1, "hello")).await.unwrap();
+    let mut served = pair.server.accept_lane().await.unwrap();
+    assert_eq!(served.next().await.unwrap().unwrap().msg.as_str(), "hello");
+
+    // A clone is not the last handle, so the association survives it.
+    drop(pair.client.clone());
+    served.send(response(1, "still here")).await.unwrap();
+    assert_eq!(
+        lane.next().await.unwrap().unwrap().msg.as_str(),
+        "still here"
+    );
+
+    // The last one is. The lane is deliberately still alive: it holds
+    // streams opened from the connection.
+    let Pair { client, .. } = pair;
+    drop(client);
+
+    let ended = timeout(Duration::from_secs(5), lane.next())
+        .await
+        .expect("the lane should have terminated, not hung");
+    assert!(
+        matches!(ended, Some(Err(_))),
+        "a lane whose session was dropped should fail, got {ended:?}"
+    );
 }
 
 // r[impl jetstream.session.datagrams]
