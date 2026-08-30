@@ -20,7 +20,10 @@ use std::{
 
 use futures::{Sink, SinkExt, Stream, StreamExt};
 use iroh::{
-    endpoint::{Connection, ConnectionError, RecvStream, SendStream, VarInt},
+    endpoint::{
+        Connection, ConnectionError, RecvStream, SendDatagramError, SendStream,
+        VarInt,
+    },
     Endpoint,
 };
 use jetstream_rpc::{
@@ -41,7 +44,8 @@ const SESSION_CLOSED: u32 = 0;
 
 /// r[impl jetstream.session.lifetime]
 /// A connection error that means the session ended deliberately, rather
-/// than failed.
+/// than failed. Used everywhere a connection error crosses into
+/// `SessionError` — lanes and datagrams alike.
 ///
 /// `SessionError::Closed` is what a caller branches on to stop retrying,
 /// so mapping every `ConnectionError` to `Transport` told it that our
@@ -50,7 +54,7 @@ const SESSION_CLOSED: u32 = 0;
 /// the same, since `close` sends an application code. Everything else —
 /// a reset, an idle timeout, a protocol violation — really is a
 /// failure and keeps its own error.
-fn lane_error(err: ConnectionError) -> SessionError {
+fn connection_error(err: ConnectionError) -> SessionError {
     match err {
         ConnectionError::LocallyClosed
         | ConnectionError::ApplicationClosed(_) => SessionError::Closed,
@@ -214,8 +218,12 @@ where
     /// Every lane is its own QUIC stream, so one lane's stalled frame
     /// does not delay another's.
     async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
-        let streams =
-            self.inner.connection.open_bi().await.map_err(lane_error)?;
+        let streams = self
+            .inner
+            .connection
+            .open_bi()
+            .await
+            .map_err(connection_error)?;
 
         Ok(match &self.inner.endpoint {
             Some(endpoint) => IrohTransport::new_owned(
@@ -236,7 +244,7 @@ where
             .connection
             .accept_bi()
             .await
-            .map_err(lane_error)?;
+            .map_err(connection_error)?;
 
         Ok(IrohServiceLane {
             send_stream: FramedWrite::new(send_stream, ServerCodec::new()),
@@ -281,10 +289,17 @@ where
         &self,
         bytes: Bytes,
     ) -> Result<(), SessionError> {
-        self.inner
-            .connection
-            .send_datagram(bytes)
-            .map_err(|err| SessionError::Transport(err.into_error()))
+        self.inner.connection.send_datagram(bytes).map_err(|err| {
+            // r[impl jetstream.session.lifetime]
+            // A send that failed because the session ended says so, the
+            // same as a lane open does. The other variants — no peer
+            // support, disabled locally, too large — are the transport
+            // reporting on the datagram itself.
+            match err {
+                SendDatagramError::ConnectionLost(err) => connection_error(err),
+                other => SessionError::Transport(other.into_error()),
+            }
+        })
     }
 
     async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError> {
@@ -292,7 +307,7 @@ where
             .connection
             .read_datagram()
             .await
-            .map_err(|err| SessionError::Transport(err.into_error()))
+            .map_err(connection_error)
     }
 }
 
