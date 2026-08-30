@@ -110,8 +110,27 @@ where
     type ServiceLane = WebTransportServiceLane<P>;
 
     /// r[impl jetstream.session.capabilities]
+    /// r[impl jetstream.session.capabilities.degradation]
+    /// The conformance row says WebTransport carries datagrams, and
+    /// HTTP/3 does. **This session does not**: there is no
+    /// `Datagrams<P>` impl for it, so there is nothing to send or
+    /// receive one with.
+    ///
+    /// Reporting the row whole would be worse than the missing impl.
+    /// Code that names this type concretely fails to compile, which is
+    /// fine; code that asks `require(Capability::Datagrams)` — which is
+    /// the point of having capabilities at all — would be told yes and
+    /// then find no way to use the channel. A capability is what this
+    /// session has, not what its transport could do.
+    ///
+    /// Binding `h3-webtransport`'s datagram handles is the real fix and
+    /// belongs with making this type reachable from `H3Service` at all:
+    /// both need an h3 handshake harness the tree does not have.
     fn capabilities(&self) -> Capabilities {
-        Capabilities::webtransport()
+        Capabilities {
+            datagrams: false,
+            ..Capabilities::webtransport()
+        }
     }
 
     /// r[impl jetstream.session.identity]
