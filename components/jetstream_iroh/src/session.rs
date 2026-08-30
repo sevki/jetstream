@@ -20,7 +20,7 @@ use std::{
 
 use futures::{Sink, SinkExt, Stream, StreamExt};
 use iroh::{
-    endpoint::{Connection, RecvStream, SendStream, VarInt},
+    endpoint::{Connection, ConnectionError, RecvStream, SendStream, VarInt},
     Endpoint,
 };
 use jetstream_rpc::{
@@ -38,6 +38,25 @@ use crate::IrohTransport;
 
 /// The code an iroh connection is closed with when its session closes.
 const SESSION_CLOSED: u32 = 0;
+
+/// r[impl jetstream.session.lifetime]
+/// A connection error that means the session ended deliberately, rather
+/// than failed.
+///
+/// `SessionError::Closed` is what a caller branches on to stop retrying,
+/// so mapping every `ConnectionError` to `Transport` told it that our
+/// own `close` — and a peer's — was a transport fault. `LocallyClosed`
+/// is this end calling `close`; `ApplicationClosed` is the far end doing
+/// the same, since `close` sends an application code. Everything else —
+/// a reset, an idle timeout, a protocol violation — really is a
+/// failure and keeps its own error.
+fn lane_error(err: ConnectionError) -> SessionError {
+    match err {
+        ConnectionError::LocallyClosed
+        | ConnectionError::ApplicationClosed(_) => SessionError::Closed,
+        other => SessionError::Transport(other.into_error()),
+    }
+}
 
 /// What every handle on one session shares.
 ///
@@ -195,12 +214,8 @@ where
     /// Every lane is its own QUIC stream, so one lane's stalled frame
     /// does not delay another's.
     async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
-        let streams = self
-            .inner
-            .connection
-            .open_bi()
-            .await
-            .map_err(|err| SessionError::Transport(err.into_error()))?;
+        let streams =
+            self.inner.connection.open_bi().await.map_err(lane_error)?;
 
         Ok(match &self.inner.endpoint {
             Some(endpoint) => IrohTransport::new_owned(
@@ -221,7 +236,7 @@ where
             .connection
             .accept_bi()
             .await
-            .map_err(|err| SessionError::Transport(err.into_error()))?;
+            .map_err(lane_error)?;
 
         Ok(IrohServiceLane {
             send_stream: FramedWrite::new(send_stream, ServerCodec::new()),
