@@ -195,7 +195,7 @@ async fn a_session_whose_peer_refuses_datagrams_says_so() {
         .await
         .unwrap();
     let session = QuicSession::<TestProtocol>::new_owned(connection, client);
-    let _served = accepting.await.unwrap();
+    let served = accepting.await.unwrap();
 
     let caps = Session::<TestProtocol>::capabilities(&session);
     assert!(
@@ -214,6 +214,36 @@ async fn a_session_whose_peer_refuses_datagrams_says_so() {
     // The rest of the row is unaffected: this is still a QUIC session.
     assert_eq!(caps.lanes, LaneSupport::Many);
     assert_eq!(caps.identity, IdentityKind::Certificate);
+
+    // The other end is the half `max_datagram_size` cannot see. The
+    // server disabled datagrams *locally*, but that size is derived
+    // from the peer's advertised limit, so it still reports one — and
+    // quinn's own documentation for it claims otherwise, which is how
+    // this is easy to get wrong. Pinned here so the gap is visible
+    // rather than assumed away.
+    assert!(
+        served.connection().max_datagram_size().is_some(),
+        "quinn reports a size from the peer's advertisement alone"
+    );
+    let err = served
+        .send_request_datagram(frame(1, "cannot"))
+        .await
+        .expect_err("a locally disabled endpoint cannot send");
+    assert!(
+        format!("{err:?}").contains("disabled"),
+        "expected quinn's Disabled, got {err:?}"
+    );
+
+    // So the caller that disabled them says so, and both the capability
+    // and the size follow.
+    let served = served.without_datagrams();
+    let caps = Session::<TestProtocol>::capabilities(&served);
+    assert!(!caps.datagrams);
+    assert!(Datagrams::<TestProtocol>::max_datagram_size(&served).is_none());
+    assert!(matches!(
+        caps.require(Capability::Datagrams),
+        Err(SessionError::Unsupported(Capability::Datagrams))
+    ));
 }
 
 // r[impl jetstream.lane.independence]

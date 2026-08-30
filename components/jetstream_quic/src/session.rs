@@ -59,6 +59,10 @@ pub fn peer_from_connection(connection: &Connection) -> Option<Peer> {
 /// closes when the last clone goes away.
 pub struct QuicSession<P: Protocol> {
     inner: Arc<SessionInner>,
+    /// r[impl jetstream.session.capabilities]
+    /// Cleared by [`QuicSession::without_datagrams`]; see there for why
+    /// the connection cannot answer this by itself.
+    datagrams: bool,
     _p: PhantomData<fn() -> P>,
 }
 
@@ -95,6 +99,7 @@ impl<P: Protocol> Clone for QuicSession<P> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
+            datagrams: self.datagrams,
             _p: PhantomData,
         }
     }
@@ -120,6 +125,7 @@ impl<P: Protocol> QuicSession<P> {
                 connection,
                 endpoint: None,
             }),
+            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -138,6 +144,7 @@ impl<P: Protocol> QuicSession<P> {
                 connection,
                 endpoint: Some(endpoint),
             }),
+            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -150,6 +157,26 @@ impl<P: Protocol> QuicSession<P> {
     /// The endpoint this session keeps alive, if it was given one.
     pub fn endpoint(&self) -> Option<&Endpoint> {
         self.inner.endpoint.as_ref()
+    }
+
+    /// Report this session as carrying no datagrams.
+    ///
+    /// r[impl jetstream.session.capabilities]
+    /// [`Session::capabilities`] derives datagram support from
+    /// `Connection::max_datagram_size`, which reads the *peer's*
+    /// advertised limit and the path MTU. It is silent about this
+    /// endpoint's own configuration: a connection built with
+    /// `datagram_receive_buffer_size(None)` still reports a size, while
+    /// every send fails with `Disabled` and nothing can arrive.
+    ///
+    /// quinn 0.11 documents `max_size` as returning `None` when
+    /// datagrams are "disabled locally", and its implementation does
+    /// not check — so trusting the doc is how this goes wrong. quinn
+    /// exposes no way to read the setting back from a `Connection`, so
+    /// the caller that turned datagrams off says so here.
+    pub fn without_datagrams(mut self) -> Self {
+        self.datagrams = false;
+        self
     }
 }
 
@@ -174,7 +201,8 @@ where
     /// cannot carry one.
     fn capabilities(&self) -> Capabilities {
         Capabilities {
-            datagrams: self.inner.connection.max_datagram_size().is_some(),
+            datagrams: <Self as Datagrams<P>>::max_datagram_size(self)
+                .is_some(),
             ..Capabilities::quic()
         }
     }
@@ -245,6 +273,9 @@ where
     P::Response: 'static,
 {
     fn max_datagram_size(&self) -> Option<u32> {
+        if !self.datagrams {
+            return None;
+        }
         self.inner
             .connection
             .max_datagram_size()
