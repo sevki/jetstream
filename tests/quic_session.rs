@@ -322,7 +322,25 @@ async fn closing_a_session_terminates_its_lanes() {
     let mut served = pair.server.accept_lane().await.unwrap();
     assert_eq!(served.next().await.unwrap().unwrap().msg.as_str(), "hello");
 
+    // r[impl jetstream.session.lifetime]
+    // A datagram receive parked across the close ends the same way a
+    // lane does: the session closed, it did not fail.
+    let parked = {
+        let server = pair.server.clone();
+        tokio::spawn(async move { server.recv_datagram_bytes().await })
+    };
+    tokio::time::sleep(Duration::from_millis(50)).await;
+
     Session::<TestProtocol>::close(&pair.server).await;
+
+    let ended = timeout(Duration::from_secs(5), parked)
+        .await
+        .expect("a parked datagram receive should not hang")
+        .unwrap();
+    assert!(
+        matches!(ended, Err(SessionError::Closed)),
+        "a parked receive should report Closed, got {ended:?}"
+    );
 
     // The lane fails rather than hanging: a caller parked on a reply
     // gets an error, not silence.
