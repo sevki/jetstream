@@ -1196,7 +1196,27 @@ async fn closing_a_lane_stops_a_sender_already_handed_out() {
         .await
         .expect("a send on a closed lane must not hang")
         .expect_err("a send on a closed lane must fail");
-    assert!(matches!(err, SessionError::Closed));
+
+    // r[impl jetstream.session.lifetime]
+    // The *lane* closed, not the session. Reporting `Closed` here would
+    // tell a caller the association was over — a caller deciding
+    // whether to retry would stop — when another lane still opens.
+    assert!(
+        matches!(err, SessionError::LaneClosed),
+        "a lane-only close must not report the session closed, got {err:?}"
+    );
+    assert!(pair.client.open_lane().await.is_ok());
+
+    // ...and when the session really does close, it says so.
+    let lane = pair.client.open_lane().await.unwrap();
+    let sender = lane.ordered_sender().unwrap();
+    let ticket = sender.admit();
+    pair.client.close().await;
+    let err = timeout(Duration::from_secs(5), sender.deliver(ticket, frame(1)))
+        .await
+        .expect("a send on a closed session must not hang")
+        .expect_err("a send on a closed session must fail");
+    assert!(matches!(err, SessionError::Closed), "got {err:?}");
 }
 
 // Regression: `close` cancels and then empties the lane slots, so an
