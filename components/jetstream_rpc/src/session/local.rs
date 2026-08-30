@@ -281,6 +281,7 @@ where
             rx: responses_rx,
             order: LaneOrder::new(),
             cancel,
+            session: self.inner.cancel.clone(),
             lifetime,
             _p: PhantomData,
         })
@@ -336,8 +337,11 @@ pub struct LocalClientLane<P: Protocol> {
     rx: mpsc::Receiver<Frame<P::Response>>,
     order: LaneOrder,
     /// Shared with every [`OrderedSender`] this lane hands out, so they
-    /// observe the session's closure too.
+    /// observe closure too. Cancelled by closing this lane *or* the
+    /// session, since it is a child of `session`.
     cancel: CancellationToken,
+    /// The session's token, so a sender can say which of the two ended.
+    session: CancellationToken,
     lifetime: LaneLifetime,
     _p: PhantomData<fn() -> P>,
 }
@@ -357,6 +361,7 @@ impl<P: Protocol> LocalClientLane<P> {
             tx,
             order: self.order.clone(),
             cancel: self.cancel.clone(),
+            session: self.session.clone(),
         })
     }
 }
@@ -373,9 +378,19 @@ pub struct OrderedSender<P: Protocol> {
     order: LaneOrder,
     /// r[impl jetstream.session.lifetime]
     /// A sender outlives the lane value it was taken from, so it has to
-    /// observe the session's closure itself: otherwise closing a session
-    /// would leave behind a handle that could still reach the peer.
+    /// observe closure itself: otherwise closing a session would leave
+    /// behind a handle that could still reach the peer. This is the
+    /// *lane's* token, cancelled when either the lane or the session
+    /// closes — it is a child of the one below.
     cancel: CancellationToken,
+    /// r[impl jetstream.session.lifetime]
+    /// The session's own token, kept only to tell the two causes apart
+    /// when reporting. `SessionError::Closed` says the association is
+    /// over, which is what a caller decides to stop retrying on;
+    /// `LaneClosed` says this lane is done and another may still open.
+    /// Since the lane token is a child, cancellation alone cannot
+    /// distinguish them.
+    session: CancellationToken,
 }
 
 impl<P: Protocol> Clone for OrderedSender<P> {
@@ -383,6 +398,7 @@ impl<P: Protocol> Clone for OrderedSender<P> {
         Self {
             tx: self.tx.clone(),
             order: self.order.clone(),
+            session: self.session.clone(),
             cancel: self.cancel.clone(),
         }
     }
@@ -395,13 +411,27 @@ impl<P: Protocol> OrderedSender<P> {
     }
 
     /// Deliver `frame` when its ticket's turn comes.
+    /// Why this sender stopped: the session ending, or only its lane.
+    ///
+    /// r[impl jetstream.session.lifetime]
+    /// Closing a lane does not close its session, so a sender that
+    /// reported `Closed` for a lane-only close would tell a caller the
+    /// association was over when another lane could still be opened.
+    fn ended(&self) -> SessionError {
+        if self.session.is_cancelled() {
+            SessionError::Closed
+        } else {
+            SessionError::LaneClosed
+        }
+    }
+
     pub async fn deliver(
         &self,
         ticket: OrderTicket,
         frame: Frame<P::Request>,
     ) -> Result<(), SessionError> {
         if self.cancel.is_cancelled() {
-            return Err(SessionError::Closed);
+            return Err(self.ended());
         }
 
         // r[impl jetstream.session.lifetime]
@@ -413,7 +443,7 @@ impl<P: Protocol> OrderedSender<P> {
             pin_mut!(waiting);
             pin_mut!(closing);
             if matches!(select(waiting, closing).await, Either::Right(_)) {
-                return Err(SessionError::Closed);
+                return Err(self.ended());
             }
         }
 
@@ -422,7 +452,7 @@ impl<P: Protocol> OrderedSender<P> {
         // that the session outlived.
         if self.cancel.is_cancelled() {
             ticket.complete();
-            return Err(SessionError::Closed);
+            return Err(self.ended());
         }
 
         let result = {
@@ -440,7 +470,7 @@ impl<P: Protocol> OrderedSender<P> {
                     // The place still passes on: the lane is gone, but
                     // nothing may overtake what this ticket held.
                     ticket.complete();
-                    return Err(SessionError::Closed);
+                    return Err(self.ended());
                 }
             }
         };
