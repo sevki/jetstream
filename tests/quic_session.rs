@@ -236,9 +236,15 @@ async fn a_session_whose_peer_refuses_datagrams_says_so() {
 
     // So the caller that disabled them says so, and both the capability
     // and the size follow.
+    // The override is shared, so a clone taken *before* it follows too.
+    let earlier_clone = served.clone();
     let served = served.without_datagrams();
     let caps = Session::<TestProtocol>::capabilities(&served);
     assert!(!caps.datagrams);
+    assert!(
+        !Session::<TestProtocol>::capabilities(&earlier_clone).datagrams,
+        "a clone taken before the override must follow it"
+    );
     assert!(Datagrams::<TestProtocol>::max_datagram_size(&served).is_none());
     assert!(matches!(
         caps.require(Capability::Datagrams),
@@ -469,15 +475,22 @@ async fn an_oversized_datagram_is_rejected_at_the_sender() {
     let limit = Datagrams::<TestProtocol>::max_datagram_size(&pair.client)
         .expect("QUIC should report a datagram limit");
 
+    // Sized past anything QUIC can ever carry, rather than one byte over
+    // the limit read a moment ago. The limit is bounded by the path MTU
+    // and MTU discovery can raise it between the read and the send — the
+    // iroh copy of this test failed on Windows CI for exactly that.
     let too_big = Frame {
         tag: 1,
-        msg: Ask::of(limit as usize + 1),
+        msg: Ask::of(u16::MAX as usize),
     };
     assert!(WireFormat::byte_size(&too_big) > limit);
 
     match pair.client.send_request_datagram(too_big).await {
-        Err(SessionError::DatagramTooLarge { limit: got, .. }) => {
-            assert_eq!(got, limit)
+        Err(SessionError::DatagramTooLarge { size, limit: got }) => {
+            assert!(
+                size > got,
+                "the refusal should name a frame over the limit"
+            );
         }
         other => panic!("expected DatagramTooLarge, got {other:?}"),
     }

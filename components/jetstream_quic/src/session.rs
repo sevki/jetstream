@@ -8,7 +8,10 @@
 use std::{
     marker::PhantomData,
     pin::Pin,
-    sync::Arc,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
     task::{Context as TaskContext, Poll},
 };
 
@@ -59,10 +62,6 @@ pub fn peer_from_connection(connection: &Connection) -> Option<Peer> {
 /// closes when the last clone goes away.
 pub struct QuicSession<P: Protocol> {
     inner: Arc<SessionInner>,
-    /// r[impl jetstream.session.capabilities]
-    /// Cleared by [`QuicSession::without_datagrams`]; see there for why
-    /// the connection cannot answer this by itself.
-    datagrams: bool,
     _p: PhantomData<fn() -> P>,
 }
 
@@ -75,6 +74,12 @@ pub struct QuicSession<P: Protocol> {
 #[derive(Debug)]
 struct SessionInner {
     connection: Connection,
+    /// r[impl jetstream.session.capabilities]
+    /// Cleared by [`QuicSession::without_datagrams`]. Shared rather
+    /// than per-handle: whether this *connection* carries datagrams is
+    /// a property of the connection, so a clone taken before the
+    /// override must not go on claiming they work.
+    datagrams: AtomicBool,
     // Dropping the last `quinn::Endpoint` handle closes every
     // connection made from it, so a session built inside a helper that
     // owns the endpoint would be dead on return. Held here for the
@@ -99,7 +104,6 @@ impl<P: Protocol> Clone for QuicSession<P> {
     fn clone(&self) -> Self {
         Self {
             inner: self.inner.clone(),
-            datagrams: self.datagrams,
             _p: PhantomData,
         }
     }
@@ -124,8 +128,8 @@ impl<P: Protocol> QuicSession<P> {
             inner: Arc::new(SessionInner {
                 connection,
                 endpoint: None,
+                datagrams: AtomicBool::new(true),
             }),
-            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -143,8 +147,8 @@ impl<P: Protocol> QuicSession<P> {
             inner: Arc::new(SessionInner {
                 connection,
                 endpoint: Some(endpoint),
+                datagrams: AtomicBool::new(true),
             }),
-            datagrams: true,
             _p: PhantomData,
         }
     }
@@ -174,8 +178,13 @@ impl<P: Protocol> QuicSession<P> {
     /// not check — so trusting the doc is how this goes wrong. quinn
     /// exposes no way to read the setting back from a `Connection`, so
     /// the caller that turned datagrams off says so here.
-    pub fn without_datagrams(mut self) -> Self {
-        self.datagrams = false;
+    ///
+    /// The override is shared by every handle on this connection,
+    /// including clones taken before the call: a clone that went on
+    /// claiming datagrams work would recreate exactly the mismatch this
+    /// is here to prevent.
+    pub fn without_datagrams(self) -> Self {
+        self.inner.datagrams.store(false, Ordering::SeqCst);
         self
     }
 }
@@ -273,7 +282,7 @@ where
     P::Response: 'static,
 {
     fn max_datagram_size(&self) -> Option<u32> {
-        if !self.datagrams {
+        if !self.inner.datagrams.load(Ordering::SeqCst) {
             return None;
         }
         self.inner
