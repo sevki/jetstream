@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-1f36959c.js";
+            window.path_to_searchindex_js = "searchindex-d9a04e27.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-acae07fd.js"></script>
@@ -742,6 +742,12 @@ session.send_response_datagram(frame).await?;  // as the callee
 let frame: Frame&lt;MyRequest&gt; =
     decode_datagram(session.recv_datagram_bytes().await?)?;
 <span class="boring">}</span></code></pre>
+<p>A session that reports no datagram channel refuses traffic on it rather
+than leaving the check to the caller: both <code>send_datagram_bytes</code> and
+<code>recv_datagram_bytes</code> fail with <code>SessionError::Unsupported</code>. Receiving is
+the reason — awaiting a datagram on an endpoint whose receive buffer is
+switched off never yields, and parking forever is the one failure mode
+the degradation rule exists to prevent.</p>
 <p>A datagram carries a complete frame or it is discarded — there is nothing
 to reassemble it from, and trailing bytes after the frame mean it is not a
 complete frame either. <code>check_datagram_size</code> rejects a frame larger than
