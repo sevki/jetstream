@@ -329,3 +329,286 @@ async fn a_subscriber_that_stops_reading_does_not_stall_the_lane() {
         "the reason must name the cause: {message}"
     );
 }
+
+// ---------------------------------------------------------------------------
+// The server half, and then both halves against each other.
+
+/// A room that answers `Ask(n)` with `n` items and a terminator, and
+/// notices when the subscriber goes away.
+#[derive(Clone)]
+struct Room {
+    /// Set when the producer observed cancellation, which is what
+    /// `r[jetstream.subscription.cancel]` requires and what a `Sender`
+    /// alone could never provide.
+    stopped: std::sync::Arc<std::sync::atomic::AtomicBool>,
+}
+
+impl Protocol for Room {
+    type Error = Error;
+    type Request = Ask;
+    type Response = Say;
+
+    const NAME: &'static str = "room";
+    const VERSION: &'static str = "rs.jetstream.proto/room/0.0.0-test";
+}
+
+impl crate::server::Server for Room {
+    // r[impl jetstream.subscription.surface.declared]
+    fn is_streaming(message_type: u8) -> bool {
+        message_type == TASK
+    }
+
+    async fn rpc(
+        &mut self,
+        _ctx: Context,
+        _frame: Frame<Ask>,
+    ) -> Result<Frame<Say>, Error> {
+        Err(Error::new("this protocol has only a streaming method"))
+    }
+
+    async fn rpc_stream(
+        &mut self,
+        _ctx: Context,
+        frame: Frame<Ask>,
+        cancel: tokio_util::sync::CancellationToken,
+    ) -> crate::server::ResponseStream<Self> {
+        let Frame { tag, msg: Ask(n) } = frame;
+        let stopped = self.stopped.clone();
+        // Note the asymmetry with the trait's *default* body, which must
+        // be a bare `async move { .. }` block: `#[trait_variant::make]`
+        // rewrites the trait, not its implementations, so here an
+        // ordinary `async fn` body is exactly right.
+        Box::pin(async_stream_items(tag, n, cancel, stopped))
+    }
+}
+
+fn async_stream_items(
+    tag: u16,
+    n: u32,
+    cancel: tokio_util::sync::CancellationToken,
+    stopped: std::sync::Arc<std::sync::atomic::AtomicBool>,
+) -> impl Stream<Item = Result<Frame<Say>, Error>> + Send {
+    futures::stream::unfold(0u32, move |i| {
+        let cancel = cancel.clone();
+        let stopped = stopped.clone();
+        async move {
+            // r[impl jetstream.subscription.cancel]
+            // The producer watches for cancellation between items, which
+            // is the whole point of it being a parameter.
+            if cancel.is_cancelled() {
+                stopped.store(true, std::sync::atomic::Ordering::SeqCst);
+                return None;
+            }
+            if i < n {
+                Some((
+                    Ok(Frame {
+                        tag,
+                        msg: Say::Item(i),
+                    }),
+                    i + 1,
+                ))
+            } else if i == n {
+                Some((
+                    Ok(Frame {
+                        tag,
+                        msg: Say::Done,
+                    }),
+                    i + 1,
+                ))
+            } else {
+                None
+            }
+        }
+    })
+}
+
+/// r[impl jetstream.subscription.overview]
+/// The server half: one request in, many responses out, terminated.
+#[tokio::test]
+async fn a_service_serves_a_subscription() {
+    use crate::server::Server;
+
+    let mut room = Room {
+        stopped: Default::default(),
+    };
+    let cancel = tokio_util::sync::CancellationToken::new();
+    let items = room
+        .rpc_stream(
+            Context::default(),
+            Frame {
+                tag: 3,
+                msg: Ask(4),
+            },
+            cancel,
+        )
+        .await;
+
+    let got: Vec<Say> = items.map(|i| i.unwrap().msg).collect().await;
+    assert_eq!(
+        got,
+        vec![
+            Say::Item(0),
+            Say::Item(1),
+            Say::Item(2),
+            Say::Item(3),
+            Say::Done
+        ]
+    );
+}
+
+/// r[impl jetstream.subscription.cancel]
+/// Cancellation reaches the *work*, not just the delivery. This is the
+/// finding that a `Sender`-only producer surface could not satisfy: the
+/// room stops producing rather than producing into a void.
+#[tokio::test]
+async fn cancellation_reaches_the_producer() {
+    use crate::server::Server;
+
+    let mut room = Room {
+        stopped: Default::default(),
+    };
+    let stopped = room.stopped.clone();
+    let cancel = tokio_util::sync::CancellationToken::new();
+
+    let mut items = room
+        .rpc_stream(
+            Context::default(),
+            Frame {
+                tag: 1,
+                msg: Ask(1_000_000),
+            },
+            cancel.clone(),
+        )
+        .await;
+
+    assert_eq!(items.next().await.unwrap().unwrap().msg, Say::Item(0));
+    assert!(!stopped.load(std::sync::atomic::Ordering::SeqCst));
+
+    cancel.cancel();
+    assert!(
+        items.next().await.is_none(),
+        "a cancelled producer stops emitting"
+    );
+    assert!(
+        stopped.load(std::sync::atomic::Ordering::SeqCst),
+        "the producer must observe cancellation, not merely be ignored"
+    );
+}
+
+/// r[impl jetstream.subscription.compat.existing-clients]
+/// `is_streaming` defaults to false, so a protocol written before this
+/// existed routes every request to `rpc` exactly as it did.
+#[tokio::test]
+async fn a_protocol_without_streaming_methods_is_unchanged() {
+    assert!(!<Counting as crate::server::Server>::is_streaming(TASK));
+}
+
+impl crate::server::Server for Counting {
+    async fn rpc(
+        &mut self,
+        _ctx: Context,
+        frame: Frame<Ask>,
+    ) -> Result<Frame<Say>, Error> {
+        Ok(Frame {
+            tag: frame.tag,
+            msg: Say::Item(frame.msg.0),
+        })
+    }
+}
+
+/// The service side of a duplex, so `server::run` can be driven.
+struct ServiceSide {
+    tx: fmpsc::UnboundedSender<Result<Frame<Say>, Error>>,
+    rx: fmpsc::UnboundedReceiver<Result<Frame<Ask>, Error>>,
+}
+impl Sink<Frame<Say>> for ServiceSide {
+    type Error = Error;
+
+    fn poll_ready(
+        self: Pin<&mut Self>,
+        _cx: &mut Cx<'_>,
+    ) -> Poll<Result<(), Error>> {
+        Poll::Ready(Ok(()))
+    }
+
+    fn start_send(self: Pin<&mut Self>, item: Frame<Say>) -> Result<(), Error> {
+        self.tx
+            .unbounded_send(Ok(item))
+            .map_err(|e| Error::new(e.to_string()))
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        _cx: &mut Cx<'_>,
+    ) -> Poll<Result<(), Error>> {
+        Poll::Ready(Ok(()))
+    }
+
+    fn poll_close(
+        self: Pin<&mut Self>,
+        _cx: &mut Cx<'_>,
+    ) -> Poll<Result<(), Error>> {
+        Poll::Ready(Ok(()))
+    }
+}
+impl Stream for ServiceSide {
+    type Item = Result<Frame<Ask>, Error>;
+
+    fn poll_next(
+        mut self: Pin<&mut Self>,
+        cx: &mut Cx<'_>,
+    ) -> Poll<Option<Self::Item>> {
+        Pin::new(&mut self.rx).poll_next(cx)
+    }
+}
+impl crate::context::Contextual for ServiceSide {
+    fn context(&self) -> Context {
+        Context::default()
+    }
+}
+
+/// r[impl jetstream.subscription.surface.declared]
+/// The dispatcher routes on the declared message type. Without that
+/// routing every request goes to `rpc`, which this protocol answers with
+/// an error — so this test is what holds `run`'s streaming branch honest.
+#[tokio::test]
+async fn the_dispatcher_routes_a_streaming_request() {
+    let (to_service, service_rx) = fmpsc::unbounded();
+    let (service_tx, mut from_service) = fmpsc::unbounded();
+
+    tokio::spawn(async move {
+        let mut room = Room {
+            stopped: Default::default(),
+        };
+        let _ = crate::server::run(
+            &mut room,
+            ServiceSide {
+                tx: service_tx,
+                rx: service_rx,
+            },
+        )
+        .await;
+    });
+
+    to_service
+        .unbounded_send(Ok(Frame {
+            tag: 2,
+            msg: Ask(3),
+        }))
+        .unwrap();
+
+    let mut got = Vec::new();
+    while let Some(Ok(frame)) = from_service.next().await {
+        assert_eq!(frame.tag, 2, "every response shares the request's tag");
+        let done = frame.msg == Say::Done;
+        got.push(frame.msg);
+        if done {
+            break;
+        }
+    }
+    assert_eq!(
+        got,
+        vec![Say::Item(0), Say::Item(1), Say::Item(2), Say::Done],
+        "the streaming branch must serve many responses, not one error"
+    );
+}

@@ -1,14 +1,15 @@
 use std::{pin::pin, str::FromStr};
 
-use crate::{
-    context::{Context, Contextual},
-    Error, Frame, Protocol, Version,
-};
 use futures::{Sink, Stream};
 use jetstream_wireformat::WireFormat;
 use tokio_util::{
     bytes::{self, Buf, BufMut},
     codec::{Decoder, Encoder},
+};
+
+use crate::{
+    context::{Context, Contextual},
+    Error, Frame, Framer, Protocol, Version,
 };
 
 pub struct ServerCodec<P: Protocol> {
@@ -146,17 +147,98 @@ pub trait Server: Protocol + Send + Sync {
         context: Context,
         frame: Frame<Self::Request>,
     ) -> Result<Frame<Self::Response>, Self::Error>;
+
+    /// r[impl jetstream.subscription.surface.declared]
+    /// Whether a request of this message type opens a subscription. The
+    /// declaration is the protocol's, not the call site's, so the
+    /// dispatcher can route before it moves the frame.
+    ///
+    /// Defaults to "no streaming methods", which is every protocol
+    /// written before this existed.
+    fn is_streaming(_message_type: u8) -> bool {
+        false
+    }
+
+    /// r[impl jetstream.subscription.overview]
+    /// Serve a subscription: one request, many responses.
+    ///
+    /// r[impl jetstream.subscription.cancel]
+    /// `cancel` is how the producer learns the subscriber has gone.
+    /// Releasing only the delivery obligation is not enough — an
+    /// inference or a build must be able to stop, not merely stop being
+    /// listened to — so this is a parameter rather than something the
+    /// dispatcher keeps to itself.
+    ///
+    /// Failures travel as items, per `r[jetstream.subscription.termination]`,
+    /// which is also why the end can carry a value.
+    ///
+    /// r[impl jetstream.subscription.compat.rpc-layer]
+    /// Defaulted, so every existing `Server` implementation compiles
+    /// untouched: the breakage this change carries is on the client,
+    /// where `RpcCall` resolves to one frame.
+    async fn rpc_stream(
+        &mut self,
+        context: Context,
+        frame: Frame<Self::Request>,
+        cancel: tokio_util::sync::CancellationToken,
+    ) -> ResponseStream<Self>
+    where
+        // The served stream is boxed and owned, so what it carries must
+        // outlive the call that made it. Every real protocol's messages
+        // are owned values, so this costs nothing but has to be said —
+        // the same bound `Datagrams` needs, for the same reason.
+        Self::Response: 'static,
+        Self::Error: 'static,
+    {
+        let _ = (context, frame, cancel);
+        // A bare async block, not a normal body: `#[trait_variant::make]`
+        // rewrites `async fn` into `fn -> impl Future`, so the body must
+        // *be* the future. The two natural spellings fail with errors
+        // that point elsewhere entirely. An *implementation* of this
+        // method writes an ordinary body, since the macro rewrites the
+        // trait and not its impls.
+        async move { Box::pin(futures::stream::empty()) as ResponseStream<Self> }
+    }
 }
+
+/// The items a served subscription yields.
+pub type ResponseStream<P> = std::pin::Pin<
+    Box<
+        dyn futures::Stream<
+                Item = Result<
+                    Frame<<P as Protocol>::Response>,
+                    <P as Protocol>::Error,
+                >,
+            > + Send,
+    >,
+>;
 
 pub async fn run<T, P>(p: &mut P, mut stream: T) -> Result<(), P::Error>
 where
     T: ServiceTransport<P>,
     P: Server,
+    P::Response: 'static,
+    P::Error: 'static,
 {
     use futures::{SinkExt, StreamExt};
     let mut a = pin!(p);
     while let Some(Ok(frame)) = stream.next().await {
-        stream.send(a.rpc(stream.context(), frame).await?).await?
+        let context = stream.context();
+        // r[impl jetstream.subscription.surface.declared]
+        // Routed on the declared message type, before the frame moves.
+        if P::is_streaming(frame.msg.message_type()) {
+            // r[impl jetstream.subscription.cancel]
+            // The token the producer watches, cancelled when the served
+            // stream ends under it.
+            let cancel = tokio_util::sync::CancellationToken::new();
+            let mut items = a.rpc_stream(context, frame, cancel.clone()).await;
+            while let Some(item) = items.next().await {
+                stream.send(item?).await?;
+            }
+            cancel.cancel();
+        } else {
+            stream.send(a.rpc(context, frame).await?).await?
+        }
     }
     Ok(())
 }
