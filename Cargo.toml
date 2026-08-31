@@ -40,6 +40,15 @@ name = "iroh_echo"
 bench = false
 required-features = ["iroh"]
 
+[[example]]
+bench = false
+name = "session_lanes"
+
+[[example]]
+bench = false
+name = "quic_session"
+required-features = ["quic"]
+
 [[test]]
 bench = false
 name = "jetstream_wire_format"

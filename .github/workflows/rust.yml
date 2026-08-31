@@ -101,3 +101,7 @@ jobs:
         run: cargo run --example sqlite_mtls --features quic
       - name: Run example iroh_echo
         run: cargo run --example iroh_echo --features iroh
+      - name: Run example session_lanes
+        run: cargo run --example session_lanes
+      - name: Run example quic_session
+        run: cargo run --example quic_session --features quic
