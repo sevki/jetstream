@@ -285,6 +285,15 @@ This is a requirement on the surface, not on the caller: a subscription's termin
 r[jetstream.subscription.surface.termination]
 The three outcomes of `r[jetstream.subscription.termination]` — the producer finished, the producer failed, the subscription could not be resumed — MUST be distinguishable in the idiom, and a gap MUST NOT be presented as a normal end. In languages where iteration ends silently, the failure cases MUST surface through that language's error channel rather than as an absent item.
 
+r[jetstream.subscription.surface.establishment]
+Where a surface opens a subscription lazily, it MUST offer a way to establish it without consuming an item, and MUST state what that orders and what it does not.
+
+Deferring the open is legitimate, and for some languages it is what makes `r[jetstream.subscription.surface]` achievable at all: opening needs a tag and a request on the wire, both asynchronous, and the idiomatic sequence type is often obtained from a call that is not. Rust's is — `fn events(&self, ..) -> Subscription<Event, Closed>` — and deferring the open to the first read is what reconciles them.
+
+The cost is that "subscribe, then act, then read" acts before the subscription exists, and nothing in the caller's code says so. A surface that offers no way to establish leaves the caller to fabricate one by reading an item they may have to wait forever for. Establishment MUST therefore be available, and MUST be ordered against subsequent calls **on the same lane**, by `r[jetstream.lane.delivery-order]`.
+
+It MUST NOT be presented as ordering anything else. A subscription realised on its own lane, per `r[jetstream.subscription.realisation]`, is unordered against a call on another lane — `r[jetstream.lane.no-cross-lane-order]` — and no RPC layer can supply that order. An application that must not miss what happened between its request and its subscription says where to start, per `r[jetstream.subscription.resume]`, and its producer replays from there. This is the practical content of the cursor requirement in `r[jetstream.subscription.surface.producer]`: a producer that only forwards live events loses messages under a realisation the specification explicitly permits.
+
 r[jetstream.subscription.surface.producer]
 The producer surface MUST carry cancellation to the producer, and MUST admit a source driven by a cursor rather than only a live sender held in memory.
 
