@@ -139,7 +139,8 @@ connecting using only the <a href="type.EndpointId.html" title="type jetstream::
     <span class="kw">let </span>(<span class="kw-2">mut </span>send_stream, <span class="kw-2">mut </span>recv_stream) = conn.open_bi().<span class="kw">await</span>.std_context(<span class="string">"open bi"</span>)<span class="question-mark">?</span>;
     send_stream.write_all(<span class="string">b"hello"</span>).<span class="kw">await</span>.std_context(<span class="string">"write"</span>)<span class="question-mark">?</span>;
     send_stream.finish().std_context(<span class="string">"finish"</span>)<span class="question-mark">?</span>;
-    <span class="kw">let </span>_msg = recv_stream.read_to_end(<span class="number">10</span>).<span class="kw">await</span>.std_context(<span class="string">"read"</span>)<span class="question-mark">?</span>;
+    <span class="comment">// `read_to_end` waits until the peer finishes or closes its send side.
+    </span><span class="kw">let </span>_msg = recv_stream.read_to_end(<span class="number">10</span>).<span class="kw">await</span>.std_context(<span class="string">"read"</span>)<span class="question-mark">?</span>;
 
     <span class="comment">// Gracefully close the connection and endpoint.
     </span>conn.close(<span class="number">1u8</span>.into(), <span class="string">b"done"</span>);
@@ -169,7 +170,8 @@ connecting using only the <a href="type.EndpointId.html" title="type jetstream::
         </span>.context(<span class="string">"accept conn"</span>)<span class="question-mark">?</span>;
     <span class="kw">let </span>(<span class="kw-2">mut </span>send_stream, <span class="kw-2">mut </span>recv_stream) =
         conn.accept_bi().<span class="kw">await</span>.std_context(<span class="string">"accept stream"</span>)<span class="question-mark">?</span>;
-    <span class="kw">let </span>_msg = recv_stream.read_to_end(<span class="number">10</span>).<span class="kw">await</span>.std_context(<span class="string">"read"</span>)<span class="question-mark">?</span>;
+    <span class="comment">// `read_to_end` terminates once the client calls `finish` on its send stream.
+    </span><span class="kw">let </span>_msg = recv_stream.read_to_end(<span class="number">10</span>).<span class="kw">await</span>.std_context(<span class="string">"read"</span>)<span class="question-mark">?</span>;
     send_stream.write_all(<span class="string">b"world"</span>).<span class="kw">await</span>.std_context(<span class="string">"write"</span>)<span class="question-mark">?</span>;
     send_stream.finish().std_context(<span class="string">"finish"</span>)<span class="question-mark">?</span>;
 

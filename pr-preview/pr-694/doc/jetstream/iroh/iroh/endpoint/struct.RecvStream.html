@@ -44,7 +44,8 @@ closed.</p>
 chunk’s offset will be immediately after the last data yielded by <a href="struct.RecvStream.html#method.read" title="method jetstream::iroh::iroh::endpoint::RecvStream::read"><code>RecvStream::read</code></a> or
 <a href="struct.RecvStream.html#method.read_chunk" title="method jetstream::iroh::iroh::endpoint::RecvStream::read_chunk"><code>RecvStream::read_chunk</code></a>; use <a href="struct.RecvStream.html#method.bytes_read" title="method jetstream::iroh::iroh::endpoint::RecvStream::bytes_read"><code>bytes_read()</code></a> to query that offset
 explicitly.</p>
-<p>For unordered reads, convert the stream into an unordered stream using <a href="struct.RecvStream.html#method.into_unordered" title="method jetstream::iroh::iroh::endpoint::RecvStream::into_unordered"><code>Self::into_unordered</code></a>.</p>
+<p>For unordered reads, convert the stream into an unordered stream using
+<a href="struct.RecvStream.html#method.into_unordered" title="method jetstream::iroh::iroh::endpoint::RecvStream::into_unordered"><code>Self::into_unordered</code></a>.</p>
 <p>Slightly more efficient than <a href="struct.RecvStream.html#method.read" title="method jetstream::iroh::iroh::endpoint::RecvStream::read"><code>RecvStream::read</code></a> due to not copying. Chunk boundaries do
 not correspond to peer writes, and hence cannot be used as framing.</p>
 <p>This operation is cancel-safe.</p>
