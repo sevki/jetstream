@@ -141,7 +141,7 @@ r[jetstream.subscription.endpoint]
 A subscription names an **endpoint** within the peer, not merely the peer. A session is an association with a node; an application-level producer — a room, an object, a cell — is addressed within it. Establishing a session MUST NOT be required per endpoint: a subscriber attached to several endpoints on one peer MUST be able to do so over one session.
 
 r[jetstream.lane.addressing]
-An endpoint MUST be addressable on every session, whatever its lane support, and the mechanism MUST NOT be the one the application chooses between. Where a lane is dedicated to one endpoint, the lane MUST be able to carry that endpoint's identifier before any service frame, alongside the version negotiation that `r[jetstream.session.version-scope]` already scopes per lane. Where the lane is shared — always on `LaneSupport::One`, and whenever a `LaneSupport::Many` session tag-realises a subscription — the endpoint MUST instead be carried by the request that opens the subscription.
+An endpoint MUST be addressable on every session, whatever its lane support, and the mechanism MUST NOT be the one the application chooses between. The identifier MUST have a wire type this specification fixes rather than one each protocol invents, since codegen generates the client that carries it and cannot know an application's own naming: an opaque byte string, sized as the wire format's `Data` already is, with any structure being the application's to impose and no implementation's to interpret. Where a lane is dedicated to one endpoint, the lane MUST be able to carry that endpoint's identifier before any service frame, alongside the version negotiation that `r[jetstream.session.version-scope]` already scopes per lane. Where the lane is shared — always on `LaneSupport::One`, and whenever a `LaneSupport::Many` session tag-realises a subscription — the endpoint MUST instead be carried by the request that opens the subscription.
 
 Both are required, because `r[jetstream.subscription.realisation.opaque]` forbids the application from knowing which it got. A specification offering only the dedicated-lane form would make `r[jetstream.subscription.endpoint]` — one client, three rooms, one connection — unimplementable on exactly the transports that motivate it. Leaving either unspecified is what forces every transport binding and every application to invent its own convention.
 
@@ -234,11 +234,23 @@ A subscription MUST be presented as the target language's idiomatic asynchronous
 r[jetstream.subscription.surface.cancellation]
 Cancellation MUST be bound to the language's own cancellation mechanism, so that abandoning a subscription in the ordinary way of the language satisfies `r[jetstream.subscription.cancel]`. A subscription that leaks because the caller returned early, or that requires an explicit teardown call the language does not otherwise need, does not conform.
 
+r[jetstream.subscription.surface.terminal-value]
+Where `r[jetstream.subscription.termination]` gives the normal end a payload, the surface MUST be able to deliver it. A type that is only the language's stream of items cannot: Rust's `Stream` ends with `None`, and there is nowhere for a result to go. Writing the usage is what shows this — a `Subscription<Event>` offers no `result()` and cannot be given one without changing what the type is.
+
+An implementation MUST therefore either parameterise the subscription by its terminal type, or carry the end as a variant of what the sequence yields. Either is conforming; offering neither is not, and the choice is visible to callers so a target language states which it took.
+
+r[jetstream.subscription.surface.composition]
+Combining subscriptions MUST NOT erase which one ended, or what it ended with. The idiomatic merge in most languages — Rust's `select_all`, and its equivalents — yields items and silently drops a sequence when it finishes, so a caller merging several subscriptions can observe every item and no terminator. Use case 2 and use case 4 are each satisfiable alone and unsatisfiable together under such a merge.
+
+This is a requirement on the surface, not on the caller: a subscription's terminal value MUST survive whatever combinator the language offers for merging, which in practice means the end is a value in the sequence rather than the absence of one.
+
 r[jetstream.subscription.surface.termination]
 The three outcomes of `r[jetstream.subscription.termination]` — the producer finished, the producer failed, the subscription could not be resumed — MUST be distinguishable in the idiom, and a gap MUST NOT be presented as a normal end. In languages where iteration ends silently, the failure cases MUST surface through that language's error channel rather than as an absent item.
 
 r[jetstream.subscription.surface.producer]
-The producer surface MUST admit a source driven by a cursor, not only a live sender held in memory. A generated handler that can express a subscription *only* as "hold this sender and write to it" cannot satisfy `r[jetstream.subscription.detached.state]`, because the sender is precisely what eviction invalidates.
+The producer surface MUST carry cancellation to the producer, and MUST admit a source driven by a cursor rather than only a live sender held in memory.
+
+Cancellation first, because it is the one the usage exposes: `r[jetstream.subscription.cancel]` requires that stopping a subscription stops the work, and a surface that hands the producer only a way to *send* gives it no way to *learn*. A producer loop written against such a surface compiles, runs, and continues its inference or upload for as long as the process lives. Whatever the surface hands a producer MUST therefore expose cancellation — as a signal it can await, a flag it can test, or a send that fails once cancelled — and a target language states which. A generated handler that can express a subscription *only* as "hold this sender and write to it" cannot satisfy `r[jetstream.subscription.detached.state]`, because the sender is precisely what eviction invalidates.
 
 The remainder of this section is non-normative: a worked producer and consumer for the room of use case 1. `Seq` is the room's sequence number and `Event` its message type; both are ordinary generated wire types.
 
@@ -276,11 +288,13 @@ let room = RoomChannel::over(session.clone(), RoomId("room-42"));
 let mut events = room.events(Context::default(), Seq(412));
 
 while let Some(item) = events.next().await {
-    match item {
-        Ok(event) => render(event),
-        // The producer no longer holds seq 412 — r[jetstream.subscription.resume.gap].
-        Err(SubscriptionError::Gap { earliest }) => resync_from(earliest).await,
-        Err(err) => return Err(err),
+    match item? {
+        // The end is a value in the sequence, not the absence of one, so it
+        // survives `select_all` and can carry a result —
+        // r[jetstream.subscription.surface.terminal-value] and
+        // r[jetstream.subscription.surface.composition].
+        Item::Next(event) => render(event),
+        Item::Done(summary) => return Ok(summary),
     }
 }
 // Dropping `events` cancels — r[jetstream.subscription.surface.cancellation].
