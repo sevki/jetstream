@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c3f5b0a7.js";
+            window.path_to_searchindex_js = "searchindex-1a159e59.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1154eef0.js"></script>
+        <script src="toc-acae07fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -549,6 +549,16 @@ cargo run --example http --features quic
 <li>Launches Chrome with <code>--origin-to-force-quic-on</code> flag</li>
 <li>Provides instructions for importing certificates</li>
 </ol>
+<h2 id="sessions-and-lanes"><a class="header" href="#sessions-and-lanes">Sessions and Lanes</a></h2>
+<p><code>WebTransportSession</code> binds a WebTransport session to the
+<a href="sessions.html">session model</a> — a lane per bidirectional stream, with the
+client certificate for identity where one was presented.</p>
+<p>It reports no datagram capability. HTTP/3 carries datagrams, but this
+binding has no <code>Datagrams&lt;P&gt;</code> impl yet, and reporting a capability a
+caller then cannot use is worse than reporting its absence.</p>
+<p>The type is also not yet reachable from <code>H3Service</code>, which owns the HTTP/3
+connection and routes through its own handler; a caller running its own h3
+accept loop can use it today.</p>
 <h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
 <p>Add to your <code>Cargo.toml</code>:</p>
 <pre><code class="language-toml">[dependencies]

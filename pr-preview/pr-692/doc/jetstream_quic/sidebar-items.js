@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["Client","QuicRouter","QuicRouterHandler","QuicTransport","Server"],"trait":["QuicHandler"]};
+window.SIDEBAR_ITEMS = {"fn":["peer_from_connection"],"struct":["Client","QuicRouter","QuicRouterHandler","QuicServiceLane","QuicSession","QuicTransport","Server"],"trait":["QuicHandler"]};

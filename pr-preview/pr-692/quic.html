@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c3f5b0a7.js";
+            window.path_to_searchindex_js = "searchindex-1a159e59.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1154eef0.js"></script>
+        <script src="toc-acae07fd.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -458,6 +458,26 @@ if let Some(Peer::Tls(tls_peer)) = ctx.peer() {
     }
 }
 <span class="boring">}</span></code></pre>
+<h2 id="sessions-and-lanes"><a class="header" href="#sessions-and-lanes">Sessions and Lanes</a></h2>
+<p><code>QuicSession</code> binds a QUIC connection to the
+<a href="sessions.html">session model</a>: one lane per bidirectional stream, the
+connection’s datagram channel, and the peer’s certificate for identity.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_quic::QuicSession;
+use jetstream_rpc::session::Session;
+
+let session = QuicSession::&lt;EchoChannel&gt;::new(connection);
+
+// A lane per call instead of one stream multiplexed by tag.
+let lane = Session::&lt;EchoChannel&gt;::open_lane(&amp;session).await?;
+let channel = EchoChannel::new(4, Box::new(lane));
+<span class="boring">}</span></code></pre>
+<p>Use <code>QuicSession::new_owned(connection, endpoint)</code> when nothing else holds
+the endpoint: dropping the last handle on a quinn <code>Endpoint</code> closes every
+connection opened from it, so the session is the right owner.</p>
+<p>A worked example is in
+<a href="https://github.com/sevki/jetstream/blob/main/examples/quic_session.rs"><code>examples/quic_session.rs</code></a>.</p>
 <h2 id="dependencies"><a class="header" href="#dependencies">Dependencies</a></h2>
 <p>Add to your <code>Cargo.toml</code>:</p>
 <pre><code class="language-toml">[dependencies]
