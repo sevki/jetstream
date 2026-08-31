@@ -2,7 +2,7 @@ use std::future::Future;
 
 use futures::FutureExt;
 
-use crate::{Frame, Protocol};
+use crate::{Frame, Framer, Protocol};
 
 pub struct RpcCall<P: Protocol> {
     pub tag: u16,
@@ -76,6 +76,17 @@ pub struct RpcStream<P: Protocol> {
         jetstream_error::Result<Frame<P::Response>>,
     >,
     pub(crate) in_flight: crate::mux::InFlight<P>,
+    /// Where a dropped subscription's tag goes to be cancelled.
+    ///
+    /// A `u16` rather than a built request, because `Drop` is
+    /// synchronous: building the cancellation needs nothing async, but
+    /// *sending* it needs a tag of its own, and acquiring one may wait.
+    /// The `Mux`'s cancellation task does the waiting.
+    pub(crate) cancels: tokio::sync::mpsc::Sender<u16>,
+    /// Whether the terminator has already arrived. A subscription that
+    /// ended has nothing to cancel, and cancelling it anyway costs a tag
+    /// and a round trip on every completed subscription.
+    pub(crate) finished: bool,
 }
 
 impl<P: Protocol> futures::Stream for RpcStream<P> {
@@ -85,7 +96,20 @@ impl<P: Protocol> futures::Stream for RpcStream<P> {
         mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
-        self.items.poll_recv(cx)
+        let polled = self.items.poll_recv(cx);
+        // r[impl jetstream.subscription.termination]
+        if let std::task::Poll::Ready(end) = &polled {
+            self.finished = match end {
+                Some(Ok(frame)) => {
+                    frame.msg.message_type() == crate::subscription::RDONE
+                }
+                // An error item, or the channel closed under us: either
+                // way no terminator is coming and there is nothing left
+                // to cancel.
+                _ => true,
+            };
+        }
+        polled
     }
 }
 
@@ -105,6 +129,24 @@ impl<P: Protocol> Drop for RpcStream<P> {
             if let Some(slot) = map.get_mut(&self.tag) {
                 *slot = crate::mux::Waiter::Abandoned;
             }
+        }
+
+        // r[impl jetstream.subscription.surface.cancellation]
+        // r[impl jetstream.subscription.cancel]
+        // Marking the tag abandoned only stops *delivery*. The producer
+        // is still working, and cancellation is required to reach the
+        // work — so the drop a Rust caller uses to cancel has to send the
+        // cancellation, not merely stop reading. Without this the rule
+        // was unimplemented end to end: the service never heard.
+        if self.finished {
+            return;
+        }
+        if self.cancels.try_send(self.tag).is_err() {
+            // The client is shutting down, or more subscriptions were
+            // dropped at once than the queue holds. The producer learns
+            // when the lane closes, which is the same conclusion by a
+            // slower route.
+            tracing::debug!(tag = self.tag, "cancellation not queued");
         }
     }
 }

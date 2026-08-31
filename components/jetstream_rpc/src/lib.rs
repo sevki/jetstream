@@ -31,6 +31,8 @@ pub mod session;
 pub mod subscription;
 mod tag;
 mod version;
+use std::str::FromStr;
+
 pub use any_server::AnyServer;
 pub use call::*;
 pub use constants::*;
@@ -39,7 +41,6 @@ pub use jetstream_error::IntoError;
 use jetstream_wireformat::WireFormat;
 pub use mux::*;
 pub use router::*;
-use std::str::FromStr;
 pub use tag::*;
 pub use tokio_util::codec::{Decoder, Encoder, Framed};
 pub use version::*;
@@ -90,6 +91,26 @@ pub trait Protocol: Send + Sync {
     type Error: IntoError;
     const VERSION: &'static str;
     const NAME: &'static str;
+
+    /// r[impl jetstream.subscription.cancel]
+    /// The cancellation request for a subscription on this lane, if this
+    /// protocol has subscriptions to cancel.
+    ///
+    /// The client needs to *build* a request it cannot name: `Mux` is
+    /// generic over the protocol, and `subscription::Tcancel` is a
+    /// payload, not a `Request`. Only the protocol knows how one is
+    /// carried in its own request type, so it says here.
+    ///
+    /// r[impl jetstream.subscription.compat.rpc-layer]
+    /// Defaulted to `None` — a protocol with no streaming methods has
+    /// nothing to cancel, and every protocol written before this existed
+    /// compiles untouched.
+    ///
+    /// `binding` is zero on the subscription's own lane, where `oldtag`
+    /// is unambiguous; see `subscription::Tcancel`.
+    fn tcancel(_oldtag: u16, _binding: u64) -> Option<Self::Request> {
+        None
+    }
 }
 
 // const _: () = {

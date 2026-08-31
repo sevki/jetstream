@@ -159,6 +159,40 @@ pub trait Server: Protocol + Send + Sync {
         false
     }
 
+    /// r[impl jetstream.subscription.dispatch.declared]
+    /// r[impl jetstream.subscription.cancel]
+    /// Whether this request is a cancellation, and which subscription it
+    /// names. Cancellation travels as an ordinary request under a fresh
+    /// tag, so the dispatcher has to be told how to recognise one — the
+    /// message id is global, but decoding the payload is the protocol's.
+    ///
+    /// Defaulted to "this protocol has no cancellation", which is
+    /// correct for every protocol without subscriptions.
+    fn cancel_target(_frame: &Frame<Self::Request>) -> Option<u16> {
+        None
+    }
+
+    /// r[impl jetstream.subscription.dispatch.declared]
+    /// r[impl jetstream.subscription.cancel]
+    /// The acknowledgement for a cancelled subscription, sent under the
+    /// *cancellation's* tag once the subscription has stopped emitting.
+    fn cancel_ack(_oldtag: u16) -> Option<Self::Response> {
+        None
+    }
+
+    /// r[impl jetstream.subscription.dispatch.terminator]
+    /// r[impl jetstream.subscription.termination]
+    /// The terminator for a subscription that was cut short. A producer
+    /// stopped by cancellation returns from its stream without saying
+    /// anything, and a subscription that ends with no terminator leaves
+    /// the caller's tag in flight for the life of the lane — see
+    /// `r[jetstream.subscription.identity]` for why it cannot simply be
+    /// released. The dispatcher supplies one, and the protocol says what
+    /// value it has.
+    fn cancelled_terminator() -> Option<Self::Response> {
+        None
+    }
+
     /// r[impl jetstream.subscription.overview]
     /// Serve a subscription: one request, many responses.
     ///
@@ -213,7 +247,60 @@ pub type ResponseStream<P> = std::pin::Pin<
     >,
 >;
 
-pub async fn run<T, P>(p: &mut P, mut stream: T) -> Result<(), P::Error>
+/// One served subscription, tagged, and — unlike the stream it wraps —
+/// able to say that it *ended*.
+///
+/// r[impl jetstream.subscription.surface.composition]
+/// The same erasure the surface rule is about bites the dispatcher:
+/// `SelectAll` drops a finished stream silently, so a subscription that
+/// stopped would leave its tag open and its cancellation unacknowledged.
+/// The end is a value here for exactly the reason it is one for callers.
+struct Served<P: Protocol> {
+    tag: u16,
+    inner: Option<ResponseStream<P>>,
+}
+
+enum Out<P: Protocol> {
+    Item(u16, Result<Frame<P::Response>, P::Error>),
+    Ended(u16),
+}
+
+impl<P: Protocol> Stream for Served<P> {
+    type Item = Out<P>;
+
+    fn poll_next(
+        self: std::pin::Pin<&mut Self>,
+        cx: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Option<Self::Item>> {
+        use std::task::Poll;
+        let this = self.get_mut();
+        let tag = this.tag;
+        let Some(inner) = this.inner.as_mut() else {
+            return Poll::Ready(None);
+        };
+        match inner.as_mut().poll_next(cx) {
+            Poll::Ready(Some(item)) => Poll::Ready(Some(Out::Item(tag, item))),
+            Poll::Ready(None) => {
+                this.inner = None;
+                Poll::Ready(Some(Out::Ended(tag)))
+            }
+            Poll::Pending => Poll::Pending,
+        }
+    }
+}
+
+/// What the dispatcher remembers about a subscription it is serving.
+struct Open {
+    cancel: tokio_util::sync::CancellationToken,
+    /// Set when the producer emitted a terminator of its own, so the
+    /// dispatcher does not send a second one.
+    terminated: bool,
+    /// The tag of the cancellation waiting to be acknowledged, if one
+    /// arrived. The acknowledgement is owed *after* the last item.
+    ack_to: Option<u16>,
+}
+
+pub async fn run<T, P>(p: &mut P, transport: T) -> Result<(), P::Error>
 where
     T: ServiceTransport<P>,
     P: Server,
@@ -221,24 +308,116 @@ where
     P::Error: 'static,
 {
     use futures::{SinkExt, StreamExt};
+
+    // The context is the transport's, not the frame's: it describes the
+    // peer at the other end of this lane, which does not change between
+    // requests. Reading it once is what lets the transport be split.
+    let context = transport.context();
+
+    // r[impl jetstream.subscription.dispatch.concurrent]
+    // r[impl jetstream.subscription.definition]
+    // Split, because a subscription is one call among the lane's others.
+    // Serving one by looping on its items never polls the transport
+    // again, so an open subscription — the normal case, a room that
+    // stays open — took the lane with it: no second request served, and
+    // no cancellation could arrive, which made the cancellation rule
+    // unimplementable rather than merely unimplemented.
+    let (mut sink, mut source) = transport.split();
+    let mut active: futures::stream::SelectAll<Served<P>> =
+        futures::stream::SelectAll::new();
+    let mut open: std::collections::BTreeMap<u16, Open> =
+        std::collections::BTreeMap::new();
     let mut a = pin!(p);
-    while let Some(Ok(frame)) = stream.next().await {
-        let context = stream.context();
-        // r[impl jetstream.subscription.surface.declared]
-        // Routed on the declared message type, before the frame moves.
-        if P::is_streaming(frame.msg.message_type()) {
-            // r[impl jetstream.subscription.cancel]
-            // The token the producer watches, cancelled when the served
-            // stream ends under it.
-            let cancel = tokio_util::sync::CancellationToken::new();
-            let mut items = a.rpc_stream(context, frame, cancel.clone()).await;
-            while let Some(item) = items.next().await {
-                stream.send(item?).await?;
+
+    loop {
+        tokio::select! {
+            // Items first: a producer that is ready should not wait
+            // behind an inbound request.
+            biased;
+
+            Some(out) = active.next(), if !active.is_empty() => match out {
+                Out::Item(tag, item) => {
+                    let frame = item?;
+                    if frame.msg.message_type() == crate::subscription::RDONE {
+                        if let Some(o) = open.get_mut(&tag) {
+                            o.terminated = true;
+                        }
+                    }
+                    sink.send(frame).await?;
+                }
+                Out::Ended(tag) => {
+                    if let Some(o) = open.remove(&tag) {
+                        // r[impl jetstream.subscription.dispatch.terminator]
+                        if !o.terminated {
+                            if let Some(msg) = P::cancelled_terminator() {
+                                sink.send(Frame { tag, msg }).await?;
+                            }
+                        }
+                        // r[impl jetstream.subscription.cancel]
+                        // After every item already emitted, which is what
+                        // makes the tag safe to reuse.
+                        if let Some(ack_tag) = o.ack_to {
+                            if let Some(msg) = P::cancel_ack(tag) {
+                                sink.send(Frame { tag: ack_tag, msg }).await?;
+                            }
+                        }
+                    }
+                }
+            },
+
+            inbound = source.next() => {
+                let Some(Ok(frame)) = inbound else { break };
+
+                // r[impl jetstream.subscription.cancel]
+                if let Some(oldtag) = P::cancel_target(&frame) {
+                    match open.get_mut(&oldtag) {
+                        Some(o) => {
+                            o.ack_to = Some(frame.tag);
+                            o.cancel.cancel();
+                        }
+                        // Nothing by that tag: already finished, or never
+                        // existed. Acknowledge anyway — a cancellation
+                        // racing a terminator is normal, and the caller
+                        // is owed an answer either way.
+                        None => {
+                            if let Some(msg) = P::cancel_ack(oldtag) {
+                                sink.send(Frame { tag: frame.tag, msg })
+                                    .await?;
+                            }
+                        }
+                    }
+                    continue;
+                }
+
+                // r[impl jetstream.subscription.surface.declared]
+                // Routed on the declared message type, before the frame
+                // moves.
+                if P::is_streaming(frame.msg.message_type()) {
+                    let tag = frame.tag;
+                    // r[impl jetstream.subscription.cancel]
+                    // The token the producer watches.
+                    let cancel = tokio_util::sync::CancellationToken::new();
+                    let inner =
+                        a.rpc_stream(context.clone(), frame, cancel.clone())
+                            .await;
+                    open.insert(
+                        tag,
+                        Open { cancel, terminated: false, ack_to: None },
+                    );
+                    active.push(Served { tag, inner: Some(inner) });
+                } else {
+                    sink.send(a.rpc(context.clone(), frame).await?).await?
+                }
             }
-            cancel.cancel();
-        } else {
-            stream.send(a.rpc(context, frame).await?).await?
         }
+    }
+
+    // r[impl jetstream.subscription.cancel]
+    // The lane is gone, so every producer on it has lost its subscriber.
+    // Leaving the tokens uncancelled would leave the work running with
+    // nowhere to deliver — the very thing cancellation exists to stop.
+    for (_, o) in open {
+        o.cancel.cancel();
     }
     Ok(())
 }
