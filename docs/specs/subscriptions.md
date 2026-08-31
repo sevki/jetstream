@@ -83,7 +83,14 @@ A producer MUST NOT be *required* to open a lane, or to issue a request of its o
 ## Subscriptions
 
 r[jetstream.subscription.definition]
-A subscription is identified by the tag of the request that created it, on the lane that carried it. It MUST remain in flight, in the sense of `r[jetstream.lane.tag-mux]`, for as long as the producer may still emit items: its tag MUST NOT be reused until the subscription has terminated, and reuse after termination is subject to `r[jetstream.subscription.lossy.stale-item]` where the subscription was realised on datagrams. A subscription is therefore a long-lived call, not a sequence of short ones.
+A subscription is identified by the tag of the request that created it, **on the lane that carried it**. It MUST remain in flight, in the sense of `r[jetstream.lane.tag-mux]`, for as long as the producer may still emit items: its tag MUST NOT be reused until the subscription has terminated. A subscription is therefore a long-lived call, not a sequence of short ones.
+
+r[jetstream.subscription.identity]
+The tag alone does not identify a subscription within a session, and this document has repeatedly been written as though it did. Tags are allocated per lane, so two concurrent subscriptions on distinct lanes of one session may hold the same numeric tag; and a tag released at termination may be rebound while an item of the previous binding is still in flight on an unordered channel.
+
+Therefore: any mechanism that names a subscription from **outside its own lane** — the datagram channel, a cancellation not carried on that lane, any control path a future revision adds — MUST use a **binding identifier that is unique for the lifetime of the session and never reused**, not the tag and not an identifier recycled when a binding ends. A per-binding counter that only increases satisfies this; recycling does not, because `r[jetstream.session.datagrams]` gives no instant at which the transport is known to have drained, so "no longer live" is not a condition an implementation can test.
+
+Within its own lane a subscription needs nothing further: the tag is unambiguous there, and `r[jetstream.lane.delivery-order]` orders what the lane carries.
 
 r[jetstream.subscription.ordering]
 Items of one subscription MUST be delivered in the order the producer emitted them. This follows from `r[jetstream.lane.delivery-order]` when the subscription is realised on a lane, and MUST be preserved by any other realisation. There is no ordering between distinct subscriptions, whether or not they share a lane, a session, or a producer — `r[jetstream.lane.no-cross-lane-order]` applies unchanged. An application requiring two event streams to be mutually ordered MUST make them one subscription.
@@ -91,8 +98,10 @@ Items of one subscription MUST be delivered in the order the producer emitted th
 r[jetstream.subscription.termination]
 A subscription MUST end explicitly, and a normal end MUST be distinguishable from a failure. A producer that has no more items MUST say so rather than falling silent, and a subscriber MUST be able to tell "the room closed" from "the connection dropped" without inspecting the transport.
 
+A protocol MAY give the normal end a typed payload, and where the subscription reports on an operation it SHOULD: use case 4 is an upload or a build whose *result* is the point, and a silent end forces the result to be sent as a final item — which is then indistinguishable from a final item followed by a connection that dropped before the terminator. Carrying the result in the terminator makes completion and result arrive together or not at all. A surface offering only an item type therefore cannot serve that use case, and `r[jetstream.subscription.surface.termination]` requires the distinction to be visible in the idiom.
+
 r[jetstream.subscription.cancel]
-A subscriber MUST be able to cancel a subscription, and cancellation MUST release the producer's obligation to it. Cancellation is a request of its own, bearing a **fresh tag** and naming the subscription's tag in its payload, in the manner of 9P's `Tflush` — which carries `oldtag` for exactly this reason. It MUST NOT be sent under the subscription's own tag: that tag is in flight for the subscription's life, per `r[jetstream.subscription.definition]`, so a second call bearing it would put two calls under one correlation key, contrary to `r[jetstream.lane.tag-mux]`. `Tflush` exists in the 9P protocols only; the JetStream protocol space has no such message today.
+A subscriber MUST be able to cancel a subscription, and cancellation MUST release the producer's obligation to it. Cancellation is a request of its own, bearing a **fresh tag** and naming the subscription's tag in its payload, in the manner of 9P's `Tflush` — which carries `oldtag` for exactly this reason. It MUST either travel on the subscription's own lane, where the target tag is unambiguous, or name the subscription by the binding identifier of `r[jetstream.subscription.identity]`; naming a bare tag from another lane is not sufficient, since a concurrent subscription elsewhere on the session may hold the same one. It MUST NOT be sent under the subscription's own tag: that tag is in flight for the subscription's life, per `r[jetstream.subscription.definition]`, so a second call bearing it would put two calls under one correlation key, contrary to `r[jetstream.lane.tag-mux]`. `Tflush` exists in the 9P protocols only; the JetStream protocol space has no such message today.
 
 A fresh tag introduces a hazard of its own, and an implementation MUST NOT inherit it: cancellation MUST NOT depend on the ordinary tag pool. Long-lived subscriptions can occupy every allocatable tag, and a pool that makes an acquirer wait for a recycled one then deadlocks exactly when cancellation is most needed — the tag cannot be recycled until the subscription terminates, and the subscription cannot terminate without the cancellation. Control capacity MUST be reserved outside the pool, or the pool MUST admit a cancellation while saturated.
 
@@ -159,10 +168,11 @@ single session-wide queue whose frames carry no lane identity. A discriminator
 that merely changed on rebind would leave those two indistinguishable and
 deliver an item to the wrong stream.
 
-So a datagram realisation MUST carry a binding identifier that is unique across
-the session for as long as the binding is live — or equivalently, carry the
-originating lane's identity alongside the tag — and MUST discard an item whose
-identifier does not match the binding it would be delivered to. Withholding the
+So a datagram realisation MUST carry the binding identifier of
+`r[jetstream.subscription.identity]` — unique for the session's lifetime and
+never reused, which covers the concurrent case and the rebound one together —
+and MUST discard an item whose identifier does not match the binding it would be
+delivered to. Withholding the
 tag from the pool until no in-flight datagram can still bear it is not an
 alternative: no transport reports that instant, so the condition is not
 decidable.
