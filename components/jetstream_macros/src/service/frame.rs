@@ -4,7 +4,10 @@ use syn::Ident;
 
 use crate::utils::case_conversion::IdentCased;
 
-pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
+pub fn generate_tframe(
+    tmsgs: &[(Ident, TokenStream)],
+    has_subscriptions: bool,
+) -> TokenStream {
     let enum_name = quote! { Tmessage };
 
     let msg_variants = tmsgs.iter().map(|(ident, _p)| {
@@ -78,12 +81,39 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         TVERSION => Ok(#enum_name::Version(WireFormat::decode(reader)?)),
     };
 
+    // r[impl jetstream.subscription.dispatch.declared]
+    // Cancellation is an ordinary request under a fresh tag, naming its
+    // target in the payload. A protocol with no subscriptions has
+    // nothing to cancel and emits none of this.
+    let (
+        cancel_variant,
+        cancel_byte_size,
+        cancel_message_type,
+        cancel_encode,
+        cancel_decode,
+    ) = if has_subscriptions {
+        (
+            quote! {
+                Cancel(jetstream::prelude::subscription::Tcancel) = TCANCEL,
+            },
+            quote! { #enum_name::Cancel(c) => c.byte_size(), },
+            quote! { #enum_name::Cancel(_) => TCANCEL, },
+            quote! { #enum_name::Cancel(c) => c.encode(writer)?, },
+            quote! {
+                TCANCEL => Ok(#enum_name::Cancel(WireFormat::decode(reader)?)),
+            },
+        )
+    } else {
+        (quote! {}, quote! {}, quote! {}, quote! {}, quote! {})
+    };
+
     quote! {
         #[derive(Debug)]
         #[repr(u8)]
         pub enum #enum_name {
             #( #msg_variants )*
             #version_variant
+            #cancel_variant
         }
 
         impl Framer for #enum_name {
@@ -93,6 +123,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #cloned_byte_sizes,
                      )*
                     #version_byte_size,
+                    #cancel_byte_size
                 }
             }
 
@@ -102,6 +133,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #message_type_match_arms,
                      )*
                     #version_message_type,
+                    #cancel_message_type
                 }
             }
 
@@ -111,6 +143,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #encode_match_arms
                      )*
                     #version_encode
+                    #cancel_encode
                 }
                 Ok(())
             }
@@ -121,6 +154,7 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                         #decode_bodies
                      )*
                     #version_decode
+                    #cancel_decode
                     _ => Err(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
                         format!("unknown message type: {}", ty),
@@ -131,7 +165,10 @@ pub fn generate_tframe(tmsgs: &[(Ident, TokenStream)]) -> TokenStream {
     }
 }
 
-pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
+pub fn generate_rframe(
+    rmsgs: &[(Ident, TokenStream)],
+    has_subscriptions: bool,
+) -> TokenStream {
     let enum_name = quote! { Rmessage };
 
     // Generate regular message variants
@@ -241,6 +278,43 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
         #enum_name::Version(_) => RVERSION
     };
 
+    // r[impl jetstream.subscription.termination]
+    // r[impl jetstream.subscription.cancel]
+    // The terminator and the acknowledgement, both on global ids so a
+    // streaming method costs no per-method id.
+    let (
+        stream_variants,
+        stream_byte_size,
+        stream_message_type,
+        stream_encode,
+        stream_decode,
+    ) = if has_subscriptions {
+        (
+            quote! {
+                Done(Done) = RDONE,
+                CancelAck(jetstream::prelude::subscription::Rcancel) = RCANCEL,
+            },
+            quote! {
+                #enum_name::Done(d) => d.byte_size(),
+                #enum_name::CancelAck(a) => a.byte_size(),
+            },
+            quote! {
+                #enum_name::Done(_) => RDONE,
+                #enum_name::CancelAck(_) => RCANCEL,
+            },
+            quote! {
+                #enum_name::Done(d) => d.encode(writer)?,
+                #enum_name::CancelAck(a) => a.encode(writer)?,
+            },
+            quote! {
+                RDONE => Ok(#enum_name::Done(WireFormat::decode(reader)?)),
+                RCANCEL => Ok(#enum_name::CancelAck(WireFormat::decode(reader)?)),
+            },
+        )
+    } else {
+        (quote! {}, quote! {}, quote! {}, quote! {}, quote! {})
+    };
+
     quote! {
         #[derive(Debug)]
         #[repr(u8)]
@@ -248,6 +322,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
             #( #msg_variants )*
             #error_variant
             #rversion_variant
+            #stream_variants
         }
 
         impl Framer for #enum_name {
@@ -259,6 +334,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                      )*
                     #error_byte_size,
                     #rversion_byte_size,
+                    #stream_byte_size
                 }
             }
 
@@ -269,6 +345,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                      )*
                     #error_message_type,
                     #rversion_message_type,
+                    #stream_message_type
                 }
             }
 
@@ -279,6 +356,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                      )*
                     #error_encode
                     #rversion_encode
+                    #stream_encode
                 }
                 Ok(())
             }
@@ -290,6 +368,7 @@ pub fn generate_rframe(rmsgs: &[(Ident, TokenStream)]) -> TokenStream {
                      )*
                     #error_decode
                     #rversion_decode
+                    #stream_decode
                     _ => Err(std::io::Error::new(
                         std::io::ErrorKind::InvalidData,
                         format!("unknown message type: {}", ty),

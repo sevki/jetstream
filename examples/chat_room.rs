@@ -16,43 +16,22 @@
 //! * a subscription does not take the lane it is served on, so `post`
 //!   still works while every subscriber is listening.
 //!
-//! The protocol here is written by hand. `#[service]` will generate all
-//! of it — this is what it has to generate.
-//!
 //! ```console
 //! cargo run --example chat_room
 //! ```
 
-use std::{
-    io,
-    sync::{
-        atomic::{AtomicU64, AtomicUsize, Ordering::SeqCst},
-        Arc,
-    },
+use std::sync::{
+    atomic::{AtomicU64, AtomicUsize, Ordering::SeqCst},
+    Arc,
 };
 
 use futures::StreamExt;
 use jetstream::prelude::*;
-use jetstream_rpc::{
-    server::ResponseStream,
-    session::{LocalSession, Session},
-    subscription::{
-        self, CancellationToken, Rcancel, Tcancel, Terminator, RCANCEL, RDONE,
-        TCANCEL,
-    },
-    Mux,
-};
+use jetstream_macros::service;
+use jetstream_rpc::session::{LocalSession, Session};
 use tokio::sync::broadcast;
 
-// ---------------------------------------------------------------------------
-// The wire types. Two methods, so two request ids in the per-method
-// space: 102 + 2 * index. The terminator and the cancellation take the
-// global ids, which is what keeps that arithmetic intact.
-
-const TPOST: u8 = 102;
-const RPOST: u8 = 103;
-const TEVENTS: u8 = 104;
-const REVENT: u8 = 105;
+use crate::room_protocol::{RoomChannel, RoomService};
 
 #[derive(Debug, Clone, JetStreamWireFormat)]
 pub struct Event {
@@ -62,251 +41,119 @@ pub struct Event {
 }
 
 /// What the room says when a subscription ends normally. This is the
-/// value that has nowhere to live in a plain `Stream`.
+/// value a plain `Stream` has nowhere to put.
 #[derive(Debug, Clone, JetStreamWireFormat)]
 pub struct Closed {
     pub last_seq: u64,
 }
 
-#[derive(Debug, Clone, JetStreamWireFormat)]
-pub struct Post {
-    pub who: String,
-    pub body: String,
+#[service(uses(super::{Closed, Event}))]
+pub trait Room {
+    /// Unary, and unchanged by any of this.
+    async fn post(
+        &self,
+        ctx: Context,
+        who: String,
+        body: String,
+    ) -> Result<u64>;
+
+    /// Streaming: every event from `from` onwards, until the subscriber
+    /// leaves or the room closes.
+    #[subscription]
+    fn events(&self, ctx: Context, from: u64) -> Subscription<Event, Closed>;
 }
-
-#[derive(Debug)]
-pub enum Ask {
-    Post(Post),
-    Events(u64),
-    Cancel(Tcancel),
-}
-
-#[derive(Debug)]
-pub enum Say {
-    Posted(u64),
-    Event(Event),
-    Done(Terminator<Closed>),
-    Ack(Rcancel),
-}
-
-impl Framer for Ask {
-    fn message_type(&self) -> u8 {
-        match self {
-            Ask::Post(_) => TPOST,
-            Ask::Events(_) => TEVENTS,
-            Ask::Cancel(_) => TCANCEL,
-        }
-    }
-
-    fn byte_size(&self) -> u32 {
-        match self {
-            Ask::Post(p) => p.byte_size(),
-            Ask::Events(f) => f.byte_size(),
-            Ask::Cancel(c) => c.byte_size(),
-        }
-    }
-
-    fn encode<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        match self {
-            Ask::Post(p) => p.encode(w),
-            Ask::Events(f) => f.encode(w),
-            Ask::Cancel(c) => c.encode(w),
-        }
-    }
-
-    fn decode<R: io::Read>(r: &mut R, ty: u8) -> io::Result<Self> {
-        match ty {
-            TPOST => Ok(Ask::Post(WireFormat::decode(r)?)),
-            TEVENTS => Ok(Ask::Events(WireFormat::decode(r)?)),
-            TCANCEL => Ok(Ask::Cancel(WireFormat::decode(r)?)),
-            other => Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("unknown request type {other}"),
-            )),
-        }
-    }
-}
-
-impl Framer for Say {
-    fn message_type(&self) -> u8 {
-        match self {
-            Say::Posted(_) => RPOST,
-            Say::Event(_) => REVENT,
-            Say::Done(_) => RDONE,
-            Say::Ack(_) => RCANCEL,
-        }
-    }
-
-    fn byte_size(&self) -> u32 {
-        match self {
-            Say::Posted(s) => s.byte_size(),
-            Say::Event(e) => e.byte_size(),
-            Say::Done(d) => d.byte_size(),
-            Say::Ack(a) => a.byte_size(),
-        }
-    }
-
-    fn encode<W: io::Write>(&self, w: &mut W) -> io::Result<()> {
-        match self {
-            Say::Posted(s) => s.encode(w),
-            Say::Event(e) => e.encode(w),
-            Say::Done(d) => d.encode(w),
-            Say::Ack(a) => a.encode(w),
-        }
-    }
-
-    fn decode<R: io::Read>(r: &mut R, ty: u8) -> io::Result<Self> {
-        match ty {
-            RPOST => Ok(Say::Posted(WireFormat::decode(r)?)),
-            REVENT => Ok(Say::Event(WireFormat::decode(r)?)),
-            // The terminator's payload names its method, because `RDONE`
-            // is one global id and a decoder never sees the tag. With
-            // one subscription method there is nothing to tell apart
-            // yet; with two there would be.
-            RDONE => Ok(Say::Done(WireFormat::decode(r)?)),
-            RCANCEL => Ok(Say::Ack(WireFormat::decode(r)?)),
-            other => Err(io::Error::new(
-                io::ErrorKind::InvalidData,
-                format!("unknown response type {other}"),
-            )),
-        }
-    }
-}
-
-#[derive(Clone)]
-pub struct Room;
-
-impl Protocol for Room {
-    type Error = Error;
-    type Request = Ask;
-    type Response = Say;
-
-    const NAME: &'static str = "room";
-    const VERSION: &'static str = "rs.jetstream.proto/room/0.1.0";
-
-    fn tcancel(oldtag: u16, binding: u64) -> Option<Ask> {
-        Some(Ask::Cancel(Tcancel { oldtag, binding }))
-    }
-}
-
-// ---------------------------------------------------------------------------
-// The service.
 
 #[derive(Clone)]
 struct ChatRoom {
     events: broadcast::Sender<Event>,
+    /// Everything said so far.
+    ///
+    /// r[impl jetstream.subscription.surface.producer]
+    /// A producer driven by a *cursor*, not only by a live sender. This
+    /// is not decoration: a subscription opens on its own lane, and
+    /// `jetstream.lane.no-cross-lane-order` means it is unordered
+    /// against a `post` on another one. Without a log to replay from,
+    /// "subscribe, then post, then read" is a race that the in-process
+    /// session loses reliably — which is how this example found it.
+    log: Arc<std::sync::Mutex<Vec<Event>>>,
     seq: Arc<AtomicU64>,
     /// Cancelled when the room itself closes, which is the *other* way a
     /// subscription ends — and the one that carries a result.
-    closing: CancellationToken,
+    closing: subscription::CancellationToken,
     /// How many producers are alive. The example prints it to show that
     /// cancelling a subscription stops the work, rather than leaving it
     /// running with nowhere to deliver.
     producers: Arc<AtomicUsize>,
 }
 
-impl Protocol for ChatRoom {
-    type Error = Error;
-    type Request = Ask;
-    type Response = Say;
-
-    const NAME: &'static str = Room::NAME;
-    const VERSION: &'static str = Room::VERSION;
-
-    fn tcancel(oldtag: u16, binding: u64) -> Option<Ask> {
-        Room::tcancel(oldtag, binding)
-    }
-}
-
-impl Server for ChatRoom {
-    fn is_streaming(message_type: u8) -> bool {
-        message_type == TEVENTS
-    }
-
-    fn cancel_target(frame: &Frame<Ask>) -> Option<u16> {
-        match &frame.msg {
-            Ask::Cancel(c) => Some(c.oldtag),
-            _ => None,
-        }
-    }
-
-    fn cancel_ack(oldtag: u16) -> Option<Say> {
-        Some(Say::Ack(Rcancel { oldtag }))
-    }
-
-    fn cancelled_terminator(method: u8) -> Option<Say> {
-        // One streaming method, so `method` can only be `TEVENTS` — but
-        // the terminator names it, so a second one would decode
-        // correctly without touching this.
-        Some(Say::Done(Terminator {
-            method,
-            value: Closed { last_seq: 0 },
-        }))
-    }
-
-    async fn rpc(
-        &mut self,
+impl Room for ChatRoom {
+    async fn post(
+        &self,
         _ctx: Context,
-        frame: Frame<Ask>,
-    ) -> std::result::Result<Frame<Say>, Error> {
-        match frame.msg {
-            Ask::Post(post) => {
-                let seq = self.seq.fetch_add(1, SeqCst) + 1;
-                // A subscriber that has gone is not an error here: the
-                // room does not know or care who is listening.
-                let _ = self.events.send(Event {
-                    seq,
-                    who: post.who,
-                    body: post.body,
-                });
-                Ok(Frame {
-                    tag: frame.tag,
-                    msg: Say::Posted(seq),
-                })
-            }
-            other => Err(Error::new(format!("not a unary method: {other:?}"))),
-        }
+        who: String,
+        body: String,
+    ) -> Result<u64> {
+        let seq = self.seq.fetch_add(1, SeqCst) + 1;
+        let event = Event { seq, who, body };
+        self.log.lock().unwrap().push(event.clone());
+        // Nobody listening is not an error: the room does not know or
+        // care who is.
+        let _ = self.events.send(event);
+        Ok(seq)
     }
 
-    async fn rpc_stream(
-        &mut self,
-        _ctx: Context,
-        frame: Frame<Ask>,
-        cancel: CancellationToken,
-    ) -> ResponseStream<Self> {
-        let tag = frame.tag;
-        let from = match frame.msg {
-            Ask::Events(from) => from,
-            _ => 0,
-        };
-
-        // The producer's end. It can send *and* learn that its
-        // subscriber has gone — the half a bare `Sender` cannot do.
-        let (producer, items) =
-            subscription::channel::<Event, Closed>(64, cancel);
-        let stop = producer.cancellation();
+    fn events(&self, _ctx: Context, from: u64) -> Subscription<Event, Closed> {
+        // Subscribe to the live feed *before* reading the log, so
+        // nothing said in between is missed. Anything the replay
+        // already covered is skipped by sequence below.
         let mut feed = self.events.subscribe();
+        let backlog: Vec<Event> = self
+            .log
+            .lock()
+            .unwrap()
+            .iter()
+            .filter(|e| e.seq >= from)
+            .cloned()
+            .collect();
         let seq = self.seq.clone();
         let closing = self.closing.clone();
         let producers = self.producers.clone();
-        producers.fetch_add(1, SeqCst);
 
-        tokio::spawn(async move {
+        // The producer can send *and* learn that its subscriber has
+        // gone — the half a bare `Sender` cannot do.
+        Subscription::producing(64, move |producer| async move {
+            producers.fetch_add(1, SeqCst);
+            let mut sent_through = from.saturating_sub(1);
+            for event in backlog {
+                sent_through = event.seq;
+                if producer.send(event).await.is_err() {
+                    producers.fetch_sub(1, SeqCst);
+                    return;
+                }
+            }
             let ending = loop {
                 tokio::select! {
-                    // The subscriber went away. Stop the work; there is
-                    // no result to report to someone who is not there.
-                    _ = stop.cancelled() => break None,
-                    // The room closed. That *is* a result.
-                    _ = closing.cancelled() => {
-                        break Some(Closed { last_seq: seq.load(SeqCst) });
-                    }
+                    // Biased, and in this order, because
+                    // r[jetstream.subscription.cancel] puts the
+                    // terminator *after* every item already emitted.
+                    // Left to chance, a subscriber can miss the last
+                    // message because the room closed in the same
+                    // instant — which is what happened before this line
+                    // was here.
+                    biased;
+
+                    // The subscriber left. Stop the work; there is no
+                    // result to report to someone who is not there, and
+                    // nothing to drain for them either.
+                    _ = producer.cancelled() => break None,
                     got = feed.recv() => match got {
                         Ok(event) => {
-                            if event.seq >= from
-                                && producer.send(event).await.is_err()
-                            {
-                                break None;
+                            // Skip what the replay already covered.
+                            if event.seq > sent_through {
+                                sent_through = event.seq;
+                                if producer.send(event).await.is_err() {
+                                    break None;
+                                }
                             }
                         }
                         Err(broadcast::error::RecvError::Lagged(_)) => continue,
@@ -314,142 +161,52 @@ impl Server for ChatRoom {
                             break Some(Closed { last_seq: seq.load(SeqCst) })
                         }
                     },
+                    // The room closed. That *is* a result — and it is
+                    // reached only once the feed has nothing left.
+                    _ = closing.cancelled() => {
+                        break Some(Closed { last_seq: seq.load(SeqCst) });
+                    }
                 }
             };
             if let Some(closed) = ending {
                 producer.finish(closed).await;
             }
             producers.fetch_sub(1, SeqCst);
-        });
-
-        items.into_frames::<Self, _>(tag, move |item| match item {
-            subscription::Item::Next(event) => Say::Event(event),
-            subscription::Item::Done(closed) => Say::Done(Terminator {
-                method: TEVENTS,
-                value: closed,
-            }),
         })
     }
 }
 
-// ---------------------------------------------------------------------------
-// The client.
-
-/// Built over the **session**, not over a lane — a channel handed one
+/// Built over the **session**, not over a lane: a channel handed one
 /// transport can only tag-multiplex, which would make the caller's
 /// construction the realisation choice.
-struct RoomChannel {
-    session: LocalSession<Room>,
-    endpoint: Endpoint,
-    /// Shared, so a subscription can be opened on the same lane the
-    /// unary calls use — which is the arrangement that actually
-    /// exercises `jetstream.subscription.dispatch.concurrent`.
-    unary: std::sync::Arc<Mux<Room>>,
+///
+/// On this session — `LaneSupport::Many` — every subscription gets a
+/// lane of its own, for independent flow control. On a session with one
+/// lane the same code tag-multiplexes, and the caller's types do not
+/// change. That is `jetstream.subscription.realisation.opaque`.
+struct RoomOn {
+    session: LocalSession<RoomChannel>,
+    endpoint: subscription::Endpoint,
 }
 
-impl RoomChannel {
-    async fn over(
-        session: LocalSession<Room>,
-        endpoint: Endpoint,
-    ) -> std::result::Result<Self, Box<dyn std::error::Error>> {
-        let lane = Session::<Room>::open_lane(&session).await?;
-        Ok(RoomChannel {
-            session,
-            endpoint,
-            unary: std::sync::Arc::new(Mux::new(64, Box::new(lane))),
-        })
-    }
-
-    async fn post(
-        &self,
-        who: &str,
-        body: &str,
-    ) -> std::result::Result<u64, Error> {
-        let answer = self
-            .unary
-            .rpc(
-                Context::default(),
-                Ask::Post(Post {
-                    who: who.to_string(),
-                    body: body.to_string(),
-                }),
-            )
+impl RoomOn {
+    async fn lane(&self) -> Result<RoomChannel> {
+        let lane = Session::<RoomChannel>::open_lane(&self.session)
             .await
-            .await?;
-        match answer.msg {
-            Say::Posted(seq) => Ok(seq),
-            other => Err(Error::new(format!("unexpected answer: {other:?}"))),
-        }
-    }
-
-    /// A subscription on a lane of its own, because this session has
-    /// many — the choice `Capability::ManyLanes` licenses and that the
-    /// caller never sees. On a session with one lane this would be a tag
-    /// on the shared one, and the type below would be the same.
-    async fn events(
-        &self,
-        from: u64,
-    ) -> std::result::Result<
-        Subscription<Event, Closed>,
-        Box<dyn std::error::Error>,
-    > {
-        let lane = Session::<Room>::open_lane(&self.session).await?;
-        Ok(Self::events_on(
-            std::sync::Arc::new(Mux::<Room>::new(64, Box::new(lane))),
-            from,
-        )
-        .await)
-    }
-
-    /// A subscription on the multiplexer the caller already holds — that
-    /// is, **sharing a lane with its other calls**.
-    ///
-    /// This exists because the example was not demonstrating what it
-    /// claimed. Every subscription opened its own lane and `post` used
-    /// another, so `posted #1` proved only that a second lane works:
-    /// reverting the dispatcher fix would have printed it just the same,
-    /// with each subscription lane occupied forever and the unary lane
-    /// answering normally. Sharing a lane is the case
-    /// `jetstream.subscription.dispatch.concurrent` is actually about.
-    /// A subscription sharing the lane this channel's `post` uses.
-    async fn events_here(&self, from: u64) -> Subscription<Event, Closed> {
-        Self::events_on(self.unary.clone(), from).await
-    }
-
-    async fn events_on(
-        mux: std::sync::Arc<Mux<Room>>,
-        from: u64,
-    ) -> Subscription<Event, Closed> {
-        let frames = mux
-            .rpc_stream(Context::default(), Ask::Events(from), 64)
-            .await;
-        Subscription::from_frames(frames, move |frame| {
-            // The lane's multiplexer has to outlive the subscription
-            // reading through it, so it rides along in this closure.
-            let _ = &mux;
-            match frame.msg {
-                Say::Event(event) => Ok(Item::Next(event)),
-                Say::Done(done) => Ok(Item::Done(done.value)),
-                other => Err(Error::new(format!("unexpected item: {other:?}"))),
-            }
-        })
-    }
-
-    fn endpoint(&self) -> &Endpoint {
-        &self.endpoint
+            .map_err(|e| Error::new(e.to_string()))?;
+        Ok(RoomChannel::new(64, Box::new(lane)))
     }
 }
-
-// ---------------------------------------------------------------------------
 
 #[tokio::main]
-async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
-    let pair = LocalSession::<Room>::pair();
+async fn main() -> Result<()> {
+    let pair = LocalSession::<RoomChannel>::pair();
 
     let room = ChatRoom {
         events: broadcast::channel(256).0,
+        log: Arc::new(std::sync::Mutex::new(Vec::new())),
         seq: Arc::new(AtomicU64::new(0)),
-        closing: CancellationToken::new(),
+        closing: subscription::CancellationToken::new(),
         producers: Arc::new(AtomicUsize::new(0)),
     };
     let producers = room.producers.clone();
@@ -460,43 +217,40 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     let serving = {
         let server = pair.server.clone();
         tokio::spawn(async move {
-            while let Ok(lane) = Session::<Room>::accept_lane(&server).await {
-                let mut room = room.clone();
+            while let Ok(lane) =
+                Session::<RoomChannel>::accept_lane(&server).await
+            {
+                let inner = room.clone();
                 tokio::spawn(async move {
-                    let _ = jetstream_rpc::server::run(&mut room, lane).await;
+                    let mut service = RoomService { inner };
+                    let _ =
+                        jetstream_rpc::server::run(&mut service, lane).await;
                 });
             }
         })
     };
 
-    let channel =
-        RoomChannel::over(pair.client.clone(), Endpoint::from("room-42"))
-            .await?;
-    println!(
-        "joined {}",
-        String::from_utf8_lossy(channel.endpoint().as_bytes())
-    );
+    let on = RoomOn {
+        session: pair.client.clone(),
+        endpoint: subscription::Endpoint::from("room-42"),
+    };
+    println!("joined {}", String::from_utf8_lossy(on.endpoint.as_bytes()));
 
-    // Ada subscribes on the **same lane** the posts below go out on.
-    // With each subscription on its own lane, `posted #1` would print
-    // even with the dispatcher serving a subscription to exhaustion —
-    // the subscription lane would hang and the unary lane would answer
-    // regardless, which is what made the earlier version of this example
-    // decorative on its central claim.
-    let mut ada = channel.events_here(0).await;
-    // Grace gets a lane of her own, which is the other realisation.
-    let mut grace = channel.events(0).await?;
-    let leaving = channel.events(0).await?;
-    settle().await;
-    println!("producers alive: {}", producers.load(SeqCst));
+    let poster = on.lane().await?;
+    // Two subscribers, and a third that leaves early.
+    let mut ada = on.lane().await?.events(Context::default(), 0);
+    let mut grace = on.lane().await?.events(Context::default(), 0);
+    let leaving = on.lane().await?.events(Context::default(), 0);
 
-    // A subscription is one call among the lane's others. This used to
-    // hang: the dispatcher served a subscription by consuming it, and
-    // never read the lane again.
-    let seq = channel.post("ada", "is anyone there?").await?;
+    // Nothing has opened yet: a subscription opens when it is first
+    // polled. Reading one event from each is what puts them on the wire.
+    let seq = poster
+        .post(Context::default(), "ada".into(), "is anyone there?".into())
+        .await?;
     println!("posted #{seq}");
 
-    for who in [&mut ada, &mut grace] {
+    let mut leaving = leaving;
+    for who in [&mut ada, &mut grace, &mut leaving] {
         match who.next().await.expect("an event")? {
             Item::Next(event) => {
                 println!("  heard: {} says {}", event.who, event.body)
@@ -504,6 +258,8 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
             Item::Done(_) => panic!("not yet"),
         }
     }
+    settle().await;
+    println!("producers alive: {}", producers.load(SeqCst));
 
     // Dropping a subscription cancels it, and cancelling reaches the
     // work: the producer behind it stops, rather than carrying on with
@@ -512,9 +268,12 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     settle().await;
     println!("producers alive after one left: {}", producers.load(SeqCst));
 
-    // Closing the room ends every subscription with a *result*. This is
-    // the value a plain `Stream` has nowhere to put.
-    channel.post("grace", "here").await?;
+    // A subscription is one call among the lane's others, so posting
+    // works while every subscriber is listening.
+    poster
+        .post(Context::default(), "grace".into(), "here".into())
+        .await?;
+    // Closing the room ends every subscription with a *result*.
     closing.cancel();
 
     // Fan-in: merged, and still able to say which subscription ended and
@@ -522,19 +281,16 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // event and no ending at all.
     let mut merged = subscription::merge([("ada", ada), ("grace", grace)]);
     while let Some(next) = merged.next().await {
-        match next {
-            (who, Ok(Item::Next(event))) => {
+        match next? {
+            (who, Item::Next(event)) => {
                 println!("  {who} heard: {} says {}", event.who, event.body)
             }
-            (who, Ok(Item::Done(closed))) => {
+            (who, Item::Done(closed)) => {
                 println!(
                     "  {who}'s subscription closed at #{}",
                     closed.last_seq
                 )
             }
-            // The key survives a failure too, so a fan-in can say which
-            // room went away rather than only that one did.
-            (who, Err(e)) => println!("  {who} failed: {e}"),
         }
     }
 

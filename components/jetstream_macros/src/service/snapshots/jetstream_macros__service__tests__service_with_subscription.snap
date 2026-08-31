@@ -1,0 +1,481 @@
+---
+source: components/jetstream_macros/src/service/tests.rs
+expression: output_str
+---
+pub mod room_protocol {
+    use jetstream::prelude::*;
+    use std::mem;
+    use super::Room;
+    const MESSAGE_ID_START: u8 = 102;
+    /// Error response message type constant
+    pub const RERROR: u8 = jetstream::prelude::RJETSTREAMERROR;
+    /// Version request message type constant
+    pub const TVERSION: u8 = jetstream::prelude::TVERSION;
+    /// Version response message type constant
+    pub const RVERSION: u8 = jetstream::prelude::RVERSION;
+    /// Protocol name — used for routing
+    pub const PROTOCOL_NAME: &str = "room";
+    /// Protocol version string constructed from the generated crate's version
+    pub const PROTOCOL_VERSION: &str = concat!(
+        "rs.jetstream.proto/", "room", "/", env!("CARGO_PKG_VERSION_MAJOR"), ".",
+        env!("CARGO_PKG_VERSION_MINOR"), ".", env!("CARGO_PKG_VERSION_PATCH"), "+",
+        "6a26a299"
+    );
+    const DIGEST: &str = "DIGEST_HASH";
+    /// r[impl jetstream.subscription.compat]
+    /// The terminator and cancellation take global ids below
+    /// `MESSAGE_ID_START`, so a streaming method costs no
+    /// per-method id and `102 + 2 * index` is untouched.
+    pub const RDONE: u8 = jetstream::prelude::subscription::RDONE;
+    pub const TCANCEL: u8 = jetstream::prelude::subscription::TCANCEL;
+    pub const RCANCEL: u8 = jetstream::prelude::subscription::RCANCEL;
+    pub const TPOST: u8 = MESSAGE_ID_START + 0u8;
+    pub const RPOST: u8 = MESSAGE_ID_START + 0u8 + 1;
+    pub const TEVENTS: u8 = MESSAGE_ID_START + 2u8;
+    pub const REVENTS: u8 = MESSAGE_ID_START + 2u8 + 1;
+    #[allow(non_camel_case_types)]
+    #[derive(Debug, JetStreamWireFormat)]
+    pub struct Tpost {
+        pub body: String,
+    }
+    #[allow(non_camel_case_types)]
+    #[derive(Debug, JetStreamWireFormat)]
+    pub struct Tevents {
+        pub from: u64,
+    }
+    #[allow(non_camel_case_types)]
+    #[derive(Debug, JetStreamWireFormat)]
+    pub struct Rpost(pub u64);
+    #[allow(non_camel_case_types)]
+    #[derive(Debug, JetStreamWireFormat)]
+    pub struct Revents(pub Event);
+    #[allow(non_camel_case_types)]
+    #[derive(Debug, JetStreamWireFormat)]
+    pub struct ReventsDone(pub Closed);
+    /// r[impl jetstream.subscription.dispatch.terminator]
+    /// The end of a subscription, and what it ended with. The
+    /// payload names its method, because `RDONE` is one global id
+    /// and a decoder is handed the type byte alone.
+    #[derive(Debug)]
+    pub enum Done {
+        Events(ReventsDone),
+        /// r[impl jetstream.subscription.dispatch.terminator]
+        /// The subscription was cut short, so it carries no result:
+        /// a producer stopped by cancellation never produced one,
+        /// and a default value in its place would report a result
+        /// that did not happen. Its only job is to free the tag.
+        ///
+        /// Method id zero, which no method can have —
+        /// `MESSAGE_ID_START` is 102.
+        Cancelled,
+    }
+    impl WireFormat for Done {
+        fn byte_size(&self) -> u32 {
+            match self {
+                Done::Events(v) => 1 + v.byte_size(),
+                Done::Cancelled => 1,
+            }
+        }
+        fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+            match self {
+                Done::Events(v) => {
+                    WireFormat::encode(&TEVENTS, writer)?;
+                    v.encode(writer)
+                }
+                Done::Cancelled => WireFormat::encode(&0u8, writer),
+            }
+        }
+        fn decode<R: std::io::Read>(reader: &mut R) -> std::io::Result<Self> {
+            let method: u8 = WireFormat::decode(reader)?;
+            match method {
+                0u8 => Ok(Done::Cancelled),
+                TEVENTS => Ok(Done::Events(WireFormat::decode(reader)?)),
+                other => {
+                    Err(
+                        std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            format!("terminator for an unknown method: {}", other),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+    #[derive(Debug)]
+    #[repr(u8)]
+    pub enum Tmessage {
+        Post(Tpost) = TPOST,
+        Events(Tevents) = TEVENTS,
+        Version(jetstream::prelude::Tversion) = TVERSION,
+        Cancel(jetstream::prelude::subscription::Tcancel) = TCANCEL,
+    }
+    impl Framer for Tmessage {
+        fn byte_size(&self) -> u32 {
+            match &self {
+                Tmessage::Post(msg) => msg.byte_size(),
+                Tmessage::Events(msg) => msg.byte_size(),
+                Tmessage::Version(v) => v.byte_size(),
+                Tmessage::Cancel(c) => c.byte_size(),
+            }
+        }
+        fn message_type(&self) -> u8 {
+            match self {
+                Tmessage::Post(_) => TPOST,
+                Tmessage::Events(_) => TEVENTS,
+                Tmessage::Version(_) => TVERSION,
+                Tmessage::Cancel(_) => TCANCEL,
+            }
+        }
+        fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+            match &self {
+                Tmessage::Post(msg) => msg.encode(writer)?,
+                Tmessage::Events(msg) => msg.encode(writer)?,
+                Tmessage::Version(v) => v.encode(writer)?,
+                Tmessage::Cancel(c) => c.encode(writer)?,
+            }
+            Ok(())
+        }
+        fn decode<R: std::io::Read>(
+            reader: &mut R,
+            ty: u8,
+        ) -> std::io::Result<Tmessage> {
+            match ty {
+                TPOST => Ok(Tmessage::Post(WireFormat::decode(reader)?)),
+                TEVENTS => Ok(Tmessage::Events(WireFormat::decode(reader)?)),
+                TVERSION => Ok(Tmessage::Version(WireFormat::decode(reader)?)),
+                TCANCEL => Ok(Tmessage::Cancel(WireFormat::decode(reader)?)),
+                _ => {
+                    Err(
+                        std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            format!("unknown message type: {}", ty),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+    #[derive(Debug)]
+    #[repr(u8)]
+    pub enum Rmessage {
+        Post(Rpost) = RPOST,
+        Events(Revents) = REVENTS,
+        Error(jetstream::prelude::Error) = RERROR,
+        Version(jetstream::prelude::Rversion) = RVERSION,
+        Done(Done) = RDONE,
+        CancelAck(jetstream::prelude::subscription::Rcancel) = RCANCEL,
+    }
+    impl Framer for Rmessage {
+        fn byte_size(&self) -> u32 {
+            match &self {
+                Rmessage::Post(msg) => msg.byte_size(),
+                Rmessage::Events(msg) => msg.byte_size(),
+                Rmessage::Error(err) => err.byte_size(),
+                Rmessage::Version(v) => v.byte_size(),
+                Rmessage::Done(d) => d.byte_size(),
+                Rmessage::CancelAck(a) => a.byte_size(),
+            }
+        }
+        fn message_type(&self) -> u8 {
+            match self {
+                Rmessage::Post(_) => RPOST,
+                Rmessage::Events(_) => REVENTS,
+                Rmessage::Error(_) => RERROR,
+                Rmessage::Version(_) => RVERSION,
+                Rmessage::Done(_) => RDONE,
+                Rmessage::CancelAck(_) => RCANCEL,
+            }
+        }
+        fn encode<W: std::io::Write>(&self, writer: &mut W) -> std::io::Result<()> {
+            match &self {
+                Rmessage::Post(msg) => msg.encode(writer)?,
+                Rmessage::Events(msg) => msg.encode(writer)?,
+                Rmessage::Error(err) => err.encode(writer)?,
+                Rmessage::Version(v) => v.encode(writer)?,
+                Rmessage::Done(d) => d.encode(writer)?,
+                Rmessage::CancelAck(a) => a.encode(writer)?,
+            }
+            Ok(())
+        }
+        fn decode<R: std::io::Read>(
+            reader: &mut R,
+            ty: u8,
+        ) -> std::io::Result<Rmessage> {
+            match ty {
+                RPOST => Ok(Rmessage::Post(WireFormat::decode(reader)?)),
+                REVENTS => Ok(Rmessage::Events(WireFormat::decode(reader)?)),
+                RERROR => Ok(Rmessage::Error(WireFormat::decode(reader)?)),
+                RVERSION => Ok(Rmessage::Version(WireFormat::decode(reader)?)),
+                RDONE => Ok(Rmessage::Done(WireFormat::decode(reader)?)),
+                RCANCEL => Ok(Rmessage::CancelAck(WireFormat::decode(reader)?)),
+                _ => {
+                    Err(
+                        std::io::Error::new(
+                            std::io::ErrorKind::InvalidData,
+                            format!("unknown message type: {}", ty),
+                        ),
+                    )
+                }
+            }
+        }
+    }
+    #[derive(Clone, Debug)]
+    pub struct RoomService<T: Room> {
+        pub inner: T,
+    }
+    impl<T> Protocol for RoomService<T>
+    where
+        T: Room + Send + Sync + Sized,
+    {
+        type Request = Tmessage;
+        type Response = Rmessage;
+        type Error = Error;
+        const VERSION: &'static str = PROTOCOL_VERSION;
+        const NAME: &'static str = PROTOCOL_NAME;
+        fn tcancel(oldtag: u16, binding: u64) -> Option<Tmessage> {
+            Some(
+                Tmessage::Cancel(jetstream::prelude::subscription::Tcancel {
+                    oldtag,
+                    binding,
+                }),
+            )
+        }
+    }
+    impl<T> Server for RoomService<T>
+    where
+        T: Room + Send + Sync + Sized,
+    {
+        fn rpc(
+            &mut self,
+            ctx: Context,
+            frame: Frame<<Self as Protocol>::Request>,
+        ) -> impl ::core::future::Future<
+            Output = Result<Frame<<Self as Protocol>::Response>>,
+        > + Send + Sync {
+            Box::pin(async move {
+                let req: <Self as Protocol>::Request = frame.msg;
+                let res: std::result::Result<
+                    <Self as Protocol>::Response,
+                    Self::Error,
+                > = match req {
+                    Tmessage::Version(tversion) => {
+                        use std::str::FromStr;
+                        let client_version = jetstream::prelude::Version::from_str(
+                                &tversion.version,
+                            )
+                            .map_err(|e| Error::new(e))?;
+                        match Self::version(client_version) {
+                            Ok(negotiated) => {
+                                Ok(
+                                    Rmessage::Version(jetstream::prelude::Rversion {
+                                        msize: tversion.msize,
+                                        version: negotiated.to_string(),
+                                    }),
+                                )
+                            }
+                            Err(_) => {
+                                Ok(
+                                    Rmessage::Version(jetstream::prelude::Rversion {
+                                        msize: 0,
+                                        version: "unknown".to_string(),
+                                    }),
+                                )
+                            }
+                        }
+                    }
+                    Tmessage::Cancel(_) => {
+                        Err(Error::new("a cancellation is not a unary call"))
+                    }
+                    Tmessage::Post(msg) => {
+                        match self.post(msg.body).await {
+                            Ok(result) => {
+                                let ret = Rpost(result);
+                                Ok(Rmessage::Post(ret))
+                            }
+                            Err(err) => Err(err.into()),
+                        }
+                    }
+                    Tmessage::Events(msg) => {
+                        let _ = msg;
+                        Err(
+                            Error::new(
+                                "a subscription cannot be answered with one frame",
+                            ),
+                        )
+                    }
+                };
+                let response = match res {
+                    Ok(msg) => msg,
+                    Err(err) => Rmessage::Error(err),
+                };
+                let rframe: Frame<<Self as Protocol>::Response> = Frame::from((
+                    frame.tag,
+                    response,
+                ));
+                Ok(rframe)
+            })
+        }
+        fn is_streaming(message_type: u8) -> bool {
+            matches!(message_type, TEVENTS)
+        }
+        fn cancel_target(frame: &Frame<Tmessage>) -> Option<u16> {
+            match &frame.msg {
+                Tmessage::Cancel(cancel) => Some(cancel.oldtag),
+                _ => None,
+            }
+        }
+        fn cancel_ack(oldtag: u16) -> Option<Rmessage> {
+            Some(
+                Rmessage::CancelAck(jetstream::prelude::subscription::Rcancel {
+                    oldtag,
+                }),
+            )
+        }
+        fn cancelled_terminator(_method: u8) -> Option<Rmessage> {
+            Some(Rmessage::Done(Done::Cancelled))
+        }
+        fn rpc_stream(
+            &mut self,
+            ctx: Context,
+            frame: Frame<<Self as Protocol>::Request>,
+            cancel: jetstream::prelude::subscription::CancellationToken,
+        ) -> impl ::core::future::Future<
+            Output = jetstream::prelude::server::ResponseStream<Self>,
+        > + Send + Sync {
+            Box::pin(async move {
+                let tag = frame.tag;
+                match frame.msg {
+                    Tmessage::Events(msg) => {
+                        let items = self.inner.events(msg.from).serve(cancel);
+                        Box::pin(
+                            jetstream::prelude::futures::StreamExt::map(
+                                items,
+                                move |item| match item {
+                                    Ok(Item::Next(value)) => {
+                                        Ok(Frame {
+                                            tag,
+                                            msg: Rmessage::Events(Revents(value)),
+                                        })
+                                    }
+                                    Ok(Item::Done(value)) => {
+                                        Ok(Frame {
+                                            tag,
+                                            msg: Rmessage::Done(Done::Events(ReventsDone(value))),
+                                        })
+                                    }
+                                    Err(err) => Err(err),
+                                },
+                            ),
+                        ) as jetstream::prelude::server::ResponseStream<Self>
+                    }
+                    _ => {
+                        Box::pin(jetstream::prelude::futures::stream::empty())
+                            as jetstream::prelude::server::ResponseStream<Self>
+                    }
+                }
+            })
+        }
+    }
+    impl<T> Room for RoomService<T>
+    where
+        T: Room + Send + Sync + Sized,
+    {
+        async fn post(&self, body: String) -> Result<u64, std::io::Error> {
+            self.inner.post(body).await
+        }
+        fn events(&self, from: u64) -> Subscription<Event, Closed> {
+            self.inner.events(from)
+        }
+    }
+    pub struct RoomChannel {
+        mux: std::sync::Arc<Mux<Self>>,
+    }
+    impl RoomChannel {
+        pub fn new(
+            max_concurrent_requests: u16,
+            inner: Box<dyn ClientTransport<Self>>,
+        ) -> Self {
+            Self {
+                mux: std::sync::Arc::new(Mux::new(max_concurrent_requests, inner)),
+            }
+        }
+        /// Perform Tversion/Rversion handshake with the server.
+        /// Must be called after `new()` and before any RPC calls.
+        pub async fn negotiate_version(
+            &self,
+            msize: u32,
+        ) -> std::result::Result<jetstream::prelude::Rversion, Error> {
+            let req = Tmessage::Version(jetstream::prelude::Tversion {
+                msize,
+                version: PROTOCOL_VERSION.to_string(),
+            });
+            let context = Context::default();
+            let rframe = self.mux.rpc(context, req).await.await?;
+            match rframe.msg {
+                Rmessage::Version(rversion) => {
+                    if rversion.version == "unknown" {
+                        Err(Error::new("server rejected version negotiation"))
+                    } else {
+                        Ok(rversion)
+                    }
+                }
+                Rmessage::Error(err) => Err(err),
+                _ => Err(Error::new("unexpected response to Tversion")),
+            }
+        }
+    }
+    impl Protocol for RoomChannel {
+        type Request = Tmessage;
+        type Response = Rmessage;
+        type Error = Error;
+        const VERSION: &'static str = PROTOCOL_VERSION;
+        const NAME: &'static str = PROTOCOL_NAME;
+        fn tcancel(oldtag: u16, binding: u64) -> Option<Tmessage> {
+            Some(
+                Tmessage::Cancel(jetstream::prelude::subscription::Tcancel {
+                    oldtag,
+                    binding,
+                }),
+            )
+        }
+    }
+    impl Room for RoomChannel {
+        async fn post(&self, body: String) -> Result<u64, std::io::Error> {
+            let req = Tmessage::Post(Tpost { body });
+            let context = Context::default();
+            let rframe = self.mux.rpc(context, req).await.await?;
+            let rmsg = rframe.msg;
+            match rmsg {
+                Rmessage::Post(msg) => Ok(msg.0),
+                Rmessage::Error(err) => Err(err),
+                _ => Err(Error::new("invalid reposne")),
+            }
+        }
+        fn events(&self, from: u64) -> Subscription<Event, Closed> {
+            let mux = self.mux.clone();
+            let req = Tmessage::Events(Tevents { from });
+            Subscription::opening(async move {
+                let frames = mux.rpc_stream(Context::default(), req, 64).await;
+                Subscription::from_frames(
+                    frames,
+                    |frame| {
+                        match frame.msg {
+                            Rmessage::Events(item) => Ok(Some(Item::Next(item.0))),
+                            Rmessage::Done(Done::Events(ReventsDone(value))) => {
+                                Ok(Some(Item::Done(value)))
+                            }
+                            Rmessage::Done(Done::Cancelled) => Ok(None),
+                            Rmessage::Error(err) => Err(err),
+                            _ => Err(Error::new("unexpected response in a subscription")),
+                        }
+                    },
+                )
+            })
+        }
+    }
+}
+#[jetstream::prelude::make(Send+Sync)]
+pub trait Room {
+    async fn post(&self, body: String) -> Result<u64, std::io::Error>;
+    fn events(&self, from: u64) -> Subscription<Event, Closed>;
+}

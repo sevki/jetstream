@@ -206,7 +206,30 @@ impl<T, D> Item<T, D> {
 /// its own or a tag on a shared one, per
 /// `r[jetstream.subscription.realisation.opaque]`.
 pub struct Subscription<T, D> {
-    items: ItemStream<T, D>,
+    source: Source<T, D>,
+}
+
+/// Where a subscription's items come from.
+///
+/// r[impl jetstream.subscription.surface.producer]
+/// A subscription is one type on both sides of the call, because one
+/// trait describes both — and the two sides need different things. A
+/// caller needs a sequence. A producer needs cancellation, which the
+/// trait's signature has nowhere to put: `fn events(&self, ctx, from)
+/// -> Subscription<Event, Closed>` names no token, and adding one would
+/// put a parameter in the caller's signature that means nothing to a
+/// caller.
+///
+/// So a producer's subscription is a function *awaiting* its token, and
+/// the dispatcher supplies it when it serves the call. Polled without
+/// one — in a test, or in process — it gets a token nothing cancels,
+/// which is the truth of that situation.
+enum Source<T, D> {
+    Open(ItemStream<T, D>),
+    Awaiting(Box<dyn FnOnce(CancellationToken) -> ItemStream<T, D> + Send>),
+    /// Momentarily empty while the one above is being run. A variant
+    /// rather than an `Option` so replacing it needs no bound on `T`.
+    Taken,
 }
 
 /// The boxed sequence a `Subscription` reads: items, then the end.
@@ -222,19 +245,110 @@ where
     /// Build one from the frames of a streaming call. `decode` is the
     /// generated protocol's: only it knows which response variant is an
     /// item and which is the terminator.
+    /// `decode` returns `None` for a frame that ends the subscription
+    /// **without** an item — the terminator of a subscription cut
+    /// short, which frees the tag and carries no result, because a
+    /// producer stopped by cancellation never produced one. Fabricating
+    /// a default there would report a result that did not happen.
     pub fn from_frames<P, F>(stream: crate::RpcStream<P>, mut decode: F) -> Self
     where
         P: crate::Protocol + 'static,
         P::Response: 'static,
         F: FnMut(
                 crate::Frame<P::Response>,
-            ) -> jetstream_error::Result<Item<T, D>>
+            ) -> jetstream_error::Result<Option<Item<T, D>>>
             + Send
             + 'static,
     {
         use futures::StreamExt;
         Subscription {
-            items: Box::pin(stream.map(move |frame| decode(frame?))),
+            source: Source::Open(Box::pin(
+                stream
+                    .map(move |frame| decode(frame?))
+                    .take_while(|decoded| {
+                        futures::future::ready(!matches!(decoded, Ok(None)))
+                    })
+                    .filter_map(|decoded| {
+                        futures::future::ready(match decoded {
+                            Ok(Some(item)) => Some(Ok(item)),
+                            Ok(None) => None,
+                            Err(e) => Some(Err(e)),
+                        })
+                    }),
+            )),
+        }
+    }
+
+    /// Build one that opens when it is first polled.
+    ///
+    /// r[impl jetstream.subscription.surface.rust]
+    /// Opening a subscription needs a tag and a request on the wire,
+    /// both of which are asynchronous — and the surface the
+    /// specification shows is not: `fn events(&self, ..) ->
+    /// Subscription<Event, Closed>`. Deferring the open to the first
+    /// poll is what reconciles them, and it is what a stream does
+    /// anyway: nothing happens until something reads.
+    pub fn opening<F>(open: F) -> Self
+    where
+        F: std::future::Future<Output = Self> + Send + 'static,
+    {
+        use futures::StreamExt;
+        Subscription {
+            source: Source::Open(Box::pin(
+                futures::stream::once(open).flatten(),
+            )),
+        }
+    }
+
+    /// r[impl jetstream.subscription.surface.producer]
+    /// Build the producer's side: a subscription that is handed its
+    /// cancellation when the dispatcher serves it.
+    pub fn served<F, S>(produce: F) -> Self
+    where
+        F: FnOnce(CancellationToken) -> S + Send + 'static,
+        S: futures::Stream<Item = jetstream_error::Result<Item<T, D>>>
+            + Send
+            + 'static,
+    {
+        Subscription {
+            source: Source::Awaiting(Box::new(move |cancel| {
+                Box::pin(produce(cancel))
+            })),
+        }
+    }
+
+    /// r[impl jetstream.subscription.surface.producer]
+    /// The ergonomic producer: a task holding a [`Producer`], which can
+    /// send *and* learn that its subscriber has gone.
+    ///
+    /// `r[jetstream.subscription.detached.state]` is the reason this
+    /// takes a closure rather than a sender: what the closure captures
+    /// is the producer's whole state, and a handler that can only be
+    /// written as "hold this sender" cannot be evicted and resumed.
+    pub fn producing<F, Fut>(capacity: usize, produce: F) -> Self
+    where
+        F: FnOnce(Producer<T, D>) -> Fut + Send + 'static,
+        Fut: std::future::Future<Output = ()> + Send + 'static,
+    {
+        Subscription::served(move |cancel| {
+            let (producer, items) = channel::<T, D>(capacity, cancel);
+            tokio::spawn(produce(producer));
+            futures::StreamExt::map(items, Ok)
+        })
+    }
+
+    /// Take the item sequence, giving the producer its cancellation.
+    ///
+    /// r[impl jetstream.subscription.cancel]
+    /// This is the dispatcher's call, and it is where cancellation
+    /// reaches the work. A subscription that is already a sequence — a
+    /// caller's — ignores the token, which is right: nothing on that
+    /// side produces.
+    pub fn serve(self, cancel: CancellationToken) -> ItemStream<T, D> {
+        match self.source {
+            Source::Open(items) => items,
+            Source::Awaiting(produce) => produce(cancel),
+            Source::Taken => unreachable!("only set while being replaced"),
         }
     }
 
@@ -247,7 +361,7 @@ where
             + 'static,
     {
         Subscription {
-            items: Box::pin(items),
+            source: Source::Open(Box::pin(items)),
         }
     }
 
@@ -271,7 +385,21 @@ impl<T, D> futures::Stream for Subscription<T, D> {
         mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
-        self.items.as_mut().poll_next(cx)
+        // A producer's subscription polled without a dispatcher gets a
+        // token nothing cancels. Nothing here can cancel it, so saying
+        // otherwise would be a lie.
+        if let Source::Awaiting(_) = self.source {
+            let Source::Awaiting(produce) =
+                std::mem::replace(&mut self.source, Source::Taken)
+            else {
+                unreachable!("checked immediately above")
+            };
+            self.source = Source::Open(produce(CancellationToken::new()));
+        }
+        match &mut self.source {
+            Source::Open(items) => items.as_mut().poll_next(cx),
+            _ => unreachable!("replaced above"),
+        }
     }
 }
 
