@@ -234,9 +234,12 @@ impl Server for ChatRoom {
         Some(Say::Ack(Rcancel { oldtag }))
     }
 
-    fn cancelled_terminator() -> Option<Say> {
+    fn cancelled_terminator(method: u8) -> Option<Say> {
+        // One streaming method, so `method` can only be `TEVENTS` — but
+        // the terminator names it, so a second one would decode
+        // correctly without touching this.
         Some(Say::Done(Terminator {
-            method: TEVENTS,
+            method,
             value: Closed { last_seq: 0 },
         }))
     }
