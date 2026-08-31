@@ -83,7 +83,7 @@ A producer MUST NOT be required to open a lane, or to issue a request of its own
 ## Subscriptions
 
 r[jetstream.subscription.definition]
-A subscription is identified by the tag of the request that created it, on the lane that carried it. It MUST remain in flight, in the sense of `r[jetstream.lane.tag-mux]`, for as long as the producer may still emit items: its tag MUST NOT be reused until the subscription has terminated. A subscription is therefore a long-lived call, not a sequence of short ones.
+A subscription is identified by the tag of the request that created it, on the lane that carried it. It MUST remain in flight, in the sense of `r[jetstream.lane.tag-mux]`, for as long as the producer may still emit items: its tag MUST NOT be reused until the subscription has terminated, and reuse after termination is subject to `r[jetstream.subscription.lossy.stale-item]` where the subscription was realised on datagrams. A subscription is therefore a long-lived call, not a sequence of short ones.
 
 r[jetstream.subscription.ordering]
 Items of one subscription MUST be delivered in the order the producer emitted them. This follows from `r[jetstream.lane.delivery-order]` when the subscription is realised on a lane, and MUST be preserved by any other realisation. There is no ordering between distinct subscriptions, whether or not they share a lane, a session, or a producer — `r[jetstream.lane.no-cross-lane-order]` applies unchanged. An application requiring two event streams to be mutually ordered MUST make them one subscription.
@@ -133,6 +133,23 @@ The endpoint identifier is an application-level name and MUST NOT be conflated w
 
 r[jetstream.subscription.lossy]
 A subscription MAY be declared **lossy**: its items may be dropped, and their loss is acceptable to the application. Presence, typing indicators, and cursor position are the motivating cases. A lossy subscription SHOULD be carried on the session's datagram channel where one exists, per `r[jetstream.session.datagrams]`.
+
+r[jetstream.subscription.lossy.stale-item]
+An item carried out of band can outlive the termination carried in band. A
+datagram emitted before a subscription's terminator or its cancellation
+acknowledgement MAY arrive after it, because `r[jetstream.session.datagrams]`
+orders datagrams neither among themselves nor against a lane. Once the tag has
+been reused — which `r[jetstream.subscription.definition]` permits after
+termination — that stale datagram is indistinguishable, by tag alone, from an
+item of the new call.
+
+An implementation MUST NOT deliver such an item as belonging to a later
+subscription. Since the tag cannot establish this, a datagram realisation MUST
+carry a discriminator that changes whenever a tag is rebound, and MUST discard
+an item whose discriminator does not match the current binding. Withholding the
+tag from the pool until no in-flight datagram can still bear it is not an
+alternative: no transport reports that instant, so the condition is not
+decidable.
 
 r[jetstream.subscription.lossy.degradation]
 Where the session reports no datagram channel, a lossy subscription MUST degrade by **dropping**, not by queueing. This refines `r[jetstream.session.capabilities.degradation]`, which requires an absent capability to fail explicitly rather than be emulated: for a lossy subscription, dropping is not an emulation of datagrams but the same delivery contract met by other means, and it is the behaviour the application asked for. Carrying presence reliably is the wrong answer — a typing indicator queued behind a large upload arrives after the message it was announcing.
@@ -227,7 +244,12 @@ while let Some(item) = events.next().await {
 // Dropping `events` cancels — r[jetstream.subscription.surface.cancellation].
 ```
 
-Two producer shapes, and the difference is the whole of `r[jetstream.subscription.detached.state]`:
+Two producer shapes, and the difference is the whole of
+`r[jetstream.subscription.detached.state]`. Note what the second does *not* do:
+it captures no reference into the room. A closure borrowing `self.log` would
+read as the cursor form while still holding exactly the state eviction
+invalidates, and Rust's lifetimes make that the harder version to write rather
+than the easier one — the language agreeing with the rule.
 
 ```rust
 impl Room for ChatRoom {
@@ -240,12 +262,16 @@ impl Room for ChatRoom {
 }
 
 impl Room for EvictableRoom {
-    // Evictable producer: holds nothing. The platform re-drives the cursor
-    // after reconstructing the room, and the subscriber cannot tell —
+    // Evictable producer: holds nothing *and captures nothing*. `log` is an
+    // owned locator, not a borrow of the room, so the platform can re-drive
+    // the cursor once the room is gone and the subscriber cannot tell —
+    // r[jetstream.subscription.detached.state], then
     // r[jetstream.subscription.detached.transparency].
     fn events(&self, _ctx: Context, from: Seq) -> Subscription<Event> {
-        Subscription::from_cursor(from, |cursor| async move {
-            self.log.read_after(cursor).await
+        let log = self.log_id.clone();
+        Subscription::from_cursor(from, move |cursor| {
+            let log = log.clone();
+            async move { LogStore::open(&log).read_after(cursor).await }
         })
     }
 }
