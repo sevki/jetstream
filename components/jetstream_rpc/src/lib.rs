@@ -28,6 +28,7 @@ mod mux;
 mod router;
 pub mod server;
 pub mod session;
+pub mod subscription;
 mod tag;
 mod version;
 pub use any_server::AnyServer;
