@@ -1,6 +1,64 @@
 # Changelog
 
 
+## [16.2.0](https://github.com/sevki/jetstream/compare/v16.1.3...v16.2.0) (2026-08-31)
+
+
+### Features
+
+* **rpc:** draft the session and lane model ([55806d1](https://github.com/sevki/jetstream/commit/55806d15f611f2fa52ca5d89ddacdb0222192333))
+* **rpc:** draft the session and lane model ([a78d4da](https://github.com/sevki/jetstream/commit/a78d4da6c8d406c2de1fa7d5e817b486333a2435))
+* **transports:** bind QUIC, WebTransport and byte streams to sessions ([e5da2dc](https://github.com/sevki/jetstream/commit/e5da2dc83d2dbd9539ea91f5f85693e876a7be16))
+* **transports:** bind QUIC, WebTransport and byte streams to sessions ([a5c6eac](https://github.com/sevki/jetstream/commit/a5c6eacb57698ef91ad1b4aa1f34826cf904ff4c))
+
+
+### Bug Fixes
+
+* **http:** stop advertising WebTransport datagrams that do not exist ([2c59228](https://github.com/sevki/jetstream/commit/2c59228452dbf61760570d5f2c451e67dda86101))
+* **iroh:** let a caller report datagrams it disabled locally ([cab9499](https://github.com/sevki/jetstream/commit/cab949908326b53dbd5583d70b3a175eb56b89ed))
+* **iroh:** let a caller report datagrams it disabled locally ([da97af5](https://github.com/sevki/jetstream/commit/da97af59c2df5fe47b9a1e791c140a0456c7ac4d))
+* **iroh:** map a closed datagram channel to Closed as well ([a34a958](https://github.com/sevki/jetstream/commit/a34a958daa5469ad5ac74f9796695d39ce3ff8f3))
+* **iroh:** map a closed datagram channel to Closed as well ([3c43232](https://github.com/sevki/jetstream/commit/3c432325073bb02409e37861ea848ec4544b1217))
+* **iroh:** refuse datagram traffic on a session that reports none ([a061d3a](https://github.com/sevki/jetstream/commit/a061d3a3b387252711008099868e6aa3174a6a84))
+* **iroh:** report a deliberate close as Closed, not as a transport fault ([64527ff](https://github.com/sevki/jetstream/commit/64527ff53418fc30671802ee1cb93ebcc9a4ced5))
+* **iroh:** report a deliberate close as Closed, not as a transport fault ([0874ec1](https://github.com/sevki/jetstream/commit/0874ec1bf2a20bd32c5d765e8ff57e733abeb5b2))
+* **iroh:** report the datagram capability the connection negotiated ([aaf5dea](https://github.com/sevki/jetstream/commit/aaf5dea8ff28737d9e1483d430f1677a8b3af379))
+* **iroh:** report the datagram capability the connection negotiated ([278e7d4](https://github.com/sevki/jetstream/commit/278e7d4232bce6e683cee60ca4668c06eb744250))
+* **iroh:** un-flake the oversize test, share the datagram override ([d0bd2a3](https://github.com/sevki/jetstream/commit/d0bd2a3cef9e0e0a4bb8941ed8b6bdb66558963f))
+* **iroh:** un-flake the oversize test, share the datagram override ([aabf455](https://github.com/sevki/jetstream/commit/aabf455b51ff904e3571406dfbb6fc9acdc78172))
+* **quic:** let a caller report datagrams it disabled locally ([404dc31](https://github.com/sevki/jetstream/commit/404dc31d6bec46f8ddc6683d88357d8ebb386eba))
+* **quic:** map a closed datagram channel to Closed as well ([469b57d](https://github.com/sevki/jetstream/commit/469b57d55fa8cef88751b997ce7dc88ead021dff))
+* **quic:** refuse datagram traffic on a session that reports none ([9c63e56](https://github.com/sevki/jetstream/commit/9c63e5635941521f4809c02664ca4ec89144c932))
+* **quic:** report a deliberate close as Closed, not as a transport fault ([4a7b4ec](https://github.com/sevki/jetstream/commit/4a7b4ec608bd942d8e731c2e32cf36e658e98859))
+* **quic:** report the datagram capability the connection negotiated ([96f6cfd](https://github.com/sevki/jetstream/commit/96f6cfd1080f2e84b1d4fb76a581c55cdfdf548a))
+* **quic:** set service_io's session context, own the endpoint, close on drop ([72708c4](https://github.com/sevki/jetstream/commit/72708c4a1a49ba473ea36bbfe3f22662e621f83d))
+* **quic:** un-flake the oversize test, share the datagram override ([8e98599](https://github.com/sevki/jetstream/commit/8e98599b1cf034921b13547ade1f809a56a889e8))
+* **rpc:** close a session from either end and at every exit ([91e9497](https://github.com/sevki/jetstream/commit/91e9497e36b7176b9744fd9e57d26f7c8e4db236))
+* **rpc:** close a session from either end and at every exit ([6a872a5](https://github.com/sevki/jetstream/commit/6a872a5a491c01f71518c038a2583b269f361655))
+* **rpc:** close the gaps the last round's fixes left open ([a274695](https://github.com/sevki/jetstream/commit/a2746956c0f5bd3fd617ddb965c8f2a99e9e3c0a))
+* **rpc:** close the gaps the last round's fixes left open ([1de60cb](https://github.com/sevki/jetstream/commit/1de60cb597e795384be47e1338235fa265fe0773))
+* **rpc:** decode datagrams by role, and close iroh on the last drop ([012b4f7](https://github.com/sevki/jetstream/commit/012b4f7e6be44e29c7baad253991f90aa852851b))
+* **rpc:** decode datagrams by role, and close iroh on the last drop ([b48ae8a](https://github.com/sevki/jetstream/commit/b48ae8a8ca341dbc4a12b78391df54bba88d4dda))
+* **rpc:** do not report the end of a lane over a queued frame ([11d9caa](https://github.com/sevki/jetstream/commit/11d9caa6e3908c790647e9f0ed065f949783c64f))
+* **rpc:** do not report the end of a lane over a queued frame ([3ccd224](https://github.com/sevki/jetstream/commit/3ccd22475f20287e568521a8b6baece79b33becf))
+* **rpc:** end a closed lane for its peer, and name a lost open correctly ([ebebd05](https://github.com/sevki/jetstream/commit/ebebd05e58e39609c682c099fb260f18f0a03543))
+* **rpc:** end a closed lane for its peer, and name a lost open correctly ([9939181](https://github.com/sevki/jetstream/commit/99391812721b625390b364cd904dca597437117d))
+* **rpc:** end a lane for its peer, not for its refcount ([23b6603](https://github.com/sevki/jetstream/commit/23b6603b8a5a84ce34d36a616b1505f75d9c975c))
+* **rpc:** end a lane for its peer, not for its refcount ([7b85c85](https://github.com/sevki/jetstream/commit/7b85c85391017e32e326444f80a78b6228771b2d))
+* **rpc:** give lanes a cancellation token their session owns ([4a8446f](https://github.com/sevki/jetstream/commit/4a8446f340b2d18f5043cc24e51d760b007789f5))
+* **rpc:** give lanes a cancellation token their session owns ([592d8a5](https://github.com/sevki/jetstream/commit/592d8a575d187b429bbfd0a682d7766ab0423d39))
+* **rpc:** make datagram receive singular, since the queue is ([a0c5b2f](https://github.com/sevki/jetstream/commit/a0c5b2f953efd589fbdb63aa33072f70968c6825))
+* **rpc:** make datagram receive singular, since the queue is ([76eea26](https://github.com/sevki/jetstream/commit/76eea26b4aa837b8288de2bdb6158be8027c3ddb))
+* **rpc:** make session close reach lanes it handed out ([343ffe2](https://github.com/sevki/jetstream/commit/343ffe226f0d48e46f1681f41339881896eeb29c))
+* **rpc:** make session close reach lanes it handed out ([ed6aac0](https://github.com/sevki/jetstream/commit/ed6aac0127b2a513ec2a9b8aa655ec4ca5444e24))
+* **rpc:** reject an ordered ticket issued by another lane ([57b9382](https://github.com/sevki/jetstream/commit/57b9382e1f4365de2fd207639eeac9ce6140eb21))
+* **rpc:** reject an ordered ticket issued by another lane ([a4c1c6d](https://github.com/sevki/jetstream/commit/a4c1c6d3198f2307dd8989591d6bb550ecfd5e8a))
+* **rpc:** stamp a code on transport errors that carry none ([2f90b23](https://github.com/sevki/jetstream/commit/2f90b23768d776fe34432767c2459b03b1b50510))
+* **rpc:** stamp a code on transport errors that carry none ([c71a187](https://github.com/sevki/jetstream/commit/c71a1870ad43bae867fb29a300506a89d4ed47a7))
+* **rpc:** tell a lane-only close apart from a session close ([5d3b9f3](https://github.com/sevki/jetstream/commit/5d3b9f32e3cd50188b344c7d43c50c541e98e674))
+* **rpc:** tell a lane-only close apart from a session close ([43f17c1](https://github.com/sevki/jetstream/commit/43f17c1b29137ea84cce8874b87a474d447db2f7))
+* **transports:** address both review rounds on the transport bindings ([d361c42](https://github.com/sevki/jetstream/commit/d361c4299ddd62d00cecb4af34bd09a689d9fd73))
+
 ## [16.1.3](https://github.com/sevki/jetstream/compare/v16.1.2...v16.1.3) (2026-08-24)
 
 
