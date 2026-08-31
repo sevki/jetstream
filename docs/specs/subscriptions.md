@@ -92,7 +92,9 @@ r[jetstream.subscription.termination]
 A subscription MUST end explicitly, and a normal end MUST be distinguishable from a failure. A producer that has no more items MUST say so rather than falling silent, and a subscriber MUST be able to tell "the room closed" from "the connection dropped" without inspecting the transport.
 
 r[jetstream.subscription.cancel]
-A subscriber MUST be able to cancel a subscription, and cancellation MUST release the producer's obligation to it. Cancellation is a request bearing the subscription's tag, in the manner of `Tflush` — which the 9P protocols define and the JetStream protocol space does not, so it is new here. A producer MAY emit items that were already in flight when the cancellation was issued; a subscriber MUST tolerate them, and the cancellation's acknowledgement is the point after which no further item bearing that tag may arrive.
+A subscriber MUST be able to cancel a subscription, and cancellation MUST release the producer's obligation to it. Cancellation is a request of its own, bearing a **fresh tag** and naming the subscription's tag in its payload, in the manner of 9P's `Tflush` — which carries `oldtag` for exactly this reason. It MUST NOT be sent under the subscription's own tag: that tag is in flight for the subscription's life, per `r[jetstream.subscription.definition]`, so a second call bearing it would put two calls under one correlation key, contrary to `r[jetstream.lane.tag-mux]`. `Tflush` exists in the 9P protocols only; the JetStream protocol space has no such message today.
+
+The acknowledgement bounds **emission**, not arrival. After it the producer MUST NOT emit further items for that subscription; it cannot promise that none is still in flight, because an item carried out of band may outlive the acknowledgement that was carried in band. `r[jetstream.subscription.lossy.stale-item]` is what makes the boundary observable at the subscriber, by requiring a late item to be discarded rather than delivered.
 
 r[jetstream.subscription.fanout]
 A producer serving many subscribers MUST NOT be required to deliver an item to all of them before delivering the next item to any of them. Per-subscription order is the only order; a global delivery order across subscribers is not required and MUST NOT be assumed by an application. Where an application needs a total order over events, it MUST carry that order in the items themselves — a sequence assigned by the producer — rather than inferring it from delivery.
@@ -431,13 +433,15 @@ builds it on the items, as it must anyway across a producer that may be evicted.
 r[jetstream.subscription.conformance]
 Per transport, given the rows of `r[jetstream.session.conformance]`:
 
-| Transport | Reliable subscription | Lossy subscription | Resumption |
+| Transport | Reliable subscription | Lossy subscription | Session resumption |
 | --- | --- | --- | --- |
 | iroh | Lane per subscription | Datagram | Yes |
 | QUIC | Lane per subscription | Datagram | Yes |
 | WebTransport (H3) | Lane per subscription | Datagram | Yes |
 | TCP / TLS / unix / stdio | Tag on the single lane | Dropped on the single lane | No |
 | In-process | Lane per subscription | Dropped | n/a |
+
+The last column is `r[jetstream.session.resumption]` — whether the *association* survives losing its connection — and is the only one of the two that varies by transport. **Subscription** resumption, `r[jetstream.subscription.resume]`, is available on every row: re-subscribing from a position is an ordinary request, and it can be issued over a freshly established single-lane session exactly as over a new QUIC one. The two are separated here because conflating them would leak the transport choice into state-synchronisation logic that has no business knowing it.
 
 r[jetstream.subscription.conformance.single-lane]
 A `LaneSupport::One` transport MUST support subscriptions. It is the row that motivates the whole specification: if the weakest transport cannot carry a subscription, every application that must reach a browser writes a second implementation, and the session model's transport independence stops at the RPC boundary.
@@ -459,7 +463,13 @@ The client and server RPC layers assume one response per request today, and cann
 ## Rationale
 
 r[jetstream.subscription.rationale.reverse-call]
-The rejected alternative is to make the producer a caller: the room issues requests to the subscriber. It is what `r[jetstream.session.symmetric]` already permits on a lane, and it needs no streaming responses. It was rejected because it does not reach the `LaneSupport::One` row. On a shared lane both peers would be issuing requests into one tag space, which needs the space partitioned by role and makes every existing single-lane deployment's tag allocation wrong. Streaming the response keeps one allocator, one direction of request, and one application implementation across every row of the table.
+The rejected alternative is to make the producer a caller: the room issues a request to the subscriber for each item. `r[jetstream.session.symmetric]` already permits it on a lane, and it needs no streaming responses.
+
+It is rejected for what it cannot express, not for what it costs to carry. An earlier draft of this rule claimed reverse calls could not reach the `LaneSupport::One` row, because both peers issuing into one tag space would need that space partitioned by role. **That was wrong.** Requests and responses take disjoint type bytes — `r[jetstream.rpc.ts.message-ids]` assigns `102 + 2i` and `103 + 2i` — so the frame's type already carries the direction, each peer keeps its own outbound allocator, and the same numeric tag may be in flight both ways without ambiguity. Reverse calls reach every row of the table.
+
+What they do not carry is **identity**. Each reverse call is its own tag, so a sequence of them is a sequence of unrelated calls with nothing naming the sequence — and every requirement this specification places on a subscription needs that name. `r[jetstream.subscription.termination]` needs something to terminate; `r[jetstream.subscription.cancel]` something to cancel; `r[jetstream.subscription.resume]` something to resume from; `r[jetstream.subscription.backpressure]` a unit to bound. Worse, a producer that simply stops issuing calls is indistinguishable from one that is idle, which is precisely the failure `termination` forbids.
+
+A streaming response supplies the identity for nothing: the request's tag *is* the subscription, for as long as it is in flight. That is the whole of why the shape is the response and not the call.
 
 r[jetstream.subscription.rationale.coexists-with-push]
 Subscriptions do not supersede the reverse-call push that `r[jetstream.rpc.swift.handler]` already specifies, and the two answer different questions. A reverse call is right when the producer has something to say that no subscriber asked for and that is complete in itself — a notification, a cache invalidation — and when the transport lets the producer open a stream downstream. A subscription is right when the subscriber asked, when the items form one ordered sequence with a beginning the subscriber chose, or when the transport is `LaneSupport::One` and the producer has no way to open anything. An implementation MAY offer both; it MUST NOT present a reverse call as satisfying `r[jetstream.subscription.conformance.single-lane]`, which is the row reverse calls cannot reach.
