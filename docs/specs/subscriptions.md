@@ -78,7 +78,7 @@ r[jetstream.subscription.overview.additive]
 This MUST NOT change the frame format, the meaning of `tag`, or the `ClientTransport`/`ServiceTransport` bounds. It does change the shape of the client and server RPC layers, which today assume one response per request; that is a source-level change to `jetstream_rpc`, and `r[jetstream.subscription.compat]` states what it may and may not break on the wire.
 
 r[jetstream.subscription.overview.not-a-new-role]
-A producer MUST NOT be required to open a lane, or to issue a request of its own, in order to deliver a subscription's items. Streaming the response reuses the direction that is already open, which is why the same application code works on `LaneSupport::One` and `LaneSupport::Many`. Making the producer the caller — a genuine reverse request — is the rejected alternative; see `r[jetstream.subscription.rationale.reverse-call]`.
+A producer MUST NOT be *required* to open a lane, or to issue a request of its own, in order to deliver a subscription's items. Streaming the response reuses the direction that is already open, so the same application code works on `LaneSupport::One` and `LaneSupport::Many`, and a subscriber never has to become a server in order to receive. This constrains what an implementation may demand of a producer. It is not a claim that a reverse-call design cannot work, which `r[jetstream.subscription.rationale.reverse-call]` addresses on its merits.
 
 ## Subscriptions
 
@@ -93,6 +93,8 @@ A subscription MUST end explicitly, and a normal end MUST be distinguishable fro
 
 r[jetstream.subscription.cancel]
 A subscriber MUST be able to cancel a subscription, and cancellation MUST release the producer's obligation to it. Cancellation is a request of its own, bearing a **fresh tag** and naming the subscription's tag in its payload, in the manner of 9P's `Tflush` — which carries `oldtag` for exactly this reason. It MUST NOT be sent under the subscription's own tag: that tag is in flight for the subscription's life, per `r[jetstream.subscription.definition]`, so a second call bearing it would put two calls under one correlation key, contrary to `r[jetstream.lane.tag-mux]`. `Tflush` exists in the 9P protocols only; the JetStream protocol space has no such message today.
+
+A fresh tag introduces a hazard of its own, and an implementation MUST NOT inherit it: cancellation MUST NOT depend on the ordinary tag pool. Long-lived subscriptions can occupy every allocatable tag, and a pool that makes an acquirer wait for a recycled one then deadlocks exactly when cancellation is most needed — the tag cannot be recycled until the subscription terminates, and the subscription cannot terminate without the cancellation. Control capacity MUST be reserved outside the pool, or the pool MUST admit a cancellation while saturated.
 
 The acknowledgement bounds **emission**, not arrival. After it the producer MUST NOT emit further items for that subscription; it cannot promise that none is still in flight, because an item carried out of band may outlive the acknowledgement that was carried in band. `r[jetstream.subscription.lossy.stale-item]` is what makes the boundary observable at the subscriber, by requiring a late item to be discarded rather than delivered.
 
@@ -386,9 +388,16 @@ what makes this composable, per `r[jetstream.subscription.surface.producer]`:
 
 ```rust
 fn summaries(&self, ctx: Context, from: Seq) -> Subscription<Summary> {
-    Subscription::from_cursor(from, |cursor| async move {
-        let batch = self.upstream.read_after(ctx.clone(), cursor).await?;
-        Ok(batch.map(summarise))
+    // Owned upstream locator, not a borrow of this cell — the same
+    // constraint as the room, and for the same reason. A middle cell that
+    // captured `self.upstream` would not survive its own eviction.
+    let upstream = self.upstream_id.clone();
+    Subscription::from_cursor(from, move |cursor| {
+        let (upstream, ctx) = (upstream.clone(), ctx.clone());
+        async move {
+            let batch = Upstream::open(&upstream).read_after(ctx, cursor).await?;
+            Ok(batch.map(summarise))
+        }
     })
 }
 ```
@@ -433,18 +442,21 @@ builds it on the items, as it must anyway across a producer that may be evicted.
 r[jetstream.subscription.conformance]
 Per transport, given the rows of `r[jetstream.session.conformance]`:
 
-| Transport | Reliable subscription | Lossy subscription | Session resumption |
-| --- | --- | --- | --- |
-| iroh | Lane per subscription | Datagram | Yes |
-| QUIC | Lane per subscription | Datagram | Yes |
-| WebTransport (H3) | Lane per subscription | Datagram | Yes |
-| TCP / TLS / unix / stdio | Tag on the single lane | Dropped on the single lane | No |
-| In-process | Lane per subscription | Dropped | n/a |
+| Transport | Reliable subscription | Lossy subscription |
+| --- | --- | --- |
+| iroh | Lane per subscription | Datagram |
+| QUIC | Lane per subscription | Datagram |
+| WebTransport (H3) | Lane per subscription | Datagram |
+| TCP / TLS / unix / stdio | Tag on the single lane | Dropped on the single lane |
+| In-process | Lane per subscription | Dropped |
 
-The last column is `r[jetstream.session.resumption]` — whether the *association* survives losing its connection — and is the only one of the two that varies by transport. **Subscription** resumption, `r[jetstream.subscription.resume]`, is available on every row: re-subscribing from a position is an ordinary request, and it can be issued over a freshly established single-lane session exactly as over a new QUIC one. The two are separated here because conflating them would leak the transport choice into state-synchronisation logic that has no business knowing it.
+**Subscription** resumption, `r[jetstream.subscription.resume]`, is not a column because it does not vary: re-subscribing from a position is an ordinary request, and it can be issued over a freshly established single-lane session exactly as over a new QUIC one. Requiring otherwise would leak the transport choice into state-synchronisation logic that has no business knowing it. **Session** resumption is not a column either, for the different reason below.
+
+r[jetstream.session.resumption.mechanism]
+`r[jetstream.session.resumption]` requires the capability to be reported and says nothing about how an association is continued, and nothing in the session model supplies it: `Capabilities` carries migration, which is a path change with the connection intact, and no reconnect token or state-transfer handshake is defined anywhere. A per-transport table of this capability would therefore assert values that can be neither implemented nor tested, and would be wrong in both directions — a lost QUIC connection takes its streams and its session with it, while an application-level handshake sufficient to continue an association over QUIC would serve equally over TLS. Until the mechanism is specified, a session MUST NOT report the capability.
 
 r[jetstream.subscription.conformance.single-lane]
-A `LaneSupport::One` transport MUST support subscriptions. It is the row that motivates the whole specification: if the weakest transport cannot carry a subscription, every application that must reach a browser writes a second implementation, and the session model's transport independence stops at the RPC boundary.
+A `LaneSupport::One` transport MUST support subscriptions, by the same means and behind the same surface as every other row. It is the row that motivates the whole specification: if reaching a browser needs a second application implementation, the session model's transport independence stops at the RPC boundary. The requirement is that the row be reachable *uniformly*, not that only one shape can reach it.
 
 r[jetstream.subscription.conformance.local]
 An in-process session MUST realise subscriptions identically to a transport-backed one, per `r[jetstream.session.local]`, and MUST NOT serialise items to obtain ordering, per `r[jetstream.session.local.no-serialisation]`. Where an in-process subscription crosses to a remote peer, `r[jetstream.session.local.boundary]` applies: the ordering MUST continue across the boundary or the weakening MUST be reported.
@@ -458,18 +470,24 @@ r[jetstream.subscription.compat.existing-clients]
 A client built before this specification issues only unary calls and MUST continue to work unchanged, per `r[jetstream.session.compat.existing-clients]`. A server MUST NOT stream a response to a request the protocol declares unary.
 
 r[jetstream.subscription.compat.rpc-layer]
-The client and server RPC layers assume one response per request today, and cannot express this without change. That change is source-level and is expected to break callers that name the unary result type directly; it MUST NOT require a protocol to be re-generated for its unary methods.
+The client and server RPC layers assume one response per request today, and neither can express this without change. The change is source-level, and it is **not symmetric**.
+
+The server side can be additive: a streaming entry point alongside `Server::rpc`, with a unary default, leaves every existing implementation compiling untouched, and existing unary servers MUST remain source-compatible. The client side is the forced break: `RpcCall` publicly resolves to exactly one frame, so callers naming that type cannot be preserved. Neither side may require a protocol to be re-generated for its unary methods.
 
 ## Rationale
 
 r[jetstream.subscription.rationale.reverse-call]
-The rejected alternative is to make the producer a caller: the room issues a request to the subscriber for each item. `r[jetstream.session.symmetric]` already permits it on a lane, and it needs no streaming responses.
+The alternative is to make the producer a caller: the room issues a request to the subscriber for each item, which `r[jetstream.session.symmetric]` already permits.
 
-It is rejected for what it cannot express, not for what it costs to carry. An earlier draft of this rule claimed reverse calls could not reach the `LaneSupport::One` row, because both peers issuing into one tag space would need that space partitioned by role. **That was wrong.** Requests and responses take disjoint type bytes — `r[jetstream.rpc.ts.message-ids]` assigns `102 + 2i` and `103 + 2i` — so the frame's type already carries the direction, each peer keeps its own outbound allocator, and the same numeric tag may be in flight both ways without ambiguity. Reverse calls reach every row of the table.
+**It is not rejected as unworkable, and two earlier drafts of this rule were wrong to say so.** The first claimed reverse calls could not reach the `LaneSupport::One` row, because both peers issuing into one tag space would need it partitioned by role; in fact requests and responses take disjoint type bytes — `102 + 2i` against `103 + 2i` — so the type already carries the direction and each peer keeps its own allocator. The second claimed reverse calls carry no identity; in fact a subscribe request can return an application-level subscription id that every item, terminator, cancellation and resume then carries, and per-item completion supplies a backpressure boundary. Both premises were false, and each was defending the conclusion this document reaches anyway. That is the failure mode worth naming: a conclusion propped up by a bad argument is indistinguishable from a sound one under every consistency check the document can run on itself.
 
-What they do not carry is **identity**. Each reverse call is its own tag, so a sequence of them is a sequence of unrelated calls with nothing naming the sequence — and every requirement this specification places on a subscription needs that name. `r[jetstream.subscription.termination]` needs something to terminate; `r[jetstream.subscription.cancel]` something to cancel; `r[jetstream.subscription.resume]` something to resume from; `r[jetstream.subscription.backpressure]` a unit to bound. Worse, a producer that simply stops issuing calls is indistinguishable from one that is idle, which is precisely the failure `termination` forbids.
+Streaming the response is therefore a **preference with reasons**, not an impossibility result:
 
-A streaming response supplies the identity for nothing: the request's tag *is* the subscription, for as long as it is in flight. That is the whole of why the shape is the response and not the call.
+- **The correlation key comes from the protocol rather than being reinvented in each one.** A streaming call's tag *is* the subscription, for as long as it is in flight. A payload-level id is defined per protocol, which puts it beyond codegen's reach and leaves `r[jetstream.subscription.surface.declared]` — one answer in every target language — for each protocol to arrange itself.
+- **No round trip per item.** Making every item an acknowledged call is a stronger contract than `r[jetstream.subscription.rationale.not-a-queue]` offers, and costs an outstanding call per item per subscriber. A room fanning out pays it on every message.
+- **The subscriber stays a client.** Reverse calls oblige it to implement a handler and dispatch, in the shape `r[jetstream.rpc.swift.handler]` describes. Streaming responses let a peer that only consumes remain a pure consumer.
+
+An implementation MAY offer reverse-call push as well; `r[jetstream.subscription.rationale.coexists-with-push]` says where each fits. What it MUST NOT do is present one shape's guarantees as the other's.
 
 r[jetstream.subscription.rationale.coexists-with-push]
 Subscriptions do not supersede the reverse-call push that `r[jetstream.rpc.swift.handler]` already specifies, and the two answer different questions. A reverse call is right when the producer has something to say that no subscriber asked for and that is complete in itself — a notification, a cache invalidation — and when the transport lets the producer open a stream downstream. A subscription is right when the subscriber asked, when the items form one ordered sequence with a beginning the subscriber chose, or when the transport is `LaneSupport::One` and the producer has no way to open anything. An implementation MAY offer both; it MUST NOT present a reverse call as satisfying `r[jetstream.subscription.conformance.single-lane]`, which is the row reverse calls cannot reach.
