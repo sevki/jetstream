@@ -15,9 +15,15 @@ The consequence is the thing this specification exists to remove: on a `LaneSupp
 
 `r[jetstream.rcp.multiplexing.selection]` already says a client on a many-lane transport SHOULD let the caller choose a strategy. This specification says the same thing about receiving, and requires that the choice not be visible in the application's code.
 
-### The motivating shape
+## Use cases
 
-The target is an addressable, single-threaded, stateful object — a cell in celld, in the manner of a Durable Object — with clients attached to it over whichever transport they happen to have. A chat room is the smallest complete instance of it, and it exercises every requirement below:
+The target is an addressable, single-threaded, stateful object — a cell in celld, in the manner of a Durable Object — with clients attached over whichever transport they happen to have. What follows enumerates the shapes a subscription takes against it. They are not variations on one thing: each stresses a different requirement, and several would be satisfied by a design that fails the others.
+
+This section is non-normative. It cites the rules; it does not add any.
+
+### 1. Room fan-out
+
+One producer, many subscribers, each seeing the same events in the order the producer assigned them. The smallest complete instance of the whole model, and the one every requirement below was written against:
 
 | The room needs | Which is |
 | --- | --- |
@@ -28,6 +34,36 @@ The target is an addressable, single-threaded, stateful object — a cell in cel
 | Typing indicators are dropped under load rather than queued behind a large upload | `r[jetstream.subscription.lossy]` |
 | A client that reconnects continues from the message it had seen | `r[jetstream.subscription.resume]` |
 | The room may be evicted from memory while its subscribers stay attached | `r[jetstream.subscription.detached]` |
+
+The room is the demanding case because it needs *all* of them at once. The shapes below each need a strict subset, which is what makes them useful for checking that no requirement is carrying weight it should not.
+
+### 2. Presence, typing indicators, cursors
+
+High frequency, latest-wins, worthless once stale. Loss is not a degradation but the correct behaviour: `r[jetstream.subscription.lossy]` and `r[jetstream.subscription.lossy.degradation]`. No ordering requirement beyond per-subscription, no resumption — a client that reconnects wants the *current* presence, not the presence it missed. This is the shape that would be actively harmed by a design treating every subscription as reliable.
+
+### 3. Log and event tailing
+
+One subscriber, unbounded, resumed from a cursor after arbitrary downtime, against a producer that retains a bounded window. This is the hardest test of `r[jetstream.subscription.resume.gap]`: the interesting case is not resuming successfully but the producer discovering it cannot, and having to say so rather than silently starting from the oldest record it still holds.
+
+### 4. Progress on a long operation
+
+A subscription whose lifetime is one operation's: an upload, a migration, a build. Bounded, and its *termination* carries the result — `r[jetstream.subscription.termination]` is the load-bearing rule, since "finished" and "the connection dropped" are different outcomes and a progress bar that cannot tell them apart is wrong in the case that matters. Cancellation, per `r[jetstream.subscription.cancel]`, is expected to cancel the operation and not merely stop reporting on it; that mapping is the application's to make, and it needs the cancellation to be observable at the producer.
+
+### 5. State synchronisation
+
+Snapshot followed by deltas — a replicated document, a materialised view, a cache. Resumption is not a convenience here but the entire point: a client that cannot resume must re-fetch the snapshot. Exercises `r[jetstream.subscription.resume]` together with `r[jetstream.subscription.detached]`, because the producer is idle between deltas and is exactly the kind of object a platform wants to evict.
+
+### 6. Model output streaming
+
+Tokens from an inference call. Unbounded until the producer stops or the subscriber does, and the two rules that matter are the ones a chat room barely exercises: `r[jetstream.subscription.cancel]`, because a user pressing stop must actually stop the work and not just the display, and `r[jetstream.subscription.backpressure]`, because a subscriber that cannot keep up must not be silently truncated — `r[jetstream.subscription.backpressure.reporting]`.
+
+### 7. Cell to cell, in process
+
+Two cells on one node, one subscribing to the other, with no transport between them. Exercises `r[jetstream.subscription.conformance.local]` and, through `r[jetstream.session.local.no-serialisation]`, the requirement that ordering not be obtained by encoding to bytes. When one cell later moves to another node the same subscription crosses a transport, and `r[jetstream.session.local.boundary]` decides whether that is allowed to weaken the ordering. This is the shape that makes the model worth having inside a single node rather than only between them.
+
+### 8. Downstream push to a device
+
+Notifications to a phone, cache invalidations, alerts. **This case already has a specified answer**: `r[jetstream.rpc.swift.handler]` describes a handler receiving upstream-initiated requests, which is the reverse-call shape, and it is a good fit where upstream can open a stream downstream and the messages are independent of any subscription the device holds. Subscriptions do not replace it — see `r[jetstream.subscription.rationale.coexists-with-push]` for which applies where.
 
 ## Overview
 
@@ -128,6 +164,199 @@ Where a producer may be evicted, a subscription's state MUST be reconstructible 
 r[jetstream.subscription.detached.transparency]
 Eviction and reconstruction of a producer MUST NOT be observable to a subscriber as a subscription failure, a gap, or a reordering. A subscriber that cannot tell is what makes eviction a platform decision rather than an application concern.
 
+## Language surface
+
+r[jetstream.subscription.surface.declared]
+Whether a method is unary, streaming, or lossy MUST be declared in the service definition, not chosen at the call site. Codegen for every target language reads that declaration and emits the corresponding surface, so a protocol has one answer across Rust, Swift, TypeScript and Go rather than one per runtime.
+
+r[jetstream.subscription.surface]
+A subscription MUST be presented as the target language's idiomatic asynchronous sequence, not as a callback registration or a polling method. A caller that already knows how to consume a stream in its language MUST NOT have to learn a JetStream-specific shape to consume a subscription.
+
+r[jetstream.subscription.surface.cancellation]
+Cancellation MUST be bound to the language's own cancellation mechanism, so that abandoning a subscription in the ordinary way of the language satisfies `r[jetstream.subscription.cancel]`. A subscription that leaks because the caller returned early, or that requires an explicit teardown call the language does not otherwise need, does not conform.
+
+r[jetstream.subscription.surface.termination]
+The three outcomes of `r[jetstream.subscription.termination]` — the producer finished, the producer failed, the subscription could not be resumed — MUST be distinguishable in the idiom, and a gap MUST NOT be presented as a normal end. In languages where iteration ends silently, the failure cases MUST surface through that language's error channel rather than as an absent item.
+
+r[jetstream.subscription.surface.producer]
+The producer surface MUST admit a source driven by a cursor, not only a live sender held in memory. A generated handler that can express a subscription *only* as "hold this sender and write to it" cannot satisfy `r[jetstream.subscription.detached.state]`, because the sender is precisely what eviction invalidates.
+
+The remainder of this section is non-normative: one worked producer and consumer per language, for the room of use case 1. `Seq` is the room's sequence number and `Event` its message type; both are ordinary generated wire types.
+
+### Rust
+
+r[jetstream.subscription.surface.rust]
+Rust presents a subscription as a `Stream`, cancelled by dropping it. The `#[service]` macro gains attributes for the declaration required by `r[jetstream.subscription.surface.declared]`.
+
+```rust
+#[service]
+pub trait Room {
+    /// Unary. Unchanged, and MUST stay unchanged — r[jetstream.subscription.compat.existing-clients].
+    async fn post(&self, ctx: Context, body: String) -> Result<Seq>;
+
+    /// Streaming. Many `Event`s share the request's tag.
+    #[subscription]
+    fn events(&self, ctx: Context, from: Seq) -> Subscription<Event>;
+
+    /// Lossy. Datagrams where the session has them, dropped where it does not.
+    #[subscription(lossy)]
+    fn presence(&self, ctx: Context) -> Subscription<Presence>;
+}
+```
+
+Consuming it is consuming a stream. Nothing in the signature says whether the
+subscription got its own lane or a tag on a shared one — that is
+`r[jetstream.subscription.realisation.opaque]`:
+
+```rust
+let room = RoomChannel::new(4, Box::new(lane));
+let mut events = room.events(Context::default(), Seq(412));
+
+while let Some(item) = events.next().await {
+    match item {
+        Ok(event) => render(event),
+        // The producer no longer holds seq 412 — r[jetstream.subscription.resume.gap].
+        Err(SubscriptionError::Gap { earliest }) => resync_from(earliest).await,
+        Err(err) => return Err(err),
+    }
+}
+// Dropping `events` cancels — r[jetstream.subscription.surface.cancellation].
+```
+
+Two producer shapes, and the difference is the whole of `r[jetstream.subscription.detached.state]`:
+
+```rust
+impl Room for ChatRoom {
+    // Resident producer: holds the sender, writes as events happen.
+    fn events(&self, _ctx: Context, from: Seq) -> Subscription<Event> {
+        let (tx, sub) = Subscription::channel(64);
+        self.subscribers.attach(from, tx);
+        sub
+    }
+}
+
+impl Room for EvictableRoom {
+    // Evictable producer: holds nothing. The platform re-drives the cursor
+    // after reconstructing the room, and the subscriber cannot tell —
+    // r[jetstream.subscription.detached.transparency].
+    fn events(&self, _ctx: Context, from: Seq) -> Subscription<Event> {
+        Subscription::from_cursor(from, |cursor| async move {
+            self.log.read_after(cursor).await
+        })
+    }
+}
+```
+
+### Swift
+
+r[jetstream.subscription.surface.swift]
+Swift presents a subscription as an `AsyncSequence`, cancelled by task cancellation, consistent with the concurrency model `r[jetstream.rpc.swift.mux]` already uses. The generated protocol gains streaming methods alongside the unary ones described by `r[jetstream.codegen.service.swift]`.
+
+```swift
+public protocol Room: Sendable {
+    func post(ctx: Context, body: String) async throws -> Seq
+    func events(ctx: Context, from: Seq) -> Subscription<Event>
+    func presence(ctx: Context) -> Subscription<Presence>   // lossy
+}
+```
+
+```swift
+let task = Task {
+    do {
+        for try await event in room.events(ctx: .default, from: Seq(412)) {
+            await render(event)
+        }
+        // Fell out normally: the room closed the subscription.
+    } catch let error as SubscriptionError {
+        guard case .gap(let earliest) = error else { throw error }
+        await resync(from: earliest)
+    }
+}
+
+// Cancelling the task cancels the subscription. No teardown call —
+// r[jetstream.subscription.surface.cancellation].
+task.cancel()
+```
+
+A resident producer yields; an evictable one is constructed from a cursor:
+
+```swift
+extension ChatRoom: Room {
+    func events(ctx: Context, from: Seq) -> Subscription<Event> {
+        Subscription { continuation in
+            subscribers.attach(from: from, continuation)
+        }
+    }
+}
+
+extension EvictableRoom: Room {
+    func events(ctx: Context, from: Seq) -> Subscription<Event> {
+        Subscription(from: from) { cursor in
+            try await self.log.readAfter(cursor)
+        }
+    }
+}
+```
+
+### TypeScript
+
+r[jetstream.subscription.surface.ts]
+TypeScript presents a subscription as an `AsyncIterable`, cancelled by an `AbortSignal` or by breaking out of the loop. This is the row that matters most in practice: the browser reaches a room over a WebSocket, which is `LaneSupport::One`, and is therefore the deployment that `r[jetstream.subscription.conformance.single-lane]` exists for.
+
+```ts
+const events = room.events({ from: 412n }, { signal });
+
+for await (const event of events) {
+  render(event);
+}
+// Breaking out of the loop cancels; so does aborting the signal.
+```
+
+```ts
+try {
+  for await (const event of events) render(event);
+} catch (err) {
+  if (err instanceof SubscriptionGap) await resyncFrom(err.earliest);
+  else throw err;
+}
+```
+
+### Go
+
+r[jetstream.subscription.surface.go]
+Go presents a subscription as an iterator over item and error, cancelled through the `context.Context` the call was given.
+
+> There is no Go runtime in this repository — no `docs/specs/rpc-go.md`, no `docs/specs/wireformat-go.md`, and no Go source. This rule specifies the surface a Go binding would present; the runtime specifications it depends on are a prerequisite and do not exist yet. It is included because the surface constrains the design of the other three: a shape that cannot be expressed idiomatically in Go is a shape that has assumed something about Rust or Swift.
+
+```go
+type Room interface {
+	Post(ctx context.Context, body string) (Seq, error)
+	Events(ctx context.Context, from Seq) iter.Seq2[Event, error]
+	Presence(ctx context.Context) iter.Seq2[Presence, error] // lossy
+}
+```
+
+```go
+for event, err := range room.Events(ctx, Seq(412)) {
+	var gap *SubscriptionGap
+	switch {
+	case errors.As(err, &gap):
+		resyncFrom(gap.Earliest)
+	case err != nil:
+		return err
+	default:
+		render(event)
+	}
+}
+// Cancelling ctx ends the range — r[jetstream.subscription.surface.cancellation].
+```
+
+`iter.Seq2[Event, error]` is preferred over a pair of channels because it carries
+termination and failure in one construct, which is what
+`r[jetstream.subscription.surface.termination]` asks for; a `<-chan Event` closed
+on both success and failure cannot distinguish them without a second channel the
+caller may forget to read.
+
 ## Conformance
 
 r[jetstream.subscription.conformance]
@@ -162,6 +391,9 @@ The client and server RPC layers assume one response per request today, and cann
 
 r[jetstream.subscription.rationale.reverse-call]
 The rejected alternative is to make the producer a caller: the room issues requests to the subscriber. It is what `r[jetstream.session.symmetric]` already permits on a lane, and it needs no streaming responses. It was rejected because it does not reach the `LaneSupport::One` row. On a shared lane both peers would be issuing requests into one tag space, which needs the space partitioned by role and makes every existing single-lane deployment's tag allocation wrong. Streaming the response keeps one allocator, one direction of request, and one application implementation across every row of the table.
+
+r[jetstream.subscription.rationale.coexists-with-push]
+Subscriptions do not supersede the reverse-call push that `r[jetstream.rpc.swift.handler]` already specifies, and the two answer different questions. A reverse call is right when the producer has something to say that no subscriber asked for and that is complete in itself — a notification, a cache invalidation — and when the transport lets the producer open a stream downstream. A subscription is right when the subscriber asked, when the items form one ordered sequence with a beginning the subscriber chose, or when the transport is `LaneSupport::One` and the producer has no way to open anything. An implementation MAY offer both; it MUST NOT present a reverse call as satisfying `r[jetstream.subscription.conformance.single-lane]`, which is the row reverse calls cannot reach.
 
 r[jetstream.subscription.rationale.not-a-queue]
 A subscription is not a message queue and this specification does not require durability, at-least-once delivery, or acknowledgement of individual items. `r[jetstream.subscription.resume]` is the whole of what is offered, and it is deliberately weaker: the producer decides what it retains, and says so when it cannot meet a request. An application needing stronger guarantees builds them on the items, as it must anyway across a producer that may be evicted.
