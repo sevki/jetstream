@@ -54,6 +54,25 @@ https://discovery.jetstream.rs
 
 This allows nodes to find each other using their public keys without needing to exchange IP addresses directly.
 
+## Sessions and Lanes
+
+`IrohSession` binds an iroh connection to the
+[session model](sessions.md), which is what lets a client open more than
+one stream: `client_builder` opens a single bidi stream at connect and
+recovers concurrency by tag, whereas a session opens a lane per call.
+
+```rust
+use jetstream_iroh::IrohSession;
+use jetstream_rpc::session::{IdentityKind, Session};
+
+let session = IrohSession::<SquareChannel>::new(connection);
+let lane = Session::<SquareChannel>::open_lane(&session).await?;
+```
+
+iroh is the one transport reporting `IdentityKind::Key`: the peer's public
+key *is* its address, so `requires_address()` is false and a caller need
+not carry placement information alongside the identity.
+
 ## Feature Flag
 
 To use Iroh transport, enable the `iroh` feature in your `Cargo.toml`:

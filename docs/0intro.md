@@ -24,6 +24,7 @@ JetStream supports multiple transport backends:
 - [mTLS](https://docs.rs/jetstream_quic/latest/jetstream_quic/struct.Server.html#method.new_with_mtls)
 - [Binary encoding](https://docs.rs/jetstream_wireformat/latest/jetstream_wireformat/)
 - Cross-platform (Linux, macOS, Windows, WebAssembly)
+- [Sessions and lanes](sessions.md) — many independent streams per peer, or one multiplexed by tag
 - Cross-language — [TypeScript](typescript.md) and [Swift](swift.md) clients with wire-compatible codegen
 
 For detailed API documentation, see the [rustdoc documentation](doc/jetstream/index.html).
@@ -34,3 +35,5 @@ For detailed API documentation, see the [rustdoc documentation](doc/jetstream/in
 - [iroh_echo](https://github.com/sevki/jetstream/blob/main/examples/iroh_echo.rs) - Echo service using iroh transport
 - [wasm_example](https://github.com/sevki/jetstream/blob/main/examples/wasm_example.rs) - WebAssembly example
 - [wasm_example_bindings](https://github.com/sevki/jetstream/blob/main/examples/wasm_example_bindings.rs) - WebAssembly bindings example
+- [session_lanes](https://github.com/sevki/jetstream/blob/main/examples/session_lanes.rs) - Sessions and lanes in process, with no network under them
+- [quic_session](https://github.com/sevki/jetstream/blob/main/examples/quic_session.rs) - The same model over an mTLS QUIC connection

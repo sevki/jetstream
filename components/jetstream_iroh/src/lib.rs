@@ -7,6 +7,7 @@
 #![cfg_attr(docsrs, feature(doc_cfg))]
 mod client;
 mod server;
+mod session;
 
 use std::fmt::Debug;
 
@@ -21,6 +22,7 @@ use iroh::{
 };
 use jetstream_rpc::{server::Server, Protocol};
 pub use server::{IrohRouter, IrohServer};
+pub use session::{IrohServiceLane, IrohSession};
 
 pub extern crate iroh;
 
@@ -47,6 +49,30 @@ pub fn endpoint_builder<P: Protocol>() -> iroh::endpoint::Builder {
         .address_lookup(jetstream_resolver())
 }
 
+/// r[impl jetstream.session.conformance.iroh]
+/// Dial `addr` and keep the connection as a session, so the caller can
+/// open as many lanes as it wants rather than being handed one.
+pub async fn session_builder<P: Protocol>(
+    addr: EndpointAddr,
+) -> Result<IrohSession<P>, Box<dyn std::error::Error + 'static>> {
+    let endpoint = endpoint_builder::<P>().bind().await.map_err(Box::new)?;
+    let conn = endpoint
+        .connect(addr, P::NAME.as_bytes())
+        .await
+        .map_err(Box::new)?;
+    Ok(IrohSession::new_owned(conn, endpoint))
+}
+
+/// Dial `addr` and open one lane on it.
+///
+/// r[impl jetstream.session.compat.existing-clients]
+/// This is the pre-session shape: one lane, tag-multiplexed by whatever
+/// the caller wraps it in, and it stays conforming. Its bound is
+/// deliberately just `P: Protocol` — the returned lane never touches
+/// `P::Error`, so routing it through [`IrohSession`], whose service side
+/// does, would narrow this signature and break callers whose protocol
+/// carries its own error type. Callers that want more than one lane ask
+/// for a session with [`session_builder`] instead.
 pub async fn client_builder<P: Protocol>(
     addr: EndpointAddr,
 ) -> Result<client::IrohTransport<P>, Box<dyn std::error::Error + 'static>> {

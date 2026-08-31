@@ -1,0 +1,440 @@
+//! The QUIC connection as a JetStream session.
+//!
+//! r[impl jetstream.session.conformance]
+//! A QUIC connection carries many streams, authenticates its peer with a
+//! TLS certificate, and survives a change of network path. Each lane is
+//! one bidirectional stream on it.
+
+use std::{
+    marker::PhantomData,
+    pin::Pin,
+    sync::{
+        atomic::{AtomicBool, Ordering},
+        Arc,
+    },
+    task::{Context as TaskContext, Poll},
+};
+
+use bytes::Bytes;
+use futures::{Sink, SinkExt, Stream, StreamExt};
+use jetstream_rpc::{
+    context::{Context, Contextual, Peer, RemoteAddr, TlsPeer},
+    server::ServerCodec,
+    session::{Capabilities, Capability, Datagrams, Session, SessionError},
+    Error, Frame, IntoError, Protocol,
+};
+use quinn::{
+    Connection, ConnectionError, Endpoint, RecvStream, SendDatagramError,
+    SendStream, VarInt,
+};
+use tokio_util::codec::{FramedRead, FramedWrite};
+use tracing::warn;
+
+use crate::client::QuicTransport;
+
+/// The code a QUIC connection is closed with when its session closes.
+const SESSION_CLOSED: u32 = 0;
+
+/// r[impl jetstream.session.identity]
+/// The peer's TLS certificate chain, parsed, or `None` when the
+/// connection carries no client certificate.
+///
+/// For the default rustls session the dynamic identity downcasts to a
+/// `Vec<CertificateDer>`.
+pub fn peer_from_connection(connection: &Connection) -> Option<Peer> {
+    let identity = connection.peer_identity()?;
+    let certs = identity
+        .downcast::<Vec<rustls::pki_types::CertificateDer>>()
+        .ok()?;
+
+    match TlsPeer::from_der_chain(
+        &certs.iter().map(|cert| cert.as_ref()).collect::<Vec<_>>(),
+    ) {
+        Ok(tls_peer) => Some(Peer::Tls(tls_peer)),
+        Err(err) => {
+            warn!("failed to parse peer certificates: {}", err);
+            None
+        }
+    }
+}
+
+/// r[impl jetstream.session.lifetime]
+/// A connection error that means the session ended deliberately, rather
+/// than failed. Used everywhere a connection error crosses into
+/// `SessionError` — lanes and datagrams alike.
+///
+/// `SessionError::Closed` is what a caller branches on to stop
+/// retrying, so mapping every `ConnectionError` to `Transport` told it
+/// that our own `close` — and a peer's — was a transport fault.
+/// `LocallyClosed` is this end calling `close`; `ApplicationClosed` is
+/// the far end doing the same, since `close` sends an application code.
+/// Everything else — a reset, an idle timeout, a protocol violation —
+/// really is a failure and keeps its own error.
+fn connection_error(err: ConnectionError) -> SessionError {
+    match err {
+        ConnectionError::LocallyClosed
+        | ConnectionError::ApplicationClosed(_) => SessionError::Closed,
+        other => SessionError::Transport(other.into_error()),
+    }
+}
+
+/// A JetStream session over a QUIC connection.
+///
+/// Cloning is cheap and every clone addresses the same connection, so
+/// lanes can be opened from several tasks at once. The connection
+/// closes when the last clone goes away.
+pub struct QuicSession<P: Protocol> {
+    inner: Arc<SessionInner>,
+    _p: PhantomData<fn() -> P>,
+}
+
+/// What every handle on one session shares.
+///
+/// r[impl jetstream.session.lifetime]
+/// A lane must not outlive its session, and every lane holds streams
+/// opened from the connection, so the connection lives here and the
+/// last handle away closes it.
+#[derive(Debug)]
+struct SessionInner {
+    connection: Connection,
+    /// r[impl jetstream.session.capabilities]
+    /// Cleared by [`QuicSession::without_datagrams`]. Shared rather
+    /// than per-handle: whether this *connection* carries datagrams is
+    /// a property of the connection, so a clone taken before the
+    /// override must not go on claiming they work.
+    datagrams: AtomicBool,
+    // Dropping the last `quinn::Endpoint` handle closes every
+    // connection made from it, so a session built inside a helper that
+    // owns the endpoint would be dead on return. Held here for the
+    // caller that has nowhere else to keep it.
+    endpoint: Option<Endpoint>,
+}
+
+impl Drop for SessionInner {
+    /// r[impl jetstream.session.lifetime]
+    /// A session that goes away during unwinding, rather than through
+    /// `close`, ends its lanes just the same.
+    fn drop(&mut self) {
+        self.connection
+            .close(VarInt::from_u32(SESSION_CLOSED), b"session dropped");
+    }
+}
+
+// Written out rather than derived: a derive would require `P: Clone`
+// and `P: Debug`, which a session neither holds nor needs — the
+// protocol appears only as a `PhantomData` marker.
+impl<P: Protocol> Clone for QuicSession<P> {
+    fn clone(&self) -> Self {
+        Self {
+            inner: self.inner.clone(),
+            _p: PhantomData,
+        }
+    }
+}
+
+impl<P: Protocol> std::fmt::Debug for QuicSession<P> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("QuicSession")
+            .field("connection", &self.inner.connection)
+            .finish_non_exhaustive()
+    }
+}
+
+impl<P: Protocol> QuicSession<P> {
+    /// Wrap a connection whose endpoint the caller keeps alive.
+    ///
+    /// The session takes ownership of the connection's lifetime: when
+    /// the last handle is dropped the connection closes, even if the
+    /// caller holds a clone of it.
+    pub fn new(connection: Connection) -> Self {
+        Self {
+            inner: Arc::new(SessionInner {
+                connection,
+                endpoint: None,
+                datagrams: AtomicBool::new(true),
+            }),
+            _p: PhantomData,
+        }
+    }
+
+    /// Wrap a connection and keep `endpoint` alive alongside it.
+    ///
+    /// Use this whenever the caller does not otherwise hold the
+    /// endpoint the connection came from — returning a session from a
+    /// helper that built its own [`crate::Client`], say. A
+    /// `quinn::Endpoint` closes every connection made from it when its
+    /// last handle drops, so a session built with [`Self::new`] in that
+    /// position is unusable before the caller ever sees it.
+    pub fn new_owned(connection: Connection, endpoint: Endpoint) -> Self {
+        Self {
+            inner: Arc::new(SessionInner {
+                connection,
+                endpoint: Some(endpoint),
+                datagrams: AtomicBool::new(true),
+            }),
+            _p: PhantomData,
+        }
+    }
+
+    /// The underlying connection.
+    pub fn connection(&self) -> &Connection {
+        &self.inner.connection
+    }
+
+    /// The endpoint this session keeps alive, if it was given one.
+    pub fn endpoint(&self) -> Option<&Endpoint> {
+        self.inner.endpoint.as_ref()
+    }
+
+    /// Report this session as carrying no datagrams.
+    ///
+    /// r[impl jetstream.session.capabilities]
+    /// [`Session::capabilities`] derives datagram support from
+    /// `Connection::max_datagram_size`, which reads the *peer's*
+    /// advertised limit and the path MTU. It is silent about this
+    /// endpoint's own configuration: a connection built with
+    /// `datagram_receive_buffer_size(None)` still reports a size, while
+    /// every send fails with `Disabled` and nothing can arrive.
+    ///
+    /// quinn 0.11 documents `max_size` as returning `None` when
+    /// datagrams are "disabled locally", and its implementation does
+    /// not check — so trusting the doc is how this goes wrong. quinn
+    /// exposes no way to read the setting back from a `Connection`, so
+    /// the caller that turned datagrams off says so here.
+    ///
+    /// The override is shared by every handle on this connection,
+    /// including clones taken before the call: a clone that went on
+    /// claiming datagrams work would recreate exactly the mismatch this
+    /// is here to prevent.
+    pub fn without_datagrams(self) -> Self {
+        self.inner.datagrams.store(false, Ordering::SeqCst);
+        self
+    }
+
+    /// r[impl jetstream.session.capabilities.degradation]
+    /// Refuse datagram traffic on a session that reports no datagram
+    /// channel, so the raw methods agree with the capability instead of
+    /// the caller having to check it first.
+    ///
+    /// Receiving is why this exists. `read_datagram` on an endpoint
+    /// whose datagram receive buffer is switched off never yields, so
+    /// the caller parked until the connection closed — a capability
+    /// that is absent has to *fail*, not hang. Sending is here for the
+    /// same reason at less cost: quinn refuses it when the endpoint
+    /// really was configured without datagrams, but a caller that
+    /// called `without_datagrams` to opt out at this layer alone would
+    /// otherwise have sends succeed on a session reporting it has no
+    /// channel to send on.
+    fn no_datagrams(&self) -> Result<(), SessionError> {
+        if self.inner.datagrams.load(Ordering::SeqCst) {
+            Ok(())
+        } else {
+            Err(SessionError::Unsupported(Capability::Datagrams))
+        }
+    }
+}
+
+#[async_trait::async_trait]
+impl<P> Session<P> for QuicSession<P>
+where
+    P: Protocol<Error = Error> + 'static,
+{
+    type ClientLane = QuicTransport<P>;
+    type ServiceLane = QuicServiceLane<P>;
+
+    /// r[impl jetstream.session.capabilities]
+    /// r[impl jetstream.session.capabilities.degradation]
+    /// The conformance row says QUIC *can* carry datagrams. This
+    /// connection may not: a peer that never advertised DATAGRAM
+    /// support, or a transport configuration with them switched off,
+    /// leaves `max_datagram_size` empty and every send failing with
+    /// `Disabled` or `UnsupportedByPeer`. A capability is what this
+    /// session has, not what its transport is capable of in general —
+    /// reporting the row unconditionally would let
+    /// `require(Capability::Datagrams)` succeed on a session that
+    /// cannot carry one.
+    fn capabilities(&self) -> Capabilities {
+        Capabilities {
+            datagrams: <Self as Datagrams<P>>::max_datagram_size(self)
+                .is_some(),
+            ..Capabilities::quic()
+        }
+    }
+
+    /// r[impl jetstream.session.identity.addressing]
+    /// A certificate authenticates the peer once reached; the address is
+    /// what reaches it, so both are reported.
+    fn context(&self) -> Context {
+        Context::new(
+            Some(RemoteAddr::IpAddr(
+                self.inner.connection.remote_address().ip(),
+            )),
+            peer_from_connection(&self.inner.connection),
+        )
+    }
+
+    /// r[impl jetstream.lane.independence]
+    /// Every lane is its own QUIC stream, so one lane's stalled frame
+    /// does not delay another's.
+    async fn open_lane(&self) -> Result<Self::ClientLane, SessionError> {
+        let streams = self
+            .inner
+            .connection
+            .open_bi()
+            .await
+            .map_err(connection_error)?;
+
+        Ok(QuicTransport::from(streams))
+    }
+
+    /// r[impl jetstream.session.symmetric]
+    /// Either peer may open a lane on a QUIC connection.
+    async fn accept_lane(&self) -> Result<Self::ServiceLane, SessionError> {
+        let (send_stream, recv_stream) = self
+            .inner
+            .connection
+            .accept_bi()
+            .await
+            .map_err(connection_error)?;
+
+        Ok(QuicServiceLane {
+            send_stream: FramedWrite::new(send_stream, ServerCodec::new()),
+            recv_stream: FramedRead::new(recv_stream, ServerCodec::new()),
+            context: <Self as Session<P>>::context(self),
+        })
+    }
+
+    /// r[impl jetstream.session.lifetime]
+    /// Closing the connection resets every stream opened on it, so lanes
+    /// terminate with the session and calls in flight on them fail
+    /// rather than hang.
+    async fn close(&self) {
+        self.inner
+            .connection
+            .close(VarInt::from_u32(SESSION_CLOSED), b"session closed");
+    }
+}
+
+/// r[impl jetstream.session.datagrams]
+/// QUIC datagrams belong to the connection, not to any stream on it.
+/// Only the raw channel is bound here; framing is the model's, so both
+/// peers agree on it.
+#[async_trait::async_trait]
+impl<P> Datagrams<P> for QuicSession<P>
+where
+    P: Protocol<Error = Error> + 'static,
+    P::Request: 'static,
+    P::Response: 'static,
+{
+    fn max_datagram_size(&self) -> Option<u32> {
+        if !self.inner.datagrams.load(Ordering::SeqCst) {
+            return None;
+        }
+        self.inner
+            .connection
+            .max_datagram_size()
+            .map(|size| size.min(u32::MAX as usize) as u32)
+    }
+
+    async fn send_datagram_bytes(
+        &self,
+        bytes: Bytes,
+    ) -> Result<(), SessionError> {
+        self.no_datagrams()?;
+        self.inner.connection.send_datagram(bytes).map_err(|err| {
+            // r[impl jetstream.session.lifetime]
+            // A send that failed because the session ended says so, the
+            // same as a lane open does. The other variants — no peer
+            // support, disabled locally, too large — are the transport
+            // reporting on the datagram itself.
+            match err {
+                SendDatagramError::ConnectionLost(err) => connection_error(err),
+                other => SessionError::Transport(other.into_error()),
+            }
+        })
+    }
+
+    async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError> {
+        self.no_datagrams()?;
+        self.inner
+            .connection
+            .read_datagram()
+            .await
+            .map_err(connection_error)
+    }
+}
+
+/// The callee's end of a lane the peer opened.
+///
+/// r[impl jetstream.lane.definition]
+/// One QUIC bidirectional stream, framed, satisfying
+/// `ServiceTransport<P>`.
+pub struct QuicServiceLane<P: Protocol> {
+    send_stream: FramedWrite<SendStream, ServerCodec<P>>,
+    recv_stream: FramedRead<RecvStream, ServerCodec<P>>,
+    context: Context,
+}
+
+impl<P: Protocol> QuicServiceLane<P> {
+    /// Build a lane from a stream pair the caller accepted itself.
+    pub fn new(
+        send_stream: SendStream,
+        recv_stream: RecvStream,
+        context: Context,
+    ) -> Self {
+        Self {
+            send_stream: FramedWrite::new(send_stream, ServerCodec::new()),
+            recv_stream: FramedRead::new(recv_stream, ServerCodec::new()),
+            context,
+        }
+    }
+}
+
+impl<P: Protocol> Sink<Frame<P::Response>> for QuicServiceLane<P> {
+    type Error = Error;
+
+    fn poll_ready(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
+        self.get_mut().send_stream.poll_ready_unpin(cx)
+    }
+
+    fn start_send(
+        self: Pin<&mut Self>,
+        item: Frame<P::Response>,
+    ) -> Result<(), Self::Error> {
+        self.get_mut().send_stream.start_send_unpin(item)
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
+        self.get_mut().send_stream.poll_flush_unpin(cx)
+    }
+
+    fn poll_close(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Result<(), Self::Error>> {
+        self.get_mut().send_stream.poll_close_unpin(cx)
+    }
+}
+
+impl<P: Protocol> Stream for QuicServiceLane<P> {
+    type Item = Result<Frame<P::Request>, Error>;
+
+    fn poll_next(
+        self: Pin<&mut Self>,
+        cx: &mut TaskContext<'_>,
+    ) -> Poll<Option<Self::Item>> {
+        self.get_mut().recv_stream.poll_next_unpin(cx)
+    }
+}
+
+impl<P: Protocol> Contextual for QuicServiceLane<P> {
+    fn context(&self) -> Context {
+        self.context.clone()
+    }
+}

@@ -9,7 +9,9 @@ documentation.workspace = true
 readme.workspace = true
 
 [dependencies]
+async-trait = "0.1.89"
 futures = "0.3.32"
+jetstream_wireformat = { version = "16.1.3", path = "../jetstream_wireformat" }
 jetstream_rpc = { version = "16.1.3", path = "../jetstream_rpc", features = [
   "iroh",
 ] }

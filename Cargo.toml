@@ -40,6 +40,15 @@ name = "iroh_echo"
 bench = false
 required-features = ["iroh"]
 
+[[example]]
+bench = false
+name = "session_lanes"
+
+[[example]]
+bench = false
+name = "quic_session"
+required-features = ["quic"]
+
 [[test]]
 bench = false
 name = "jetstream_wire_format"
@@ -99,6 +108,10 @@ jetstream_wireformat = { version = "16.1.3", path = "components/jetstream_wirefo
 ] }
 miette = "7.6.0"
 prost = "0.14.3"
+quinn = { version = "0.11", default-features = false, features = [
+  "runtime-tokio",
+  "rustls",
+] }
 rcgen = "0.14.7"
 rusqlite = { version = "0.38.0", features = ["bundled"] }
 rustls = { version = "0.23", default-features = false, features = ["ring", "std"] }
