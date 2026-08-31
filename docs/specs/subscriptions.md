@@ -130,7 +130,9 @@ r[jetstream.subscription.endpoint]
 A subscription names an **endpoint** within the peer, not merely the peer. A session is an association with a node; an application-level producer — a room, an object, a cell — is addressed within it. Establishing a session MUST NOT be required per endpoint: a subscriber attached to several endpoints on one peer MUST be able to do so over one session.
 
 r[jetstream.lane.addressing]
-Where a lane is dedicated to one endpoint, the lane MUST be able to carry that endpoint's identifier before any service frame, alongside the version negotiation that `r[jetstream.session.version-scope]` already scopes per lane. Leaving this unspecified is what forces every transport binding and every application to invent its own first-frame convention.
+An endpoint MUST be addressable on every session, whatever its lane support, and the mechanism MUST NOT be the one the application chooses between. Where a lane is dedicated to one endpoint, the lane MUST be able to carry that endpoint's identifier before any service frame, alongside the version negotiation that `r[jetstream.session.version-scope]` already scopes per lane. Where the lane is shared — always on `LaneSupport::One`, and whenever a `LaneSupport::Many` session tag-realises a subscription — the endpoint MUST instead be carried by the request that opens the subscription.
+
+Both are required, because `r[jetstream.subscription.realisation.opaque]` forbids the application from knowing which it got. A specification offering only the dedicated-lane form would make `r[jetstream.subscription.endpoint]` — one client, three rooms, one connection — unimplementable on exactly the transports that motivate it. Leaving either unspecified is what forces every transport binding and every application to invent its own convention.
 
 r[jetstream.subscription.endpoint.identity]
 The endpoint identifier is an application-level name and MUST NOT be conflated with the transport peer identity of `r[jetstream.session.identity]`. The two answer different questions — which object, and which principal — and a producer generally needs both: a chat room must know which room it is and which user is attached.
@@ -150,9 +152,17 @@ termination — that stale datagram is indistinguishable, by tag alone, from an
 item of the new call.
 
 An implementation MUST NOT deliver such an item as belonging to a later
-subscription. Since the tag cannot establish this, a datagram realisation MUST
-carry a discriminator that changes whenever a tag is rebound, and MUST discard
-an item whose discriminator does not match the current binding. Withholding the
+subscription, nor to a *concurrent* one. The tag establishes neither: tags are
+allocated per lane, so two subscriptions on distinct lanes of one session may
+hold the same numeric tag at the same time, while the datagram channel is a
+single session-wide queue whose frames carry no lane identity. A discriminator
+that merely changed on rebind would leave those two indistinguishable and
+deliver an item to the wrong stream.
+
+So a datagram realisation MUST carry a binding identifier that is unique across
+the session for as long as the binding is live — or equivalently, carry the
+originating lane's identity alongside the tag — and MUST discard an item whose
+identifier does not match the binding it would be delivered to. Withholding the
 tag from the pool until no in-flight datagram can still bear it is not an
 alternative: no transport reports that instant, so the condition is not
 decidable.
@@ -202,7 +212,7 @@ r[jetstream.subscription.surface.declared]
 Whether a method is unary, streaming, or lossy MUST be declared in the service definition, not chosen at the call site. Codegen reads that declaration and emits the corresponding surface, so a protocol has one answer in every target language rather than one per runtime. The rules in this section are stated per language runtime because that is where they bind, in the manner of `r[jetstream.rpc.swift.mux]` and `r[jetstream.rpc.ts.mux]`; only the Rust surface is specified here, and a target language adopting subscriptions states its own against these requirements.
 
 r[jetstream.subscription.surface.session]
-A client offering subscriptions MUST be constructible from a session, not only from a single lane. `ClientTransport` is a frame sink and stream; it cannot open a lane, so a client holding one has no realisation to choose between and the choice falls to whoever constructed it. That is `r[jetstream.subscription.realisation.opaque]` violated at the constructor rather than at the call — the application branches on the transport before it ever names a subscription.
+A client offering subscriptions MUST be constructible from a session together with the endpoint it addresses, not only from a single lane. A session is an association with a peer that may host many endpoints, so a client given only the session cannot say which of them a subscription is for; the endpoint then reaches the wire by whichever means `r[jetstream.lane.addressing]` provides for the realisation actually chosen, which the application does not see. `ClientTransport` is a frame sink and stream; it cannot open a lane, so a client holding one has no realisation to choose between and the choice falls to whoever constructed it. That is `r[jetstream.subscription.realisation.opaque]` violated at the constructor rather than at the call — the application branches on the transport before it ever names a subscription.
 
 Constructing a client from a single transport remains valid and MUST keep working, per `r[jetstream.subscription.compat.existing-clients]`; such a client realises every subscription as a tag, which is the `LaneSupport::One` behaviour on any transport.
 
@@ -250,7 +260,7 @@ subscription got its own lane or a tag on a shared one — that is
 // transport can only ever tag-multiplex, which would make the caller's
 // construction choice the realisation choice — the branch that
 // r[jetstream.subscription.realisation.opaque] forbids.
-let room = RoomChannel::over(session.clone());
+let room = RoomChannel::over(session.clone(), RoomId("room-42"));
 let mut events = room.events(Context::default(), Seq(412));
 
 while let Some(item) = events.next().await {
