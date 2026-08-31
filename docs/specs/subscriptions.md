@@ -96,6 +96,8 @@ A subscriber MUST be able to cancel a subscription, and cancellation MUST releas
 
 A fresh tag introduces a hazard of its own, and an implementation MUST NOT inherit it: cancellation MUST NOT depend on the ordinary tag pool. Long-lived subscriptions can occupy every allocatable tag, and a pool that makes an acquirer wait for a recycled one then deadlocks exactly when cancellation is most needed — the tag cannot be recycled until the subscription terminates, and the subscription cannot terminate without the cancellation. Control capacity MUST be reserved outside the pool, or the pool MUST admit a cancellation while saturated.
 
+The same saturation starves ordinary calls, and that is a cost of correlating by tag rather than a defect to be waved away: each live subscription holds one tag for its whole life, so a client whose pool fills with subscriptions cannot issue a unary call at all — at `max_concurrent_requests = 1`, one room subscription blocks every `post` for its duration. An implementation MUST NOT let subscriptions exhaust the capacity available to ordinary calls; a quota, a reservation, or a pool that grows are all conforming. `r[jetstream.subscription.rationale.reverse-call]` prefers tag correlation with this cost counted against it.
+
 The acknowledgement bounds **emission**, not arrival. After it the producer MUST NOT emit further items for that subscription; it cannot promise that none is still in flight, because an item carried out of band may outlive the acknowledgement that was carried in band. `r[jetstream.subscription.lossy.stale-item]` is what makes the boundary observable at the subscriber, by requiring a late item to be discarded rather than delivered.
 
 r[jetstream.subscription.fanout]
@@ -155,6 +157,11 @@ tag from the pool until no in-flight datagram can still bear it is not an
 alternative: no transport reports that instant, so the condition is not
 decidable.
 
+r[jetstream.subscription.lossy.ordering]
+A discriminator that changes when a tag is rebound distinguishes *bindings*; it does not order items within one. Two items of the same lossy subscription reordered by the datagram transport both carry the current discriminator, so both would be accepted, and delivering them as they arrive would break `r[jetstream.subscription.ordering]` — which admits no exception for a lossy realisation.
+
+Waiting for the earlier one is not available either: on a channel that may drop, it may never arrive. So a lossy realisation MUST carry a monotonically comparable per-item sequence, and MUST discard an item that is not newer than the newest already delivered on that subscription. The subscriber therefore never observes an inversion, at the cost of the older item — which is what a lossy subscription asked for. This is latest-wins made normative rather than left to the transport, and it is how `r[jetstream.subscription.ordering]` is satisfied on an unordered channel.
+
 r[jetstream.subscription.lossy.degradation]
 Where the session reports no datagram channel, a lossy subscription MUST degrade by **dropping**, not by queueing. This refines `r[jetstream.session.capabilities.degradation]`, which requires an absent capability to fail explicitly rather than be emulated: for a lossy subscription, dropping is not an emulation of datagrams but the same delivery contract met by other means, and it is the behaviour the application asked for. Carrying presence reliably is the wrong answer — a typing indicator queued behind a large upload arrives after the message it was announcing.
 
@@ -193,6 +200,11 @@ Eviction and reconstruction of a producer MUST NOT be observable to a subscriber
 
 r[jetstream.subscription.surface.declared]
 Whether a method is unary, streaming, or lossy MUST be declared in the service definition, not chosen at the call site. Codegen reads that declaration and emits the corresponding surface, so a protocol has one answer in every target language rather than one per runtime. The rules in this section are stated per language runtime because that is where they bind, in the manner of `r[jetstream.rpc.swift.mux]` and `r[jetstream.rpc.ts.mux]`; only the Rust surface is specified here, and a target language adopting subscriptions states its own against these requirements.
+
+r[jetstream.subscription.surface.session]
+A client offering subscriptions MUST be constructible from a session, not only from a single lane. `ClientTransport` is a frame sink and stream; it cannot open a lane, so a client holding one has no realisation to choose between and the choice falls to whoever constructed it. That is `r[jetstream.subscription.realisation.opaque]` violated at the constructor rather than at the call — the application branches on the transport before it ever names a subscription.
+
+Constructing a client from a single transport remains valid and MUST keep working, per `r[jetstream.subscription.compat.existing-clients]`; such a client realises every subscription as a tag, which is the `LaneSupport::One` behaviour on any transport.
 
 r[jetstream.subscription.surface]
 A subscription MUST be presented as the target language's idiomatic asynchronous sequence, not as a callback registration or a polling method. A caller that already knows how to consume a stream in its language MUST NOT have to learn a JetStream-specific shape to consume a subscription.
@@ -234,7 +246,11 @@ subscription got its own lane or a tag on a shared one — that is
 `r[jetstream.subscription.realisation.opaque]`:
 
 ```rust
-let room = RoomChannel::new(4, Box::new(lane));
+// Built from the *session*, not from a lane. A channel handed a single
+// transport can only ever tag-multiplex, which would make the caller's
+// construction choice the realisation choice — the branch that
+// r[jetstream.subscription.realisation.opaque] forbids.
+let room = RoomChannel::over(session.clone());
 let mut events = room.events(Context::default(), Seq(412));
 
 while let Some(item) = events.next().await {
@@ -490,7 +506,9 @@ Streaming the response is therefore a **preference with reasons**, not an imposs
 An implementation MAY offer reverse-call push as well; `r[jetstream.subscription.rationale.coexists-with-push]` says where each fits. What it MUST NOT do is present one shape's guarantees as the other's.
 
 r[jetstream.subscription.rationale.coexists-with-push]
-Subscriptions do not supersede the reverse-call push that `r[jetstream.rpc.swift.handler]` already specifies, and the two answer different questions. A reverse call is right when the producer has something to say that no subscriber asked for and that is complete in itself — a notification, a cache invalidation — and when the transport lets the producer open a stream downstream. A subscription is right when the subscriber asked, when the items form one ordered sequence with a beginning the subscriber chose, or when the transport is `LaneSupport::One` and the producer has no way to open anything. An implementation MAY offer both; it MUST NOT present a reverse call as satisfying `r[jetstream.subscription.conformance.single-lane]`, which is the row reverse calls cannot reach.
+Subscriptions do not supersede the reverse-call push that `r[jetstream.rpc.swift.handler]` already specifies, and the two answer different questions. A reverse call is right when the producer has something to say that no subscriber asked for and that is complete in itself — a notification, a cache invalidation — and when the transport lets the producer open a stream downstream. A subscription is right when the subscriber asked for the items, and when they form one sequence with a beginning the subscriber chose, an end it can observe, and a handle it can cancel or resume.
+
+An implementation MAY offer both. What it MUST NOT do is present bare reverse-call push as satisfying `r[jetstream.subscription.conformance.single-lane]`: that row is satisfied by providing the subscription contract, not by being able to deliver messages. A reverse-call design that carries its own correlation id and honours termination, cancellation, resumption and backpressure does satisfy it — `r[jetstream.subscription.rationale.reverse-call]` explains why this document prefers the other shape, and the preference is not a conformance requirement.
 
 r[jetstream.subscription.rationale.not-a-queue]
 A subscription is not a message queue and this specification does not require durability, at-least-once delivery, or acknowledgement of individual items. `r[jetstream.subscription.resume]` is the whole of what is offered, and it is deliberately weaker: the producer decides what it retains, and says so when it cannot meet a request. An application needing stronger guarantees builds them on the items, as it must anyway across a producer that may be evicted.
