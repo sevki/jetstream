@@ -97,6 +97,8 @@ A subscriber MUST be able to cancel a subscription, and cancellation MUST releas
 r[jetstream.subscription.fanout]
 A producer serving many subscribers MUST NOT be required to deliver an item to all of them before delivering the next item to any of them. Per-subscription order is the only order; a global delivery order across subscribers is not required and MUST NOT be assumed by an application. Where an application needs a total order over events, it MUST carry that order in the items themselves — a sequence assigned by the producer — rather than inferring it from delivery.
 
+Freedom in the *order* of fan-out is not freedom in its *content*. A subscription that is not declared lossy MUST receive every item the producer emits for it. A subscriber falling behind is not licence to skip: an implementation either applies backpressure per `r[jetstream.subscription.backpressure]`, or terminates the subscription and reports it per `r[jetstream.subscription.backpressure.reporting]`. Omitting an item and carrying on is conforming only under `r[jetstream.subscription.lossy]`.
+
 ## Realisation
 
 r[jetstream.subscription.realisation]
@@ -106,7 +108,9 @@ r[jetstream.subscription.realisation.opaque]
 Which realisation was chosen MUST NOT be visible in the type an application holds, and MUST NOT require the application to branch on `Capability::ManyLanes`. This is the requirement that makes the model transport-independent in practice rather than in principle: a capability the application must branch on has not been abstracted, only reported.
 
 r[jetstream.subscription.realisation.selection]
-An implementation on a `LaneSupport::Many` session SHOULD allow the realisation to be chosen per subscription, since the trade-off is the caller's: a lane per subscription costs a stream and buys independence, and subscriptions that must be mutually ordered MUST share a lane, per `r[jetstream.subscription.ordering]`.
+An implementation on a `LaneSupport::Many` session SHOULD allow the realisation to be chosen per subscription, since the trade-off is the caller's: a lane per subscription costs a stream and buys independence under `r[jetstream.lane.independence]`, while sharing a lane spends that independence and buys nothing back.
+
+In particular, sharing a lane does **not** buy ordering. Two subscriptions on one lane remain unordered with respect to each other, per `r[jetstream.subscription.ordering]`, and mutual ordering is obtained by making the events one subscription and by no other means. This is forced rather than chosen: `r[jetstream.subscription.realisation.opaque]` denies an application any way to learn which realisation it was given, so a guarantee that held on only one of them could not be relied upon even where it happened to hold.
 
 r[jetstream.subscription.backpressure]
 A subscriber that stops consuming MUST NOT stall the producer's other subscriptions. On a `LaneSupport::Many` realisation this follows from `r[jetstream.lane.independence]`; on a shared lane it does not, and an implementation MUST bound what it buffers for a slow subscription rather than allowing it to consume the lane's window.
