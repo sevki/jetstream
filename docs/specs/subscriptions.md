@@ -164,10 +164,10 @@ Where a producer may be evicted, a subscription's state MUST be reconstructible 
 r[jetstream.subscription.detached.transparency]
 Eviction and reconstruction of a producer MUST NOT be observable to a subscriber as a subscription failure, a gap, or a reordering. A subscriber that cannot tell is what makes eviction a platform decision rather than an application concern.
 
-## Language surface
+## Surface
 
 r[jetstream.subscription.surface.declared]
-Whether a method is unary, streaming, or lossy MUST be declared in the service definition, not chosen at the call site. Codegen for every target language reads that declaration and emits the corresponding surface, so a protocol has one answer across Rust, Swift, TypeScript and Go rather than one per runtime.
+Whether a method is unary, streaming, or lossy MUST be declared in the service definition, not chosen at the call site. Codegen reads that declaration and emits the corresponding surface, so a protocol has one answer in every target language rather than one per runtime. The rules in this section are stated per language runtime because that is where they bind, in the manner of `r[jetstream.rpc.swift.mux]` and `r[jetstream.rpc.ts.mux]`; only the Rust surface is specified here, and a target language adopting subscriptions states its own against these requirements.
 
 r[jetstream.subscription.surface]
 A subscription MUST be presented as the target language's idiomatic asynchronous sequence, not as a callback registration or a polling method. A caller that already knows how to consume a stream in its language MUST NOT have to learn a JetStream-specific shape to consume a subscription.
@@ -181,12 +181,12 @@ The three outcomes of `r[jetstream.subscription.termination]` — the producer f
 r[jetstream.subscription.surface.producer]
 The producer surface MUST admit a source driven by a cursor, not only a live sender held in memory. A generated handler that can express a subscription *only* as "hold this sender and write to it" cannot satisfy `r[jetstream.subscription.detached.state]`, because the sender is precisely what eviction invalidates.
 
-The remainder of this section is non-normative: one worked producer and consumer per language, for the room of use case 1. `Seq` is the room's sequence number and `Event` its message type; both are ordinary generated wire types.
+The remainder of this section is non-normative: a worked producer and consumer for the room of use case 1. `Seq` is the room's sequence number and `Event` its message type; both are ordinary generated wire types.
 
 ### Rust
 
 r[jetstream.subscription.surface.rust]
-Rust presents a subscription as a `Stream`, cancelled by dropping it. The `#[service]` macro gains attributes for the declaration required by `r[jetstream.subscription.surface.declared]`.
+Rust presents a subscription as a `Stream`, cancelled by dropping it. The `#[service]` macro gains attributes for the declaration required by `r[jetstream.subscription.surface.declared]`. Rust is the reference implementation, so this is the surface the other runtimes' own specifications are written against.
 
 ```rust
 #[service]
@@ -247,115 +247,154 @@ impl Room for EvictableRoom {
 }
 ```
 
-### Swift
+## Patterns
 
-r[jetstream.subscription.surface.swift]
-Swift presents a subscription as an `AsyncSequence`, cancelled by task cancellation, consistent with the concurrency model `r[jetstream.rpc.swift.mux]` already uses. The generated protocol gains streaming methods alongside the unary ones described by `r[jetstream.codegen.service.swift]`.
+Non-normative. How subscriptions compose in Rust, and which rule each
+composition depends on. These are where the ordering rules earn their keep:
+most of the mistakes available here are ordering mistakes that type-check.
 
-```swift
-public protocol Room: Sendable {
-    func post(ctx: Context, body: String) async throws -> Seq
-    func events(ctx: Context, from: Seq) -> Subscription<Event>
-    func presence(ctx: Context) -> Subscription<Presence>   // lossy
-}
-```
+### Fan-out — one producer, many subscribers
 
-```swift
-let task = Task {
-    do {
-        for try await event in room.events(ctx: .default, from: Seq(412)) {
-            await render(event)
-        }
-        // Fell out normally: the room closed the subscription.
-    } catch let error as SubscriptionError {
-        guard case .gap(let earliest) = error else { throw error }
-        await resync(from: earliest)
-    }
-}
+Use case 1, shown above: each subscriber gets every item, in the order the
+producer emitted them, and `r[jetstream.subscription.fanout]` deliberately does
+not require the producer to deliver an item to all subscribers before moving on.
+A subscriber that stalls therefore does not stall the room, which is
+`r[jetstream.subscription.backpressure]`.
 
-// Cancelling the task cancels the subscription. No teardown call —
-// r[jetstream.subscription.surface.cancellation].
-task.cancel()
-```
+### Fan-in — many producers, one consumer
 
-A resident producer yields; an evictable one is constructed from a cursor:
+A client attached to several rooms merges their subscriptions. The rule that
+shapes the code is `r[jetstream.subscription.ordering]`: there is **no order
+between subscriptions**, so the merge must carry the source and the consumer
+must not read the interleaving as meaningful.
 
-```swift
-extension ChatRoom: Room {
-    func events(ctx: Context, from: Seq) -> Subscription<Event> {
-        Subscription { continuation in
-            subscribers.attach(from: from, continuation)
-        }
-    }
-}
+```rust
+use futures::stream::{select_all, StreamExt};
 
-extension EvictableRoom: Room {
-    func events(ctx: Context, from: Seq) -> Subscription<Event> {
-        Subscription(from: from) { cursor in
-            try await self.log.readAfter(cursor)
-        }
+let mut inbox = select_all(rooms.iter().map(|room| {
+    let id = room.id();
+    room.events(Context::default(), cursor_for(id)).map(move |item| (id, item))
+}));
+
+while let Some((room_id, item)) = inbox.next().await {
+    match item {
+        Ok(event) => render(room_id, event),
+        // One room failing is not all of them. Tearing down the merge on the
+        // first error would make every room as available as the worst.
+        Err(err) => drop_room(room_id, err),
     }
 }
 ```
 
-### TypeScript
+Whether those rooms live on one peer or several does not change this code.
+That is `r[jetstream.subscription.endpoint]` paying off: several endpoints on
+one peer are several subscriptions on **one** session, not one session each.
 
-r[jetstream.subscription.surface.ts]
-TypeScript presents a subscription as an `AsyncIterable`, cancelled by an `AbortSignal` or by breaking out of the loop. This is the row that matters most in practice: the browser reaches a room over a WebSocket, which is `LaneSupport::One`, and is therefore the deployment that `r[jetstream.subscription.conformance.single-lane]` exists for.
+### Many writers, one order
 
-```ts
-const events = room.events({ from: 412n }, { signal });
+The write side of a room, and the place where the ordering rules are easiest to
+get wrong. The room assigns the order; the writers do not have one between them.
+Two posts from the *same* client are ordered with respect to each other only if
+they share a lane — `r[jetstream.lane.no-cross-lane-order]`.
 
-for await (const event of events) {
-  render(event);
-}
-// Breaking out of the loop cancels; so does aborting the signal.
+```rust
+// A lane kept for the session: posts arrive at the room in issue order.
+let ordered = Session::<RoomChannel>::open_lane(&session).await?;
+let room = RoomChannel::new(4, Box::new(ordered));
+room.post(ctx.clone(), "first".into()).await?;
+room.post(ctx.clone(), "second".into()).await?;
+
+// A lane per call: independent, no head-of-line blocking, and no order.
+// Correct for posts to *different* rooms, wrong for two posts to one.
+let posts = messages.into_iter().map(|body| async {
+    let lane = Session::<RoomChannel>::open_lane(&session).await?;
+    RoomChannel::new(1, Box::new(lane)).post(Context::default(), body).await
+});
 ```
 
-```ts
-try {
-  for await (const event of events) render(event);
-} catch (err) {
-  if (err instanceof SubscriptionGap) await resyncFrom(err.earliest);
-  else throw err;
+`r[jetstream.rcp.multiplexing.selection]` is exactly this choice, and it belongs
+to the caller because only the caller knows whether these two writes are related.
+
+### Gossip — every peer both roles
+
+A mesh where each peer subscribes to its neighbours and serves theirs.
+`r[jetstream.session.symmetric]` is what makes it expressible: a session is not
+fixed to a role, so one session per neighbour carries both directions.
+
+```rust
+async fn run_peer(me: PeerId, neighbours: Vec<GossipChannel>) -> Result<()> {
+    let mut rumours = select_all(
+        neighbours.iter().map(|n| n.rumours(Context::default(), Seq(0))),
+    );
+
+    while let Some(item) = rumours.next().await {
+        let rumour = item?;
+        // Seen-set, not ordering: gossip converges without a total order,
+        // which is why r[jetstream.subscription.ordering] being per-subscription
+        // costs nothing here.
+        if me.seen.insert(rumour.id) {
+            me.log.append(rumour).await?;   // this peer's own subscribers follow
+        }
+    }
+    Ok(())
 }
 ```
 
-### Go
+Two properties of the session model do real work in a mesh. Membership is a list
+of identities and needs no locators, because iroh reports `IdentityKind::Key` and
+`r[jetstream.session.identity.addressing]` makes that a capability rather than a
+detail. And liveness heartbeats are `r[jetstream.subscription.lossy]` — a
+heartbeat queued behind a large rumour has already told a lie by the time it
+arrives.
 
-r[jetstream.subscription.surface.go]
-Go presents a subscription as an iterator over item and error, cancelled through the `context.Context` the call was given.
+### Pipeline — subscribe, transform, republish
 
-> There is no Go runtime in this repository — no `docs/specs/rpc-go.md`, no `docs/specs/wireformat-go.md`, and no Go source. This rule specifies the surface a Go binding would present; the runtime specifications it depends on are a prerequisite and do not exist yet. It is included because the surface constrains the design of the other three: a shape that cannot be expressed idiomatically in Go is a shape that has assumed something about Rust or Swift.
+A cell that consumes one subscription and produces another. The cursor source is
+what makes this composable, per `r[jetstream.subscription.surface.producer]`:
 
-```go
-type Room interface {
-	Post(ctx context.Context, body string) (Seq, error)
-	Events(ctx context.Context, from Seq) iter.Seq2[Event, error]
-	Presence(ctx context.Context) iter.Seq2[Presence, error] // lossy
+```rust
+fn summaries(&self, ctx: Context, from: Seq) -> Subscription<Summary> {
+    Subscription::from_cursor(from, |cursor| async move {
+        let batch = self.upstream.read_after(ctx.clone(), cursor).await?;
+        Ok(batch.map(summarise))
+    })
 }
 ```
 
-```go
-for event, err := range room.Events(ctx, Seq(412)) {
-	var gap *SubscriptionGap
-	switch {
-	case errors.As(err, &gap):
-		resyncFrom(gap.Earliest)
-	case err != nil:
-		return err
-	default:
-		render(event)
-	}
+Backpressure propagates the length of the chain for free: the next upstream read
+happens only when the previous batch has been consumed, so a slow final consumer
+slows every hop rather than accumulating between them. A live-sender pipeline
+would instead hold the upstream subscription open and buffer, and would not
+survive the middle cell being evicted — `r[jetstream.subscription.detached.state]`.
+
+When one hop is in-process and the next is remote, `r[jetstream.session.local.boundary]`
+decides whether the ordering survives the transition, and requires the weakening
+to be reported if it does not.
+
+### Competing consumers — what this is *not*
+
+Two consumers on one subscription do **not** split the items between them.
+`r[jetstream.subscription.fanout]` gives each subscriber every item, and
+`r[jetstream.subscription.rationale.not-a-queue]` declines to offer per-item
+acknowledgement, so nothing in the model decides who owns an item.
+
+A work queue is built *on* subscriptions rather than *out of* them: the producer
+partitions or leases, and the acknowledgement is an ordinary unary call.
+
+```rust
+// The producer decides who gets what; the subscription only carries it.
+let mut work = queue.claims(Context::default(), Worker(id), Lease::secs(30));
+
+while let Some(item) = work.next().await {
+    let job = item?;
+    process(&job).await?;
+    queue.ack(Context::default(), job.id).await?;   // unary, not a subscription
 }
-// Cancelling ctx ends the range — r[jetstream.subscription.surface.cancellation].
 ```
 
-`iter.Seq2[Event, error]` is preferred over a pair of channels because it carries
-termination and failure in one construct, which is what
-`r[jetstream.subscription.surface.termination]` asks for; a `<-chan Event` closed
-on both success and failure cannot distinguish them without a second channel the
-caller may forget to read.
+Stating this is the point of `r[jetstream.subscription.rationale.not-a-queue]`:
+the boundary is deliberate, and an application that needs at-least-once delivery
+builds it on the items, as it must anyway across a producer that may be evicted.
 
 ## Conformance
 
