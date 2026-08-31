@@ -202,7 +202,9 @@ r[jetstream.subscription.resume]
 A subscriber MUST be able to request that a subscription resume from a position it supplies, rather than from the beginning or from the present. The position is application-defined — only the application knows what an item is — and the producer MUST either resume from it or report that it cannot, per `r[jetstream.subscription.resume.gap]`.
 
 r[jetstream.subscription.resume.gap]
-A producer that cannot satisfy a requested position — because the items are no longer retained, or the position is unrecognised — MUST report the gap explicitly. It MUST NOT silently resume from the oldest item it still holds, nor from the present: both present a discontinuous stream as a continuous one, which is `r[jetstream.subscription.ordering]` violated in the one place an application cannot detect it.
+A producer that cannot satisfy a requested position — because the items are no longer retained, or the position is unrecognised — MUST report the gap **before delivering any item**, and MUST terminate or reject the resumed subscription rather than continuing from elsewhere. It MUST NOT silently resume from the oldest item it still holds, nor from the present: both present a discontinuous stream as a continuous one, which is `r[jetstream.subscription.ordering]` violated in the one place an application cannot detect it.
+
+Reporting it *late* is the failure worth naming, because it satisfies a rule that only forbids silence: a producer may emit everything it retains and then announce the gap, by which time a log tailer has applied a discontinuous sequence and a state synchroniser has committed one. The subscriber learns it must resync after acting on data it should never have been given. The gap is therefore the subscription's first response or the subscription does not start.
 
 r[jetstream.subscription.resume.scope]
 Resumption is per subscription, not per session. A resumed session MUST NOT be assumed to carry its previous subscriptions; each is re-established with its own position.
@@ -511,7 +513,7 @@ r[jetstream.subscription.conformance.single-lane]
 A `LaneSupport::One` transport MUST support subscriptions, by the same means and behind the same surface as every other row. It is the row that motivates the whole specification: if reaching a browser needs a second application implementation, the session model's transport independence stops at the RPC boundary. The requirement is that the row be reachable *uniformly*, not that only one shape can reach it.
 
 r[jetstream.subscription.conformance.local]
-An in-process session MUST realise subscriptions identically to a transport-backed one, per `r[jetstream.session.local]`, and MUST NOT serialise items to obtain ordering, per `r[jetstream.session.local.no-serialisation]`. Where an in-process subscription crosses to a remote peer, `r[jetstream.session.local.boundary]` applies: the ordering MUST continue across the boundary or the weakening MUST be reported.
+An in-process session MUST realise subscriptions identically to a transport-backed one, per `r[jetstream.session.local]`, and MUST NOT serialise items to obtain ordering, per `r[jetstream.session.local.no-serialisation]`. Where an in-process subscription crosses to a remote peer, `r[jetstream.session.local.boundary]` applies and the ordering MUST continue across the boundary. Reporting a weakening is **not** an alternative to continuing it: that rule makes silent weakening a conformance failure and the report an additional obligation on an implementation that has already failed, not a second way to pass. An earlier draft of this rule wrote the two as `or`, which would have let an implementation announce that it drops ordering and still claim the row.
 
 ## Compatibility
 
