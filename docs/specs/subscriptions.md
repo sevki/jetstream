@@ -116,6 +116,35 @@ A producer serving many subscribers MUST NOT be required to deliver an item to a
 
 Freedom in the *order* of fan-out is not freedom in its *content*. A subscription that is not declared lossy MUST receive every item the producer emits for it. A subscriber falling behind is not licence to skip: an implementation either applies backpressure per `r[jetstream.subscription.backpressure]`, or terminates the subscription and reports it per `r[jetstream.subscription.backpressure.reporting]`. Omitting an item and carrying on is conforming only under `r[jetstream.subscription.lossy]`.
 
+## Dispatch
+
+The rules above say what a subscription is. These say what a service must
+keep doing while one is open — every one of them found by making the model
+run rather than by reading it, and every one of them a case where the
+document was satisfiable on paper and not in code.
+
+r[jetstream.subscription.dispatch.concurrent]
+A service serving a subscription on a lane MUST go on accepting requests on that lane. A subscription is one call among the lane's others, per `r[jetstream.subscription.definition]`, and `r[jetstream.subscription.realisation]` requires many of them to share one lane on a `LaneSupport::One` session — neither of which is possible if serving one occupies the reader.
+
+This is not merely a throughput requirement. A dispatcher that serves a subscription by consuming its items to exhaustion never reads the lane again, so a cancellation cannot arrive: `r[jetstream.subscription.cancel]` becomes unimplementable rather than unimplemented, and the deadlock is total for exactly the subscriptions that matter — one that stays open, which is every room, presence feed and build log the use cases describe. The obligation therefore belongs here, next to the rule it would otherwise silently void.
+
+r[jetstream.subscription.dispatch.declared]
+A protocol MUST declare, in a form the dispatcher can act on before it decodes the payload, which of its requests open subscriptions and which cancel them, and MUST supply the values a dispatcher sends on their behalf: the acknowledgement of `r[jetstream.subscription.cancel]`, and the terminator of `r[jetstream.subscription.dispatch.terminator]`.
+
+A dispatcher is generic over the protocol; a cancellation is an ordinary request whose payload only the protocol can decode. Cancellation therefore cannot be handled by the RPC layer alone, however global its message id — the layer knows a cancellation has arrived and cannot say for which subscription, nor construct the reply. What the protocol declares MAY be generated; `r[jetstream.subscription.surface.declared]` already requires the declaration to exist at the protocol rather than the call site.
+
+Each of these declarations MUST have a default meaning "this protocol has no subscriptions", so that a protocol written before subscriptions existed remains conforming without change — `r[jetstream.subscription.compat.rpc-layer]`.
+
+r[jetstream.subscription.dispatch.terminator]
+A subscription cut short MUST still be terminated on its lane. A producer stopped by cancellation stops emitting, which is not the same as ending: `r[jetstream.subscription.termination]` requires an explicit end, and `r[jetstream.subscription.identity]` forbids releasing the tag without one. A subscription that simply stops therefore holds its tag for the life of the lane, and a client whose users open and close rooms exhausts its tag space with nothing in flight.
+
+Where the producer stops without saying so, the dispatcher MUST supply the terminator, using the value `r[jetstream.subscription.dispatch.declared]` requires the protocol to provide. The terminator precedes the acknowledgement, per `r[jetstream.subscription.cancel]`.
+
+r[jetstream.subscription.dispatch.issue-order]
+Requests issued in order on one lane MUST reach that lane in that order. `r[jetstream.lane.delivery-order]` states the guarantee for a lane's frames; this states the obligation of the code that puts them there, which is not the same requirement and is the one an implementation loses.
+
+A client that hands each request to a task and lets the scheduler decide satisfies neither. The failure is not a reordering of independent calls, which no rule forbids: it is that a cancellation can overtake the subscription it names, so the service is asked to cancel a subscription that does not exist yet, answers that there is nothing to cancel, and then opens the subscription — which then never ends. A cancellation carries the tag of a call whose ordering against it is not incidental but definitional.
+
 ## Realisation
 
 r[jetstream.subscription.realisation]
