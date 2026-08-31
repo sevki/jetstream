@@ -189,7 +189,13 @@ pub trait Server: Protocol + Send + Sync {
     /// `r[jetstream.subscription.identity]` for why it cannot simply be
     /// released. The dispatcher supplies one, and the protocol says what
     /// value it has.
-    fn cancelled_terminator() -> Option<Self::Response> {
+    ///
+    /// r[impl jetstream.subscription.termination.discriminant]
+    /// `method` is the message type of the request that opened the
+    /// subscription. A protocol with one streaming method can ignore it;
+    /// one with two cannot, because the terminator's payload names its
+    /// method and only the request says which method this was.
+    fn cancelled_terminator(_method: u8) -> Option<Self::Response> {
         None
     }
 
@@ -292,6 +298,10 @@ impl<P: Protocol> Stream for Served<P> {
 /// What the dispatcher remembers about a subscription it is serving.
 struct Open {
     cancel: tokio_util::sync::CancellationToken,
+    /// The message type of the request that opened it. The terminator
+    /// the dispatcher may have to supply names its method, and only the
+    /// request knows which method that was.
+    method: u8,
     /// Set when the producer emitted a terminator of its own, so the
     /// dispatcher does not send a second one.
     terminated: bool,
@@ -349,7 +359,7 @@ where
                     if let Some(o) = open.remove(&tag) {
                         // r[impl jetstream.subscription.dispatch.terminator]
                         if !o.terminated {
-                            if let Some(msg) = P::cancelled_terminator() {
+                            if let Some(msg) = P::cancelled_terminator(o.method) {
                                 sink.send(Frame { tag, msg }).await?;
                             }
                         }
@@ -394,6 +404,7 @@ where
                 // moves.
                 if P::is_streaming(frame.msg.message_type()) {
                     let tag = frame.tag;
+                    let method = frame.msg.message_type();
                     // r[impl jetstream.subscription.cancel]
                     // The token the producer watches.
                     let cancel = tokio_util::sync::CancellationToken::new();
@@ -402,7 +413,12 @@ where
                             .await;
                     open.insert(
                         tag,
-                        Open { cancel, terminated: false, ack_to: None },
+                        Open {
+                            cancel,
+                            method,
+                            terminated: false,
+                            ack_to: None,
+                        },
                     );
                     active.push(Served { tag, inner: Some(inner) });
                 } else {

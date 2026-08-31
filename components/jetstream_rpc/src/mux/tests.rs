@@ -423,7 +423,8 @@ impl crate::server::Server for Room {
     }
 
     // r[impl jetstream.subscription.termination]
-    fn cancelled_terminator() -> Option<Say> {
+    fn cancelled_terminator(method: u8) -> Option<Say> {
+        assert_eq!(method, TASK, "the terminator must know its method");
         Some(Say::Done)
     }
 
