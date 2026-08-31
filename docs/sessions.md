@@ -200,6 +200,13 @@ let frame: Frame<MyRequest> =
     decode_datagram(session.recv_datagram_bytes().await?)?;
 ```
 
+A session that reports no datagram channel refuses traffic on it rather
+than leaving the check to the caller: both `send_datagram_bytes` and
+`recv_datagram_bytes` fail with `SessionError::Unsupported`. Receiving is
+the reason — awaiting a datagram on an endpoint whose receive buffer is
+switched off never yields, and parking forever is the one failure mode
+the degradation rule exists to prevent.
+
 A datagram carries a complete frame or it is discarded — there is nothing
 to reassemble it from, and trailing bytes after the frame mean it is not a
 complete frame either. `check_datagram_size` rejects a frame larger than

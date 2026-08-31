@@ -558,3 +558,46 @@ async fn a_datagram_with_trailing_bytes_is_rejected() {
         "a datagram with trailing bytes is not a complete frame"
     );
 }
+
+// r[impl jetstream.session.capabilities.degradation]
+// Regression, the twin of the iroh one: `without_datagrams` reached the
+// capability and the size but not the two methods that carry traffic.
+// `recv_datagram_bytes` went on awaiting `read_datagram`, which on an
+// endpoint with datagram receive switched off never yields, so a caller
+// parked until the connection closed rather than being told the
+// capability is absent.
+#[tokio::test]
+async fn a_session_without_datagrams_refuses_datagram_traffic() {
+    let pair = pair().await;
+    let quiet = pair.client.clone().without_datagrams();
+
+    // The receive is the one that used to hang. A generous timeout, so
+    // that a regression fails here rather than wedging the suite: the
+    // refusal is a flag check and does not touch the network.
+    let refused = timeout(
+        Duration::from_secs(5),
+        Datagrams::<TestProtocol>::recv_datagram_bytes(&quiet),
+    )
+    .await
+    .expect("a session with no datagram channel must fail, not park");
+    assert!(
+        matches!(
+            refused,
+            Err(SessionError::Unsupported(Capability::Datagrams))
+        ),
+        "expected the capability to be named, got {refused:?}"
+    );
+
+    // Sending is refused for the same reason and by the same flag. This
+    // pair's endpoints do carry datagrams, so without the check the
+    // send would have succeeded on a session reporting no channel.
+    let sent = quiet.send_request_datagram(frame(1, "quiet")).await;
+    assert!(
+        matches!(sent, Err(SessionError::Unsupported(Capability::Datagrams))),
+        "expected the send to be refused, got {sent:?}"
+    );
+
+    // The peer is a different session and keeps its own channel: the
+    // override belongs to the handles on one side, not to the wire.
+    assert!(Session::<TestProtocol>::capabilities(&pair.server).datagrams);
+}

@@ -20,7 +20,7 @@ use futures::{Sink, SinkExt, Stream, StreamExt};
 use jetstream_rpc::{
     context::{Context, Contextual, Peer, RemoteAddr, TlsPeer},
     server::ServerCodec,
-    session::{Capabilities, Datagrams, Session, SessionError},
+    session::{Capabilities, Capability, Datagrams, Session, SessionError},
     Error, Frame, IntoError, Protocol,
 };
 use quinn::{
@@ -210,6 +210,28 @@ impl<P: Protocol> QuicSession<P> {
         self.inner.datagrams.store(false, Ordering::SeqCst);
         self
     }
+
+    /// r[impl jetstream.session.capabilities.degradation]
+    /// Refuse datagram traffic on a session that reports no datagram
+    /// channel, so the raw methods agree with the capability instead of
+    /// the caller having to check it first.
+    ///
+    /// Receiving is why this exists. `read_datagram` on an endpoint
+    /// whose datagram receive buffer is switched off never yields, so
+    /// the caller parked until the connection closed — a capability
+    /// that is absent has to *fail*, not hang. Sending is here for the
+    /// same reason at less cost: quinn refuses it when the endpoint
+    /// really was configured without datagrams, but a caller that
+    /// called `without_datagrams` to opt out at this layer alone would
+    /// otherwise have sends succeed on a session reporting it has no
+    /// channel to send on.
+    fn no_datagrams(&self) -> Result<(), SessionError> {
+        if self.inner.datagrams.load(Ordering::SeqCst) {
+            Ok(())
+        } else {
+            Err(SessionError::Unsupported(Capability::Datagrams))
+        }
+    }
 }
 
 #[async_trait::async_trait]
@@ -318,6 +340,7 @@ where
         &self,
         bytes: Bytes,
     ) -> Result<(), SessionError> {
+        self.no_datagrams()?;
         self.inner.connection.send_datagram(bytes).map_err(|err| {
             // r[impl jetstream.session.lifetime]
             // A send that failed because the session ended says so, the
@@ -332,6 +355,7 @@ where
     }
 
     async fn recv_datagram_bytes(&self) -> Result<Bytes, SessionError> {
+        self.no_datagrams()?;
         self.inner
             .connection
             .read_datagram()
