@@ -1,4 +1,5 @@
 - [JetStream](0intro.md)
+- [Sessions and Lanes](sessions.md)
 - [🌐 Iroh](iroh.md)
 - [🚀 QUIC](quic.md)
 - [🌍 HTTP](http.md)

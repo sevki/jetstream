@@ -161,6 +161,30 @@ if let Some(Peer::Tls(tls_peer)) = ctx.peer() {
 }
 ```
 
+## Sessions and Lanes
+
+`QuicSession` binds a QUIC connection to the
+[session model](sessions.md): one lane per bidirectional stream, the
+connection's datagram channel, and the peer's certificate for identity.
+
+```rust
+use jetstream_quic::QuicSession;
+use jetstream_rpc::session::Session;
+
+let session = QuicSession::<EchoChannel>::new(connection);
+
+// A lane per call instead of one stream multiplexed by tag.
+let lane = Session::<EchoChannel>::open_lane(&session).await?;
+let channel = EchoChannel::new(4, Box::new(lane));
+```
+
+Use `QuicSession::new_owned(connection, endpoint)` when nothing else holds
+the endpoint: dropping the last handle on a quinn `Endpoint` closes every
+connection opened from it, so the session is the right owner.
+
+A worked example is in
+[`examples/quic_session.rs`](https://github.com/sevki/jetstream/blob/main/examples/quic_session.rs).
+
 ## Dependencies
 
 Add to your `Cargo.toml`:

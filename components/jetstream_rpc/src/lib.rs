@@ -7,6 +7,13 @@
 //! # JetStream Rpc
 //! Defines Rpc primitives for JetStream.
 //! Of note is the `Protocol` trait which is meant to be used with the `service` attribute macro.
+//!
+//! [`client::ClientTransport`] and [`server::ServiceTransport`] describe
+//! one ordered frame sequence. [`session`] describes the thing that can
+//! open another one: a [`session::Session`] is the association with a
+//! peer, and a *lane* is one sequence obtained from it — which is what
+//! those two traits already are. See the guide at
+//! <https://sevki.github.io/jetstream/sessions.html>.
 #![cfg_attr(docsrs, feature(doc_cfg))]
 
 extern crate tokio_util;

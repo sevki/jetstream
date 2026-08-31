@@ -180,6 +180,20 @@ The `launch_chrome.sh` script:
 2. Launches Chrome with `--origin-to-force-quic-on` flag
 3. Provides instructions for importing certificates
 
+## Sessions and Lanes
+
+`WebTransportSession` binds a WebTransport session to the
+[session model](sessions.md) — a lane per bidirectional stream, with the
+client certificate for identity where one was presented.
+
+It reports no datagram capability. HTTP/3 carries datagrams, but this
+binding has no `Datagrams<P>` impl yet, and reporting a capability a
+caller then cannot use is worse than reporting its absence.
+
+The type is also not yet reachable from `H3Service`, which owns the HTTP/3
+connection and routes through its own handler; a caller running its own h3
+accept loop can use it today.
+
 ## Dependencies
 
 Add to your `Cargo.toml`:
