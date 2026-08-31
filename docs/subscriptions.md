@@ -99,15 +99,26 @@ typed payload names its method in the payload. One byte, and a protocol
 can have as many subscription methods as it likes.
 
 The method is not `async`, and the subscription opens when it is first
-polled — which is what lets the signature be the plain `fn` it should be
+read — which is what lets the signature be the plain `fn` it should be
 while acquiring a tag and sending a request stay asynchronous. It also
-means *nothing is on the wire until something reads*. Combined with
-`jetstream.lane.no-cross-lane-order` — a subscription on its own lane is
-unordered against a call on another — that makes "subscribe, then act,
-then read" a race. The cursor parameter is the answer: `from` is not
-decoration, it is what makes the sequence well-defined regardless of when
-the request arrived. A producer that ignores it and only forwards live
-events will drop messages, reliably.
+means *nothing is on the wire until something reads*, so "subscribe, then
+act, then read" acts before the subscription exists.
+
+`establish()` says "now":
+
+```rust,ignore
+let mut events = room.events(Context::default(), from);
+events.establish().await;   // the request is on the wire
+```
+
+That is necessary and, across lanes, not sufficient. A subscription on
+its own lane is unordered against a call on another —
+`jetstream.lane.no-cross-lane-order` — and nothing at the RPC layer can
+change that. Which is what the cursor is for: `from` is not decoration,
+it is what makes the sequence well-defined regardless of when the request
+arrived, and a producer that ignores it and only forwards live events
+will drop messages. Reliably, as it turns out: the first version of the
+room in this guide did exactly that, and deadlocked in process.
 
 ## A room
 

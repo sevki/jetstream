@@ -225,6 +225,20 @@ pub struct Subscription<T, D> {
 /// one — in a test, or in process — it gets a token nothing cancels,
 /// which is the truth of that situation.
 enum Source<T, D> {
+    /// Opening: the request is not on the wire yet.
+    ///
+    /// r[impl jetstream.subscription.surface.rust]
+    /// A subscription opens on first poll, which is what lets the
+    /// method be the plain `fn` the surface calls for. It also means
+    /// "subscribe, then act, then read" is a race — nothing reached the
+    /// service. [`Subscription::establish`] is the way to say "now",
+    /// and it exists because writing the usage kept tripping over its
+    /// absence.
+    Opening(
+        std::pin::Pin<
+            Box<dyn std::future::Future<Output = ItemStream<T, D>> + Send>,
+        >,
+    ),
     Open(ItemStream<T, D>),
     Awaiting(Box<dyn FnOnce(CancellationToken) -> ItemStream<T, D> + Send>),
     /// Momentarily empty while the one above is being run. A variant
@@ -292,11 +306,48 @@ where
     where
         F: std::future::Future<Output = Self> + Send + 'static,
     {
-        use futures::StreamExt;
         Subscription {
-            source: Source::Open(Box::pin(
-                futures::stream::once(open).flatten(),
-            )),
+            source: Source::Opening(Box::pin(async move {
+                match open.await.source {
+                    Source::Open(items) => items,
+                    // An opener that hands back a producer's
+                    // subscription has nothing to produce into; it gets
+                    // a token nothing cancels, as it would on poll.
+                    Source::Awaiting(produce) => {
+                        produce(CancellationToken::new())
+                    }
+                    Source::Opening(inner) => inner.await,
+                    Source::Taken => {
+                        unreachable!("only set while being replaced")
+                    }
+                }
+            })),
+        }
+    }
+
+    /// Put the request on the wire now, rather than at the first read.
+    ///
+    /// r[impl jetstream.subscription.surface.rust]
+    /// Opening lazily is what keeps the method signature a plain `fn`,
+    /// and it makes "subscribe, then act, then read" a race: the act
+    /// happens before the subscription exists. Awaiting this first
+    /// removes that race **on one lane**, where
+    /// `r[jetstream.lane.delivery-order]` then orders the request ahead
+    /// of whatever follows it.
+    ///
+    /// It does **not** order a subscription against a call on a
+    /// *different* lane — `r[jetstream.lane.no-cross-lane-order]` — and
+    /// nothing can. A subscription that must not miss anything says
+    /// where to start, and its producer replays from there; that is
+    /// what the cursor in `r[jetstream.subscription.resume]` is for.
+    pub async fn establish(&mut self) {
+        if let Source::Opening(_) = self.source {
+            let Source::Opening(open) =
+                std::mem::replace(&mut self.source, Source::Taken)
+            else {
+                unreachable!("checked immediately above")
+            };
+            self.source = Source::Open(open.await);
         }
     }
 
@@ -348,6 +399,11 @@ where
         match self.source {
             Source::Open(items) => items,
             Source::Awaiting(produce) => produce(cancel),
+            // A caller's subscription served as a producer's: it opens
+            // itself, and the token has nothing to cancel here.
+            Source::Opening(open) => Box::pin(futures::StreamExt::flatten(
+                futures::stream::once(open),
+            )),
             Source::Taken => unreachable!("only set while being replaced"),
         }
     }
@@ -388,6 +444,14 @@ impl<T, D> futures::Stream for Subscription<T, D> {
         // A producer's subscription polled without a dispatcher gets a
         // token nothing cancels. Nothing here can cancel it, so saying
         // otherwise would be a lie.
+        if let Source::Opening(open) = &mut self.source {
+            match open.as_mut().poll(cx) {
+                std::task::Poll::Ready(items) => {
+                    self.source = Source::Open(items);
+                }
+                std::task::Poll::Pending => return std::task::Poll::Pending,
+            }
+        }
         if let Source::Awaiting(_) = self.source {
             let Source::Awaiting(produce) =
                 std::mem::replace(&mut self.source, Source::Taken)

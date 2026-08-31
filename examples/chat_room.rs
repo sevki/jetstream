@@ -240,16 +240,22 @@ async fn main() -> Result<()> {
     // Two subscribers, and a third that leaves early.
     let mut ada = on.lane().await?.events(Context::default(), 0);
     let mut grace = on.lane().await?.events(Context::default(), 0);
-    let leaving = on.lane().await?.events(Context::default(), 0);
+    let mut leaving = on.lane().await?.events(Context::default(), 0);
 
-    // Nothing has opened yet: a subscription opens when it is first
-    // polled. Reading one event from each is what puts them on the wire.
+    // A subscription opens when it is first read, so say "now" instead.
+    // Necessary, and *not* sufficient: each of these is on its own lane
+    // and the post below is on another, and there is no ordering
+    // between lanes. That is what `from` is for, and why the room keeps
+    // a log — the two together are what make this deterministic.
+    for who in [&mut ada, &mut grace, &mut leaving] {
+        who.establish().await;
+    }
+
     let seq = poster
         .post(Context::default(), "ada".into(), "is anyone there?".into())
         .await?;
     println!("posted #{seq}");
 
-    let mut leaving = leaving;
     for who in [&mut ada, &mut grace, &mut leaving] {
         match who.next().await.expect("an event")? {
             Item::Next(event) => {

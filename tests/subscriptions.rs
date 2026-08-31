@@ -150,33 +150,32 @@ async fn a_generated_subscription_delivers_many_items() {
     let mut ticks = wired.lane().await.ticks(Context::default());
     let bumper = wired.lane().await;
 
-    // A subscription opens when it is first polled, so nothing is on the
-    // wire yet — hence the settle after the first read below.
-    let first = tokio::spawn(async move {
-        let mut got = Vec::new();
-        while let Some(item) = ticks.next().await {
-            match item.unwrap() {
-                Item::Next(Tick(n)) => {
-                    got.push(n);
-                    if got.len() == 3 {
-                        break;
-                    }
-                }
-                Item::Done(_) => break,
-            }
-        }
-        got
-    });
-    settle().await;
+    // A subscription opens when it is first read, so without this the
+    // bumps below would happen before the service had heard of it.
+    ticks.establish().await;
+    // Even established, this subscription is on its own lane and the
+    // bumps are on another, so it is only *this* producer being live
+    // that makes the ticks arrive — see `until` below.
+    until("the producer must start", || {
+        wired.producers.load(SeqCst) == 1
+    })
+    .await;
 
     for _ in 0..3 {
         bumper.bump(Context::default()).await.unwrap();
     }
 
-    let got = tokio::time::timeout(Duration::from_secs(5), first)
-        .await
-        .expect("three items must arrive")
-        .unwrap();
+    let mut got = Vec::new();
+    while got.len() < 3 {
+        let item = tokio::time::timeout(Duration::from_secs(5), ticks.next())
+            .await
+            .expect("three items must arrive")
+            .expect("the subscription must not end");
+        match item.unwrap() {
+            Item::Next(Tick(n)) => got.push(n),
+            Item::Done(_) => panic!("ended early"),
+        }
+    }
     assert_eq!(got, vec![1, 2, 3]);
 }
 
@@ -189,10 +188,7 @@ async fn a_unary_call_works_on_a_lane_serving_a_subscription() {
     let wired = Wired::new();
     let channel = wired.lane().await;
     let mut ticks = channel.ticks(Context::default());
-
-    // Open it: nothing reaches the service until the stream is polled.
-    let opened = tokio::spawn(async move { ticks.next().await });
-    settle().await;
+    ticks.establish().await;
 
     let n = tokio::time::timeout(
         Duration::from_secs(5),
@@ -202,7 +198,7 @@ async fn a_unary_call_works_on_a_lane_serving_a_subscription() {
     .expect("the lane must still answer while a subscription is open")
     .unwrap();
     assert_eq!(n, 1);
-    opened.abort();
+    drop(ticks);
 }
 
 /// r[verify jetstream.subscription.cancel]
@@ -215,25 +211,19 @@ async fn dropping_a_generated_subscription_stops_the_producer() {
     let mut ticks = wired.lane().await.ticks(Context::default());
     let bumper = wired.lane().await;
 
-    let reading = tokio::spawn(async move {
-        let item = ticks.next().await;
-        // Hold it open until told otherwise.
-        (item, ticks)
-    });
-    settle().await;
-    bumper.bump(Context::default()).await.unwrap();
-
-    let (first, held) = tokio::time::timeout(Duration::from_secs(5), reading)
-        .await
-        .expect("the first item must arrive")
-        .unwrap();
-    assert!(matches!(first, Some(Ok(Item::Next(Tick(1))))));
+    ticks.establish().await;
     until("the producer must start", || {
         wired.producers.load(SeqCst) == 1
     })
     .await;
+    bumper.bump(Context::default()).await.unwrap();
 
-    drop(held);
+    let first = tokio::time::timeout(Duration::from_secs(5), ticks.next())
+        .await
+        .expect("the first item must arrive");
+    assert!(matches!(first, Some(Ok(Item::Next(Tick(1))))));
+
+    drop(ticks);
     until("dropping the subscription must stop the producer", || {
         wired.producers.load(SeqCst) == 0
     })
@@ -247,9 +237,19 @@ async fn dropping_a_generated_subscription_stops_the_producer() {
 #[tokio::test]
 async fn merging_keeps_the_result_and_says_whose() {
     let wired = Wired::new();
-    let one = wired.lane().await.ticks(Context::default());
-    let two = wired.lane().await.ticks(Context::default());
+    let mut one = wired.lane().await.ticks(Context::default());
+    let mut two = wired.lane().await.ticks(Context::default());
     let bumper = wired.lane().await;
+
+    one.establish().await;
+    two.establish().await;
+    until("both producers must start", || {
+        wired.producers.load(SeqCst) == 2
+    })
+    .await;
+
+    bumper.bump(Context::default()).await.unwrap();
+    bumper.bump(Context::default()).await.unwrap();
 
     let merged = subscription::merge([("one", one), ("two", two)]);
     let collecting = tokio::spawn(async move {
@@ -262,10 +262,6 @@ async fn merging_keeps_the_result_and_says_whose() {
         }
         ends
     });
-    settle().await;
-
-    bumper.bump(Context::default()).await.unwrap();
-    bumper.bump(Context::default()).await.unwrap();
     settle().await;
     wired.stop.cancel();
 
@@ -285,4 +281,143 @@ async fn unary_methods_are_unchanged() {
     let channel = wired.lane().await;
     assert_eq!(channel.bump(Context::default()).await.unwrap(), 1);
     assert_eq!(channel.bump(Context::default()).await.unwrap(), 2);
+}
+
+// ---------------------------------------------------------------------------
+// The same protocol on a session that has exactly one lane.
+//
+// r[verify jetstream.subscription.realisation]
+// r[verify jetstream.subscription.conformance.single-lane]
+// Everything above opens a lane per subscription, which is what a
+// `LaneSupport::Many` session licenses. On `LaneSupport::One` the same
+// code has to tag-multiplex two subscriptions and the unary calls onto
+// one lane — and the caller's types must not change, which is what makes
+// the realisation opaque rather than merely reported.
+
+/// Two subscriptions and a unary call, all on one lane.
+#[tokio::test]
+async fn one_lane_carries_two_subscriptions_and_a_call() {
+    let wired = Wired::new();
+    let channel = wired.lane().await;
+
+    let mut first = channel.ticks(Context::default());
+    let mut second = channel.ticks(Context::default());
+    // Both on the wire before anything is bumped. Without this the
+    // second one does not exist yet when the tick happens — a
+    // subscription opens on first read, and reading them in sequence
+    // opens them in sequence.
+    first.establish().await;
+    second.establish().await;
+
+    let reading = tokio::spawn(async move {
+        let (a, b) = futures::future::join(first.next(), second.next()).await;
+        (a, b, first, second)
+    });
+
+    // The lane is serving two subscriptions; it must still answer.
+    let n = tokio::time::timeout(
+        Duration::from_secs(5),
+        channel.bump(Context::default()),
+    )
+    .await
+    .expect("one lane must carry a call alongside its subscriptions")
+    .unwrap();
+    assert_eq!(n, 1);
+
+    let (a, b, first, second) =
+        tokio::time::timeout(Duration::from_secs(5), reading)
+            .await
+            .expect("both subscriptions must receive the tick")
+            .unwrap();
+    assert!(matches!(a, Some(Ok(Item::Next(Tick(1))))));
+    assert!(matches!(b, Some(Ok(Item::Next(Tick(1))))));
+    until("both producers must be alive", || {
+        wired.producers.load(SeqCst) == 2
+    })
+    .await;
+
+    // r[verify jetstream.subscription.identity]
+    // Cancelling one must not disturb the other, which share a lane and
+    // are told apart only by their tags.
+    drop(first);
+    until("dropping one must stop exactly one producer", || {
+        wired.producers.load(SeqCst) == 1
+    })
+    .await;
+
+    let mut second = second;
+    let reading = tokio::spawn(async move { second.next().await });
+    settle().await;
+    channel.bump(Context::default()).await.unwrap();
+    let still = tokio::time::timeout(Duration::from_secs(5), reading)
+        .await
+        .expect("the surviving subscription must still receive")
+        .unwrap();
+    assert!(matches!(still, Some(Ok(Item::Next(Tick(2))))));
+}
+
+/// The same subscription over a session that reports one lane and
+/// refuses a second — the caller's code is identical.
+#[tokio::test]
+async fn a_single_lane_session_serves_a_subscription() {
+    use jetstream_rpc::session::{
+        Capabilities, LaneSupport, SessionError, SingleLaneSession,
+    };
+
+    // One lane, borrowed from an in-process pair, then presented as the
+    // *only* lane each side has.
+    let pair = LocalSession::<CounterChannel>::pair();
+    let client_lane = Session::<CounterChannel>::open_lane(&pair.client)
+        .await
+        .expect("the pair is open");
+    let service_lane = Session::<CounterChannel>::accept_lane(&pair.server)
+        .await
+        .expect("the pair is open");
+
+    let one = SingleLaneSession::<CounterChannel, _, _>::client(client_lane);
+    let caps: Capabilities = Session::<CounterChannel>::capabilities(&one);
+    assert_eq!(caps.lanes, LaneSupport::One);
+
+    let counting = Counting {
+        ticks: broadcast::channel(64).0,
+        stop: subscription::CancellationToken::new(),
+        producers: Default::default(),
+        seen: Default::default(),
+    };
+    let producers = counting.producers.clone();
+    tokio::spawn(async move {
+        let mut service = CounterService { inner: counting };
+        let _ = jetstream_rpc::server::run(&mut service, service_lane).await;
+    });
+
+    let lane = Session::<CounterChannel>::open_lane(&one)
+        .await
+        .expect("the one lane is available");
+    let channel = CounterChannel::new(16, Box::new(lane));
+
+    // And there is no second one. A subscription on this session shares
+    // the lane with everything else, which the caller cannot see.
+    assert!(matches!(
+        Session::<CounterChannel>::open_lane(&one).await,
+        Err(SessionError::LaneLimitReached)
+    ));
+
+    let mut ticks = channel.ticks(Context::default());
+    ticks.establish().await;
+    channel.bump(Context::default()).await.unwrap();
+
+    let first = tokio::time::timeout(Duration::from_secs(5), ticks.next())
+        .await
+        .expect("a one-lane session must deliver a subscription");
+    assert!(matches!(first, Some(Ok(Item::Next(Tick(1))))));
+
+    // r[verify jetstream.subscription.cancel]
+    // Cancellation travels the subscription's own lane — which here is
+    // the only lane there is.
+    drop(ticks);
+    until(
+        "cancellation must reach the producer on a shared lane",
+        || producers.load(SeqCst) == 0,
+    )
+    .await;
 }
