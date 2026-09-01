@@ -6,9 +6,23 @@ use crate::{Frame, Protocol};
 
 pub struct RpcCall<P: Protocol> {
     pub tag: u16,
-    pub future: tokio::sync::oneshot::Receiver<
-        jetstream_error::Result<Frame<P::Response>>,
-    >,
+    pub future: RpcFuture<P>,
+}
+
+/// Either a call that reached the lane, or one that could not.
+///
+/// r[impl jetstream.subscription.dispatch.issue-order]
+/// Queuing the request is what fixes issue order, and queuing can fail
+/// when the lane is closed. That has to resolve the caller's future as
+/// an error rather than panic in a detached task, which is what the
+/// spawned send used to do.
+pub enum RpcFuture<P: Protocol> {
+    Waiting(
+        tokio::sync::oneshot::Receiver<
+            jetstream_error::Result<Frame<P::Response>>,
+        >,
+    ),
+    Failed(Option<jetstream_error::Error>),
 }
 
 impl<P: Protocol> Future for RpcCall<P> {
@@ -18,7 +32,17 @@ impl<P: Protocol> Future for RpcCall<P> {
         self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Self::Output> {
-        match self.get_mut().future.poll_unpin(cx) {
+        let this = self.get_mut();
+        let rx = match &mut this.future {
+            RpcFuture::Waiting(rx) => rx,
+            RpcFuture::Failed(err) => {
+                let err = err.take().unwrap_or_else(|| {
+                    jetstream_error::Error::new("the lane is closed")
+                });
+                return std::task::Poll::Ready(Err(err));
+            }
+        };
+        match rx.poll_unpin(cx) {
             std::task::Poll::Ready(Ok(result)) => {
                 std::task::Poll::Ready(result)
             }
