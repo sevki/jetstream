@@ -21,6 +21,10 @@ use crate::{
     Error, Frame, Framer, Mux, Protocol,
 };
 
+/// A quiet room that takes its time shutting down. See
+/// `async_stream_items`.
+const LINGER: u32 = u32::MAX;
+
 const TASK: u8 = 102;
 const RITEM: u8 = 103;
 
@@ -475,11 +479,19 @@ fn async_stream_items(
                 stopped.store(true, std::sync::atomic::Ordering::SeqCst);
                 return None;
             }
-            if n == 0 {
+            if n == 0 || n == LINGER {
                 // The quiet room. It has nothing to say until something
                 // stops it, which is the shape a chat room, a build log
                 // between lines, or a presence feed actually has.
                 cancel.cancelled().await;
+                if n == LINGER {
+                    // And this one is slow to act on it, so a second
+                    // cancellation for the same subscription reaches the
+                    // dispatcher while the first is still open. Without
+                    // the delay that ordering is a race.
+                    tokio::time::sleep(std::time::Duration::from_millis(200))
+                        .await;
+                }
                 stopped.store(true, std::sync::atomic::Ordering::SeqCst);
                 return None;
             }
@@ -1288,4 +1300,53 @@ async fn dropping_a_finished_stream_leaves_a_reused_tag_alone() {
         "a stale stream abandoned a tag it no longer owned, silencing the \
          subscription that had taken it",
     );
+}
+
+/// r[verify jetstream.subscription.cancel]
+/// Every cancellation is owed an acknowledgement, including the second
+/// one for a subscription that has not finished stopping. Each arrives
+/// under its own tag, and that tag stays in flight until it is answered
+/// — so a forgotten acknowledgement is a control tag held for the life
+/// of the lane, and the client's own drop path can queue one of these
+/// behind a caller's.
+#[tokio::test]
+async fn two_cancellations_for_one_subscription_are_both_acknowledged() {
+    let (mux, _stopped) = wired();
+    let lingering = mux
+        .rpc_stream(Context::default(), Ask::Task(LINGER), 8)
+        .await;
+    let tag = lingering.tag;
+
+    // Both queued before the producer finishes stopping, so the
+    // dispatcher sees the second while the first is still recorded.
+    let first = mux
+        .rpc(
+            Context::default(),
+            Ask::Cancel(Tcancel {
+                oldtag: tag,
+                binding: 0,
+            }),
+        )
+        .await;
+    let second = mux
+        .rpc(
+            Context::default(),
+            Ask::Cancel(Tcancel {
+                oldtag: tag,
+                binding: 0,
+            }),
+        )
+        .await;
+
+    let (a, b) = tokio::time::timeout(
+        std::time::Duration::from_secs(5),
+        futures::future::join(first, second),
+    )
+    .await
+    .expect(
+        "both cancellations must be acknowledged; keeping only the latest \
+         strands the other's tag",
+    );
+    assert_eq!(a.unwrap().msg, Say::Ack(Rcancel { oldtag: tag }));
+    assert_eq!(b.unwrap().msg, Say::Ack(Rcancel { oldtag: tag }));
 }
