@@ -1350,3 +1350,43 @@ async fn two_cancellations_for_one_subscription_are_both_acknowledged() {
     assert_eq!(a.unwrap().msg, Say::Ack(Rcancel { oldtag: tag }));
     assert_eq!(b.unwrap().msg, Say::Ack(Rcancel { oldtag: tag }));
 }
+
+/// r[verify jetstream.subscription.surface.termination]
+/// A decode failure is an ending. Mapping frames and leaving the stream
+/// running meant a subscriber could be told its subscription had failed
+/// and then go on hearing from it — and through `merge`, an input
+/// reported as failed keeps speaking under the same key.
+#[tokio::test]
+async fn a_decode_failure_ends_the_subscription() {
+    use crate::subscription::{Item, Subscription};
+
+    let (mux, _stopped) = wired();
+    // Five items and a terminator, so there is plenty left to leak.
+    let stream = mux.rpc_stream(Context::default(), Ask::Task(5), 16).await;
+    let mut items =
+        Subscription::<u32, ()>::from_frames(stream, |frame: Frame<Say>| {
+            match frame.msg {
+                Say::Item(0) => Ok(Item::Next(0)),
+                // Everything after the first item is rejected.
+                _ => Err(Error::new("this decoder refuses the second frame")),
+            }
+        });
+
+    assert!(
+        matches!(items.next().await, Some(Ok(Item::Next(0)))),
+        "the first item decodes",
+    );
+    assert!(
+        matches!(items.next().await, Some(Err(_))),
+        "the second is the failure",
+    );
+
+    let after =
+        tokio::time::timeout(std::time::Duration::from_secs(5), items.next())
+            .await
+            .expect("a failed subscription must end rather than hang");
+    assert!(
+        after.is_none(),
+        "nothing may follow a failure — got {after:?}",
+    );
+}

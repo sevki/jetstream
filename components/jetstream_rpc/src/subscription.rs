@@ -233,8 +233,28 @@ where
             + 'static,
     {
         use futures::StreamExt;
+        // r[impl jetstream.subscription.surface.termination]
+        // An ending is the last thing the subscription says. Mapping
+        // each frame and leaving the stream running let a failure be
+        // followed by more items, or even by a normal terminator — so a
+        // subscriber could be told its subscription had failed and then
+        // go on hearing from it. Through `merge` that is starker still:
+        // an input reported as failed keeps speaking under the same key.
         Subscription {
-            items: Box::pin(stream.map(move |frame| decode(frame?))),
+            items: Box::pin(futures::stream::unfold(
+                (stream, decode, false),
+                move |(mut stream, mut decode, finished)| async move {
+                    if finished {
+                        return None;
+                    }
+                    let item = match stream.next().await? {
+                        Ok(frame) => decode(frame),
+                        Err(e) => Err(e),
+                    };
+                    let finished = matches!(item, Err(_) | Ok(Item::Done(_)));
+                    Some((item, (stream, decode, finished)))
+                },
+            )),
         }
     }
 
@@ -354,7 +374,7 @@ pub use tokio_util::sync::CancellationToken;
 /// await, a flag to test, and a send that fails once cancelled. A loop
 /// that checks none of them still stops at its next `send`.
 pub struct Producer<T, D> {
-    tx: tokio::sync::mpsc::Sender<Item<T, D>>,
+    tx: tokio::sync::mpsc::Sender<jetstream_error::Result<Item<T, D>>>,
     cancel: tokio_util::sync::CancellationToken,
 }
 
@@ -365,7 +385,7 @@ impl<T, D> Producer<T, D> {
         tokio::select! {
             biased;
             _ = self.cancel.cancelled() => Err(Cancelled),
-            sent = self.tx.send(Item::Next(item)) => {
+            sent = self.tx.send(Ok(Item::Next(item))) => {
                 sent.map_err(|_| Cancelled)
             }
         }
@@ -375,7 +395,26 @@ impl<T, D> Producer<T, D> {
     /// End the subscription, carrying the result. Consuming `self` is
     /// the point: a producer that has finished cannot emit again.
     pub async fn finish(self, done: D) {
-        let _ = self.tx.send(Item::Done(done)).await;
+        let _ = self.tx.send(Ok(Item::Done(done))).await;
+    }
+
+    /// r[impl jetstream.subscription.surface.termination]
+    /// End the subscription because the work failed.
+    ///
+    /// Without this a producer had no way to say so. Returning early —
+    /// the `?` in any ordinary producer loop — drops the `Producer`,
+    /// which closes the channel, which the dispatcher reads as a
+    /// subscription that simply stopped: it then supplies the terminator
+    /// the caller is owed, and the subscriber receives a normal typed
+    /// ending carrying a *fabricated* result. A failure reported as
+    /// success is the one outcome the surface must never produce, so the
+    /// channel carries failures and this is how one is sent.
+    ///
+    /// Dropping without calling either this or `finish` remains the
+    /// cancelled case, which is what the dispatcher's synthetic
+    /// terminator is for.
+    pub async fn fail(self, error: jetstream_error::Error) {
+        let _ = self.tx.send(Err(error)).await;
     }
 
     pub fn is_cancelled(&self) -> bool {
@@ -397,11 +436,11 @@ impl<T, D> Producer<T, D> {
 
 /// The served side of a subscription: what the producer writes into.
 pub struct Items<T, D> {
-    rx: tokio::sync::mpsc::Receiver<Item<T, D>>,
+    rx: tokio::sync::mpsc::Receiver<jetstream_error::Result<Item<T, D>>>,
 }
 
 impl<T, D> futures::Stream for Items<T, D> {
-    type Item = Item<T, D>;
+    type Item = jetstream_error::Result<Item<T, D>>;
 
     fn poll_next(
         mut self: std::pin::Pin<&mut Self>,
@@ -427,9 +466,15 @@ where
         P: crate::Protocol + 'static,
         P::Response: 'static,
         P::Error: 'static,
-        F: FnMut(Item<T, D>) -> P::Response + Send + 'static,
+        F: FnMut(jetstream_error::Result<Item<T, D>>) -> P::Response
+            + Send
+            + 'static,
     {
         use futures::StreamExt;
+        // `encode` sees the failure too, because only the protocol knows
+        // how to say "this subscription failed" in its own response
+        // type. Yielding `Err` here instead would make it a *transport*
+        // error, which tears down the lane and every other call on it.
         Box::pin(self.map(move |item| {
             Ok(crate::Frame {
                 tag,

@@ -87,6 +87,12 @@ pub enum Say {
     Event(Event),
     Done(Terminator<Closed>),
     Ack(Rcancel),
+    /// r[impl jetstream.subscription.surface.termination]
+    /// The room failed. A failure has to be a *response* under the
+    /// subscription's tag, not a transport error: the latter tears down
+    /// the lane and everything else on it, and the subscriber never
+    /// learns what happened to the one call it made.
+    Error(Error),
 }
 
 impl Framer for Ask {
@@ -134,6 +140,7 @@ impl Framer for Say {
             Say::Event(_) => REVENT,
             Say::Done(_) => RDONE,
             Say::Ack(_) => RCANCEL,
+            Say::Error(_) => RJETSTREAMERROR,
         }
     }
 
@@ -143,6 +150,7 @@ impl Framer for Say {
             Say::Event(e) => e.byte_size(),
             Say::Done(d) => d.byte_size(),
             Say::Ack(a) => a.byte_size(),
+            Say::Error(e) => e.byte_size(),
         }
     }
 
@@ -152,6 +160,7 @@ impl Framer for Say {
             Say::Event(e) => e.encode(w),
             Say::Done(d) => d.encode(w),
             Say::Ack(a) => a.encode(w),
+            Say::Error(e) => e.encode(w),
         }
     }
 
@@ -165,6 +174,7 @@ impl Framer for Say {
             // yet; with two there would be.
             RDONE => Ok(Say::Done(WireFormat::decode(r)?)),
             RCANCEL => Ok(Say::Ack(WireFormat::decode(r)?)),
+            RJETSTREAMERROR => Ok(Say::Error(WireFormat::decode(r)?)),
             other => Err(io::Error::new(
                 io::ErrorKind::InvalidData,
                 format!("unknown response type {other}"),
@@ -323,11 +333,13 @@ impl Server for ChatRoom {
         });
 
         items.into_frames::<Self, _>(tag, move |item| match item {
-            subscription::Item::Next(event) => Say::Event(event),
-            subscription::Item::Done(closed) => Say::Done(Terminator {
+            Ok(subscription::Item::Next(event)) => Say::Event(event),
+            Ok(subscription::Item::Done(closed)) => Say::Done(Terminator {
                 method: TEVENTS,
                 value: closed,
             }),
+            // Only this room's subscriber hears about it.
+            Err(err) => Say::Error(err),
         })
     }
 }
