@@ -3,8 +3,9 @@ name: Deploy mdBook site to Pages
 on:
   push:
     branches: ["main"]
+  # Every pull request, not only those targeting `main`, so a stacked
+  # PR that changes the book is built and previewed like any other.
   pull_request:
-    branches: ["main"]
   workflow_dispatch:
 
 permissions:
