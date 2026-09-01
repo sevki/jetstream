@@ -339,28 +339,45 @@ where
         std::collections::BTreeMap::new();
     let mut a = pin!(p);
 
-    loop {
+    // The reason the loop stopped, so the cleanup below runs on every
+    // exit rather than only the tidy one.
+    let outcome: Result<(), P::Error> = loop {
+        // r[impl jetstream.subscription.dispatch.concurrent]
+        // Fair selection, deliberately. This was `biased` with items
+        // first, on the reasoning that a ready producer should not wait
+        // behind an inbound request — which is exactly backwards. An
+        // always-ready producer, and `repeat` is enough, makes the item
+        // branch ready on every iteration, so the inbound branch is never
+        // selected and the chatty subscription prevents *its own*
+        // cancellation from ever being read. That is the failure this
+        // whole dispatcher exists to remove, reintroduced by an
+        // optimisation.
         tokio::select! {
-            // Items first: a producer that is ready should not wait
-            // behind an inbound request.
-            biased;
-
             Some(out) = active.next(), if !active.is_empty() => match out {
                 Out::Item(tag, item) => {
-                    let frame = item?;
+                    let frame = match item {
+                        Ok(frame) => frame,
+                        Err(e) => break Err(e),
+                    };
                     if frame.msg.message_type() == crate::subscription::RDONE {
                         if let Some(o) = open.get_mut(&tag) {
                             o.terminated = true;
                         }
                     }
-                    sink.send(frame).await?;
+                    if let Err(e) = sink.send(frame).await {
+                        break Err(e);
+                    }
                 }
                 Out::Ended(tag) => {
                     if let Some(o) = open.remove(&tag) {
                         // r[impl jetstream.subscription.dispatch.terminator]
                         if !o.terminated {
                             if let Some(msg) = P::cancelled_terminator(o.method) {
-                                sink.send(Frame { tag, msg }).await?;
+                                if let Err(e) =
+                                    sink.send(Frame { tag, msg }).await
+                                {
+                                    break Err(e);
+                                }
                             }
                         }
                         // r[impl jetstream.subscription.cancel]
@@ -368,7 +385,11 @@ where
                         // makes the tag safe to reuse.
                         if let Some(ack_tag) = o.ack_to {
                             if let Some(msg) = P::cancel_ack(tag) {
-                                sink.send(Frame { tag: ack_tag, msg }).await?;
+                                if let Err(e) =
+                                    sink.send(Frame { tag: ack_tag, msg }).await
+                                {
+                                    break Err(e);
+                                }
                             }
                         }
                     }
@@ -376,7 +397,7 @@ where
             },
 
             inbound = source.next() => {
-                let Some(Ok(frame)) = inbound else { break };
+                let Some(Ok(frame)) = inbound else { break Ok(()) };
 
                 // r[impl jetstream.subscription.cancel]
                 if let Some(oldtag) = P::cancel_target(&frame) {
@@ -391,8 +412,12 @@ where
                         // is owed an answer either way.
                         None => {
                             if let Some(msg) = P::cancel_ack(oldtag) {
-                                sink.send(Frame { tag: frame.tag, msg })
-                                    .await?;
+                                if let Err(e) = sink
+                                    .send(Frame { tag: frame.tag, msg })
+                                    .await
+                                {
+                                    break Err(e);
+                                }
                             }
                         }
                     }
@@ -422,18 +447,30 @@ where
                     );
                     active.push(Served { tag, inner: Some(inner) });
                 } else {
-                    sink.send(a.rpc(context.clone(), frame).await?).await?
+                    let response = match a.rpc(context.clone(), frame).await {
+                        Ok(response) => response,
+                        Err(e) => break Err(e),
+                    };
+                    if let Err(e) = sink.send(response).await {
+                        break Err(e);
+                    }
                 }
             }
         }
-    }
+    };
 
     // r[impl jetstream.subscription.cancel]
     // The lane is gone, so every producer on it has lost its subscriber.
     // Leaving the tokens uncancelled would leave the work running with
     // nowhere to deliver — the very thing cancellation exists to stop.
+    //
+    // This runs on *every* exit. It used to sit after a body full of
+    // `?`, so any stream or sink error returned straight past it: the
+    // tokens were merely dropped, and a producer holding a clone — a
+    // detached task, which is the shape `producing` creates — never
+    // learned its lane had gone.
     for (_, o) in open {
         o.cancel.cancel();
     }
-    Ok(())
+    outcome
 }

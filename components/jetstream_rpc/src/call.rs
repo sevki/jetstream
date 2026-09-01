@@ -82,7 +82,7 @@ pub struct RpcStream<P: Protocol> {
     /// synchronous: building the cancellation needs nothing async, but
     /// *sending* it needs a tag of its own, and acquiring one may wait.
     /// The `Mux`'s cancellation task does the waiting.
-    pub(crate) cancels: tokio::sync::mpsc::Sender<u16>,
+    pub(crate) cancels: tokio::sync::mpsc::UnboundedSender<u16>,
     /// Whether the terminator has already arrived. A subscription that
     /// ended has nothing to cancel, and cancelling it anyway costs a tag
     /// and a round trip on every completed subscription.
@@ -141,7 +141,7 @@ impl<P: Protocol> Drop for RpcStream<P> {
         if self.finished {
             return;
         }
-        if self.cancels.try_send(self.tag).is_err() {
+        if self.cancels.send(self.tag).is_err() {
             // The client is shutting down, or more subscriptions were
             // dropped at once than the queue holds. The producer learns
             // when the lane closes, which is the same conclusion by a

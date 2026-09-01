@@ -342,8 +342,7 @@ async fn a_subscriber_that_stops_reading_does_not_stall_the_lane() {
     // The lane must still serve somebody else, promptly. Before this fix
     // the demultiplexer was parked awaiting the channel above and this
     // timed out.
-    let mut healthy =
-        mux.rpc_stream(Context::default(), Ask::Task(2), 8).await;
+    let mut healthy = mux.rpc_stream(Context::default(), Ask::Task(2), 8).await;
     let first =
         tokio::time::timeout(std::time::Duration::from_secs(5), healthy.next())
             .await
@@ -926,5 +925,154 @@ async fn a_finished_subscription_sends_no_cancellation() {
         .await
         .is_err(),
         "a subscription that already ended needs no cancelling"
+    );
+}
+
+/// r[impl jetstream.subscription.dispatch.concurrent]
+/// A producer that is always ready must not starve the inbound side.
+///
+/// The loop was `biased` with items first, reasoning that a ready
+/// producer should not wait behind an inbound request. That is exactly
+/// backwards: a producer which is ready on every poll — no timer, no
+/// awaited source, which `unfold` over a counter already is — means the
+/// item branch wins every time and the inbound branch is never selected.
+/// The chatty subscription then prevents *its own* cancellation from
+/// being read, which is the failure the whole dispatcher exists to
+/// remove, reintroduced as an optimisation.
+///
+/// The assertion is on *promptness*, not eventual delivery: with the
+/// biased loop the acknowledgement does arrive, after every one of the
+/// items ahead of it, and a test that merely waited would pass.
+#[tokio::test]
+async fn a_chatty_producer_does_not_starve_its_own_cancellation() {
+    let (to_service, service_rx) = fmpsc::unbounded();
+    let (service_tx, mut from_service) = fmpsc::unbounded();
+
+    tokio::spawn(async move {
+        let mut room = Room {
+            stopped: Default::default(),
+        };
+        let _ = crate::server::run(
+            &mut room,
+            ServiceSide {
+                tx: service_tx,
+                rx: service_rx,
+            },
+        )
+        .await;
+    });
+
+    // Long enough to starve the inbound branch for the length of the
+    // test, bounded so a regression fails rather than exhausts memory.
+    to_service
+        .unbounded_send(Ok(Frame {
+            tag: 1,
+            msg: Ask::Task(200_000),
+        }))
+        .unwrap();
+    to_service
+        .unbounded_send(Ok(Frame {
+            tag: 2,
+            msg: Ask::Cancel(crate::subscription::Tcancel::on_lane(1)),
+        }))
+        .unwrap();
+
+    // How many frames pass before the cancellation is answered. Under
+    // the biased loop this is every item the producer had queued.
+    let mut before = 0usize;
+    let acknowledged =
+        tokio::time::timeout(std::time::Duration::from_secs(10), async {
+            while let Some(Ok(frame)) = from_service.next().await {
+                if matches!(frame.msg, Say::Ack(_)) {
+                    return true;
+                }
+                before += 1;
+                if before > 5_000 {
+                    return false;
+                }
+            }
+            false
+        })
+        .await
+        .expect("the dispatcher must answer a cancellation at all");
+    assert!(
+        acknowledged,
+        "the cancellation went unanswered for {before} items: a producer \
+         that is always ready starved the inbound branch"
+    );
+}
+
+/// r[impl jetstream.subscription.cancel]
+/// A cancellation draws from control capacity, not the ordinary pool.
+///
+/// The specification requires this and the first implementation ignored
+/// it. The deadlock it prevents: a cancellation needs a *fresh* tag, the
+/// subscription's own tag is not released until its terminator, and the
+/// terminator cannot arrive until the cancellation is sent — so with the
+/// pool saturated by live subscriptions, cancellation waits on the very
+/// thing it would unblock.
+///
+/// Asserted on the tag's *region* rather than by reproducing the
+/// deadlock, because a test that hangs on regression is worse than one
+/// that fails: it takes the suite with it.
+#[tokio::test]
+async fn a_cancellation_uses_control_capacity() {
+    let (to_service, mut service_rx) = fmpsc::unbounded();
+    let (service_tx, from_service) = fmpsc::unbounded();
+    let mux = Mux::<Room>::new(
+        1,
+        Box::new(Duplex {
+            tx: to_service,
+            rx: from_service,
+        }),
+    );
+    drop(service_tx);
+
+    // One subscription, then let it go.
+    let items = mux.rpc_stream(Context::default(), Ask::Task(0), 8).await;
+    let subscribe = tokio::time::timeout(
+        std::time::Duration::from_secs(5),
+        service_rx.next(),
+    )
+    .await
+    .expect("the subscription reaches the lane")
+    .expect("a frame")
+    .expect("a well-formed frame");
+    drop(items);
+
+    let cancel = tokio::time::timeout(
+        std::time::Duration::from_secs(5),
+        service_rx.next(),
+    )
+    .await
+    .expect("dropping a subscription must produce a cancellation")
+    .expect("a frame")
+    .expect("a well-formed frame");
+
+    match cancel.msg {
+        Ask::Cancel(t) => {
+            assert_eq!(t.oldtag, subscribe.tag, "it names the subscription");
+            assert_eq!(
+                t.target_binding(),
+                None,
+                "on the subscription's own lane, so no binding is named"
+            );
+        }
+        other => panic!("expected a cancellation, got {other:?}"),
+    }
+
+    // `TagPool::new(1)` gives ordinary `1..=1`, then a streaming region,
+    // then control. The cancellation's own tag must come from the last of
+    // those: above the subscription's, and far above the ordinary one.
+    assert!(
+        cancel.tag > subscribe.tag,
+        "the cancellation's tag ({}) must come from a region above the \
+         streaming one ({})",
+        cancel.tag,
+        subscribe.tag
+    );
+    assert!(
+        cancel.tag > 1,
+        "and never from the ordinary pool, which is what deadlocks"
     );
 }

@@ -49,6 +49,18 @@ pub struct Mux<P: Protocol> {
     send_queue: tokio::sync::mpsc::Sender<Frame<P::Request>>,
     in_flight: InFlight<P>,
     tag_pool: Arc<TagPool>,
+    /// r[impl jetstream.subscription.cancel]
+    /// Tags of subscriptions whose caller has gone, awaiting a
+    /// cancellation on the wire.
+    ///
+    /// Unbounded, and that is deliberate. A bounded queue here is filled
+    /// by dropping enough unfinished subscriptions without yielding —
+    /// trivial on a single-threaded runtime — and the drop path cannot
+    /// wait, so the overflow is *discarded*: those subscriptions stay
+    /// `Abandoned`, their producers keep working, and their tags are
+    /// never released. Teardown has to be lossless, and this is bounded
+    /// in practice by the number of live subscriptions anyway.
+    cancels: mpsc::UnboundedSender<u16>,
 }
 
 impl<P: Protocol> Mux<P>
@@ -59,6 +71,7 @@ where
         mut rx: RxStream<P>,
         in_flight: InFlight<P>,
         tag_pool: Arc<TagPool>,
+        cancels: mpsc::UnboundedSender<u16>,
     ) -> Result<()> {
         use futures::StreamExt;
         // Why the lane stopped, so the drain below can tell every
@@ -174,10 +187,10 @@ where
                             tokio::spawn(async move {
                                 let _ = tx.send(Err(overflowed)).await;
                             });
-                            // Telling the *producer* to stop needs the
-                            // cancellation path, which arrives with the
-                            // dispatcher; until then this ends the
-                            // subscriber's side only.
+                            // r[impl jetstream.subscription.cancel]
+                            // And tell the producer, so the work stops
+                            // rather than only the delivery.
+                            let _ = cancels.send(tag);
                             continue;
                         }
                     }
@@ -274,6 +287,44 @@ where
         RpcCall { tag, future }
     }
 
+    /// r[impl jetstream.subscription.cancel]
+    /// Turns a dropped subscription's tag into a cancellation on the
+    /// wire.
+    ///
+    /// This is a task rather than something `Drop` does itself because
+    /// the cancellation needs a *fresh* tag — the specification forbids
+    /// reusing the subscription's own — and acquiring one may wait,
+    /// which a synchronous `Drop` cannot.
+    async fn cancel_dropped(
+        mut cancels: mpsc::UnboundedReceiver<u16>,
+        in_flight: InFlight<P>,
+        tag_pool: Arc<TagPool>,
+        send_queue: mpsc::Sender<Frame<P::Request>>,
+    ) {
+        while let Some(oldtag) = cancels.recv().await {
+            // Zero: the cancellation travels the subscription's own lane,
+            // where `oldtag` is unambiguous.
+            let Some(msg) = P::tcancel(oldtag, 0) else {
+                continue;
+            };
+            // r[impl jetstream.subscription.cancel]
+            // Control capacity, not the ordinary pool. Taking an ordinary
+            // tag here deadlocks precisely when cancellation matters:
+            // with the pool saturated by live subscriptions, this waits
+            // for a tag that is only released by the terminator this
+            // cancellation would produce.
+            let tag = tag_pool.acquire_control_tag().await;
+            // A unary waiter whose receiver is dropped: nobody is left to
+            // read the acknowledgement, but the tag must stay held until
+            // it arrives, and that is what the unary path already does.
+            let (tx, _rx) = oneshot::channel();
+            in_flight.lock().await.insert(tag, Waiter::Unary(tx));
+            if send_queue.send(Frame { tag, msg }).await.is_err() {
+                break;
+            }
+        }
+    }
+
     pub fn new(
         max_concurrent_requests: u16,
         transport: Box<dyn ClientTransport<P>>,
@@ -285,12 +336,23 @@ where
         let in_flight = Arc::new(Mutex::new(BTreeMap::new()));
         let pending = in_flight.clone();
         let tags = tag_pool.clone();
-        tokio::spawn(async move { Self::demux(rx, pending, tags).await });
+        let (cancels, cancels_rx) = mpsc::unbounded_channel();
+        let lagged = cancels.clone();
+        tokio::spawn(
+            async move { Self::demux(rx, pending, tags, lagged).await },
+        );
         tokio::spawn(async move { Self::mux(send_queue_rx, tx).await });
+
+        let map = in_flight.clone();
+        let tags = tag_pool.clone();
+        let queue = send_queue.clone();
+        tokio::spawn(Self::cancel_dropped(cancels_rx, map, tags, queue));
+
         Self {
             in_flight,
             send_queue,
             tag_pool,
+            cancels,
         }
     }
 
@@ -332,6 +394,8 @@ where
             tag,
             items,
             in_flight: self.in_flight.clone(),
+            cancels: self.cancels.clone(),
+            finished: false,
         }
     }
 }
