@@ -43,7 +43,47 @@ pub struct Tcancel {
     /// where `oldtag` is unambiguous. Otherwise the binding identifier,
     /// because tags are allocated per lane and a concurrent subscription
     /// elsewhere on the session may hold the same number.
+    ///
+    /// Zero is **reserved** and never a real binding, which is what makes
+    /// the sentinel sound. Prefer [`Tcancel::on_lane`] and
+    /// [`Tcancel::off_lane`] over writing this field: the specification
+    /// used to recommend a counter starting at zero, so the first
+    /// subscription of a session got a binding indistinguishable from
+    /// "no binding" — and a receiver then resolved `oldtag` against the
+    /// wrong lane.
     pub binding: u64,
+}
+
+impl Tcancel {
+    /// Cancel a subscription on the lane this cancellation travels.
+    /// `oldtag` is unambiguous there, so no binding is named.
+    pub fn on_lane(oldtag: u16) -> Self {
+        Tcancel { oldtag, binding: 0 }
+    }
+
+    /// Cancel a subscription living on some *other* lane of the session,
+    /// naming it by its binding identifier.
+    ///
+    /// # Panics
+    ///
+    /// If `binding` is zero, which is reserved for the on-lane case.
+    /// A caller reaching this has allocated bindings from a counter
+    /// starting at zero — the allocation `r[jetstream.subscription.identity]`
+    /// now forbids for exactly this reason.
+    pub fn off_lane(oldtag: u16, binding: u64) -> Self {
+        assert_ne!(
+            binding, 0,
+            "binding identifier zero is reserved for the on-lane case; \
+             allocate bindings from one"
+        );
+        Tcancel { oldtag, binding }
+    }
+
+    /// The binding this names, or `None` when it is on the subscription's
+    /// own lane.
+    pub fn target_binding(&self) -> Option<u64> {
+        (self.binding != 0).then_some(self.binding)
+    }
 }
 
 /// r[impl jetstream.subscription.cancel]

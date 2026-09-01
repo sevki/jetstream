@@ -2,6 +2,33 @@ use jetstream_wireformat::{wire_format_extensions::ConvertWireFormat, Data};
 
 use super::*;
 
+/// r[impl jetstream.subscription.identity]
+/// Zero is reserved, so an off-lane cancellation can never be mistaken
+/// for an on-lane one. The specification used to recommend a counter
+/// starting at zero, which made the first subscription of every session
+/// exactly that mistake.
+#[test]
+fn zero_is_not_a_binding() {
+    let on_lane = Tcancel::on_lane(7);
+    assert_eq!(on_lane.binding, 0);
+    assert_eq!(on_lane.target_binding(), None, "no binding is named");
+
+    let off_lane = Tcancel::off_lane(7, 1);
+    assert_eq!(off_lane.target_binding(), Some(1));
+    assert_ne!(
+        on_lane, off_lane,
+        "the first binding of a session must not encode as the on-lane form"
+    );
+}
+
+/// The allocation the specification used to bless, refused at the
+/// constructor rather than producing a cancellation nobody can route.
+#[test]
+#[should_panic(expected = "reserved for the on-lane case")]
+fn a_binding_counter_starting_at_zero_is_refused() {
+    let _ = Tcancel::off_lane(7, 0);
+}
+
 /// r[impl jetstream.subscription.compat]
 /// The point of the whole allocation: a streaming method costs no
 /// per-method id, so `102 + 2 * index` is untouched and the cross-language
