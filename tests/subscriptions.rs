@@ -456,6 +456,48 @@ async fn an_in_process_producer_is_cancelled_when_dropped() {
     .await;
 }
 
+/// r[verify jetstream.subscription.surface.cancellation]
+/// The same promise, one step removed: a producer reached through
+/// `opening` rather than polled directly.
+///
+/// Opening runs inside a boxed future that cannot reach the subscription
+/// the caller holds, so the token it made for the producer had no owner
+/// — dropping the subscription woke nothing, and the spawned `producing`
+/// task went on sending to a receiver that was gone. The guard now
+/// travels out of the opening future to the subscription itself.
+#[tokio::test]
+async fn a_producer_opened_into_is_cancelled_when_dropped() {
+    let counting = Counting {
+        ticks: broadcast::channel(64).0,
+        stop: subscription::CancellationToken::new(),
+        producers: Default::default(),
+        seen: Default::default(),
+    };
+    let producers = counting.producers.clone();
+
+    // The shape `opening` exists for: a plain `fn` handing back a
+    // subscription whose real work is deferred, wrapping a producer.
+    // A clone goes into the opener so `counting` — and with it the
+    // broadcast sender the producer is reading — outlives the future;
+    // otherwise the producer ends because its feed closed, which is not
+    // what this test is about.
+    let opener = counting.clone();
+    let mut ticks =
+        Subscription::opening(async move { opener.ticks(Context::default()) });
+
+    // Open it, so the producer starts. Without opening first there is
+    // nothing to leak.
+    ticks.establish().await;
+    until("the producer must start", || producers.load(SeqCst) == 1).await;
+
+    drop(ticks);
+    until(
+        "dropping an opened subscription must stop its producer too",
+        || producers.load(SeqCst) == 0,
+    )
+    .await;
+}
+
 // ---------------------------------------------------------------------
 // A subscription whose producer fails partway through.
 // ---------------------------------------------------------------------

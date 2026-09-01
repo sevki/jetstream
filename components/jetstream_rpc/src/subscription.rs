@@ -248,7 +248,7 @@ enum Source<T, D> {
     /// absence.
     Opening(
         std::pin::Pin<
-            Box<dyn std::future::Future<Output = ItemStream<T, D>> + Send>,
+            Box<dyn std::future::Future<Output = Opened<T, D>> + Send>,
         >,
     ),
     Open(ItemStream<T, D>),
@@ -262,6 +262,18 @@ enum Source<T, D> {
 pub type ItemStream<T, D> = std::pin::Pin<
     Box<dyn futures::Stream<Item = jetstream_error::Result<Item<T, D>>> + Send>,
 >;
+
+/// What opening a subscription yields: the sequence, and whatever has to
+/// stay alive to cancel its producer.
+///
+/// r[impl jetstream.subscription.surface.cancellation]
+/// The guard travels *out* of the opening future because it has to
+/// outlive it. Opening runs inside a boxed future that cannot reach the
+/// subscription the caller holds, so a token created in there had no
+/// owner: dropping the subscription woke nothing, and a `producing`
+/// task went on sending to a receiver that was gone. Handing the guard
+/// back is what puts it where the drop can reach it.
+type Opened<T, D> = (ItemStream<T, D>, Option<tokio_util::sync::DropGuard>);
 
 impl<T, D> Subscription<T, D>
 where
@@ -339,14 +351,30 @@ where
         Subscription {
             fallback: None,
             source: Source::Opening(Box::pin(async move {
-                match open.await.source {
-                    Source::Open(items) => items,
+                let mut opened = open.await;
+                // Taken out rather than matched on, so `opened` stays
+                // whole until its guard has been claimed below. Letting
+                // it drop here would fire that guard and cancel the very
+                // producer this is about to return.
+                let source =
+                    std::mem::replace(&mut opened.source, Source::Taken);
+                match source {
+                    Source::Open(items) => (items, opened.fallback.take()),
+                    // r[impl jetstream.subscription.surface.cancellation]
                     // An opener that hands back a producer's
-                    // subscription has nothing to produce into; it gets
-                    // a token nothing cancels, as it would on poll.
+                    // subscription is the polled case one step removed:
+                    // the producer needs a token, and something has to
+                    // own the cancelling end of it. This used to make a
+                    // token and drop the only handle to it, so a
+                    // `producing` task spawned through `opening` could
+                    // outlive its subscriber with nothing to stop it.
                     Source::Awaiting(produce) => {
-                        produce(CancellationToken::new())
+                        let cancel = CancellationToken::new();
+                        let guard = cancel.clone().drop_guard();
+                        (produce(cancel), Some(guard))
                     }
+                    // Nested: the inner future has already done this and
+                    // carries its own guard out.
                     Source::Opening(inner) => inner.await,
                     Source::Taken => {
                         unreachable!("only set while being replaced")
@@ -383,8 +411,14 @@ where
     /// was, ready to be established or polled again.
     pub async fn establish(&mut self) {
         if let Source::Opening(open) = &mut self.source {
-            let items = open.as_mut().await;
+            let (items, guard) = open.as_mut().await;
             self.source = Source::Open(items);
+            // Only when opening produced one: a subscription that opened
+            // onto a dispatcher-served stream has nothing to cancel here,
+            // and must not lose a guard it already held.
+            if guard.is_some() {
+                self.fallback = guard;
+            }
         }
     }
 
@@ -441,10 +475,29 @@ where
             Source::Open(items) => items,
             Source::Awaiting(produce) => produce(cancel),
             // A caller's subscription served as a producer's: it opens
-            // itself, and the token has nothing to cancel here.
-            Source::Opening(open) => Box::pin(futures::StreamExt::flatten(
-                futures::stream::once(open),
-            )),
+            // itself, and the dispatcher's token has nothing to cancel
+            // here.
+            //
+            // r[impl jetstream.subscription.surface.cancellation]
+            // Opening may still hand back a guard of its own, for a
+            // producer nested inside it. That guard becomes part of the
+            // stream's state so it lives exactly as long as the stream —
+            // dropping it when the future resolved would cancel the very
+            // producer whose items are about to be read.
+            Source::Opening(open) => {
+                use futures::StreamExt as _;
+                Box::pin(futures::stream::once(open).flat_map(
+                    |(items, guard)| {
+                        futures::stream::unfold(
+                            (items, guard),
+                            |(mut items, guard)| async move {
+                                let item = items.next().await?;
+                                Some((item, (items, guard)))
+                            },
+                        )
+                    },
+                ))
+            }
             Source::Taken => unreachable!("only set while being replaced"),
         }
     }
@@ -483,13 +536,17 @@ impl<T, D> futures::Stream for Subscription<T, D> {
         mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
-        // A producer's subscription polled without a dispatcher gets a
-        // token nothing cancels. Nothing here can cancel it, so saying
-        // otherwise would be a lie.
+        // r[impl jetstream.subscription.surface.cancellation]
+        // A producer polled without a dispatcher still gets a token that
+        // something owns — the guard below, or the one opening hands
+        // back here. Both paths reach a producer, so both have to.
         if let Source::Opening(open) = &mut self.source {
             match open.as_mut().poll(cx) {
-                std::task::Poll::Ready(items) => {
+                std::task::Poll::Ready((items, guard)) => {
                     self.source = Source::Open(items);
+                    if guard.is_some() {
+                        self.fallback = guard;
+                    }
                 }
                 std::task::Poll::Pending => return std::task::Poll::Pending,
             }
