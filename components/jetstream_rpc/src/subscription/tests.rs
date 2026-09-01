@@ -358,3 +358,51 @@ async fn a_failed_producer_does_not_report_a_normal_ending() {
          {got:?}",
     );
 }
+
+/// r[impl jetstream.subscription.surface.cancellation]
+/// A subscription that opened onto its own producer and is then *served*
+/// must not have that producer cancelled out from under it.
+///
+/// `serve` used to match on `self.source` alone, leaving the rest of the
+/// subscription — including the guard installed by `establish` or a poll
+/// — to drop as it returned. The guard fired immediately, so the stream
+/// handed to the dispatcher was already dead: a handler returning a
+/// pre-established subscription would serve nothing at all.
+#[tokio::test]
+async fn serving_an_opened_subscription_keeps_its_producer() {
+    let alive = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
+    let theirs = alive.clone();
+
+    let mut subscription = Subscription::<u32, ()>::opening(async move {
+        Subscription::producing(4, move |producer| async move {
+            theirs.store(true, std::sync::atomic::Ordering::SeqCst);
+            // Stops only when cancelled, so the test can tell the
+            // difference between "still producing" and "already gone".
+            let mut n = 0u32;
+            while producer.send(n).await.is_ok() {
+                n += 1;
+            }
+            theirs.store(false, std::sync::atomic::Ordering::SeqCst);
+        })
+    });
+
+    // Opening installs the guard on the subscription itself.
+    subscription.establish().await;
+
+    // The dispatcher's call. Its own token is separate; nothing has
+    // cancelled it.
+    let mut items = subscription.serve(CancellationToken::new());
+
+    let first =
+        tokio::time::timeout(std::time::Duration::from_secs(5), items.next())
+            .await
+            .expect("a served producer must still be producing");
+    assert!(
+        matches!(first, Some(Ok(Item::Next(0)))),
+        "expected the producer's first item, got {first:?}",
+    );
+    assert!(
+        alive.load(std::sync::atomic::Ordering::SeqCst),
+        "serving must not cancel the producer it is serving",
+    );
+}

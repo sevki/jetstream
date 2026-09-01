@@ -263,6 +263,36 @@ pub type ItemStream<T, D> = std::pin::Pin<
     Box<dyn futures::Stream<Item = jetstream_error::Result<Item<T, D>>> + Send>,
 >;
 
+/// Keep a cancellation guard alive for exactly as long as the stream it
+/// belongs to.
+///
+/// r[impl jetstream.subscription.surface.cancellation]
+/// A guard cancels when it drops, so where it lives decides when the
+/// producer stops. Left on a `Subscription` that is being taken apart,
+/// it fires while the stream it protects is still about to be read;
+/// folded into that stream's own state, it lasts precisely as long as
+/// something is reading.
+fn carrying<T, D>(
+    items: ItemStream<T, D>,
+    guard: Option<tokio_util::sync::DropGuard>,
+) -> ItemStream<T, D>
+where
+    T: Send + 'static,
+    D: Send + 'static,
+{
+    let Some(guard) = guard else {
+        return items;
+    };
+    Box::pin(futures::stream::unfold(
+        (items, guard),
+        |(mut items, guard)| async move {
+            use futures::StreamExt as _;
+            let item = items.next().await?;
+            Some((item, (items, guard)))
+        },
+    ))
+}
+
 /// What opening a subscription yields: the sequence, and whatever has to
 /// stay alive to cancel its producer.
 ///
@@ -471,32 +501,32 @@ where
     /// caller's — ignores the token, which is right: nothing on that
     /// side produces.
     pub fn serve(self, cancel: CancellationToken) -> ItemStream<T, D> {
-        match self.source {
-            Source::Open(items) => items,
+        // Taken apart rather than matched through, because the guard is
+        // as much a part of this subscription as its source. Matching on
+        // `self.source` alone leaves the rest of `self` to be dropped
+        // when `serve` returns — and if it holds a guard, that cancels
+        // the producer whose stream is being handed back.
+        let Subscription { source, fallback } = self;
+        match source {
+            // r[impl jetstream.subscription.surface.cancellation]
+            // Already a sequence, but not necessarily someone else's: a
+            // subscription that opened onto its own producer — through
+            // `establish` or a poll — carries the guard for it, and that
+            // guard has to reach the returned stream.
+            Source::Open(items) => carrying(items, fallback),
             Source::Awaiting(produce) => produce(cancel),
             // A caller's subscription served as a producer's: it opens
             // itself, and the dispatcher's token has nothing to cancel
             // here.
             //
-            // r[impl jetstream.subscription.surface.cancellation]
             // Opening may still hand back a guard of its own, for a
-            // producer nested inside it. That guard becomes part of the
-            // stream's state so it lives exactly as long as the stream —
-            // dropping it when the future resolved would cancel the very
-            // producer whose items are about to be read.
+            // producer nested inside it.
             Source::Opening(open) => {
                 use futures::StreamExt as _;
-                Box::pin(futures::stream::once(open).flat_map(
-                    |(items, guard)| {
-                        futures::stream::unfold(
-                            (items, guard),
-                            |(mut items, guard)| async move {
-                                let item = items.next().await?;
-                                Some((item, (items, guard)))
-                            },
-                        )
-                    },
-                ))
+                Box::pin(
+                    futures::stream::once(open)
+                        .flat_map(|(items, guard)| carrying(items, guard)),
+                )
             }
             Source::Taken => unreachable!("only set while being replaced"),
         }
