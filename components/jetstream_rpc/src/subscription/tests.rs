@@ -192,9 +192,10 @@ async fn merging_keeps_every_terminator_and_says_whose() {
     let mut ends: Vec<(&str, String)> = Vec::new();
     let mut merged = merged;
     while let Some(next) = merged.next().await {
-        match next.unwrap() {
-            (who, Item::Next(n)) => items.push((who, n)),
-            (who, Item::Done(why)) => ends.push((who, why)),
+        match next {
+            (who, Ok(Item::Next(n))) => items.push((who, n)),
+            (who, Ok(Item::Done(why))) => ends.push((who, why)),
+            (who, Err(e)) => panic!("{who} failed unexpectedly: {e}"),
         }
     }
 
@@ -243,4 +244,35 @@ fn encoded<T: WireFormat>(v: &T) -> Vec<u8> {
     let mut out = Vec::new();
     v.encode(&mut out).unwrap();
     out
+}
+
+/// r[impl jetstream.subscription.surface.composition]
+/// A failure keeps its key too.
+///
+/// Merging discarded the key on `Err`, so in a fan-in over several rooms
+/// a caller could see that *something* failed and not which — it could
+/// neither retry that room nor report it. That is the same loss the rule
+/// forbids for a successful end, and it went unnoticed because every
+/// test merged subscriptions that only succeed.
+#[tokio::test]
+async fn merging_says_which_subscription_failed() {
+    let failing: Subscription<u32, String> =
+        Subscription::from_items(futures::stream::iter(vec![
+            Ok(Item::Next(1)),
+            Err(jetstream_error::Error::new("the room went away")),
+        ]));
+    let merged =
+        merge([("east", finite(vec![9], "east closed")), ("west", failing)]);
+
+    let mut failures: Vec<(&str, String)> = Vec::new();
+    let mut merged = merged;
+    while let Some((who, result)) = merged.next().await {
+        if let Err(e) = result {
+            failures.push((who, e.to_string()));
+        }
+    }
+
+    assert_eq!(failures.len(), 1, "exactly one input failed");
+    assert_eq!(failures[0].0, "west", "and the caller can tell which");
+    assert!(failures[0].1.contains("the room went away"));
 }

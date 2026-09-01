@@ -341,7 +341,10 @@ impl Server for ChatRoom {
 struct RoomChannel {
     session: LocalSession<Room>,
     endpoint: Endpoint,
-    unary: Mux<Room>,
+    /// Shared, so a subscription can be opened on the same lane the
+    /// unary calls use — which is the arrangement that actually
+    /// exercises `jetstream.subscription.dispatch.concurrent`.
+    unary: std::sync::Arc<Mux<Room>>,
 }
 
 impl RoomChannel {
@@ -353,7 +356,7 @@ impl RoomChannel {
         Ok(RoomChannel {
             session,
             endpoint,
-            unary: Mux::new(64, Box::new(lane)),
+            unary: std::sync::Arc::new(Mux::new(64, Box::new(lane))),
         })
     }
 
@@ -379,10 +382,10 @@ impl RoomChannel {
         }
     }
 
-    /// A lane of its own, because this session has many — the choice
-    /// `Capability::ManyLanes` licenses and that the caller never sees.
-    /// On a session with one lane this would be a tag on the shared one,
-    /// and the type below would be the same.
+    /// A subscription on a lane of its own, because this session has
+    /// many — the choice `Capability::ManyLanes` licenses and that the
+    /// caller never sees. On a session with one lane this would be a tag
+    /// on the shared one, and the type below would be the same.
     async fn events(
         &self,
         from: u64,
@@ -391,11 +394,36 @@ impl RoomChannel {
         Box<dyn std::error::Error>,
     > {
         let lane = Session::<Room>::open_lane(&self.session).await?;
-        let mux = Mux::<Room>::new(64, Box::new(lane));
+        Ok(Self::events_on(
+            std::sync::Arc::new(Mux::<Room>::new(64, Box::new(lane))),
+            from,
+        )
+        .await)
+    }
+
+    /// A subscription on the multiplexer the caller already holds — that
+    /// is, **sharing a lane with its other calls**.
+    ///
+    /// This exists because the example was not demonstrating what it
+    /// claimed. Every subscription opened its own lane and `post` used
+    /// another, so `posted #1` proved only that a second lane works:
+    /// reverting the dispatcher fix would have printed it just the same,
+    /// with each subscription lane occupied forever and the unary lane
+    /// answering normally. Sharing a lane is the case
+    /// `jetstream.subscription.dispatch.concurrent` is actually about.
+    /// A subscription sharing the lane this channel's `post` uses.
+    async fn events_here(&self, from: u64) -> Subscription<Event, Closed> {
+        Self::events_on(self.unary.clone(), from).await
+    }
+
+    async fn events_on(
+        mux: std::sync::Arc<Mux<Room>>,
+        from: u64,
+    ) -> Subscription<Event, Closed> {
         let frames = mux
             .rpc_stream(Context::default(), Ask::Events(from), 64)
             .await;
-        Ok(Subscription::from_frames(frames, move |frame| {
+        Subscription::from_frames(frames, move |frame| {
             // The lane's multiplexer has to outlive the subscription
             // reading through it, so it rides along in this closure.
             let _ = &mux;
@@ -404,7 +432,7 @@ impl RoomChannel {
                 Say::Done(done) => Ok(Item::Done(done.value)),
                 other => Err(Error::new(format!("unexpected item: {other:?}"))),
             }
-        }))
+        })
     }
 
     fn endpoint(&self) -> &Endpoint {
@@ -449,8 +477,14 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
         String::from_utf8_lossy(channel.endpoint().as_bytes())
     );
 
-    // Two subscribers, and a third that leaves early.
-    let mut ada = channel.events(0).await?;
+    // Ada subscribes on the **same lane** the posts below go out on.
+    // With each subscription on its own lane, `posted #1` would print
+    // even with the dispatcher serving a subscription to exhaustion —
+    // the subscription lane would hang and the unary lane would answer
+    // regardless, which is what made the earlier version of this example
+    // decorative on its central claim.
+    let mut ada = channel.events_here(0).await;
+    // Grace gets a lane of her own, which is the other realisation.
     let mut grace = channel.events(0).await?;
     let leaving = channel.events(0).await?;
     settle().await;
@@ -488,16 +522,19 @@ async fn main() -> std::result::Result<(), Box<dyn std::error::Error>> {
     // event and no ending at all.
     let mut merged = subscription::merge([("ada", ada), ("grace", grace)]);
     while let Some(next) = merged.next().await {
-        match next? {
-            (who, Item::Next(event)) => {
+        match next {
+            (who, Ok(Item::Next(event))) => {
                 println!("  {who} heard: {} says {}", event.who, event.body)
             }
-            (who, Item::Done(closed)) => {
+            (who, Ok(Item::Done(closed))) => {
                 println!(
                     "  {who}'s subscription closed at #{}",
                     closed.last_seq
                 )
             }
+            // The key survives a failure too, so a fan-in can say which
+            // room went away rather than only that one did.
+            (who, Err(e)) => println!("  {who} failed: {e}"),
         }
     }
 

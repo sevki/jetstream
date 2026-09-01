@@ -283,7 +283,16 @@ pub struct Labelled<K, T, D> {
 }
 
 impl<K: Clone + Unpin, T, D> futures::Stream for Labelled<K, T, D> {
-    type Item = jetstream_error::Result<(K, Item<T, D>)>;
+    /// The key accompanies the failure as well as the item.
+    ///
+    /// r[impl jetstream.subscription.surface.composition]
+    /// This used to yield a bare `Err`, which throws away the one thing
+    /// `Labelled` exists to keep. In a fan-in over several rooms, a
+    /// transport failure, a decode failure or a producer failure ends
+    /// one input and the caller could not tell which — so it could
+    /// neither retry that room nor report it, which is the same loss the
+    /// rule forbids for the *successful* end.
+    type Item = (K, jetstream_error::Result<Item<T, D>>);
 
     fn poll_next(
         self: std::pin::Pin<&mut Self>,
@@ -293,8 +302,7 @@ impl<K: Clone + Unpin, T, D> futures::Stream for Labelled<K, T, D> {
         let this = self.get_mut();
         let key = this.key.clone();
         match std::pin::Pin::new(&mut this.inner).poll_next(cx) {
-            Poll::Ready(Some(Ok(item))) => Poll::Ready(Some(Ok((key, item)))),
-            Poll::Ready(Some(Err(e))) => Poll::Ready(Some(Err(e))),
+            Poll::Ready(Some(result)) => Poll::Ready(Some((key, result))),
             Poll::Ready(None) => Poll::Ready(None),
             Poll::Pending => Poll::Pending,
         }
