@@ -305,9 +305,18 @@ struct Open {
     /// Set when the producer emitted a terminator of its own, so the
     /// dispatcher does not send a second one.
     terminated: bool,
-    /// The tag of the cancellation waiting to be acknowledged, if one
-    /// arrived. The acknowledgement is owed *after* the last item.
-    ack_to: Option<u16>,
+    /// The tags of the cancellations waiting to be acknowledged. The
+    /// acknowledgement is owed *after* the last item.
+    ///
+    /// r[impl jetstream.subscription.cancel]
+    /// A list rather than one tag: nothing stops a caller — or the
+    /// client's own drop path, which queues a cancellation of its own —
+    /// from sending two before the producer notices the first. Keeping
+    /// only the latest silently drops the earlier one, and every
+    /// cancellation is owed an answer; the tag it was sent under stays
+    /// in flight until it gets one, so the ones forgotten here are
+    /// control tags leaked for the life of the lane.
+    ack_to: Vec<u16>,
 }
 
 pub async fn run<T, P>(p: &mut P, transport: T) -> Result<(), P::Error>
@@ -341,7 +350,7 @@ where
 
     // The reason the loop stopped, so the cleanup below runs on every
     // exit rather than only the tidy one.
-    let outcome: Result<(), P::Error> = loop {
+    let outcome: Result<(), P::Error> = 'dispatch: loop {
         // r[impl jetstream.subscription.dispatch.concurrent]
         // Fair selection, deliberately. This was `biased` with items
         // first, on the reasoning that a ready producer should not wait
@@ -383,12 +392,16 @@ where
                         // r[impl jetstream.subscription.cancel]
                         // After every item already emitted, which is what
                         // makes the tag safe to reuse.
-                        if let Some(ack_tag) = o.ack_to {
+                        for ack_tag in &o.ack_to {
                             if let Some(msg) = P::cancel_ack(tag) {
-                                if let Err(e) =
-                                    sink.send(Frame { tag: ack_tag, msg }).await
+                                if let Err(e) = sink
+                                    .send(Frame {
+                                        tag: *ack_tag,
+                                        msg,
+                                    })
+                                    .await
                                 {
-                                    break Err(e);
+                                    break 'dispatch Err(e);
                                 }
                             }
                         }
@@ -403,7 +416,7 @@ where
                 if let Some(oldtag) = P::cancel_target(&frame) {
                     match open.get_mut(&oldtag) {
                         Some(o) => {
-                            o.ack_to = Some(frame.tag);
+                            o.ack_to.push(frame.tag);
                             o.cancel.cancel();
                         }
                         // Nothing by that tag: already finished, or never
@@ -442,7 +455,7 @@ where
                             cancel,
                             method,
                             terminated: false,
-                            ack_to: None,
+                            ack_to: Vec::new(),
                         },
                     );
                     active.push(Served { tag, inner: Some(inner) });

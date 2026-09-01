@@ -108,7 +108,10 @@ async fn the_end_carries_a_value() {
         producer.finish("two messages".to_string()).await;
     });
 
-    let got: Vec<Item<u32, String>> = items.collect().await;
+    let got: Vec<Item<u32, String>> = items
+        .map(|item| item.expect("this producer does not fail"))
+        .collect()
+        .await;
     assert_eq!(
         got,
         vec![
@@ -136,7 +139,7 @@ async fn a_producer_that_watches_nothing_still_stops() {
         sent
     });
 
-    assert_eq!(items.next().await, Some(Item::Next(0)));
+    assert_eq!(items.next().await.map(|i| i.unwrap()), Some(Item::Next(0)));
     cancel.cancel();
     drop(items);
 
@@ -316,5 +319,42 @@ async fn an_abandoned_establish_leaves_the_subscription_usable() {
     assert!(
         matches!(subscription.next().await, Some(Ok(Item::Next(7)))),
         "an abandoned establishment must not consume the subscription"
+    );
+}
+
+/// r[impl jetstream.subscription.surface.termination]
+/// A producer that fails must be able to say so. Before the channel
+/// carried failures it could not: returning early — the `?` in any
+/// ordinary producer loop — dropped the `Producer`, closing the channel,
+/// which the dispatcher reads as a subscription that merely stopped. It
+/// then supplies the terminator the caller is owed, and the subscriber
+/// receives a normal typed ending carrying a *fabricated* result. A
+/// failure reported as success is the one outcome the surface must never
+/// produce.
+#[tokio::test]
+async fn a_failed_producer_does_not_report_a_normal_ending() {
+    let cancel = tokio_util::sync::CancellationToken::new();
+    let (producer, items) = channel::<u32, String>(8, cancel);
+    tokio::spawn(async move {
+        producer.send(1).await.unwrap();
+        producer
+            .fail(jetstream_error::Error::new("the feed went away"))
+            .await;
+    });
+
+    let got: Vec<_> = items.collect().await;
+    assert!(
+        matches!(got.first(), Some(Ok(Item::Next(1)))),
+        "the item before the failure still arrives: {got:?}",
+    );
+    let last = got.last().expect("the failure is an item in the sequence");
+    assert!(
+        last.is_err(),
+        "the sequence must end in the failure, not in silence: {got:?}",
+    );
+    assert!(
+        !got.iter().any(|i| matches!(i, Ok(Item::Done(_)))),
+        "a failure must never be dressed up as a completed subscription: \
+         {got:?}",
     );
 }
