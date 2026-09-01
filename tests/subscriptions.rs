@@ -11,7 +11,7 @@ use std::{
     time::Duration,
 };
 
-use futures::StreamExt;
+use futures::{FutureExt, StreamExt};
 use jetstream::prelude::*;
 use jetstream_rpc::session::{LocalSession, Session};
 use tokio::sync::broadcast;
@@ -256,8 +256,10 @@ async fn merging_keeps_the_result_and_says_whose() {
         let mut merged = merged;
         let mut ends = Vec::new();
         while let Some(next) = merged.next().await {
-            if let (who, Item::Done(Total(total))) = next.unwrap() {
-                ends.push((who, total));
+            match next {
+                (who, Ok(Item::Done(Total(total)))) => ends.push((who, total)),
+                (who, Err(e)) => panic!("{who} failed unexpectedly: {e}"),
+                _ => {}
             }
         }
         ends
@@ -417,6 +419,38 @@ async fn a_single_lane_session_serves_a_subscription() {
     drop(ticks);
     until(
         "cancellation must reach the producer on a shared lane",
+        || producers.load(SeqCst) == 0,
+    )
+    .await;
+}
+
+/// r[verify jetstream.subscription.surface.cancellation]
+/// A producer polled without a dispatcher still learns when its
+/// subscriber goes.
+///
+/// Serving in process — calling the service directly and polling what it
+/// returns — used to hand the producer a token nothing would ever
+/// cancel. Dropping the subscription woke nothing, and because
+/// `producing` runs its body in a spawned task, that task outlived the
+/// receiver it was sending to.
+#[tokio::test]
+async fn an_in_process_producer_is_cancelled_when_dropped() {
+    let counting = Counting {
+        ticks: broadcast::channel(64).0,
+        stop: subscription::CancellationToken::new(),
+        producers: Default::default(),
+        seen: Default::default(),
+    };
+    let producers = counting.producers.clone();
+
+    // No dispatcher anywhere: the service is called directly.
+    let mut ticks = counting.ticks(Context::default());
+    assert!(ticks.next().now_or_never().is_none(), "it starts");
+    until("the producer must start", || producers.load(SeqCst) == 1).await;
+
+    drop(ticks);
+    until(
+        "dropping it must stop the producer, dispatcher or not",
         || producers.load(SeqCst) == 0,
     )
     .await;

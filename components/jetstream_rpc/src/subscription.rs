@@ -207,6 +207,18 @@ impl<T, D> Item<T, D> {
 /// `r[jetstream.subscription.realisation.opaque]`.
 pub struct Subscription<T, D> {
     source: Source<T, D>,
+    /// Cancels the fallback token handed to a producer that was polled
+    /// without a dispatcher, when this subscription is dropped.
+    ///
+    /// r[impl jetstream.subscription.surface.cancellation]
+    /// Without it, a producer served in process — polled directly rather
+    /// than through `serve` — held a token nothing would ever cancel, so
+    /// dropping the subscription woke nothing. For `producing`, whose
+    /// body runs in a spawned task, that task then outlived the receiver
+    /// it was sending to: the exact "the work carries on with nowhere to
+    /// deliver" that cancellation exists to prevent, in the one case
+    /// where no dispatcher is around to notice.
+    fallback: Option<tokio_util::sync::DropGuard>,
 }
 
 /// Where a subscription's items come from.
@@ -276,6 +288,7 @@ where
     {
         use futures::StreamExt;
         Subscription {
+            fallback: None,
             source: Source::Open(Box::pin(
                 stream
                     .map(move |frame| decode(frame?))
@@ -307,6 +320,7 @@ where
         F: std::future::Future<Output = Self> + Send + 'static,
     {
         Subscription {
+            fallback: None,
             source: Source::Opening(Box::pin(async move {
                 match open.await.source {
                     Source::Open(items) => items,
@@ -340,14 +354,20 @@ where
     /// nothing can. A subscription that must not miss anything says
     /// where to start, and its producer replays from there; that is
     /// what the cursor in `r[jetstream.subscription.resume]` is for.
+    /// Cancel-safe: the opening future stays *in* the subscription while
+    /// it is awaited.
+    ///
+    /// It used to be moved out and `Source::Taken` left in its place, so
+    /// dropping this future — a timeout, a losing `select!` branch —
+    /// dropped the only opening future with it and left the subscription
+    /// permanently `Taken`: a second `establish()` did nothing at all,
+    /// and the next poll hit an `unreachable!`. Awaiting in place means
+    /// an abandoned establishment leaves the subscription exactly as it
+    /// was, ready to be established or polled again.
     pub async fn establish(&mut self) {
-        if let Source::Opening(_) = self.source {
-            let Source::Opening(open) =
-                std::mem::replace(&mut self.source, Source::Taken)
-            else {
-                unreachable!("checked immediately above")
-            };
-            self.source = Source::Open(open.await);
+        if let Source::Opening(open) = &mut self.source {
+            let items = open.as_mut().await;
+            self.source = Source::Open(items);
         }
     }
 
@@ -362,6 +382,7 @@ where
             + 'static,
     {
         Subscription {
+            fallback: None,
             source: Source::Awaiting(Box::new(move |cancel| {
                 Box::pin(produce(cancel))
             })),
@@ -417,6 +438,7 @@ where
             + 'static,
     {
         Subscription {
+            fallback: None,
             source: Source::Open(Box::pin(items)),
         }
     }
@@ -458,7 +480,13 @@ impl<T, D> futures::Stream for Subscription<T, D> {
             else {
                 unreachable!("checked immediately above")
             };
-            self.source = Source::Open(produce(CancellationToken::new()));
+            // No dispatcher, so nothing else owns a token — but the
+            // producer still has to learn when this subscription goes,
+            // or a `producing` task outlives the receiver it is sending
+            // to. The guard cancels it on drop.
+            let cancel = CancellationToken::new();
+            self.fallback = Some(cancel.clone().drop_guard());
+            self.source = Source::Open(produce(cancel));
         }
         match &mut self.source {
             Source::Open(items) => items.as_mut().poll_next(cx),

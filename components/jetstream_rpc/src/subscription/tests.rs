@@ -276,3 +276,45 @@ async fn merging_says_which_subscription_failed() {
     assert_eq!(failures[0].0, "west", "and the caller can tell which");
     assert!(failures[0].1.contains("the room went away"));
 }
+
+/// r[impl jetstream.subscription.surface.establishment]
+/// Abandoning `establish()` must leave the subscription usable.
+///
+/// It moved the opening future out and left a placeholder behind, so
+/// dropping this future — a timeout, a losing `select!` branch, which is
+/// reachable whenever opening has to wait for a tag — dropped the only
+/// opening future with it. The subscription was then permanently stuck:
+/// a second `establish()` silently did nothing, and the next poll hit an
+/// `unreachable!`.
+///
+/// Tested against an open that is *held* pending on purpose. In process
+/// the open usually completes on its first poll, so a test that merely
+/// raced a short timeout passed with the bug in place — which is how
+/// this nearly went in unverified.
+#[tokio::test]
+async fn an_abandoned_establish_leaves_the_subscription_usable() {
+    use futures::FutureExt;
+
+    let (unblock, blocked) = tokio::sync::oneshot::channel::<()>();
+    let mut subscription: Subscription<u32, ()> =
+        Subscription::opening(async move {
+            let _ = blocked.await;
+            Subscription::from_items(futures::stream::iter(vec![Ok(
+                Item::Next(7),
+            )]))
+        });
+
+    // Abandoned while pending: the open cannot finish yet.
+    assert!(
+        subscription.establish().now_or_never().is_none(),
+        "the open must still be pending for this to test anything"
+    );
+
+    // Now let it finish. The subscription must be exactly as it was.
+    unblock.send(()).unwrap();
+    subscription.establish().await;
+    assert!(
+        matches!(subscription.next().await, Some(Ok(Item::Next(7)))),
+        "an abandoned establishment must not consume the subscription"
+    );
+}

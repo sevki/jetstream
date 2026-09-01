@@ -369,7 +369,22 @@ fn generate_streaming(
                                 #done_ident(value),
                             )),
                         }),
-                        Err(err) => Err(err),
+                        // r[impl jetstream.subscription.surface.termination]
+                        // A producer failure ends *this* subscription,
+                        // not the lane. Returning `Err` here made the
+                        // item a transport error, which `server::run`
+                        // propagates — so one failing room tore down
+                        // every other subscription and every unary call
+                        // sharing the lane, and the caller never reached
+                        // the error arm its generated client has. As an
+                        // error frame under this tag it is the failure
+                        // the surface has to distinguish from a normal
+                        // end, delivered to the one subscriber it
+                        // concerns.
+                        Err(err) => Ok(Frame {
+                            tag,
+                            msg: Rmessage::Error(err),
+                        }),
                     },
                 )) as jetstream::prelude::server::ResponseStream<Self>
             }

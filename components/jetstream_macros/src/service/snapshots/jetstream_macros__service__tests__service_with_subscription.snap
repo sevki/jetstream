@@ -363,7 +363,12 @@ pub mod room_protocol {
                                             msg: Rmessage::Done(Done::Events(ReventsDone(value))),
                                         })
                                     }
-                                    Err(err) => Err(err),
+                                    Err(err) => {
+                                        Ok(Frame {
+                                            tag,
+                                            msg: Rmessage::Error(err),
+                                        })
+                                    }
                                 },
                             ),
                         ) as jetstream::prelude::server::ResponseStream<Self>

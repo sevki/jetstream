@@ -237,8 +237,15 @@ async fn main() -> Result<()> {
     println!("joined {}", String::from_utf8_lossy(on.endpoint.as_bytes()));
 
     let poster = on.lane().await?;
-    // Two subscribers, and a third that leaves early.
-    let mut ada = on.lane().await?.events(Context::default(), 0);
+    // Ada subscribes on the **same lane** the posts below go out on.
+    // With every subscription on a lane of its own, `posted #1` would
+    // print even with the dispatcher serving a subscription to
+    // exhaustion — the subscription lanes would hang and the unary lane
+    // would answer regardless. That is what made an earlier version of
+    // this example decorative on its central claim.
+    let mut ada = poster.events(Context::default(), 0);
+    // Grace and the one who leaves get lanes of their own, which is the
+    // other realisation and equally invisible in the types.
     let mut grace = on.lane().await?.events(Context::default(), 0);
     let mut leaving = on.lane().await?.events(Context::default(), 0);
 
@@ -287,16 +294,19 @@ async fn main() -> Result<()> {
     // event and no ending at all.
     let mut merged = subscription::merge([("ada", ada), ("grace", grace)]);
     while let Some(next) = merged.next().await {
-        match next? {
-            (who, Item::Next(event)) => {
+        match next {
+            (who, Ok(Item::Next(event))) => {
                 println!("  {who} heard: {} says {}", event.who, event.body)
             }
-            (who, Item::Done(closed)) => {
+            (who, Ok(Item::Done(closed))) => {
                 println!(
                     "  {who}'s subscription closed at #{}",
                     closed.last_seq
                 )
             }
+            // The key survives a failure too, so a fan-in can say which
+            // room went away rather than only that one did.
+            (who, Err(e)) => println!("  {who} failed: {e}"),
         }
     }
 
