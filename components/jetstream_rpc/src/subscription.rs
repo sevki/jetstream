@@ -222,7 +222,7 @@ where
     /// Build one from the frames of a streaming call. `decode` is the
     /// generated protocol's: only it knows which response variant is an
     /// item and which is the terminator.
-    pub fn from_frames<P, F>(stream: crate::RpcStream<P>, mut decode: F) -> Self
+    pub fn from_frames<P, F>(stream: crate::RpcStream<P>, decode: F) -> Self
     where
         P: crate::Protocol + 'static,
         P::Response: 'static,
