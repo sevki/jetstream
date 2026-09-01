@@ -72,10 +72,18 @@ impl<P: Protocol> Future for RpcCall<P> {
 /// requires.
 pub struct RpcStream<P: Protocol> {
     pub tag: u16,
+    /// r[impl jetstream.subscription.identity]
+    /// Which subscription this stream is, independent of the tag it
+    /// happens to occupy. A tag is reused once its terminator frees it,
+    /// so identity cannot be the number alone.
+    pub(crate) binding: u64,
     pub(crate) items: tokio::sync::mpsc::Receiver<
         jetstream_error::Result<Frame<P::Response>>,
     >,
     pub(crate) in_flight: crate::mux::InFlight<P>,
+    /// A request that never reached the lane, delivered as the stream's
+    /// one item so the caller does not read a failure as a clean end.
+    pub(crate) failed: Option<jetstream_error::Error>,
 }
 
 impl<P: Protocol> futures::Stream for RpcStream<P> {
@@ -85,6 +93,9 @@ impl<P: Protocol> futures::Stream for RpcStream<P> {
         mut self: std::pin::Pin<&mut Self>,
         cx: &mut std::task::Context<'_>,
     ) -> std::task::Poll<Option<Self::Item>> {
+        if let Some(err) = self.failed.take() {
+            return std::task::Poll::Ready(Some(Err(err)));
+        }
         self.items.poll_recv(cx)
     }
 }
@@ -101,9 +112,23 @@ impl<P: Protocol> Drop for RpcStream<P> {
         // `try_lock` that fails leaves the waiter in place, which is the
         // safe direction: frames are delivered to a receiver nobody
         // reads, and the terminator still frees the tag.
+        //
+        // r[impl jetstream.subscription.identity]
+        // And only if the slot is still *this* subscription's. Once a
+        // terminator frees a tag the number goes back to the pool and
+        // another subscription can take it, so a stream dropped after
+        // its terminator would otherwise abandon a stranger's waiter and
+        // silence a subscription that had done nothing wrong. Matching
+        // on the binding rather than the tag is what makes the drop
+        // safe; a stale holder finds no match and leaves the slot alone.
         if let Ok(mut map) = self.in_flight.try_lock() {
-            if let Some(slot) = map.get_mut(&self.tag) {
-                *slot = crate::mux::Waiter::Abandoned;
+            let ours = matches!(
+                map.get(&self.tag),
+                Some(crate::mux::Waiter::Streaming { binding, .. })
+                    if *binding == self.binding
+            );
+            if ours {
+                map.insert(self.tag, crate::mux::Waiter::Abandoned);
             }
         }
     }

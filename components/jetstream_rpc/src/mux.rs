@@ -33,7 +33,18 @@ pub enum Waiter<P: Protocol> {
     /// One response, then the tag is free.
     Unary(oneshot::Sender<Result<Frame<P::Response>>>),
     /// Many responses under one tag, until the terminator.
-    Streaming(mpsc::Sender<Result<Frame<P::Response>>>),
+    ///
+    /// r[impl jetstream.subscription.identity]
+    /// The `binding` is which subscription this slot belongs to, and it
+    /// is what makes abandoning one safe: a tag is reused once its
+    /// terminator frees it, so a stream dropped after that would
+    /// otherwise find a *different* subscription's waiter under its old
+    /// number and silence it. Identifiers start at one and are never
+    /// reused, so a stale holder simply fails to match.
+    Streaming {
+        binding: u64,
+        tx: mpsc::Sender<Result<Frame<P::Response>>>,
+    },
     /// The caller dropped its stream. Frames are discarded, and the tag
     /// stays held until the terminator arrives.
     ///
@@ -49,6 +60,11 @@ pub struct Mux<P: Protocol> {
     send_queue: tokio::sync::mpsc::Sender<Frame<P::Request>>,
     in_flight: InFlight<P>,
     tag_pool: Arc<TagPool>,
+    /// r[impl jetstream.subscription.identity]
+    /// Hands out the binding identifiers above. Unique, never reused,
+    /// and never zero — the counter starts at one, so `fetch_add`
+    /// returning the pre-increment value would hand out zero first.
+    bindings: std::sync::atomic::AtomicU64,
 }
 
 impl<P: Protocol> Mux<P>
@@ -106,12 +122,12 @@ where
                         )));
                     }
                     Some(Waiter::Unary(_)) => map.remove(&tag),
-                    Some(Waiter::Streaming(tx)) => {
-                        let tx = tx.clone();
+                    Some(Waiter::Streaming { binding, tx }) => {
+                        let (binding, tx) = (*binding, tx.clone());
                         if ends_here {
                             map.remove(&tag);
                         }
-                        Some(Waiter::Streaming(tx))
+                        Some(Waiter::Streaming { binding, tx })
                     }
                     Some(Waiter::Abandoned) => {
                         if ends_here {
@@ -129,7 +145,7 @@ where
                     }
                     tag_pool.release_tag(tag).await;
                 }
-                Some(Waiter::Streaming(tx)) => {
+                Some(Waiter::Streaming { binding, tx }) => {
                     // r[impl jetstream.subscription.backpressure]
                     // r[impl jetstream.subscription.backpressure.reporting]
                     // Never *await* the subscriber here. This is the
@@ -160,10 +176,27 @@ where
                             // Abandoned rather than removed: the tag is
                             // still in flight at the producer, and is
                             // released when its terminator arrives.
-                            in_flight
-                                .lock()
-                                .await
-                                .insert(tag, Waiter::Abandoned);
+                            //
+                            // Unless this frame *was* the terminator.
+                            // `ends_here` has already taken the waiter
+                            // out, and nothing further will arrive under
+                            // this tag — so putting it back would strand
+                            // the entry and the tag for the life of the
+                            // lane, which is what a burst that fills the
+                            // queue exactly at `RDONE` would do.
+                            if !ends_here {
+                                let mut map = in_flight.lock().await;
+                                // Only if this subscription still owns
+                                // the slot: the caller may have dropped
+                                // its stream while the lock was open.
+                                if matches!(
+                                    map.get(&tag),
+                                    Some(Waiter::Streaming { binding: b, .. })
+                                        if *b == binding
+                                ) {
+                                    map.insert(tag, Waiter::Abandoned);
+                                }
+                            }
                             // Delivering the reason may block, so it
                             // does not happen here. The sender moves to
                             // a task; the lane keeps reading.
@@ -174,6 +207,9 @@ where
                             tokio::spawn(async move {
                                 let _ = tx.send(Err(overflowed)).await;
                             });
+                            if ends_here {
+                                tag_pool.release_tag(tag).await;
+                            }
                             // Telling the *producer* to stop needs the
                             // cancellation path, which arrives with the
                             // dispatcher; until then this ends the
@@ -220,8 +256,22 @@ where
                 Waiter::Unary(tx) => {
                     let _ = tx.send(Err(dropped(tag)));
                 }
-                Waiter::Streaming(tx) => {
-                    let _ = tx.send(Err(dropped(tag))).await;
+                // The same rule as the delivery loop above, for the same
+                // reason: never *await* a subscriber. These are drained
+                // in sequence, so one subscriber whose queue is full
+                // would hold up every waiter behind it — none of them
+                // told the lane had closed, none of their tags released.
+                // The waiter that cannot take its error now gets it from
+                // a task instead; the drain moves on.
+                Waiter::Streaming { tx, .. } => {
+                    let closed = dropped(tag);
+                    if let Err(mpsc::error::TrySendError::Full(item)) =
+                        tx.try_send(Err(closed))
+                    {
+                        tokio::spawn(async move {
+                            let _ = tx.send(item).await;
+                        });
+                    }
                 }
                 Waiter::Abandoned => {}
             }
@@ -291,6 +341,7 @@ where
             in_flight,
             send_queue,
             tag_pool,
+            bindings: std::sync::atomic::AtomicU64::new(1),
         }
     }
 
@@ -310,16 +361,26 @@ where
         // From the streaming region, so no number of live subscriptions
         // can make an ordinary call impossible.
         let tag = self.tag_pool.acquire_streaming_tag().await;
+        let binding = self
+            .bindings
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
         let (tx, items) = mpsc::channel(capacity);
         self.in_flight
             .lock()
             .await
-            .insert(tag, Waiter::Streaming(tx));
+            .insert(tag, Waiter::Streaming { binding, tx });
 
         // r[impl jetstream.subscription.dispatch.issue-order]
         // Queued here rather than from a spawned task, for the ordering
         // reason spelled out in `rpc`.
-        if self
+        // r[impl jetstream.subscription.surface.termination]
+        // A request that never reached the lane must not look like a
+        // subscription that ended normally. Dropping the sender here
+        // closes `items`, so the first poll would yield `None` — the
+        // same thing a clean, empty subscription yields, and the caller
+        // has no way to tell the difference. The unary path resolves
+        // this as an error; so does this one.
+        let failed = if self
             .send_queue
             .send(Frame { tag, msg: request })
             .await
@@ -327,11 +388,18 @@ where
         {
             self.in_flight.lock().await.remove(&tag);
             self.tag_pool.release_tag(tag).await;
-        }
+            Some(Error::new(
+                "the lane is closed; the subscription was never issued",
+            ))
+        } else {
+            None
+        };
         RpcStream {
             tag,
+            binding,
             items,
             in_flight: self.in_flight.clone(),
+            failed,
         }
     }
 }

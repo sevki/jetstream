@@ -11,9 +11,11 @@ use std::{
 use futures::{channel::mpsc as fmpsc, Sink, SinkExt, Stream, StreamExt};
 use jetstream_wireformat::WireFormat;
 
+use tokio::sync::mpsc;
+
 use crate::{
-    client::ClientTransport, context::Context, subscription::RDONE, Error,
-    Frame, Framer, Mux, Protocol,
+    client::ClientTransport, context::Context, mux::Waiter,
+    subscription::RDONE, Error, Frame, Framer, Mux, Protocol,
 };
 
 const TASK: u8 = 102;
@@ -327,5 +329,215 @@ async fn a_subscriber_that_stops_reading_does_not_stall_the_lane() {
     assert!(
         message.contains("fell behind"),
         "the reason must name the cause: {message}"
+    );
+}
+
+/// A transport that accepts requests and answers nothing, so a test can
+/// drive the peer by hand. Dropping the returned `Peer` closes the lane.
+fn quiet_transport() -> (Box<dyn ClientTransport<Counting>>, Peer) {
+    let (to_server, mut from_client) = fmpsc::unbounded();
+    let (to_client, from_server) = fmpsc::unbounded();
+    tokio::spawn(async move { while from_client.next().await.is_some() {} });
+    (
+        Box::new(Duplex {
+            tx: to_server,
+            rx: from_server,
+        }),
+        to_client,
+    )
+}
+
+async fn settle() {
+    tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+}
+
+/// r[verify jetstream.subscription.identity]
+/// A subscriber that fills its queue at the very moment the terminator
+/// arrives must still release its tag. `ends_here` has already taken the
+/// waiter out of the map, so marking it abandoned puts it back — and
+/// nothing further will ever arrive under that tag to take it out again.
+#[tokio::test]
+async fn overflowing_on_the_terminator_still_releases_the_tag() {
+    let (transport, _peer) = counting_transport();
+    let mux = Mux::<Counting>::new(4, transport);
+
+    // Capacity one, never read: `Ask(1)` sends a single item, which
+    // fills the queue exactly, and then the terminator, which cannot fit.
+    let lagging = mux.rpc_stream(Context::default(), Ask(1), 1).await;
+    let tag = lagging.tag;
+    settle().await;
+
+    assert!(
+        !mux.in_flight.lock().await.contains_key(&tag),
+        "the terminator freed the tag, so nothing may remain in flight \
+         under it — an abandoned entry here is never collected",
+    );
+}
+
+/// r[verify jetstream.subscription.surface.termination]
+/// The shutdown drain has the same obligation as the delivery loop: it
+/// must not await a subscriber. Waiters are resolved in tag order, so one
+/// full queue at the front would leave everything behind it unresolved
+/// and every one of those tags unreleased.
+#[tokio::test]
+async fn a_full_subscriber_does_not_block_the_shutdown_drain() {
+    let (transport, mut peer) = quiet_transport();
+    let mux = Mux::<Counting>::new(4, transport);
+
+    // Held, never read, and filled to capacity — but not *over* it, so
+    // it is still a live streaming waiter rather than an abandoned one.
+    let stuck = mux.rpc_stream(Context::default(), Ask(0), 1).await;
+    peer.send(Ok(Frame {
+        tag: stuck.tag,
+        msg: Say::Item(0),
+    }))
+    .await
+    .unwrap();
+    settle().await;
+
+    // Behind it in tag order, and therefore behind it in the drain.
+    let mut waiting = mux.rpc_stream(Context::default(), Ask(0), 8).await;
+    assert!(
+        stuck.tag < waiting.tag,
+        "the test needs the stuck waiter to be drained first",
+    );
+
+    drop(peer);
+
+    let outcome =
+        tokio::time::timeout(std::time::Duration::from_secs(5), waiting.next())
+            .await
+            .expect("a full subscriber must not hold up the drain behind it");
+    assert!(
+        matches!(outcome, Some(Err(_))),
+        "the lane closed, and every waiter is owed that news: {outcome:?}",
+    );
+}
+
+/// A transport whose outbound half is broken. The first frame the mux
+/// task takes off the queue fails to send, which ends that task — and
+/// from then on queuing a request fails.
+struct Broken {
+    rx: fmpsc::UnboundedReceiver<Result<Frame<Say>, Error>>,
+}
+
+impl Sink<Frame<Ask>> for Broken {
+    type Error = Error;
+
+    fn poll_ready(
+        self: Pin<&mut Self>,
+        _cx: &mut Cx<'_>,
+    ) -> Poll<Result<(), Error>> {
+        Poll::Ready(Ok(()))
+    }
+
+    fn start_send(
+        self: Pin<&mut Self>,
+        _item: Frame<Ask>,
+    ) -> Result<(), Error> {
+        Err(Error::new("the transport is broken"))
+    }
+
+    fn poll_flush(
+        self: Pin<&mut Self>,
+        _cx: &mut Cx<'_>,
+    ) -> Poll<Result<(), Error>> {
+        Poll::Ready(Ok(()))
+    }
+
+    fn poll_close(
+        self: Pin<&mut Self>,
+        _cx: &mut Cx<'_>,
+    ) -> Poll<Result<(), Error>> {
+        Poll::Ready(Ok(()))
+    }
+}
+
+impl Stream for Broken {
+    type Item = Result<Frame<Say>, Error>;
+
+    fn poll_next(
+        mut self: Pin<&mut Self>,
+        cx: &mut Cx<'_>,
+    ) -> Poll<Option<Self::Item>> {
+        Pin::new(&mut self.rx).poll_next(cx)
+    }
+}
+
+/// r[verify jetstream.subscription.surface.termination]
+/// A subscription that never reached the lane must not read as one that
+/// ended cleanly. Closing the item channel makes the first poll yield
+/// `None`, which is exactly what an empty, successful subscription
+/// yields — so the failure has to be carried explicitly.
+#[tokio::test]
+async fn a_subscription_that_was_never_issued_reports_it() {
+    let (_to_client, from_server) = fmpsc::unbounded();
+    let mux = Mux::<Counting>::new(4, Box::new(Broken { rx: from_server }));
+
+    // The first request queues fine, then fails to send, which ends the
+    // outbound task and closes the queue behind it.
+    let _doomed = mux.rpc_stream(Context::default(), Ask(0), 8).await;
+    settle().await;
+
+    let mut never = mux.rpc_stream(Context::default(), Ask(0), 8).await;
+    let first =
+        tokio::time::timeout(std::time::Duration::from_secs(5), never.next())
+            .await
+            .expect("the failure must resolve rather than hang");
+    let err = match first {
+        Some(Err(e)) => e,
+        other => panic!(
+            "an unissued subscription must report a failure, not a clean \
+             end: {other:?}"
+        ),
+    };
+    assert!(
+        err.to_string().contains("never issued"),
+        "the reason must say what happened: {err}",
+    );
+}
+
+/// r[verify jetstream.subscription.identity]
+/// Dropping a finished stream must not disturb whoever holds its tag
+/// now. The terminator released the number back to the pool, so the slot
+/// may already belong to a different subscription — identity is the
+/// binding, not the tag.
+#[tokio::test]
+async fn dropping_a_finished_stream_leaves_a_reused_tag_alone() {
+    let (transport, _peer) = counting_transport();
+    let mux = Mux::<Counting>::new(4, transport);
+
+    let mut done = mux.rpc_stream(Context::default(), Ask(1), 8).await;
+    let tag = done.tag;
+    while let Some(item) = done.next().await {
+        if matches!(item, Ok(Frame { msg: Say::Done, .. })) {
+            break;
+        }
+    }
+    settle().await;
+    assert!(
+        !mux.in_flight.lock().await.contains_key(&tag),
+        "the terminator must have freed the tag",
+    );
+
+    // Whoever takes the tag next. Constructed directly: which numbers the
+    // pool hands back is its business, and the hazard does not depend on
+    // the reuse being immediate.
+    let (tx, _rx) = mpsc::channel(4);
+    mux.in_flight
+        .lock()
+        .await
+        .insert(tag, Waiter::Streaming { binding: 9999, tx });
+
+    drop(done);
+    settle().await;
+
+    assert!(
+        matches!(
+            mux.in_flight.lock().await.get(&tag),
+            Some(Waiter::Streaming { binding: 9999, .. })
+        ),
+        "a stale stream abandoned a tag it no longer owned, silencing the \
+         subscription that had taken it",
     );
 }
