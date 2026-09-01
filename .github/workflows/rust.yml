@@ -63,13 +63,32 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
+        shell: bash
         run: |
           cargo build -p jetstream --verbose
           # The whole workspace, not the umbrella package alone. Testing
           # only `-p jetstream` left ten crates uncovered, and hid
           # `jetstream_macros` failing to compile at all — 42 tests that
           # never ran and 9 snapshots nothing checked.
-          cargo test --workspace --verbose --all-features
+          #
+          # Two members are excluded on Windows, and only there:
+          #
+          #   jetstream_ufs — a Unix filesystem server. It uses
+          #     `std::os::unix::io::{AsRawFd, FromRawFd}` and `libc::uid_t`
+          #     unconditionally, so it cannot compile for
+          #     x86_64-pc-windows-msvc. Nothing depends on it: the
+          #     umbrella crate does not, and it is a workspace member
+          #     only. Widening to `--workspace` is what built it on
+          #     Windows for the first time and turned this job red.
+          #
+          #   fuzz — a libFuzzer harness whose only target is declared
+          #     `test = false`, so `cargo test` builds it and runs
+          #     nothing. No signal to lose.
+          EXCLUDE=""
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            EXCLUDE="--exclude jetstream_ufs --exclude fuzz"
+          fi
+          cargo test --workspace ${EXCLUDE} --verbose --all-features
 
   # Examples on stable only
   examples:
