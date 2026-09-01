@@ -1,0 +1,808 @@
+<!DOCTYPE HTML>
+<html lang="en" class="light sidebar-visible" dir="ltr">
+    <head>
+        <!-- Book generated using mdBook -->
+        <meta charset="UTF-8">
+        <title>Sessions and Lanes - JetStream Book</title>
+
+
+        <!-- Custom HTML head -->
+
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="theme-color" content="#ffffff">
+
+        <link rel="icon" href="favicon-de23e50b.svg">
+        <link rel="shortcut icon" href="favicon-8114d1fc.png">
+        <link rel="stylesheet" href="css/variables-8adf115d.css">
+        <link rel="stylesheet" href="css/general-e96d0476.css">
+        <link rel="stylesheet" href="css/chrome-d279d366.css">
+        <link rel="stylesheet" href="css/print-9e4910d8.css" media="print">
+
+        <!-- Fonts -->
+        <link rel="stylesheet" href="fonts/fonts-9644e21d.css">
+
+        <!-- Highlight.js Stylesheets -->
+        <link rel="stylesheet" id="mdbook-highlight-css" href="highlight-493f70e1.css">
+        <link rel="stylesheet" id="mdbook-tomorrow-night-css" href="tomorrow-night-4c0ae647.css">
+        <link rel="stylesheet" id="mdbook-ayu-highlight-css" href="ayu-highlight-3fdfc3ac.css">
+
+        <!-- Custom theme stylesheets -->
+        <link rel="stylesheet" href="docs/styles-2410a0be.css">
+
+
+        <!-- Provide site root and default themes to javascript -->
+        <script>
+            const path_to_root = "";
+            const default_light_theme = "light";
+            const default_dark_theme = "navy";
+            window.path_to_searchindex_js = "searchindex-64251e6a.js";
+        </script>
+        <!-- Start loading toc.js asap -->
+        <script src="toc-7168f768.js"></script>
+    </head>
+    <body>
+    <div id="mdbook-help-container">
+        <div id="mdbook-help-popup">
+            <h2 class="mdbook-help-title">Keyboard shortcuts</h2>
+            <div>
+                <p>Press <kbd>←</kbd> or <kbd>→</kbd> to navigate between chapters</p>
+                <p>Press <kbd>S</kbd> or <kbd>/</kbd> to search in the book</p>
+                <p>Press <kbd>?</kbd> to show this help</p>
+                <p>Press <kbd>Esc</kbd> to hide this help</p>
+            </div>
+        </div>
+    </div>
+    <div id="mdbook-body-container">
+        <!-- Work around some values being stored in localStorage wrapped in quotes -->
+        <script>
+            try {
+                let theme = localStorage.getItem('mdbook-theme');
+                let sidebar = localStorage.getItem('mdbook-sidebar');
+
+                if (theme.startsWith('"') && theme.endsWith('"')) {
+                    localStorage.setItem('mdbook-theme', theme.slice(1, theme.length - 1));
+                }
+
+                if (sidebar.startsWith('"') && sidebar.endsWith('"')) {
+                    localStorage.setItem('mdbook-sidebar', sidebar.slice(1, sidebar.length - 1));
+                }
+            } catch (e) { }
+        </script>
+
+        <!-- Set the theme before any content is loaded, prevents flash -->
+        <script>
+            const default_theme = window.matchMedia("(prefers-color-scheme: dark)").matches ? default_dark_theme : default_light_theme;
+            let theme;
+            try { theme = localStorage.getItem('mdbook-theme'); } catch(e) { }
+            if (theme === null || theme === undefined) { theme = default_theme; }
+            const html = document.documentElement;
+            html.classList.remove('light')
+            html.classList.add(theme);
+            html.classList.add("js");
+        </script>
+
+        <input type="checkbox" id="mdbook-sidebar-toggle-anchor" class="hidden">
+
+        <!-- Hide / unhide sidebar before it is displayed -->
+        <script>
+            let sidebar = null;
+            const sidebar_toggle = document.getElementById("mdbook-sidebar-toggle-anchor");
+            if (document.body.clientWidth >= 1080) {
+                try { sidebar = localStorage.getItem('mdbook-sidebar'); } catch(e) { }
+                sidebar = sidebar || 'visible';
+            } else {
+                sidebar = 'hidden';
+                sidebar_toggle.checked = false;
+            }
+            if (sidebar === 'visible') {
+                sidebar_toggle.checked = true;
+            } else {
+                html.classList.remove('sidebar-visible');
+            }
+        </script>
+
+        <nav id="mdbook-sidebar" class="sidebar" aria-label="Table of contents">
+            <!-- populated by js -->
+            <mdbook-sidebar-scrollbox class="sidebar-scrollbox"></mdbook-sidebar-scrollbox>
+            <noscript>
+                <iframe class="sidebar-iframe-outer" src="toc.html"></iframe>
+            </noscript>
+            <div id="mdbook-sidebar-resize-handle" class="sidebar-resize-handle">
+                <div class="sidebar-resize-indicator"></div>
+            </div>
+        </nav>
+
+        <div id="mdbook-page-wrapper" class="page-wrapper">
+
+            <div class="page">
+                <div id="mdbook-menu-bar-hover-placeholder"></div>
+                <div id="mdbook-menu-bar" class="menu-bar sticky">
+                    <div class="left-buttons">
+                        <label id="mdbook-sidebar-toggle" class="icon-button" for="mdbook-sidebar-toggle-anchor" title="Toggle Table of Contents" aria-label="Toggle Table of Contents" aria-controls="mdbook-sidebar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M0 96C0 78.3 14.3 64 32 64H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32C14.3 128 0 113.7 0 96zM0 256c0-17.7 14.3-32 32-32H416c17.7 0 32 14.3 32 32s-14.3 32-32 32H32c-17.7 0-32-14.3-32-32zM448 416c0 17.7-14.3 32-32 32H32c-17.7 0-32-14.3-32-32s14.3-32 32-32H416c17.7 0 32 14.3 32 32z"/></svg></span>
+                        </label>
+                        <button id="mdbook-theme-toggle" class="icon-button" type="button" title="Change theme" aria-label="Change theme" aria-haspopup="true" aria-expanded="false" aria-controls="mdbook-theme-list">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M371.3 367.1c27.3-3.9 51.9-19.4 67.2-42.9L600.2 74.1c12.6-19.5 9.4-45.3-7.6-61.2S549.7-4.4 531.1 9.6L294.4 187.2c-24 18-38.2 46.1-38.4 76.1L371.3 367.1zm-19.6 25.4l-116-104.4C175.9 290.3 128 339.6 128 400c0 3.9 .2 7.8 .6 11.6c1.8 17.5-10.2 36.4-27.8 36.4H96c-17.7 0-32 14.3-32 32s14.3 32 32 32H240c61.9 0 112-50.1 112-112c0-2.5-.1-5-.2-7.5z"/></svg></span>
+                        </button>
+                        <ul id="mdbook-theme-list" class="theme-popup" aria-label="Themes" role="menu">
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-default_theme">Auto</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-light">Light</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-rust">Rust</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-coal">Coal</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-navy">Navy</button></li>
+                            <li role="none"><button role="menuitem" class="theme" id="mdbook-theme-ayu">Ayu</button></li>
+                        </ul>
+                        <button id="mdbook-search-toggle" class="icon-button" type="button" title="Search (`/`)" aria-label="Toggle Searchbar" aria-expanded="false" aria-keyshortcuts="/ s" aria-controls="mdbook-searchbar">
+                            <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M416 208c0 45.9-14.9 88.3-40 122.7L502.6 457.4c12.5 12.5 12.5 32.8 0 45.3s-32.8 12.5-45.3 0L330.7 376c-34.4 25.2-76.8 40-122.7 40C93.1 416 0 322.9 0 208S93.1 0 208 0S416 93.1 416 208zM208 352c79.5 0 144-64.5 144-144s-64.5-144-144-144S64 128.5 64 208s64.5 144 144 144z"/></svg></span>
+                        </button>
+                    </div>
+
+                    <h1 class="menu-title">JetStream Book</h1>
+
+                    <div class="right-buttons">
+                        <a href="print.html" title="Print this book" aria-label="Print this book">
+                            <span class=fa-svg id="print-button"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M128 0C92.7 0 64 28.7 64 64v96h64V64H354.7L384 93.3V160h64V93.3c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0H128zM384 352v32 64H128V384 368 352H384zm64 32h32c17.7 0 32-14.3 32-32V256c0-35.3-28.7-64-64-64H64c-35.3 0-64 28.7-64 64v96c0 17.7 14.3 32 32 32H64v64c0 35.3 28.7 64 64 64H384c35.3 0 64-28.7 64-64V384zm-16-88c-13.3 0-24-10.7-24-24s10.7-24 24-24s24 10.7 24 24s-10.7 24-24 24z"/></svg></span>
+                        </a>
+
+                    </div>
+                </div>
+
+                <div id="mdbook-search-wrapper" class="hidden">
+                    <form id="mdbook-searchbar-outer" class="searchbar-outer">
+                        <div class="search-wrapper">
+                            <input type="search" id="mdbook-searchbar" name="searchbar" placeholder="Search this book ..." aria-controls="mdbook-searchresults-outer" aria-describedby="searchresults-header">
+                            <div class="spinner-wrapper">
+                                <span class=fa-svg id="fa-spin"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M304 48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zm0 416c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM48 304c26.5 0 48-21.5 48-48s-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48zm464-48c0-26.5-21.5-48-48-48s-48 21.5-48 48s21.5 48 48 48s48-21.5 48-48zM142.9 437c18.7-18.7 18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zm0-294.2c18.7-18.7 18.7-49.1 0-67.9S93.7 56.2 75 75s-18.7 49.1 0 67.9s49.1 18.7 67.9 0zM369.1 437c18.7 18.7 49.1 18.7 67.9 0s18.7-49.1 0-67.9s-49.1-18.7-67.9 0s-18.7 49.1 0 67.9z"/></svg></span>
+                            </div>
+                        </div>
+                    </form>
+                    <div id="mdbook-searchresults-outer" class="searchresults-outer hidden">
+                        <div id="mdbook-searchresults-header" class="searchresults-header"></div>
+                        <ul id="mdbook-searchresults">
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Apply ARIA attributes after the sidebar and the sidebar toggle button are added to the DOM -->
+                <script>
+                    document.getElementById('mdbook-sidebar-toggle').setAttribute('aria-expanded', sidebar === 'visible');
+                    document.getElementById('mdbook-sidebar').setAttribute('aria-hidden', sidebar !== 'visible');
+                    Array.from(document.querySelectorAll('#mdbook-sidebar a')).forEach(function(link) {
+                        link.setAttribute('tabIndex', sidebar === 'visible' ? 0 : -1);
+                    });
+                </script>
+
+                <div id="mdbook-content" class="content">
+                    <main>
+                        <h1 id="sessions-and-lanes"><a class="header" href="#sessions-and-lanes">Sessions and Lanes</a></h1>
+<p>A <strong>session</strong> is the association with a peer. A <strong>lane</strong> is one ordered,
+reliable, flow-controlled sequence of frames obtained from it.</p>
+<p>That split is the whole model. A lane is exactly what <code>ClientTransport&lt;P&gt;</code>
+already describes from one end and <code>ServiceTransport&lt;P&gt;</code> from the other —
+sessions do not change those bounds, they add a way to obtain a lane
+without naming the concrete transport. A session orders nothing; ordering
+is a property of a lane and only of a lane.</p>
+<p>The normative rules live in
+<a href="https://github.com/sevki/jetstream/blob/main/docs/specs/sessions-and-lanes.md">the sessions and lanes specification</a>.
+This page is the guide to using them.</p>
+<h2 id="why"><a class="header" href="#why">Why</a></h2>
+<p><code>ClientTransport&lt;P&gt;</code> describes one stream. Until now nothing described the
+thing that can open another one, and the result was uneven:</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Path</th><th>Streams before sessions</th></tr>
+</thead>
+<tbody>
+<tr><td>WebTransport server</td><td>many</td></tr>
+<tr><td>QUIC server</td><td>many</td></tr>
+<tr><td>iroh client</td><td><strong>one</strong> — <code>open_bi()</code>, once, at connect</td></tr>
+<tr><td>Any client</td><td><strong>one</strong>, with concurrency recovered by tag</td></tr>
+</tbody>
+</table>
+</div>
+<p>Servers accepted many streams; clients opened one and multiplexed by tag.
+The iroh case was the sharpest: a transport whose whole point is many
+independent streams plus key-based addressing was reachable only as a flat
+duplex.</p>
+<p>Both strategies are legitimate and both are still supported. They differ
+in what they guarantee:</p>
+<ul>
+<li><strong>Tag multiplexing</strong> — many calls over one lane. Ordered with respect to
+each other, and subject to head-of-line blocking: one slow response
+delays the bytes behind it.</li>
+<li><strong>Lane multiplexing</strong> — one lane per call, or per group of calls.
+Unordered with respect to each other, independent, no head-of-line
+blocking between them.</li>
+</ul>
+<p>Pick per call site. <code>Mux</code> has not gone anywhere, and a client that holds a
+single transport and multiplexes by tag keeps working unchanged.</p>
+<h2 id="the-trait"><a class="header" href="#the-trait">The trait</a></h2>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[async_trait::async_trait]
+pub trait Session&lt;P: Protocol&gt;: Send + Sync {
+    /// The end of a lane this peer opened, driven as the RPC caller.
+    type ClientLane: ClientTransport&lt;P&gt;;
+    /// The end of a lane the peer opened, served as the RPC callee.
+    type ServiceLane: ServiceTransport&lt;P&gt;;
+
+    fn capabilities(&amp;self) -&gt; Capabilities;
+    fn context(&amp;self) -&gt; Context;
+
+    async fn open_lane(&amp;self) -&gt; Result&lt;Self::ClientLane, SessionError&gt;;
+    async fn accept_lane(&amp;self) -&gt; Result&lt;Self::ServiceLane, SessionError&gt;;
+    async fn close(&amp;self);
+}
+<span class="boring">}</span></code></pre>
+<p>Both directions take <code>&amp;self</code>, so a session is usable from several tasks at
+once and opening a lane never needs exclusive access.</p>
+<p>The two lane types differ because the model is symmetric: where the
+transport allows it either peer may open a lane, and <strong>the opener is the
+RPC caller on that lane</strong>. <code>open_lane</code> yields the caller’s end;
+<code>accept_lane</code> yields the callee’s. A session is not fixed to a role.</p>
+<h2 id="in-process-end-to-end"><a class="header" href="#in-process-end-to-end">In process, end to end</a></h2>
+<p><code>LocalSession</code> implements the model with no network under it, which makes
+it the shortest way to see the whole thing. A lane goes straight into
+<code>jetstream_rpc::server::run</code> on one side and into a generated channel on
+the other — there is no adapter in between, because a lane already <em>is</em> a
+transport.</p>
+<pre class="playground"><code class="language-rust">//! Sessions and lanes, without a network.
+//!
+//! A **session** is the association with a peer: it carries identity,
+//! reports capabilities, and opens and accepts lanes. A **lane** is one
+//! ordered, reliable sequence of frames — exactly what a
+//! `ClientTransport` already is from one end and a `ServiceTransport`
+//! from the other. A session orders nothing; ordering belongs to a lane
+//! and only to a lane.
+//!
+//! This example uses `LocalSession`, the in-process binding, so it needs
+//! no sockets and no certificates. The model is the same one the QUIC,
+//! iroh and WebTransport bindings implement — see `quic_session.rs` for
+//! the same shape over a real connection.
+//!
+//! ```console
+//! cargo run --example session_lanes
+//! ```
+
+use std::time::Duration;
+
+use jetstream::prelude::*;
+use jetstream_macros::service;
+use jetstream_rpc::session::{
+    Capabilities, Capability, LaneSupport, LocalSession, Session, SessionError,
+};
+use tokio::time::sleep;
+
+use crate::sleepy_protocol::{SleepyChannel, SleepyService};
+
+#[service]
+pub trait Sleepy {
+    /// Nap for `ms` milliseconds, then say so.
+    async fn nap(&amp;self, ctx: Context, ms: u32) -&gt; Result&lt;String&gt;;
+}
+
+#[derive(Debug, Clone)]
+struct SleepyServer;
+
+impl Sleepy for SleepyServer {
+    async fn nap(&amp;self, _ctx: Context, ms: u32) -&gt; Result&lt;String&gt; {
+        sleep(Duration::from_millis(ms as u64)).await;
+        Ok(format!("slept {ms}ms"))
+    }
+}
+
+#[tokio::main]
+async fn main() {
+    let pair = LocalSession::&lt;SleepyChannel&gt;::pair();
+
+    // A session says what it can do rather than leaving callers to
+    // infer it from the concrete transport type. Every binding reports
+    // its own row: this one has many lanes but no datagrams, no
+    // transport-level identity, and no migration.
+    let caps = Session::&lt;SleepyChannel&gt;::capabilities(&amp;pair.client);
+    assert_eq!(caps, Capabilities::in_process());
+    println!(
+        "in-process session: lanes={} datagrams={} identity={}",
+        caps.lanes, caps.datagrams, caps.identity
+    );
+
+    // Asking for something the session does not have fails loudly. The
+    // alternative — emulating a datagram channel over a lane — would be
+    // silently wrong about ordering and delivery, so it is not offered.
+    match caps.require(Capability::Datagrams) {
+        Err(SessionError::Unsupported(what)) =&gt; {
+            println!("this session has no {what}, and says so")
+        }
+        other =&gt; panic!("expected the capability to be refused: {other:?}"),
+    }
+
+    // Serve every lane the peer opens. One task per lane: a lane is a
+    // `ServiceTransport`, so it goes straight into the RPC loop with no
+    // adapter in between.
+    let server = pair.server.clone();
+    let serving = tokio::spawn(async move {
+        while let Ok(lane) =
+            Session::&lt;SleepyChannel&gt;::accept_lane(&amp;server).await
+        {
+            tokio::spawn(async move {
+                let mut service = SleepyService {
+                    inner: SleepyServer,
+                };
+                let _ = jetstream_rpc::server::run(&amp;mut service, lane).await;
+            });
+        }
+    });
+
+    // Three lanes on the one session. `LaneSupport::Many` is what makes
+    // this legal; a byte-stream session would refuse the second open
+    // with `SessionError::LaneLimitReached` rather than queue behind the
+    // first.
+    assert_eq!(caps.lanes, LaneSupport::Many);
+    let mut calls = Vec::new();
+    for (lane_no, nap_ms) in [200u32, 20, 20].into_iter().enumerate() {
+        let lane = Session::&lt;SleepyChannel&gt;::open_lane(&amp;pair.client)
+            .await
+            .expect("the session is open");
+        let channel = SleepyChannel::new(4, Box::new(lane));
+        calls.push(tokio::spawn(async move {
+            let started = std::time::Instant::now();
+            let answer = channel.nap(Context::default(), nap_ms).await.unwrap();
+            (lane_no, answer, started.elapsed())
+        }));
+    }
+
+    // The lanes are independent sequences, so the long nap on the first
+    // one does not hold up the other two.
+    for call in calls {
+        let (lane_no, answer, took) = call.await.unwrap();
+        println!("lane {lane_no}: {answer} (round trip {took:?})");
+    }
+
+    // Closing the session ends every lane on it. Work in flight fails
+    // rather than hanging, and a later open is refused outright.
+    Session::&lt;SleepyChannel&gt;::close(&amp;pair.client).await;
+    match Session::&lt;SleepyChannel&gt;::open_lane(&amp;pair.client).await {
+        Err(SessionError::Closed) =&gt; {
+            println!("the closed session opens no more lanes")
+        }
+        other =&gt; panic!("expected the session to be closed: {other:?}"),
+    }
+
+    serving.abort();
+}</code></pre>
+<pre><code class="language-console">cargo run --example session_lanes
+</code></pre>
+<h2 id="over-a-real-connection"><a class="header" href="#over-a-real-connection">Over a real connection</a></h2>
+<p>The same code against an mTLS QUIC connection: capabilities read from the
+live connection, peer identity from the handshake, several independent
+lanes on one connection, and a datagram alongside them.</p>
+<pre class="playground"><code class="language-rust">//! The same session model over a real QUIC connection.
+//!
+//! `session_lanes.rs` shows the model with no network under it. This one
+//! stands up an mTLS QUIC connection on loopback with the certificates in
+//! `certs/` and does the same things over it: reads the session's
+//! capabilities, learns who the peer is from the handshake, opens several
+//! independent lanes on the one connection, and sends a datagram
+//! alongside them.
+//!
+//! The iroh binding (`jetstream_iroh::IrohSession`) is the same shape;
+//! the only differences are in the row it reports — identity by public
+//! key rather than by certificate.
+//!
+//! ```console
+//! cargo run --example quic_session --features quic
+//! ```
+
+use std::{net::SocketAddr, path::Path, sync::Arc, time::Duration};
+
+use jetstream::prelude::*;
+use jetstream_macros::service;
+use jetstream_quic::QuicSession;
+use jetstream_rpc::{
+    context::Peer,
+    session::{decode_datagram, Capabilities, Capability, Datagrams, Session},
+};
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
+use tokio::time::{sleep, timeout};
+
+use crate::sleepy_protocol::{SleepyChannel, SleepyService, Tmessage, Tnap};
+
+#[service]
+pub trait Sleepy {
+    /// Nap for `ms` milliseconds, then say so.
+    async fn nap(&amp;self, ctx: Context, ms: u32) -&gt; Result&lt;String&gt;;
+}
+
+#[derive(Debug, Clone)]
+struct SleepyServer;
+
+impl Sleepy for SleepyServer {
+    async fn nap(&amp;self, _ctx: Context, ms: u32) -&gt; Result&lt;String&gt; {
+        sleep(Duration::from_millis(ms as u64)).await;
+        Ok(format!("slept {ms}ms"))
+    }
+}
+
+static CA_CERT_PEM: &amp;str = concat!(env!("CARGO_MANIFEST_DIR"), "/certs/ca.pem");
+static CLIENT_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.pem");
+static CLIENT_KEY_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/client.key");
+static SERVER_CERT_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.pem");
+static SERVER_KEY_PEM: &amp;str =
+    concat!(env!("CARGO_MANIFEST_DIR"), "/certs/server.key");
+
+const ALPN: &amp;[u8] = b"jetstream-session-example";
+
+fn load_certs(path: &amp;str) -&gt; Vec&lt;CertificateDer&lt;'static&gt;&gt; {
+    let data = std::fs::read(Path::new(path)).expect("failed to read cert");
+    rustls_pemfile::certs(&amp;mut &amp;*data)
+        .filter_map(|cert| cert.ok())
+        .collect()
+}
+
+fn load_key(path: &amp;str) -&gt; PrivateKeyDer&lt;'static&gt; {
+    let data = std::fs::read(Path::new(path)).expect("failed to read key");
+    rustls_pemfile::private_key(&amp;mut &amp;*data)
+        .expect("failed to parse key")
+        .expect("no key in file")
+}
+
+/// A server endpoint that requires a client certificate.
+fn server_endpoint() -&gt; (quinn::Endpoint, SocketAddr) {
+    let mut roots = rustls::RootCertStore::empty();
+    roots.add(load_certs(CA_CERT_PEM).pop().unwrap()).unwrap();
+    let verifier =
+        rustls::server::WebPkiClientVerifier::builder(Arc::new(roots))
+            .build()
+            .unwrap();
+
+    let mut tls = rustls::ServerConfig::builder()
+        .with_client_cert_verifier(verifier)
+        .with_single_cert(load_certs(SERVER_CERT_PEM), load_key(SERVER_KEY_PEM))
+        .unwrap();
+    tls.alpn_protocols = vec![ALPN.to_vec()];
+
+    let config = quinn::ServerConfig::with_crypto(Arc::new(
+        quinn::crypto::rustls::QuicServerConfig::try_from(tls).unwrap(),
+    ));
+    let endpoint =
+        quinn::Endpoint::server(config, "127.0.0.1:0".parse().unwrap())
+            .unwrap();
+    let addr = endpoint.local_addr().unwrap();
+    (endpoint, addr)
+}
+
+/// A client endpoint that presents the client certificate.
+fn client_endpoint() -&gt; quinn::Endpoint {
+    let mut roots = rustls::RootCertStore::empty();
+    roots.add(load_certs(CA_CERT_PEM).pop().unwrap()).unwrap();
+    let mut tls = rustls::ClientConfig::builder()
+        .with_root_certificates(roots)
+        .with_client_auth_cert(
+            load_certs(CLIENT_CERT_PEM),
+            load_key(CLIENT_KEY_PEM),
+        )
+        .unwrap();
+    tls.alpn_protocols = vec![ALPN.to_vec()];
+
+    let mut endpoint =
+        quinn::Endpoint::client("127.0.0.1:0".parse().unwrap()).unwrap();
+    endpoint.set_default_client_config(quinn::ClientConfig::new(Arc::new(
+        quinn::crypto::rustls::QuicClientConfig::try_from(tls).unwrap(),
+    )));
+    endpoint
+}
+
+#[tokio::main]
+async fn main() {
+    rustls::crypto::ring::default_provider()
+        .install_default()
+        .ok();
+
+    let (server_endpoint, addr) = server_endpoint();
+    let client_endpoint = client_endpoint();
+
+    let accepting = tokio::spawn(async move {
+        let connection = server_endpoint.accept().await.unwrap().await.unwrap();
+        // `new_owned` hands the endpoint to the session: dropping the
+        // last handle on a quinn `Endpoint` closes every connection
+        // opened from it, so the session is the right owner.
+        QuicSession::&lt;SleepyChannel&gt;::new_owned(connection, server_endpoint)
+    });
+
+    let connection = client_endpoint
+        .connect(addr, "localhost")
+        .unwrap()
+        .await
+        .unwrap();
+    let client =
+        QuicSession::&lt;SleepyChannel&gt;::new_owned(connection, client_endpoint);
+    let server = accepting.await.unwrap();
+
+    // QUIC's row: many lanes, datagrams, a certificate for identity, and
+    // survival across a change of network path. Datagram support is read
+    // from the live connection rather than from the row, so this is what
+    // the two peers actually negotiated.
+    let caps = Session::&lt;SleepyChannel&gt;::capabilities(&amp;client);
+    assert_eq!(caps, Capabilities::quic());
+    println!(
+        "quic session: lanes={} datagrams={} identity={} migration={}",
+        caps.lanes, caps.datagrams, caps.identity, caps.migration
+    );
+
+    // A certificate says who answered, not where to find them, so a
+    // caller still has to carry the address it dialled.
+    assert!(caps.identity.requires_address());
+    match Session::&lt;SleepyChannel&gt;::context(&amp;server).peer() {
+        Some(Peer::Tls(tls)) =&gt; {
+            let leaf = tls.leaf().expect("the client presented a chain");
+            println!("the server authenticated {}", leaf.fingerprint);
+        }
+        other =&gt; panic!("expected a TLS peer, got {other:?}"),
+    }
+
+    // Serve every lane the peer opens, one task each.
+    let serving = tokio::spawn({
+        let server = server.clone();
+        async move {
+            while let Ok(lane) =
+                Session::&lt;SleepyChannel&gt;::accept_lane(&amp;server).await
+            {
+                tokio::spawn(async move {
+                    let mut service = SleepyService {
+                        inner: SleepyServer,
+                    };
+                    let _ =
+                        jetstream_rpc::server::run(&amp;mut service, lane).await;
+                });
+            }
+        }
+    });
+
+    // Each lane is its own QUIC bidirectional stream, so the slow call on
+    // the first does not hold up the others. Before sessions the iroh and
+    // QUIC clients opened one stream at connect and recovered concurrency
+    // by tag, which shares one ordered sequence between every call.
+    let mut calls = Vec::new();
+    for (lane_no, nap_ms) in [200u32, 20, 20].into_iter().enumerate() {
+        let lane = Session::&lt;SleepyChannel&gt;::open_lane(&amp;client).await.unwrap();
+        let channel = SleepyChannel::new(4, Box::new(lane));
+        calls.push(tokio::spawn(async move {
+            let started = std::time::Instant::now();
+            let answer = channel.nap(Context::default(), nap_ms).await.unwrap();
+            (lane_no, answer, started.elapsed())
+        }));
+    }
+    for call in calls {
+        let (lane_no, answer, took) = call.await.unwrap();
+        println!("lane {lane_no}: {answer} (round trip {took:?})");
+    }
+
+    // The datagram channel belongs to the session, not to any lane. It
+    // is unordered and unreliable by construction, so it is deliberately
+    // not a lane and none of the ordering guarantees apply to it.
+    caps.require(Capability::Datagrams).unwrap();
+    let limit = Datagrams::&lt;SleepyChannel&gt;::max_datagram_size(&amp;client)
+        .expect("the peer advertised datagram support");
+    println!("datagrams up to {limit} bytes");
+
+    // Sending names the direction: a session is not fixed to a role, so
+    // the end acting as caller sends requests and the end acting as
+    // callee sends responses.
+    client
+        .send_request_datagram(Frame {
+            tag: 1,
+            msg: Tmessage::Nap(Tnap { ms: 0 }),
+        })
+        .await
+        .unwrap();
+
+    let bytes = timeout(Duration::from_secs(5), server.recv_datagram_bytes())
+        .await
+        .expect("the datagram should have arrived")
+        .unwrap();
+    let got: Frame&lt;Tmessage&gt; = decode_datagram(bytes).unwrap();
+    println!("datagram arrived out of band: tag {}", got.tag);
+
+    // Closing the session ends every lane on it; work in flight fails
+    // rather than hanging.
+    Session::&lt;SleepyChannel&gt;::close(&amp;client).await;
+    serving.abort();
+}</code></pre>
+<pre><code class="language-console">cargo run --example quic_session --features quic
+</code></pre>
+<p><code>jetstream_iroh::IrohSession</code> is the same shape. The difference is the row
+it reports: identity by public key rather than by certificate.</p>
+<h2 id="capabilities"><a class="header" href="#capabilities">Capabilities</a></h2>
+<p>Capabilities are <strong>reported, not inferred</strong> — not from the concrete
+transport type, and not reduced to a lowest common denominator. A caller
+picks a multiplexing strategy without knowing which transport it holds.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Transport</th><th>Lanes</th><th>Datagrams</th><th>Identity</th><th>Migration</th><th>Type</th></tr>
+</thead>
+<tbody>
+<tr><td>iroh</td><td>many</td><td>yes</td><td>key</td><td>yes</td><td><code>jetstream_iroh::IrohSession</code></td></tr>
+<tr><td>QUIC</td><td>many</td><td>yes</td><td>certificate</td><td>yes</td><td><code>jetstream_quic::QuicSession</code></td></tr>
+<tr><td>WebTransport (H3)</td><td>many</td><td>no¹</td><td>certificate</td><td>yes</td><td><code>jetstream_http::WebTransportSession</code>³</td></tr>
+<tr><td>TCP / TLS / unix / stdio</td><td>one</td><td>no</td><td>none²</td><td>no</td><td><code>SingleLaneSession::client_io</code> / <code>service_io</code></td></tr>
+<tr><td>in-process</td><td>many</td><td>no</td><td>none</td><td>no</td><td><code>LocalSession::pair</code></td></tr>
+</tbody>
+</table>
+</div>
+<p>¹ HTTP/3 carries datagrams, but this binding has no <code>Datagrams&lt;P&gt;</code> impl, so
+it reports the capability absent rather than promising something a caller
+cannot then use.</p>
+<p>² Unless the caller supplies one — see <a href="#byte-streams">byte streams</a> below.</p>
+<p>³ The type works, and a caller running its own h3 accept loop can use it.
+But <code>H3Service</code> owns the HTTP/3 connection and routes through a private
+handler that calls <code>accept_bi</code> directly, so the session is not yet
+reachable from the shipped server path. Reconciling the two wants an
+untyped lane <code>RpcRouter</code> can consume, since the router negotiates a
+version per stream and dispatches to whichever protocol answers, while
+<code>Session&lt;P&gt;</code> is typed to one protocol.</p>
+<p>Ask before you rely on something:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_rpc::session::{Capability, Session};
+
+// Branch on it...
+if session.capabilities().supports(Capability::ManyLanes) {
+    // a lane per call
+} else {
+    // one lane, multiplexed by tag
+}
+
+// ...or refuse to continue without it.
+session.capabilities().require(Capability::Datagrams)?;
+<span class="boring">}</span></code></pre>
+<p><code>require</code> fails with <code>SessionError::Unsupported(capability)</code>. That is
+deliberate: the alternative — emulating a datagram channel over a lane —
+would be silently wrong about ordering and delivery, so it is not the easy
+path.</p>
+<p>Two capabilities are read from the live connection rather than from the
+row. A QUIC or iroh peer that never advertised DATAGRAM support is
+detected on its own, and <code>without_datagrams()</code> lets a caller that disabled
+them locally say so:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>let session = QuicSession::&lt;MyChannel&gt;::new(connection).without_datagrams();
+assert!(!Session::&lt;MyChannel&gt;::capabilities(&amp;session).datagrams);
+<span class="boring">}</span></code></pre>
+<h2 id="identity"><a class="header" href="#identity">Identity</a></h2>
+<p><code>Session::context()</code> returns the peer in the form the transport
+established it, and every lane the session hands out carries the same
+context — a handler reading only its lane sees the same peer the session
+does.</p>
+<p><code>IdentityKind</code> is the <em>model</em>, which is what a caller has to branch on:</p>
+<ul>
+<li><code>IdentityKind::None</code> — no transport-level authentication.</li>
+<li><code>IdentityKind::Certificate</code> — a TLS peer certificate. QUIC, WebTransport.</li>
+<li><code>IdentityKind::Key</code> — a public key the transport itself established. iroh.</li>
+</ul>
+<p><code>IdentityKind::requires_address()</code> is the question worth asking. Under
+<code>Key</code> the identity <em>is</em> the address, so a caller must not be made to carry
+placement information alongside it; under the other two it must.</p>
+<h2 id="datagrams"><a class="header" href="#datagrams">Datagrams</a></h2>
+<p>The datagram channel belongs to the session, not to any lane. It is
+unordered and unreliable by construction, so it is deliberately <strong>not</strong> a
+<code>ClientTransport</code> — none of the lane ordering guarantees apply to it, and
+the type system says so.</p>
+<p>A transport implements three raw methods — <code>max_datagram_size</code>,
+<code>send_datagram_bytes</code>, <code>recv_datagram_bytes</code> — and gets the framed ones
+free:</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>// Sending names the direction, because a session is not fixed to a role.
+session.send_request_datagram(frame).await?;   // as the caller
+session.send_response_datagram(frame).await?;  // as the callee
+
+// Receiving cannot: one queue takes one reader, so the caller decodes.
+let frame: Frame&lt;MyRequest&gt; =
+    decode_datagram(session.recv_datagram_bytes().await?)?;
+<span class="boring">}</span></code></pre>
+<p>A session that reports no datagram channel refuses traffic on it rather
+than leaving the check to the caller: both <code>send_datagram_bytes</code> and
+<code>recv_datagram_bytes</code> fail with <code>SessionError::Unsupported</code>. Receiving is
+the reason — awaiting a datagram on an endpoint whose receive buffer is
+switched off never yields, and parking forever is the one failure mode
+the degradation rule exists to prevent.</p>
+<p>A datagram carries a complete frame or it is discarded — there is nothing
+to reassemble it from, and trailing bytes after the frame mean it is not a
+complete frame either. <code>check_datagram_size</code> rejects a frame larger than
+the path allows at the sender rather than fragmenting it.</p>
+<h2 id="lifetime"><a class="header" href="#lifetime">Lifetime</a></h2>
+<p>Closing a session ends every lane on it: calls in flight fail rather than
+hang, and a later <code>open_lane</code> is refused with <code>SessionError::Closed</code>.
+Closing a <em>lane</em> does not close its session.</p>
+<p><code>SessionError</code> distinguishes the cases a caller has to tell apart —
+<code>Closed</code> for a deliberate close, <code>LaneClosed</code> for one lane ending under a
+session that is still up, <code>LaneLimitReached</code> for a second open on a
+one-lane transport, <code>Unsupported</code> for a capability the session does not
+have, and <code>Transport</code> for an actual fault.</p>
+<h2 id="byte-streams"><a class="header" href="#byte-streams">Byte streams</a></h2>
+<p>A byte-stream transport needs no new type. A TCP client is already a
+<code>Framed</code> value satisfying <code>ClientTransport</code>, so <code>SingleLaneSession</code> just
+wraps it and reports <code>LaneSupport::One</code>: the first open succeeds and every
+later one fails with <code>SessionError::LaneLimitReached</code>, rather than
+blocking or silently sharing the lane that is already open.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_rpc::session::SingleLaneSession;
+
+// A stream that knows its own peer — TCP, a unix socket.
+let session = SingleLaneSession::&lt;MyChannel, _, _&gt;::service_io(stream);
+
+// One that does not — TLS, stdio, anything in memory. The caller states
+// the identity the framed bytes never see.
+let session = SingleLaneSession::&lt;MyChannel, _, _&gt;::service_io_with_context(
+    stream, peer_context,
+);
+<span class="boring">}</span></code></pre>
+<h2 id="version-negotiation"><a class="header" href="#version-negotiation">Version negotiation</a></h2>
+<p>Version negotiation is scoped to a lane. A <code>Tversion</code> on one lane must not
+disturb its siblings — see <code>r[jetstream.version.negotiation.reset]</code> and
+the <a href="https://github.com/sevki/jetstream/blob/main/docs/specs/version-negotiation.md">version negotiation spec</a>.</p>
+
+                    </main>
+
+                    <nav class="nav-wrapper" aria-label="Page navigation">
+                        <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="0intro.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                            </a>
+
+                            <a rel="next prefetch" href="subscriptions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                            </a>
+
+                        <div style="clear: both"></div>
+                    </nav>
+                </div>
+            </div>
+
+            <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="0intro.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
+                    </a>
+
+                    <a rel="next prefetch" href="subscriptions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
+                    </a>
+            </nav>
+
+        </div>
+
+        <template id=fa-eye><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M288 32c-80.8 0-145.5 36.8-192.6 80.6C48.6 156 17.3 208 2.5 243.7c-3.3 7.9-3.3 16.7 0 24.6C17.3 304 48.6 356 95.4 399.4C142.5 443.2 207.2 480 288 480s145.5-36.8 192.6-80.6c46.8-43.5 78.1-95.4 93-131.1c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C433.5 68.8 368.8 32 288 32zM432 256c0 79.5-64.5 144-144 144s-144-64.5-144-144s64.5-144 144-144s144 64.5 144 144zM288 192c0 35.3-28.7 64-64 64c-11.5 0-22.3-3-31.6-8.4c-.2 2.8-.4 5.5-.4 8.4c0 53 43 96 96 96s96-43 96-96s-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6z"/></svg></span></template>
+        <template id=fa-eye-slash><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M38.8 5.1C28.4-3.1 13.3-1.2 5.1 9.2S-1.2 34.7 9.2 42.9l592 464c10.4 8.2 25.5 6.3 33.7-4.1s6.3-25.5-4.1-33.7L525.6 386.7c39.6-40.6 66.4-86.1 79.9-118.4c3.3-7.9 3.3-16.7 0-24.6c-14.9-35.7-46.2-87.7-93-131.1C465.5 68.8 400.8 32 320 32c-68.2 0-125 26.3-169.3 60.8L38.8 5.1zM223.1 149.5C248.6 126.2 282.7 112 320 112c79.5 0 144 64.5 144 144c0 24.9-6.3 48.3-17.4 68.7L408 294.5c5.2-11.8 8-24.8 8-38.5c0-53-43-96-96-96c-2.8 0-5.6 .1-8.4 .4c5.3 9.3 8.4 20.1 8.4 31.6c0 10.2-2.4 19.8-6.6 28.3l-90.3-70.8zm223.1 298L373 389.9c-16.4 6.5-34.3 10.1-53 10.1c-79.5 0-144-64.5-144-144c0-6.9 .5-13.6 1.4-20.2L83.1 161.5C60.3 191.2 44 220.8 34.5 243.7c-3.3 7.9-3.3 16.7 0 24.6c14.9 35.7 46.2 87.7 93 131.1C174.5 443.2 239.2 480 320 480c47.8 0 89.9-12.9 126.2-32.5z"/></svg></span></template>
+        <template id=fa-copy><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M502.6 70.63l-61.25-61.25C435.4 3.371 427.2 0 418.7 0H255.1c-35.35 0-64 28.66-64 64l.0195 256C192 355.4 220.7 384 256 384h192c35.2 0 64-28.8 64-64V93.25C512 84.77 508.6 76.63 502.6 70.63zM464 320c0 8.836-7.164 16-16 16H255.1c-8.838 0-16-7.164-16-16L239.1 64.13c0-8.836 7.164-16 16-16h128L384 96c0 17.67 14.33 32 32 32h47.1V320zM272 448c0 8.836-7.164 16-16 16H63.1c-8.838 0-16-7.164-16-16L47.98 192.1c0-8.836 7.164-16 16-16H160V128H63.99c-35.35 0-64 28.65-64 64l.0098 256C.002 483.3 28.66 512 64 512h192c35.2 0 64-28.8 64-64v-32h-47.1L272 448z"/></svg></span></template>
+        <template id=fa-play><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.4 33.4 24.5 41.9s33.7 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg></span></template>
+        <template id=fa-clock-rotate-left><span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M75 75L41 41C25.9 25.9 0 36.6 0 57.9V168c0 13.3 10.7 24 24 24H134.1c21.4 0 32.1-25.9 17-41l-30.8-30.8C155 85.5 203 64 256 64c106 0 192 86 192 192s-86 192-192 192c-40.8 0-78.6-12.7-109.7-34.4c-14.5-10.1-34.4-6.6-44.6 7.9s-6.6 34.4 7.9 44.6C151.2 495 201.7 512 256 512c141.4 0 256-114.6 256-256S397.4 0 256 0C185.3 0 121.3 28.7 75 75zm181 53c-13.3 0-24 10.7-24 24V256c0 6.4 2.5 12.5 7 17l72 72c9.4 9.4 24.6 9.4 33.9 0s9.4-24.6 0-33.9l-65-65V152c0-13.3-10.7-24-24-24z"/></svg></span></template>
+
+
+
+        <script>
+            window.playground_copyable = true;
+        </script>
+
+
+        <script src="elasticlunr-ef4e11c1.min.js"></script>
+        <script src="mark-09e88c2c.min.js"></script>
+        <script src="searcher-09f2665d.js"></script>
+
+        <script src="clipboard-1626706a.min.js"></script>
+        <script src="highlight-abc7f01d.js"></script>
+        <script src="book-609e4cb8.js"></script>
+
+        <!-- Custom JS scripts -->
+
+
+
+    </div>
+    </body>
+</html>
