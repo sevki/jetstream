@@ -346,29 +346,25 @@ pub mod room_protocol {
                 let tag = frame.tag;
                 match frame.msg {
                     Tmessage::Events(msg) => {
-                        let items = self.inner.events(msg.from).serve(cancel);
+                        let items = self.events(msg.from).serve(cancel);
                         Box::pin(
-                            jetstream::prelude::futures::StreamExt::map(
-                                items,
-                                move |item| match item {
-                                    Ok(Item::Next(value)) => {
-                                        Ok(Frame {
-                                            tag,
-                                            msg: Rmessage::Events(Revents(value)),
-                                        })
+                            jetstream::prelude::futures::stream::unfold(
+                                (items, false),
+                                move |(mut items, finished)| async move {
+                                    use jetstream::prelude::futures::StreamExt as _;
+                                    if finished {
+                                        return None;
                                     }
-                                    Ok(Item::Done(value)) => {
-                                        Ok(Frame {
-                                            tag,
-                                            msg: Rmessage::Done(Done::Events(ReventsDone(value))),
-                                        })
-                                    }
-                                    Err(err) => {
-                                        Ok(Frame {
-                                            tag,
-                                            msg: Rmessage::Error(err),
-                                        })
-                                    }
+                                    let (msg, finished) = match items.next().await? {
+                                        Ok(Item::Next(value)) => {
+                                            (Rmessage::Events(Revents(value)), false)
+                                        }
+                                        Ok(Item::Done(value)) => {
+                                            (Rmessage::Done(Done::Events(ReventsDone(value))), true)
+                                        }
+                                        Err(err) => (Rmessage::Error(err), true),
+                                    };
+                                    Some((Ok(Frame { tag, msg }), (items, finished)))
                                 },
                             ),
                         ) as jetstream::prelude::server::ResponseStream<Self>

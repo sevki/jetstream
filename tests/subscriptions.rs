@@ -455,3 +455,107 @@ async fn an_in_process_producer_is_cancelled_when_dropped() {
     )
     .await;
 }
+
+// ---------------------------------------------------------------------
+// A subscription whose producer fails partway through.
+// ---------------------------------------------------------------------
+
+#[service(uses(super::{Tick, Total}))]
+pub trait Flaky {
+    #[subscription]
+    fn flaky(&self, ctx: Context) -> Subscription<Tick, Total>;
+}
+
+use crate::flaky_protocol::{FlakyChannel, FlakyService};
+
+#[derive(Clone, Default)]
+struct Failing {
+    /// How many items the source was asked to produce. The whole point
+    /// of the test: it must stop at the failure and not one item later.
+    produced: Arc<AtomicUsize>,
+}
+
+impl Flaky for Failing {
+    fn flaky(&self, _ctx: Context) -> Subscription<Tick, Total> {
+        let produced = self.produced.clone();
+        Subscription::served(move |_cancel| {
+            futures::stream::unfold(0usize, move |n| {
+                let produced = produced.clone();
+                async move {
+                    produced.fetch_add(1, SeqCst);
+                    let item = match n {
+                        0 => Ok(Item::Next(Tick(1))),
+                        1 => Err(Error::new("the room burned down")),
+                        // Only reachable if the failure was not
+                        // terminal. Deliberately endless: a response
+                        // stream that keeps polling never stops, which
+                        // is the leak this guards.
+                        _ => Ok(Item::Next(Tick(99))),
+                    };
+                    Some((item, n + 1))
+                }
+            })
+        })
+    }
+}
+
+/// The session has to outlive the lane, so it is handed back rather
+/// than dropped at the end of the setup.
+async fn flaky_lane(
+) -> (LocalSession<FlakyChannel>, FlakyChannel, Arc<AtomicUsize>) {
+    let pair = LocalSession::<FlakyChannel>::pair();
+    let failing = Failing::default();
+    let produced = failing.produced.clone();
+    let server = pair.server.clone();
+    tokio::spawn(async move {
+        while let Ok(lane) = Session::<FlakyChannel>::accept_lane(&server).await
+        {
+            let inner = failing.clone();
+            tokio::spawn(async move {
+                let mut service = FlakyService { inner };
+                let _ = jetstream_rpc::server::run(&mut service, lane).await;
+            });
+        }
+    });
+    let lane = Session::<FlakyChannel>::open_lane(&pair.client)
+        .await
+        .expect("the session is open");
+    (pair.client, FlakyChannel::new(16, Box::new(lane)), produced)
+}
+
+/// r[verify jetstream.subscription.surface.termination]
+/// A producer failure is an *ending*. The dispatcher frees the tag when
+/// the response stream ends and nowhere else, so a failure that left the
+/// stream running would hold the tag for the life of the connection and
+/// deliver items after an error the subscriber had already seen.
+#[tokio::test]
+async fn a_producer_failure_ends_the_subscription() {
+    let (_session, channel, produced) = flaky_lane().await;
+    let mut items = channel.flaky(Context::default());
+
+    let first = tokio::time::timeout(Duration::from_secs(5), items.next())
+        .await
+        .expect("the first item must arrive")
+        .expect("the subscription must not end before it starts");
+    assert_eq!(
+        first.expect("the first item is not the failure"),
+        Item::Next(Tick(1)),
+    );
+
+    // The failure itself reaches the subscriber, rather than tearing
+    // down the lane the way a transport error would.
+    let second = tokio::time::timeout(Duration::from_secs(5), items.next())
+        .await
+        .expect("the failure must arrive")
+        .expect("the failure is an item, not the end of the stream");
+    assert!(second.is_err(), "expected the failure, got {second:?}");
+
+    // Give a source that kept running every chance to produce `Tick(99)`.
+    settle().await;
+    assert_eq!(
+        produced.load(SeqCst),
+        2,
+        "the source must be polled for the item and the failure, and \
+         then never again",
+    );
+}

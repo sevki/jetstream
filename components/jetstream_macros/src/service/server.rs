@@ -350,41 +350,61 @@ fn generate_streaming(
                 // r[impl jetstream.subscription.cancel]
                 // Serving is where the producer is handed the token
                 // that says its subscriber has gone.
+                // Through the generated wrapper, not `self.inner`: that
+                // is where `#[tracing::instrument]` is installed, and a
+                // unary call reaches it as `self.#method_name`. Calling
+                // the inner trait directly here made subscription spans
+                // the only ones that silently went missing.
                 let items = self
-                    .inner
                     .#method_name(#(#params),*)
                     .serve(cancel);
-                Box::pin(jetstream::prelude::futures::StreamExt::map(
-                    items,
-                    move |item| match item {
-                        Ok(Item::Next(value)) => Ok(Frame {
-                            tag,
-                            msg: Rmessage::#variant_name(
-                                #return_struct_ident(value),
+                // A terminal item ends the response stream, rather than
+                // being mapped and left to the source to stop on its
+                // own. The dispatcher frees the tag on `Out::Ended` and
+                // nowhere else, so a source that yields `Err` (or its
+                // terminator) and then hangs would hold the tag open for
+                // the life of the connection and never produce the
+                // synthetic terminator that releases the caller. Ending
+                // here also means nothing can be delivered *after* an
+                // ending, which is the guarantee the surface makes.
+                Box::pin(jetstream::prelude::futures::stream::unfold(
+                    (items, false),
+                    move |(mut items, finished)| async move {
+                        use jetstream::prelude::futures::StreamExt as _;
+                        if finished {
+                            return None;
+                        }
+                        let (msg, finished) = match items.next().await? {
+                            Ok(Item::Next(value)) => (
+                                Rmessage::#variant_name(
+                                    #return_struct_ident(value),
+                                ),
+                                false,
                             ),
-                        }),
-                        Ok(Item::Done(value)) => Ok(Frame {
-                            tag,
-                            msg: Rmessage::Done(Done::#variant_name(
-                                #done_ident(value),
-                            )),
-                        }),
-                        // r[impl jetstream.subscription.surface.termination]
-                        // A producer failure ends *this* subscription,
-                        // not the lane. Returning `Err` here made the
-                        // item a transport error, which `server::run`
-                        // propagates — so one failing room tore down
-                        // every other subscription and every unary call
-                        // sharing the lane, and the caller never reached
-                        // the error arm its generated client has. As an
-                        // error frame under this tag it is the failure
-                        // the surface has to distinguish from a normal
-                        // end, delivered to the one subscriber it
-                        // concerns.
-                        Err(err) => Ok(Frame {
-                            tag,
-                            msg: Rmessage::Error(err),
-                        }),
+                            Ok(Item::Done(value)) => (
+                                Rmessage::Done(Done::#variant_name(
+                                    #done_ident(value),
+                                )),
+                                true,
+                            ),
+                            // r[impl jetstream.subscription.surface.termination]
+                            // A producer failure ends *this* subscription,
+                            // not the lane. Returning `Err` here made the
+                            // item a transport error, which `server::run`
+                            // propagates — so one failing room tore down
+                            // every other subscription and every unary call
+                            // sharing the lane, and the caller never reached
+                            // the error arm its generated client has. As an
+                            // error frame under this tag it is the failure
+                            // the surface has to distinguish from a normal
+                            // end, delivered to the one subscriber it
+                            // concerns.
+                            Err(err) => (Rmessage::Error(err), true),
+                        };
+                        Some((
+                            Ok(Frame { tag, msg }),
+                            (items, finished),
+                        ))
                     },
                 )) as jetstream::prelude::server::ResponseStream<Self>
             }
