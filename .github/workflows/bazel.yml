@@ -25,7 +25,6 @@ on:
       - "components/jetstream_wireformat/**"
       - ".github/workflows/bazel.yml"
   pull_request:
-    branches: ["main"]
     paths:
       - ".bazelrc"
       - "BUILD.bazel"

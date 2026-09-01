@@ -1,7 +1,6 @@
 name: "Swift Build & Test"
 on:
   pull_request:
-    branches: ["main"]
     paths:
       - "Sources/**"
       - "Tests/**"

@@ -1,7 +1,6 @@
 name: "TypeScript Build & Test"
 on:
   pull_request:
-    branches: ["main"]
     paths:
       - "packages/**"
       - "pnpm-workspace.yaml"

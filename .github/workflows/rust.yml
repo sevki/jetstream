@@ -1,7 +1,6 @@
 name: "Rust Matrix Build & Test"
 on:
-  pull_request:
-    branches: ["main"]
+  pull_request: {}
 
 env:
   CARGO_TERM_COLOR: always
