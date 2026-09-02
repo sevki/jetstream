@@ -16,11 +16,12 @@
 
 use std::{fs, path::Path};
 
-// The same code the fuzz target runs, included rather than copied: a
+// The same code the fuzz target runs, shared rather than copied: a
 // replay that has drifted from the target it replays is worse than none,
-// because it goes green while the thing it guards has moved.
-#[path = "../fuzz/fuzz_targets/wireformat_body.rs"]
-mod body;
+// because it goes green while the thing it guards has moved. The fuzz
+// target includes this same file by path.
+mod fuzz_body;
+use fuzz_body as body;
 
 /// Every file directly inside `dir`, ignoring the housekeeping ones.
 fn inputs(dir: &Path) -> Vec<(String, Vec<u8>)> {
@@ -79,9 +80,21 @@ fn every_committed_fuzz_input_still_survives() {
 /// Without this, deleting them is a silent no-op: the replay above finds
 /// nothing, passes, and reports that it guarded a suite that is not
 /// there.
+///
+/// The check is anchored on `fuzz/` itself rather than asserted flatly,
+/// because there is one place the directories are legitimately absent:
+/// `fuzz/` is a nested package, so `cargo package` drops the whole tree
+/// from the published archive. Asserting flatly would fail the published
+/// crate's suite over an absence nobody consuming it can fix. Where
+/// `fuzz/` exists — the repository, which is the only place the nightly
+/// run and this replay both happen — the corpus must be there with it.
 #[test]
 fn the_corpus_directories_are_present() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    if !root.join("fuzz").is_dir() {
+        eprintln!("no `fuzz/` tree: packaged crate, nothing to guard");
+        return;
+    }
     for dir in ["fuzz/corpus/wireformat", "fuzz/artifacts/wireformat"] {
         assert!(
             root.join(dir).is_dir(),

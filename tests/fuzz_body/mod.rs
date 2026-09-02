@@ -4,6 +4,14 @@
 //! `tests/fuzz_regressions.rs` exercise the *same* code. A replay that
 //! drifts from the target it replays is worse than none: it goes green
 //! while the thing it claims to guard has changed underneath it.
+//!
+//! It lives under `tests/` rather than next to the fuzz target because
+//! `fuzz/` is a nested package, which Cargo excludes wholesale when it
+//! packages this crate. `tests/fuzz_regressions.rs` *is* packaged, so a
+//! body kept in `fuzz/` left the published crate carrying a test that
+//! includes a file the archive does not have — a compile error for
+//! anyone running the published crate's suite. `tests/` is packaged, so
+//! both sides of the include travel together.
 
 use std::io::Cursor;
 
