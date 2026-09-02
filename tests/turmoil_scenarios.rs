@@ -168,7 +168,6 @@ enum Live {
 pub fn run_scenario(scenario: Scenario) -> turmoil::Result<usize> {
     let feeder = Feeder::default();
     let producers = feeder.producers.clone();
-    let _ = &producers;
     let observed = Arc::new(AtomicUsize::new(0));
     let seen = observed.clone();
 
