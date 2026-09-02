@@ -1,15 +1,35 @@
-# To get started with Dependabot version updates, you'll need to specify which
-# package ecosystems to update and where the package manifests are located.
-# Please see the documentation for all configuration options:
-# https://docs.github.com/code-security/dependabot/dependabot-version-updates/configuration-options-for-the-dependabot.yml-file
-
+# Dependency updates.
+#
+# This used to be daily and ungrouped, which is a pull request per crate
+# per day: five open at once was normal, and the noise was the reason
+# nobody read any of them. Grouped and weekly, the same updates arrive as
+# one pull request that is worth looking at.
+#
+# Majors are grouped separately rather than mixed in, because they are the
+# ones that actually need reading — a `syn` 2 to 3 bump sat open for days
+# failing four checks while patch bumps queued behind it.
+# `.github/workflows/dependabot-auto-merge.yml` turns on auto-merge for
+# the safe group and leaves majors for a person.
 version: 2
 updates:
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      cargo-minor-and-patch:
+        patterns: ["*"]
+        update-types: ["minor", "patch"]
+      cargo-major:
+        patterns: ["*"]
+        update-types: ["major"]
+
   - package-ecosystem: "bazel"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    groups:
+      bazel:
+        patterns: ["*"]
