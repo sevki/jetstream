@@ -354,6 +354,28 @@ pub fn run_scenario(scenario: Scenario) -> turmoil::Result<usize> {
     Ok(observed.load(SeqCst))
 }
 
+/// The seeds that have failed before, from `tests/seeds/scenarios.txt`.
+fn committed_seeds() -> Vec<u64> {
+    let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("tests/seeds/scenarios.txt");
+    let Ok(text) = std::fs::read_to_string(&path) else {
+        panic!(
+            "{} is missing: the regression corpus has to exist for \
+                this test to be replaying anything",
+            path.display()
+        );
+    };
+    text.lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty() && !line.starts_with('#'))
+        .map(|line| {
+            line.parse().unwrap_or_else(|_| {
+                panic!("`{line}` in scenarios.txt is not a u64 seed")
+            })
+        })
+        .collect()
+}
+
 /// r[verify jetstream.subscription.overview]
 /// The search itself. Each seed is an independent story; a failure names
 /// the seed, and `run_scenario(Scenario::from_seed(n))` replays it
@@ -369,7 +391,16 @@ fn scenarios_hold_their_invariants() {
         .and_then(|s| s.parse().ok())
         .unwrap_or(256);
 
+    // Every seed that has ever failed, replayed first: a fixed bug
+    // stays fixed, and one that is not yet fixed keeps this red until it
+    // is. The sweep below searches for new ones; this makes sure the old
+    // ones cannot come back unnoticed.
     let mut exercised = 0usize;
+    for seed in committed_seeds() {
+        exercised += run_scenario(Scenario::from_seed(seed))
+            .unwrap_or_else(|e| panic!("committed seed {seed} regressed: {e}"));
+    }
+
     for seed in 0..seeds {
         let scenario = Scenario::from_seed(seed);
         let items = run_scenario(scenario)
