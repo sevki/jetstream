@@ -1,25 +1,300 @@
 name: Fuzzing
 
+# A fuzzer is only worth the electricity if what it learns survives the
+# night. Two things had to change for that:
+#
+#   * `fuzz/corpus` and `fuzz/artifacts` were gitignored, so every run
+#     started from nothing and any input that broke something died with
+#     the runner. They are committed now.
+#   * `cargo fuzz run` runs until something stops it, and the only thing
+#     stopping it was `timeout-minutes`. A cancelled job runs no further
+#     steps, so this workflow could never act on its own results — and
+#     never reported success, which is a poor way to be noticed. The run
+#     is bounded by `-max_total_time` now and ends on its own terms.
+#
+# What it finds is committed and filed rather than discarded:
+# `tests/fuzz_regressions.rs` replays every committed input on every pull
+# request, and `scenarios_hold_their_invariants` replays every committed
+# seed, so a bug found here cannot come back unnoticed.
+
 on:
   schedule:
     - cron: "0 0 * * *"
   workflow_dispatch:
+    inputs:
+      fuzz_minutes:
+        description: "Minutes to fuzz the wireformat target"
+        default: "60"
+      scenario_seeds:
+        description: "Scenario seeds to search"
+        default: "20000"
+
+permissions:
+  contents: read
 
 jobs:
-  fuzz:
+  # Coverage-guided fuzzing of the wire format decoder.
+  wireformat:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Set up Rust
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
+      - uses: dtolnay/rust-toolchain@nightly
 
       - name: Install cargo-fuzz
-        run: cargo install cargo-fuzz
+        run: cargo install cargo-fuzz --locked
 
-      - name: Run fuzz tests
-        run: cargo +nightly fuzz run wireformat
-        timeout-minutes: 360
+      # Bounded, so the step finishes and the ones below get to run. The
+      # exit code is kept rather than failing the job here: a crash is
+      # the interesting outcome, not a reason to stop.
+      - name: Fuzz
+        id: fuzz
+        continue-on-error: true
+        run: |
+          minutes="${{ github.event.inputs.fuzz_minutes || '60' }}"
+          cargo fuzz run wireformat -- -max_total_time=$(( minutes * 60 ))
+
+      - name: Look at what the run left behind
+        id: found
+        run: |
+          set -euo pipefail
+          crash=$(git status --porcelain fuzz/artifacts \
+                  | awk '{ print $2 }' | grep -v '\.gitkeep$' | head -1 || true)
+          echo "crash=${crash}" >> "$GITHUB_OUTPUT"
+          if [ -n "${crash}" ]; then
+            echo "digest=$(sha256sum "${crash}" | cut -c1-16)" >> "$GITHUB_OUTPUT"
+            echo "hex=$(xxd -p "${crash}" | tr -d '\n' | head -c 512)" >> "$GITHUB_OUTPUT"
+          fi
+          if [ -n "$(git status --porcelain fuzz/corpus)" ]; then
+            echo "corpus=grew" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Keep it regardless, so a crasher is recoverable even if the steps
+      # below cannot open anything.
+      - name: Keep the corpus and any crasher
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: wireformat-corpus
+          path: |
+            fuzz/corpus/wireformat
+            fuzz/artifacts/wireformat
+          retention-days: 30
+
+      - name: Commit the crasher on a branch
+        if: steps.found.outputs.crash != ''
+        run: |
+          set -euo pipefail
+          branch="fuzz/crash-wireformat-${{ steps.found.outputs.digest }}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${branch}"
+          git add -f "${{ steps.found.outputs.crash }}"
+          git commit -m "test(fuzz): a wireformat input that breaks the decoder
+
+          Found by the nightly fuzzer. Committed so it is replayed by
+          \`tests/fuzz_regressions.rs\` on every pull request: once this
+          is fixed it stays fixed.
+
+          Digest ${{ steps.found.outputs.digest }}."
+          git push -f origin "${branch}"
+
+      - name: File it
+        if: steps.found.outputs.crash != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const digest = '${{ steps.found.outputs.digest }}';
+            const file = '${{ steps.found.outputs.crash }}';
+            const hex = '${{ steps.found.outputs.hex }}';
+            const branch = `fuzz/crash-wireformat-${digest}`;
+            const marker = `fuzz-crash:${digest}`;
+
+            // One issue per distinct input. A nightly job that opens the
+            // same issue every night is a nightly job people mute.
+            const existing = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:issue "${marker}"`,
+            });
+            if (existing.data.total_count > 0) {
+              core.info(`already filed: #${existing.data.items[0].number}`);
+              return;
+            }
+
+            const body = [
+              `The nightly fuzzer found an input that breaks the \`wireformat\` target.`,
+              ``,
+              `\`${marker}\``,
+              ``,
+              `**Input** (\`${file}\`, hex, truncated to 256 bytes):`,
+              ``,
+              '```',
+              hex.replace(/(.{64})/g, '$1\n'),
+              '```',
+              ``,
+              `The bytes are committed on \`${branch}\`, which carries them into`,
+              `\`fuzz/artifacts/wireformat/\`. \`tests/fuzz_regressions.rs\` replays`,
+              `everything in there on every pull request, so merging that branch`,
+              `**with the fix** is what stops this recurring. Merging it alone would`,
+              `only make the tests red — the branch is a reproducer, not a fix.`,
+              ``,
+              `Reproduce locally:`,
+              ``,
+              '```',
+              `cargo +nightly fuzz run wireformat ${file}`,
+              '```',
+              ``,
+              `---`,
+              `_Filed by the nightly [Fuzzing](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/workflows/fuzzing.yml) workflow_`,
+            ].join('\n');
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Fuzz: wireformat decoder breaks on a ${digest} input`,
+              body,
+            });
+
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: branch,
+              base: context.payload.repository.default_branch,
+              draft: true,
+              title: `test(fuzz): reproducer for the ${digest} wireformat crash`,
+              body: [
+                `Carries the failing input into \`fuzz/artifacts/wireformat/\`, where`,
+                `\`tests/fuzz_regressions.rs\` replays it.`,
+                ``,
+                `**Do not merge this on its own.** It is a reproducer: on its own it`,
+                `only turns the test suite red. Merge it together with the fix, so the`,
+                `input becomes a regression test in the same change that stops it`,
+                `failing.`,
+                ``,
+                `Analysis in #${issue.data.number}.`,
+                ``,
+                `Note: opened by \`GITHUB_TOKEN\`, so no checks run on it until someone`,
+                `pushes to it — that is GitHub's rule for token-created pull requests,`,
+                `not a problem with the branch.`,
+              ].join('\n'),
+            });
+
+  # The turmoil scenario search. No nightly toolchain and no cargo-fuzz:
+  # a failing scenario is one u64, so the corpus is a text file and the
+  # search is an ordinary test run for longer than CI can afford.
+  scenarios:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Search
+        id: search
+        continue-on-error: true
+        env:
+          JETSTREAM_SCENARIO_SEEDS: ${{ github.event.inputs.scenario_seeds || '20000' }}
+        run: |
+          set -o pipefail
+          cargo test --test turmoil_scenarios --all-features -- --nocapture \
+            2>&1 | tee /tmp/scenarios.log
+
+      - name: Find the seed that broke
+        id: seed
+        if: steps.search.outcome == 'failure'
+        run: |
+          set -euo pipefail
+          seed=$(grep -oE 'seed [0-9]+ failed' /tmp/scenarios.log \
+                 | head -1 | grep -oE '[0-9]+' || true)
+          echo "seed=${seed}" >> "$GITHUB_OUTPUT"
+
+      - name: Commit the seed on a branch
+        if: steps.seed.outputs.seed != ''
+        run: |
+          set -euo pipefail
+          seed="${{ steps.seed.outputs.seed }}"
+          branch="fuzz/scenario-seed-${seed}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "${branch}"
+          echo "${seed}" >> tests/seeds/scenarios.txt
+          git add tests/seeds/scenarios.txt
+          git commit -m "test(turmoil): a scenario seed that breaks an invariant
+
+          Found by the nightly search. \`scenarios_hold_their_invariants\`
+          replays every committed seed, so once this is fixed it stays
+          fixed."
+          git push -f origin "${branch}"
+
+      - name: File it
+        if: steps.seed.outputs.seed != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const seed = '${{ steps.seed.outputs.seed }}';
+            const branch = `fuzz/scenario-seed-${seed}`;
+            const marker = `scenario-seed:${seed}`;
+
+            const existing = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:issue "${marker}"`,
+            });
+            if (existing.data.total_count > 0) {
+              core.info(`already filed: #${existing.data.items[0].number}`);
+              return;
+            }
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Turmoil: scenario seed ${seed} breaks an invariant`,
+              body: [
+                `The nightly scenario search found a run that breaks one of the`,
+                `invariants in \`tests/turmoil_scenarios.rs\`.`,
+                ``,
+                `\`${marker}\``,
+                ``,
+                `The seed drives both the action sequence and turmoil's network`,
+                `schedule, so this is exactly reproducible:`,
+                ``,
+                '```',
+                `cargo test --test turmoil_scenarios --all-features -- --nocapture`,
+                '```',
+                ``,
+                `with \`${seed}\` in \`tests/seeds/scenarios.txt\`, which is what`,
+                `branch \`${branch}\` does.`,
+                ``,
+                `**Check the invariant before the implementation.** The first thing`,
+                `this search found was not a bug in the code but a claim the code`,
+                `never made — see #716. An assertion that outruns the specification`,
+                `fails honestly and still needs changing.`,
+                ``,
+                `---`,
+                `_Filed by the nightly [Fuzzing](${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/workflows/fuzzing.yml) workflow_`,
+              ].join('\n'),
+            });
+
+            await github.rest.pulls.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              head: branch,
+              base: context.payload.repository.default_branch,
+              draft: true,
+              title: `test(turmoil): reproducer for scenario seed ${seed}`,
+              body: [
+                `Adds \`${seed}\` to \`tests/seeds/scenarios.txt\`, which`,
+                `\`scenarios_hold_their_invariants\` replays on every pull request.`,
+                ``,
+                `**Do not merge this on its own** — it only turns the suite red.`,
+                `Merge it with the fix, so the seed becomes a regression test in the`,
+                `same change that stops it failing.`,
+                ``,
+                `Analysis in #${issue.data.number}.`,
+              ].join('\n'),
+            });
