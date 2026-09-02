@@ -406,3 +406,126 @@ async fn serving_an_opened_subscription_keeps_its_producer() {
         "serving must not cancel the producer it is serving",
     );
 }
+
+/// r[verify jetstream.subscription.cancel]
+/// The dispatcher's token has to reach a sequence that is *already* a
+/// sequence, because a service that proxies or delegates a subscription
+/// serves one backed by real work.
+///
+/// This is the failing direction of the arm that used to ignore it: a
+/// pre-established subscription over a live producer, cancelled through
+/// the token rather than by dropping the stream. Before the fix the
+/// stream simply never ended, which is how the tag leaked — the
+/// dispatcher only frees a tag when it sees the end.
+#[tokio::test]
+async fn cancelling_ends_a_served_open_subscription() {
+    let mut subscription = Subscription::<u32, ()>::opening(async move {
+        Subscription::producing(4, move |producer| async move {
+            let mut n = 0u32;
+            while producer.send(n).await.is_ok() {
+                n += 1;
+            }
+        })
+    });
+    // `establish` is what makes this `Source::Open` rather than
+    // `Source::Opening` — the arm under test.
+    subscription.establish().await;
+
+    let cancel = CancellationToken::new();
+    let mut items = subscription.serve(cancel.clone());
+
+    assert!(
+        matches!(items.next().await, Some(Ok(Item::Next(0)))),
+        "the producer must be running before cancellation means anything",
+    );
+
+    cancel.cancel();
+
+    // Not "eventually quiet": the sequence has to *end*, because the end
+    // is the signal. `server::run` answers a caller and frees the tag on
+    // `Out::Ended`, and on nothing else.
+    let ended =
+        tokio::time::timeout(std::time::Duration::from_secs(5), async {
+            // Items already in flight may still arrive; the end must.
+            while let Some(item) = items.next().await {
+                if item.is_err() {
+                    return false;
+                }
+            }
+            true
+        })
+        .await
+        .expect("a cancelled subscription must end, not hang");
+    assert!(ended, "the sequence ended cleanly");
+}
+
+/// r[verify jetstream.subscription.cancel]
+/// Cancelling reaches a subscription that is still opening, too — the
+/// other arm that ignored the token.
+#[tokio::test]
+async fn cancelling_ends_a_served_opening_subscription() {
+    let subscription = Subscription::<u32, ()>::opening(async move {
+        Subscription::producing(4, move |producer| async move {
+            let mut n = 0u32;
+            while producer.send(n).await.is_ok() {
+                n += 1;
+            }
+        })
+    });
+
+    let cancel = CancellationToken::new();
+    // Served without `establish`, so the opening future is still the
+    // source and the flattened stream is what has to observe the token.
+    let mut items = subscription.serve(cancel.clone());
+
+    assert!(
+        matches!(items.next().await, Some(Ok(Item::Next(0)))),
+        "the nested producer must be running",
+    );
+
+    cancel.cancel();
+
+    tokio::time::timeout(std::time::Duration::from_secs(5), async {
+        while items.next().await.is_some() {}
+    })
+    .await
+    .expect("a cancelled subscription must end, not hang");
+}
+
+/// A subscription that finished on its own is not a subscription anyone
+/// can cancel. Cancelling afterwards must be a no-op — not a second
+/// ending, and not something that rewrites what the caller already saw.
+///
+/// This guards the truncation `until_cancelled` introduces: it must
+/// apply to work that is still running, never to a sequence that has
+/// already delivered its terminator.
+#[tokio::test]
+async fn cancelling_after_the_end_changes_nothing() {
+    let subscription =
+        Subscription::<u32, ()>::from_items(futures::stream::iter(vec![
+            Ok(Item::Next(1)),
+            Ok(Item::Next(2)),
+            Ok(Item::Done(())),
+        ]));
+
+    let cancel = CancellationToken::new();
+    let mut items = subscription.serve(cancel.clone());
+
+    let mut seen = Vec::new();
+    while let Some(Ok(item)) = items.next().await {
+        seen.push(item);
+    }
+    assert_eq!(
+        seen,
+        vec![Item::Next(1), Item::Next(2), Item::Done(())],
+        "the whole sequence, terminator included",
+    );
+
+    // After the fact. Nothing left to cancel, and nothing that should
+    // happen because of it.
+    cancel.cancel();
+    assert!(
+        items.next().await.is_none(),
+        "an ended subscription stays ended",
+    );
+}
