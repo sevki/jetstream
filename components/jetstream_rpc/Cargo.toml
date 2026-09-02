@@ -22,7 +22,9 @@ thiserror = "2.0.17"
 url = { workspace = true }
 iroh = { workspace = true, optional = true }
 turmoil = { workspace = true, optional = true }
-tokio = { version = "1.47.1", features = ["sync", "rt"] }
+# `macros` for `select!`: the dispatcher serves subscriptions
+# concurrently with the requests still arriving on the lane.
+tokio = { version = "1.47.1", features = ["sync", "rt", "macros"] }
 async-trait = "0.1.89"
 serde = { version = "1.0.228", features = ["derive"], optional = true }
 jetstream_error = { version = "16.2.0", path = "../jetstream_error" }

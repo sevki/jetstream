@@ -23,9 +23,15 @@ pub mod prelude {
     pub use jetstream_error::*;
     pub use jetstream_macros::{service, JetStreamWireFormat};
     pub use jetstream_rpc::{
-        client, client::ClientTransport, context::Context, server,
-        server::Server, Error, Frame, Framed, Framer, Message, Mux, Protocol,
-        RpcCall, Rversion, TagPool, Tversion, Version, RJETSTREAMERROR,
+        client,
+        client::ClientTransport,
+        context::Context,
+        server,
+        server::Server,
+        subscription,
+        subscription::{Endpoint, Item, Subscription},
+        Error, Frame, Framed, Framer, Message, Mux, Protocol, RpcCall,
+        RpcStream, Rversion, TagPool, Tversion, Version, RJETSTREAMERROR,
         RVERSION, TVERSION,
     };
     pub use jetstream_wireformat::{Data, WireFormat};

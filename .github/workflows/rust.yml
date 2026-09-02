@@ -63,6 +63,10 @@ jobs:
         run: |
           cargo build -p jetstream --verbose
           cargo test -p jetstream --verbose --all-features
+          # The generator's own tests. Not covered by `-p jetstream`, and
+          # that gap hid `jetstream_macros` failing to compile at all —
+          # 42 tests that never ran and 9 snapshots nothing checked.
+          cargo test -p jetstream_macros --verbose
 
   # Examples on stable only
   examples:
@@ -103,5 +107,7 @@ jobs:
         run: cargo run --example iroh_echo --features iroh
       - name: Run example session_lanes
         run: cargo run --example session_lanes
+      - name: Run example chat_room
+        run: cargo run --example chat_room
       - name: Run example quic_session
         run: cargo run --example quic_session --features quic
