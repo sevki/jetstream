@@ -53,6 +53,15 @@ fn test_error() {
     );
     let mut output = String::new();
     h.render_report(&mut output, &err).unwrap();
+    // miette renders source locations with the platform's path
+    // separator, and both snapshots below are written with `/`. Without
+    // this every path line differs on Windows — which nothing noticed
+    // until CI began testing the whole workspace there, because
+    // `cargo test -p jetstream` never ran this crate.
+    //
+    // Normalising the report rather than keeping a second snapshot: the
+    // separator is not what either snapshot is about.
+    let output = output.replace('\\', "/");
     let mut transcript = Transcript::new();
     assert_snapshot!(output,@r#"
     [31mserver::validation::E001[0m
