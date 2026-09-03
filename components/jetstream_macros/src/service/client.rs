@@ -1,19 +1,32 @@
+use std::collections::HashMap;
+
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{Attribute, Ident, TraitItem};
 
-use crate::utils::case_conversion::IdentCased;
+use crate::{
+    service::subscription::{done_struct_name, Streaming},
+    utils::case_conversion::IdentCased,
+};
 #[allow(clippy::too_many_arguments)]
 pub fn generate_client(
     channel_name: &Ident,
     trait_name: &Ident,
     trait_items: &[TraitItem],
     tmsgs: &[(Ident, TokenStream)],
+    rmsgs: &[(Ident, TokenStream)],
     method_attrs: &[Vec<Attribute>],
     enable_tracing: bool,
+    streaming: &HashMap<String, Streaming>,
 ) -> TokenStream {
-    let client_calls =
-        generate_client_calls(trait_items, tmsgs, method_attrs, enable_tracing);
+    let client_calls = generate_client_calls(
+        trait_items,
+        tmsgs,
+        rmsgs,
+        method_attrs,
+        enable_tracing,
+        streaming,
+    );
 
     // Add RPC-level tracing span if tracing is enabled
     let _rpc_span = if enable_tracing {
@@ -29,14 +42,38 @@ pub fn generate_client(
         quote! {}
     };
 
+    // r[impl jetstream.subscription.cancel]
+    // The client's half of cancellation. Without it a dropped
+    // subscription marks its tag abandoned and tells the service
+    // nothing, so the producer runs on — which is the whole failure the
+    // cancellation rule exists to prevent, and it is silent.
+    let tcancel_impl = if streaming.is_empty() {
+        quote! {}
+    } else {
+        quote! {
+            fn tcancel(oldtag: u16, binding: u64) -> Option<Tmessage> {
+                Some(Tmessage::Cancel(
+                    jetstream::prelude::subscription::Tcancel {
+                        oldtag,
+                        binding,
+                    },
+                ))
+            }
+        }
+    };
+
     quote! {
         pub struct #channel_name {
-            mux: Mux<Self>,
+            // r[impl jetstream.subscription.surface.rust]
+            // Shared, because a subscription outlives the call that
+            // opened it: the stream reads through this multiplexer long
+            // after the borrow that produced it is gone.
+            mux: std::sync::Arc<Mux<Self>>,
         }
 
         impl #channel_name {
             pub fn new(max_concurrent_requests:u16,inner: Box<dyn ClientTransport<Self>>) -> Self {
-                Self { mux: Mux::new(max_concurrent_requests,inner) }
+                Self { mux: std::sync::Arc::new(Mux::new(max_concurrent_requests,inner)) }
             }
 
             // r[impl jetstream.version.framer.client-handshake]
@@ -70,6 +107,8 @@ pub fn generate_client(
             type Error = Error;
             const VERSION: &'static str = PROTOCOL_VERSION;
             const NAME: &'static str = PROTOCOL_NAME;
+
+            #tcancel_impl
         }
 
         impl #trait_name for #channel_name
@@ -82,8 +121,10 @@ pub fn generate_client(
 fn generate_client_calls(
     trait_items: &[TraitItem],
     tmsgs: &[(Ident, TokenStream)],
+    rmsgs: &[(Ident, TokenStream)],
     method_attrs: &[Vec<Attribute>],
     enable_tracing: bool,
+    streaming: &HashMap<String, Streaming>,
 ) -> Vec<TokenStream> {
     trait_items
         .iter()
@@ -162,6 +203,53 @@ fn generate_client_calls(
                 } else {
                     attrs.iter().map(|attr| quote! { #attr }).collect()
                 };
+
+                // r[impl jetstream.subscription.surface.rust]
+                // A subscription is a `Stream`, cancelled by dropping
+                // it. It opens on first poll, which is what lets the
+                // method be the plain `fn` the surface calls for while
+                // acquiring a tag and sending a request stay
+                // asynchronous.
+                if streaming.contains_key(&method_name.to_string()) {
+                    let return_struct_ident = &rmsgs[index].0;
+                    let done_ident = done_struct_name(return_struct_ident);
+                    let args: Vec<_> = args.collect();
+                    return Some(quote! {
+                        #(#tracing_attrs)*
+                        fn #method_name(#reciever, #(#inputs)*) #retn {
+                            let mux = self.mux.clone();
+                            let req = Tmessage::#variant_name(#request_struct_ident {
+                                #(#args)*
+                            });
+                            Subscription::opening(async move {
+                                let frames = mux
+                                    .rpc_stream(Context::default(), req, 64)
+                                    .await;
+                                Subscription::from_frames(frames, |frame| {
+                                    match frame.msg {
+                                        Rmessage::#variant_name(item) => {
+                                            Ok(Some(Item::Next(item.0)))
+                                        }
+                                        Rmessage::Done(Done::#variant_name(
+                                            #done_ident(value),
+                                        )) => Ok(Some(Item::Done(value))),
+                                        // Cut short: the tag is freed and
+                                        // the sequence ends, carrying no
+                                        // result because the producer
+                                        // never produced one.
+                                        Rmessage::Done(Done::Cancelled) => {
+                                            Ok(None)
+                                        }
+                                        Rmessage::Error(err) => Err(err),
+                                        _ => Err(Error::new(
+                                            "unexpected response in a subscription",
+                                        )),
+                                    }
+                                })
+                            })
+                        }
+                    });
+                }
 
                 // r[impl jetstream.macro.client-error]
                 Some(quote! {

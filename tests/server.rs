@@ -69,6 +69,21 @@ fn network_partitions_during_connect() -> turmoil::Result {
     });
 
     sim.client("client", async {
+        // The name promised a partition and the test never made one, so
+        // it proved only that a healthy connect works — which the other
+        // test here already does.
+        turmoil::partition("client", "server");
+        let cut = tokio::time::timeout(
+            std::time::Duration::from_secs(5),
+            TcpStream::connect(("server", PORT)),
+        )
+        .await;
+        assert!(
+            !matches!(cut, Ok(Ok(_))),
+            "connecting across a partition must not succeed",
+        );
+
+        turmoil::repair("client", "server");
         let stream = TcpStream::connect(("server", PORT)).await?;
         let client_codec: ClientCodec<EchoChannel> = Default::default();
         let framed = Framed::new(stream, client_codec);

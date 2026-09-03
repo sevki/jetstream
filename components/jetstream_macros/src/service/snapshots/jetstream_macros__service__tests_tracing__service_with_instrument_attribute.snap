@@ -213,7 +213,7 @@ pub mod echo_protocol {
         }
     }
     pub struct EchoChannel {
-        mux: Mux<Self>,
+        mux: std::sync::Arc<Mux<Self>>,
     }
     impl EchoChannel {
         pub fn new(
@@ -221,7 +221,7 @@ pub mod echo_protocol {
             inner: Box<dyn ClientTransport<Self>>,
         ) -> Self {
             Self {
-                mux: Mux::new(max_concurrent_requests, inner),
+                mux: std::sync::Arc::new(Mux::new(max_concurrent_requests, inner)),
             }
         }
         /// Perform Tversion/Rversion handshake with the server.

@@ -2,14 +2,14 @@ mod client;
 mod frame;
 mod message;
 mod server;
+pub(crate) mod subscription;
 mod tests;
 mod tests_tracing;
 mod tracing;
 
 use proc_macro2::{Literal, TokenStream};
 use quote::{format_ident, quote, ToTokens};
-
-use syn::{ItemTrait, TraitItem};
+use syn::{Ident, ItemTrait, TraitItem};
 
 use crate::service::tracing::take_attributes;
 
@@ -85,7 +85,27 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
             .collect::<Vec<_>>()
             .as_slice(),
     );
-    let trait_items = maps.iter().map(|(item, _)| item).collect::<Vec<_>>();
+    // r[impl jetstream.subscription.surface.declared]
+    // `#[subscription]` is this macro's own attribute, so it has to come
+    // off before the trait is emitted — and what it says has to be kept,
+    // because the dispatcher routes on it.
+    let mut streaming: std::collections::HashMap<
+        String,
+        subscription::Streaming,
+    > = std::collections::HashMap::new();
+    let mut trait_fns = Vec::new();
+    for (item, _) in maps.iter() {
+        let mut item = item.clone();
+        match subscription::take(&mut item) {
+            Ok(Some(s)) => {
+                streaming.insert(item.sig.ident.to_string(), s);
+            }
+            Ok(None) => {}
+            Err(e) => return e.to_compile_error(),
+        }
+        trait_fns.push(item);
+    }
+    let trait_items = trait_fns.iter().collect::<Vec<_>>();
     let vis = &item.vis;
 
     // Generate protocol metadata
@@ -100,6 +120,8 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
     let mut rmsgs = Vec::new();
     let mut msg_ids = Vec::new();
     let mut method_attrs = Vec::new();
+    let mut done_structs = Vec::new();
+    let mut done_variants = Vec::new();
 
     for (index, item) in item.items.iter().enumerate() {
         if let TraitItem::Fn(method) = item {
@@ -116,10 +138,46 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
                 &request_struct_ident,
                 &method.sig,
             );
-            let return_struct = message::generate_return_struct(
-                &return_struct_ident,
-                &method.sig,
-            );
+
+            let stream = streaming.get(&method_name.to_string());
+            let return_struct = match stream {
+                // A subscription's response struct carries one *item*,
+                // not the whole return type: the sequence is many of
+                // these, and the end is a value of its own.
+                Some(s) => {
+                    let item = &s.item;
+                    quote! {
+                        #[allow(non_camel_case_types)]
+                        #[derive(Debug, JetStreamWireFormat)]
+                        pub struct #return_struct_ident(pub #item);
+                    }
+                }
+                None => message::generate_return_struct(
+                    &return_struct_ident,
+                    &method.sig,
+                ),
+            };
+
+            if let Some(s) = stream {
+                let done_ident =
+                    subscription::done_struct_name(&return_struct_ident);
+                let done_ty = &s.done;
+                done_structs.push(quote! {
+                    #[allow(non_camel_case_types)]
+                    #[derive(Debug, JetStreamWireFormat)]
+                    pub struct #done_ident(pub #done_ty);
+                });
+                let variant: Ident = crate::utils::case_conversion::IdentCased(
+                    method_name.clone(),
+                )
+                .to_pascal_case()
+                .into();
+                let request_id = Ident::new(
+                    &format!("T{}", method_name.to_string().to_uppercase()),
+                    method_name.span(),
+                );
+                done_variants.push((variant, done_ident, request_id));
+            }
 
             tmsgs.push((request_struct_ident, request_struct));
             rmsgs.push((return_struct_ident, return_struct));
@@ -131,8 +189,29 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
     }
 
     // Generate frame implementations
-    let tmessage = frame::generate_tframe(&tmsgs);
-    let rmessage = frame::generate_rframe(&rmsgs);
+    let has_subscriptions = !done_variants.is_empty();
+    let tmessage = frame::generate_tframe(&tmsgs, has_subscriptions);
+    let rmessage = frame::generate_rframe(&rmsgs, has_subscriptions);
+    let stream_consts = if has_subscriptions {
+        quote! {
+            /// r[impl jetstream.subscription.compat]
+            /// The terminator and cancellation take global ids below
+            /// `MESSAGE_ID_START`, so a streaming method costs no
+            /// per-method id and `102 + 2 * index` is untouched.
+            pub const RDONE: u8 = jetstream::prelude::subscription::RDONE;
+            pub const TCANCEL: u8 = jetstream::prelude::subscription::TCANCEL;
+            pub const RCANCEL: u8 = jetstream::prelude::subscription::RCANCEL;
+        }
+    } else {
+        quote! {}
+    };
+    let done_enum = if has_subscriptions {
+        subscription::generate_done_enum(&done_variants)
+    } else {
+        // A protocol with no subscriptions emits exactly what it did
+        // before this existed — r[jetstream.subscription.compat.rpc-layer].
+        quote! {}
+    };
 
     // Generate server implementation
     let server_impl = server::generate_server(
@@ -143,6 +222,7 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
         &rmsgs,
         &method_attrs,
         enable_tracing,
+        &streaming,
     );
 
     // Generate client implementation
@@ -151,8 +231,10 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
         trait_name,
         &item.items,
         &tmsgs,
+        &rmsgs,
         &method_attrs,
         enable_tracing,
+        &streaming,
     );
 
     // Generate final trait with attribute
@@ -210,11 +292,17 @@ pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
             );
             const DIGEST: &str = #digest_lit;
 
+            #stream_consts
+
             #(#msg_ids)*
 
             #(#tmsg_definitions)*
 
             #(#rmsg_definitions)*
+
+            #(#done_structs)*
+
+            #done_enum
 
             #tmessage
 

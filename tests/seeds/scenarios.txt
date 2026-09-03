@@ -1,0 +1,13 @@
+# Scenario seeds that once broke something.
+#
+# For the turmoil scenario search a failing input is entirely described
+# by one number: the seed drives both the action sequence and turmoil's
+# network schedule, so `Scenario::from_seed(n)` replays a failure exactly.
+# That makes the corpus a text file rather than a directory of blobs.
+#
+# The nightly search appends here when it finds one, and
+# `scenarios_hold_their_invariants` replays every line on every pull
+# request. A seed that is fixed stays fixed; a seed that is not yet fixed
+# keeps the test red until it is, which is the point.
+#
+# One decimal u64 per line. `#` comments and blank lines are ignored.
