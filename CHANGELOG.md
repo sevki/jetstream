@@ -1,6 +1,38 @@
 # Changelog
 
 
+## [16.3.0](https://github.com/sevki/jetstream/compare/v16.2.0...v16.3.0) (2026-09-02)
+
+
+### Features
+
+* **macros:** `#[subscription]`, and a chat room the macro writes ([e45b5db](https://github.com/sevki/jetstream/commit/e45b5dbae85710ce5c946eb3a6b75525db3aae67))
+* **rpc:** route streaming responses, and stop panicking on stray tags ([2626f8f](https://github.com/sevki/jetstream/commit/2626f8fef186db9a9f835230a742c9b3a63b0303))
+* **rpc:** say "now" — `Subscription::establish` ([e70c302](https://github.com/sevki/jetstream/commit/e70c302c506dd79e46fae22f4cd25aa8d04fc855))
+* **rpc:** serve subscriptions, with cancellation reaching the producer ([360ca97](https://github.com/sevki/jetstream/commit/360ca978f2579207763c760432e8ad8e75fdf21d))
+* **rpc:** the typed surface, and a chat room that runs on it ([53e9182](https://github.com/sevki/jetstream/commit/53e9182a8f07eb6ba52f905136793ed87e9cc5a0))
+* **rpc:** the wire pieces subscriptions need ([26d066d](https://github.com/sevki/jetstream/commit/26d066dad97a26621123a53d981ebb40a671cd68))
+
+
+### Bug Fixes
+
+* **example:** the room's terminator takes the method it ends ([95b6947](https://github.com/sevki/jetstream/commit/95b69479a7f4aca1348761be05bcef085479fb21))
+* **macros:** a failure ends the subscription, and a served one keeps its span ([492e808](https://github.com/sevki/jetstream/commit/492e8085499eebaeba7b822d780e60d9b2f6cadf))
+* **macros:** three from codex on [#699](https://github.com/sevki/jetstream/issues/699) ([047dd37](https://github.com/sevki/jetstream/commit/047dd37b8c5a802b70dec6f33a291bb89b05cf60))
+* **rpc:** a merged failure keeps its key, and the example earns its output ([2ba5407](https://github.com/sevki/jetstream/commit/2ba540787229943e645d0aa4da2c0fa73d9b2235))
+* **rpc:** a subscription must not take the lane it is served on ([ae611c5](https://github.com/sevki/jetstream/commit/ae611c56ee82bbef6abbc94ec0958101527ce318))
+* **rpc:** a subscription that fails says so, and then stops, from codex on [#698](https://github.com/sevki/jetstream/issues/698) ([50e3706](https://github.com/sevki/jetstream/commit/50e3706352601db1572aaae90fa4ade76f2eb294))
+* **rpc:** acknowledge every cancellation, not only the last, from codex on [#697](https://github.com/sevki/jetstream/issues/697) ([2b51c89](https://github.com/sevki/jetstream/commit/2b51c896c8373a7e0460e510c82c61c6f70535cd))
+* **rpc:** drop a `mut` the unfold made redundant ([7c8260e](https://github.com/sevki/jetstream/commit/7c8260ef4c53fdf18b519f1642f34f4b7d859e35))
+* **rpc:** four more ways the client lost a subscription, from codex on [#696](https://github.com/sevki/jetstream/issues/696) ([be75f6f](https://github.com/sevki/jetstream/commit/be75f6f2e7c3b2eb3e707360b548cb52e9e0a384))
+* **rpc:** four ways the client failed a subscription, from codex on [#696](https://github.com/sevki/jetstream/issues/696) ([08f7838](https://github.com/sevki/jetstream/commit/08f78382debba1562e3d2cabf26d5f705c379ac3))
+* **rpc:** four ways the dispatcher failed, from codex on [#697](https://github.com/sevki/jetstream/issues/697) ([a2d7a91](https://github.com/sevki/jetstream/commit/a2d7a919b3f83eba4e59709e7b3c3e8a911b4f95))
+* **rpc:** opening a subscription keeps the means to cancel it, from codex on [#699](https://github.com/sevki/jetstream/issues/699) ([7bbd271](https://github.com/sevki/jetstream/commit/7bbd27108e480c85ac656fb57d21f1c705fd3121))
+* **rpc:** serving an opened subscription must not cancel what it serves ([4e536de](https://github.com/sevki/jetstream/commit/4e536de9200f019b179689f227ade1ca09f876cf))
+* **rpc:** the default build has no `select!` ([4bc6d52](https://github.com/sevki/jetstream/commit/4bc6d52cc98ea4805a7350b2fb3bad67de1b6a38))
+* **rpc:** the supplied terminator has to know which method it ends ([3cd5334](https://github.com/sevki/jetstream/commit/3cd533456822240ea03c1322334c8c32ffe3ea37))
+* **rpc:** zero is a reserved binding, not a plausible one ([f078ad5](https://github.com/sevki/jetstream/commit/f078ad5a67fcf6f4d7f8a02fa45da918ed784696))
+
 ## [16.2.0](https://github.com/sevki/jetstream/compare/v16.1.3...v16.2.0) (2026-08-31)
 
 
