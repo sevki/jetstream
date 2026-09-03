@@ -11,3 +11,5 @@ docs/doc/
 **/node_modules/
 dist/
 .build/
+*.pending-snap
+*.snap.new
