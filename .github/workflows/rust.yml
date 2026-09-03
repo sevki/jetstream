@@ -1,7 +1,10 @@
 name: "Rust Matrix Build & Test"
 on:
+  # Every pull request, not only those targeting `main`. A stacked PR
+  # based on another branch used to run nothing but the benchmark job,
+  # so five PRs carrying the whole of a change could be reviewed and
+  # merged without one of these checks ever compiling them.
   pull_request:
-    branches: ["main"]
 
 env:
   CARGO_TERM_COLOR: always
@@ -60,13 +63,35 @@ jobs:
           echo "SCCACHE_GHA_ENABLED=true" >> $GITHUB_ENV
           echo "RUSTC_WRAPPER=sccache" >> $GITHUB_ENV
       - name: Build and test
+        shell: bash
         run: |
           cargo build -p jetstream --verbose
-          cargo test -p jetstream --verbose --all-features
-          # The generator's own tests. Not covered by `-p jetstream`, and
-          # that gap hid `jetstream_macros` failing to compile at all —
-          # 42 tests that never ran and 9 snapshots nothing checked.
-          cargo test -p jetstream_macros --verbose
+          # The whole workspace, not the umbrella package alone. Testing
+          # only `-p jetstream` left ten crates uncovered, and hid
+          # `jetstream_macros` failing to compile at all — 42 tests that
+          # never ran and 9 snapshots nothing checked.
+          #
+          # jetstream_ufs is **Linux-only**, not merely Unix-only. It
+          # defines `LinuxDirent64` over `libc::ino64_t` and
+          # `libc::off64_t` — glibc LFS64 aliases that exist on neither
+          # macOS nor Windows — and reads directories through
+          # `std::os::unix::io::AsRawFd`. Nothing in the crate is
+          # cfg-gated, and nothing depends on it: the umbrella crate does
+          # not list it, it is a workspace member and no more. So
+          # `cargo test -p jetstream` never built it, and widening to
+          # `--workspace` compiled it off Linux for the first time.
+          EXCLUDE=""
+          if [ "${RUNNER_OS}" != "Linux" ]; then
+            EXCLUDE="--exclude jetstream_ufs"
+          fi
+          # fuzz is a libFuzzer harness whose only target is declared
+          # `test = false`, so `cargo test` builds it and runs nothing.
+          # Kept on Linux, where the build still catches an API break in
+          # the harness; dropped on Windows, where it buys nothing.
+          if [ "${RUNNER_OS}" = "Windows" ]; then
+            EXCLUDE="${EXCLUDE} --exclude fuzz"
+          fi
+          cargo test --workspace ${EXCLUDE} --verbose --all-features
 
   # Examples on stable only
   examples:

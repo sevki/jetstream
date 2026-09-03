@@ -24,8 +24,11 @@ on:
       - "components/jetstream_rpc/**"
       - "components/jetstream_wireformat/**"
       - ".github/workflows/bazel.yml"
+  # Every pull request, not only those targeting `main`. The path
+  # filter below already selects only what matters, and what it selects
+  # is mostly Rust: a stacked PR touching `jetstream_rpc` or
+  # `jetstream_macros` gets real `bazel build //...` signal from it.
   pull_request:
-    branches: ["main"]
     paths:
       - ".bazelrc"
       - "BUILD.bazel"
