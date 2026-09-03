@@ -17,10 +17,10 @@ use jetstream_wireformat::{Data, JetStreamWireFormat, WireFormat};
 /// and `r[jetstream.rpc.ts.message-ids]` do not change and no protocol is
 /// re-generated for its unary methods.
 ///
-/// 5, 6 and 7 are taken by the error frames; 100 and 101 by version. 106
-/// and 107 are `TERROR`/`RERROR`, which overlap the generated ids for
-/// method index 2 — latent today, since nothing decodes an `ErrorFrame`
-/// on a service lane, but a reason to allocate here rather than there.
+/// 5, 6, 7 and 11 are taken by the error frames; 100 and 101 by version.
+/// `RERROR` is the last of those: it sat at 107, overlapping the
+/// generated response id for method index 2, until it moved down here to
+/// join its siblings.
 pub const RDONE: u8 = 8;
 
 /// r[impl jetstream.subscription.cancel]

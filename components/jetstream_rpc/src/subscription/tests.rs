@@ -48,6 +48,56 @@ fn the_new_ids_sit_below_the_per_method_space() {
     assert_ne!(TCANCEL, RCANCEL);
 }
 
+/// Every global message id, checked together against the space
+/// `#[service]` generates into.
+///
+/// The subscription ids were allocated low *because* `RERROR` sat at 107
+/// and collided with the generated response for method index 2 — a
+/// hazard noted in a comment rather than caught by anything. Checking one
+/// family at a time is how the outlier survived: `RDONE`/`TCANCEL`/
+/// `RCANCEL` were proved safe while the error frame, three files away,
+/// was not.
+///
+/// So this asserts over the whole set. `#[service]` assigns
+/// `MESSAGE_ID_START + 2 * index` and `+ 1` from 102, which makes
+/// everything from 102 upward the generated protocol's to allocate; a
+/// global that strays in there is a message that decodes as somebody
+/// else's method.
+#[test]
+fn no_global_id_reaches_into_the_generated_range() {
+    // The literal the macro emits (`service/mod.rs`), restated here
+    // because this crate cannot see it — a change to either that does
+    // not change the other is exactly what this catches.
+    const MESSAGE_ID_START: u8 = 102;
+
+    let globals: [(&str, u8); 7] = [
+        ("RJETSTREAMERROR", crate::error::RJETSTREAMERROR),
+        ("TLERROR", 6),
+        ("RLERROR", crate::error::RLERROR),
+        ("RDONE", RDONE),
+        ("TCANCEL", TCANCEL),
+        ("RCANCEL", RCANCEL),
+        ("RERROR", crate::error::RERROR),
+    ];
+
+    for (name, id) in globals {
+        assert!(
+            id < MESSAGE_ID_START,
+            "{name} = {id} is inside the per-method range: it decodes as \
+             the request for method index {}",
+            (id - MESSAGE_ID_START) / 2,
+        );
+    }
+
+    // And distinct from each other, which is the other half of an id
+    // space nobody owns as a whole.
+    for (i, (name, id)) in globals.iter().enumerate() {
+        for (other, other_id) in globals.iter().skip(i + 1) {
+            assert_ne!(id, other_id, "{name} and {other} are both {id}",);
+        }
+    }
+}
+
 #[test]
 fn cancellation_round_trips() {
     let t = Tcancel {
