@@ -364,9 +364,9 @@ dependencies = [
 
 [[package]]
 name = "async-trait"
-version = "0.1.91"
+version = "0.1.92"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae36dc4177970ef04fde5178d3e2429882def40e57a451f919c098f72baa6cec"
+checksum = "82f6aeea286b8eb4dd3431a1be1b59d290ace00f5bfd8e2a159bc2a05e2c1667"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -953,9 +953,9 @@ dependencies = [
 
 [[package]]
 name = "convert_case"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "affbf0190ed2caf063e3def54ff444b449371d55c58e513a95ab98eca50adb49"
+checksum = "1af709f1f33454bf52eadfc8c78b3b9ef9cb26fb54d16dc9cd9a7299f899fd1b"
 dependencies = [
  "unicode-segmentation",
 ]
@@ -1819,7 +1819,7 @@ dependencies = [
 
 [[package]]
 name = "fuzz"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "jetstream",
  "libfuzzer-sys",
@@ -2070,9 +2070,9 @@ dependencies = [
 
 [[package]]
 name = "hashbrown"
-version = "0.17.0"
+version = "0.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f467dd6dccf739c208452f8014c75c18bb8301b050ad1cfb27153803edb0f51"
+checksum = "ed5909b6e89a2db4456e54cd5f673791d7eca6732202bbf2a9cc504fe2f9b84a"
 dependencies = [
  "allocator-api2",
  "equivalent",
@@ -2757,7 +2757,7 @@ checksum = "92ecc6618181def0457392ccd0ee51198e065e016d1d527a7ac1b6dc7c1f09d2"
 
 [[package]]
 name = "jetstream"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "askama 0.15.6",
  "async-trait",
@@ -2792,7 +2792,7 @@ dependencies = [
  "tokio",
  "tokio-rustls",
  "tower",
- "tower-http",
+ "tower-http 0.7.0",
  "tower-service",
  "tracing",
  "tracing-subscriber",
@@ -2802,7 +2802,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_9p"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "jetstream_libc",
  "jetstream_macros",
@@ -2814,11 +2814,11 @@ dependencies = [
 
 [[package]]
 name = "jetstream_codegen"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "argh",
  "cargo_metadata",
- "convert_case 0.11.0",
+ "convert_case 0.12.0",
  "proc-macro2",
  "quote",
  "sha256",
@@ -2829,7 +2829,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_error"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "askama 0.16.0",
  "axum",
@@ -2851,7 +2851,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_http"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "askama 0.16.0",
  "async-trait",
@@ -2885,7 +2885,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_interop"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "jetstream_macros",
  "jetstream_wireformat",
@@ -2894,7 +2894,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_iroh"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "async-trait",
  "futures",
@@ -2910,7 +2910,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_libc"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "cfg_aliases",
  "libc",
@@ -2918,9 +2918,9 @@ dependencies = [
 
 [[package]]
 name = "jetstream_macros"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
- "convert_case 0.11.0",
+ "convert_case 0.12.0",
  "futures",
  "ident_case",
  "insta",
@@ -2939,7 +2939,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_quic"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "askama 0.16.0",
  "async-trait",
@@ -2960,7 +2960,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_rpc"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -2991,7 +2991,7 @@ dependencies = [
 
 [[package]]
 name = "jetstream_ufs"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "argh",
  "jetstream_9p",
@@ -3005,12 +3005,12 @@ dependencies = [
 
 [[package]]
 name = "jetstream_wireformat"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "bytes",
  "futures",
  "getrandom 0.2.17",
- "hashbrown 0.17.0",
+ "hashbrown 0.17.1",
  "jetstream_macros",
  "js-sys",
  "libc",
@@ -3235,7 +3235,7 @@ version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8a860605968fce16869fd239cf4237a82f3ac470723415db603b0e8b6c8d4fb9"
 dependencies = [
- "hashbrown 0.17.0",
+ "hashbrown 0.17.1",
 ]
 
 [[package]]
@@ -3289,7 +3289,7 @@ checksum = "47e1ffaa40ddd1f3ed91f717a33c8c0ee23fff369e3aa8772b9605cc1d22f4c3"
 
 [[package]]
 name = "mdbook-changelog"
-version = "16.2.0"
+version = "16.3.0"
 dependencies = [
  "anyhow",
  "mdbook-core",
@@ -4767,7 +4767,7 @@ dependencies = [
  "tokio-rustls",
  "tokio-util",
  "tower",
- "tower-http",
+ "tower-http 0.6.11",
  "tower-service",
  "url",
  "wasm-bindgen",
@@ -6014,6 +6014,24 @@ checksum = "4cfcf7e2740e6fc6d4d688b4ef00650406bb94adf4731e43c096c3a19fe40840"
 dependencies = [
  "bitflags",
  "bytes",
+ "futures-util",
+ "http",
+ "http-body",
+ "pin-project-lite",
+ "tower",
+ "tower-layer",
+ "tower-service",
+ "url",
+]
+
+[[package]]
+name = "tower-http"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b11f75e912b0c2be01b63d8cf8057b8c3f97cf34abb3d431a3a4c8675498e233"
+dependencies = [
+ "bitflags",
+ "bytes",
  "futures-core",
  "futures-util",
  "http",
@@ -6027,10 +6045,8 @@ dependencies = [
  "pin-project-lite",
  "tokio",
  "tokio-util",
- "tower",
  "tower-layer",
  "tower-service",
- "url",
 ]
 
 [[package]]
