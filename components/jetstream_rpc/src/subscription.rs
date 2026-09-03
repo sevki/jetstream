@@ -293,6 +293,37 @@ where
     ))
 }
 
+/// End a served sequence when the dispatcher cancels it.
+///
+/// r[impl jetstream.subscription.cancel]
+/// The dispatcher's token is how a cancellation reaches the work, and a
+/// sequence that never observes it is a subscription that cannot be
+/// cancelled: the stream never ends, so `Out::Ended` never fires, so the
+/// tag is never released and the cancellation is never acknowledged.
+///
+/// Ending the stream is the signal, not a shortcut. `server::run` treats
+/// an end without a terminator as exactly this — a cancelled
+/// subscription — and answers the caller with `cancelled_terminator`.
+/// The truncation is what a cancelled subscription is supposed to look
+/// like.
+///
+/// Stopping the *work* is the drop that follows: `Served::poll_next`
+/// clears its inner stream the moment it ends, which drops whatever this
+/// wraps — a nested `RpcStream`, or a guard from `carrying` — and that
+/// drop is what cancels upstream. A sequence that has already finished
+/// is unaffected, because it has already yielded its last item.
+fn until_cancelled<T, D>(
+    items: ItemStream<T, D>,
+    cancel: CancellationToken,
+) -> ItemStream<T, D>
+where
+    T: Send + 'static,
+    D: Send + 'static,
+{
+    use futures::StreamExt as _;
+    Box::pin(items.take_until(cancel.cancelled_owned()))
+}
+
 /// What opening a subscription yields: the sequence, and whatever has to
 /// stay alive to cancel its producer.
 ///
@@ -513,19 +544,33 @@ where
             // subscription that opened onto its own producer — through
             // `establish` or a poll — carries the guard for it, and that
             // guard has to reach the returned stream.
-            Source::Open(items) => carrying(items, fallback),
+            //
+            // The token reaches it too. This arm used to ignore it, on
+            // the reasoning that a caller's stream has nothing to cancel
+            // — true only while the sequence is someone else's. A
+            // service that proxies or delegates a subscription serves
+            // one backed by real work, and there the token is the only
+            // thing that can stop it.
+            Source::Open(items) => {
+                until_cancelled(carrying(items, fallback), cancel)
+            }
             Source::Awaiting(produce) => produce(cancel),
             // A caller's subscription served as a producer's: it opens
-            // itself, and the dispatcher's token has nothing to cancel
-            // here.
-            //
-            // Opening may still hand back a guard of its own, for a
+            // itself, and may hand back a guard of its own for a
             // producer nested inside it.
+            //
+            // Cancellable for the same reason, and from the same point:
+            // the token ends the flattened sequence, whether the
+            // cancellation arrives while it is still opening or once it
+            // is running.
             Source::Opening(open) => {
                 use futures::StreamExt as _;
-                Box::pin(
-                    futures::stream::once(open)
-                        .flat_map(|(items, guard)| carrying(items, guard)),
+                until_cancelled(
+                    Box::pin(
+                        futures::stream::once(open)
+                            .flat_map(|(items, guard)| carrying(items, guard)),
+                    ),
+                    cancel,
                 )
             }
             Source::Taken => unreachable!("only set while being replaced"),
