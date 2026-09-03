@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c3f5b0a7.js";
+            window.path_to_searchindex_js = "searchindex-351597f6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1154eef0.js"></script>
+        <script src="toc-7168f768.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -280,6 +280,22 @@ let mut transport = client_builder::&lt;EchoChannel&gt;(addr)
 <pre><code>https://discovery.jetstream.rs
 </code></pre>
 <p>This allows nodes to find each other using their public keys without needing to exchange IP addresses directly.</p>
+<h2 id="sessions-and-lanes"><a class="header" href="#sessions-and-lanes">Sessions and Lanes</a></h2>
+<p><code>IrohSession</code> binds an iroh connection to the
+<a href="sessions.html">session model</a>, which is what lets a client open more than
+one stream: <code>client_builder</code> opens a single bidi stream at connect and
+recovers concurrency by tag, whereas a session opens a lane per call.</p>
+<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use jetstream_iroh::IrohSession;
+use jetstream_rpc::session::{IdentityKind, Session};
+
+let session = IrohSession::&lt;SquareChannel&gt;::new(connection);
+let lane = Session::&lt;SquareChannel&gt;::open_lane(&amp;session).await?;
+<span class="boring">}</span></code></pre>
+<p>iroh is the one transport reporting <code>IdentityKind::Key</code>: the peer’s public
+key <em>is</em> its address, so <code>requires_address()</code> is false and a caller need
+not carry placement information alongside the identity.</p>
 <h2 id="feature-flag"><a class="header" href="#feature-flag">Feature Flag</a></h2>
 <p>To use Iroh transport, enable the <code>iroh</code> feature in your <code>Cargo.toml</code>:</p>
 <pre><code class="language-toml">[dependencies]
@@ -291,7 +307,7 @@ jetstream = { version = "10", features = ["iroh"] }
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="0intro.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="subscriptions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
@@ -305,7 +321,7 @@ jetstream = { version = "10", features = ["iroh"] }
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="0intro.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="subscriptions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 

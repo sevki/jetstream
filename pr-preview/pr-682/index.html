@@ -36,10 +36,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-c3f5b0a7.js";
+            window.path_to_searchindex_js = "searchindex-351597f6.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-1154eef0.js"></script>
+        <script src="toc-7168f768.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -196,6 +196,7 @@
 <li><a href="https://docs.rs/jetstream_quic/latest/jetstream_quic/struct.Server.html#method.new_with_mtls">mTLS</a></li>
 <li><a href="https://docs.rs/jetstream_wireformat/latest/jetstream_wireformat/">Binary encoding</a></li>
 <li>Cross-platform (Linux, macOS, Windows, WebAssembly)</li>
+<li><a href="sessions.html">Sessions and lanes</a> — many independent streams per peer, or one multiplexed by tag</li>
 <li>Cross-language — <a href="typescript.html">TypeScript</a> and <a href="swift.html">Swift</a> clients with wire-compatible codegen</li>
 </ul>
 <p>For detailed API documentation, see the <a href="doc/jetstream/index.html">rustdoc documentation</a>.</p>
@@ -205,6 +206,8 @@
 <li><a href="https://github.com/sevki/jetstream/blob/main/examples/iroh_echo.rs">iroh_echo</a> - Echo service using iroh transport</li>
 <li><a href="https://github.com/sevki/jetstream/blob/main/examples/wasm_example.rs">wasm_example</a> - WebAssembly example</li>
 <li><a href="https://github.com/sevki/jetstream/blob/main/examples/wasm_example_bindings.rs">wasm_example_bindings</a> - WebAssembly bindings example</li>
+<li><a href="https://github.com/sevki/jetstream/blob/main/examples/session_lanes.rs">session_lanes</a> - Sessions and lanes in process, with no network under them</li>
+<li><a href="https://github.com/sevki/jetstream/blob/main/examples/quic_session.rs">quic_session</a> - The same model over an mTLS QUIC connection</li>
 </ul>
 
                     </main>
@@ -212,7 +215,7 @@
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
 
-                            <a rel="next prefetch" href="iroh.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="sessions.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -223,7 +226,7 @@
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
 
-                    <a rel="next prefetch" href="iroh.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="sessions.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
