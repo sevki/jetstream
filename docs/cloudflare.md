@@ -1,15 +1,14 @@
-# JetStream Cloudflare
+# JetStream Cloudflare (deprecated)
 
-Let's say you've defined a service like so
+Cloudflare Workers support was removed, along with the `jetstream_radar`
+example crate that this page walked through.
 
-```rs
-{{#include ../components/jetstream_radar/src/lib.rs}}
-```
-The glue code for running it on Cloudflare Workers is
-```rs
-{{#include ../components/jetstream_radar/src/server.rs}}
-```
-The code for connecting to it is as follows:
-```rs
-{{#include ../components/jetstream_radar/src/bin/client.rs}}
-```
+The page is kept because it was published under this path. Its three code
+listings used to be `{{#include}}` directives pointing into
+`components/jetstream_radar/`, which is no longer in the repository —
+mdbook logged an error for each one and rendered the page with three
+empty code blocks, so what stood here was not an example anyone could
+follow.
+
+For a current, working example of defining a service and connecting to it,
+see [the QUIC and iroh examples](https://github.com/sevki/jetstream/tree/main/examples).
