@@ -9,6 +9,19 @@ cargo-fuzz = true
 
 [dependencies]
 libfuzzer-sys = "0.4"
+# The `scenarios` target runs a whole session over a simulated network,
+# so it needs what `tests/scenario_body/mod.rs` needs. `jetstream_rpc`
+# is named directly for its `turmoil` feature: the simulation swaps the
+# transport underneath the session, and without that feature the body
+# does not compile here even though `jetstream` re-exports the rest.
+futures = "0.3.31"
+tokio = { version = "1.47.1", features = ["full"] }
+turmoil = "0.7.2"
+
+[dependencies.jetstream_rpc]
+version = "16.3.0"
+path = "../components/jetstream_rpc"
+features = ["turmoil"]
 
 [dependencies.jetstream]
 path = ".."
@@ -17,6 +30,13 @@ features = ["9p"]
 [[bin]]
 name = "wireformat"
 path = "fuzz_targets/wireformat.rs"
+test = false
+doc = false
+bench = false
+
+[[bin]]
+name = "scenarios"
+path = "fuzz_targets/scenarios.rs"
 test = false
 doc = false
 bench = false
