@@ -22,6 +22,28 @@ name: Fuzzing
 # `tests/fuzz_regressions.rs` replays every committed input on every pull
 # request, and `scenarios_hold_their_invariants` replays every committed
 # seed, so a bug found here cannot come back unnoticed.
+#
+# ## The `FUZZ_PAT` secret
+#
+# There is a fourth thing, and it is GitHub's rule rather than this
+# workflow's: **no workflow runs on anything `GITHUB_TOKEN` did.** A
+# branch this job pushes with the default token, and a pull request it
+# opens with it, get no checks — not pending ones, none — so the corpus
+# pull request could never go green and could never merge. That is the
+# rule that made the nightly look broken from the outside even on the
+# nights it worked perfectly.
+#
+# `FUZZ_PAT` is the way out: a token that is not `GITHUB_TOKEN` produces
+# events that do trigger workflows. Create a fine-grained personal access
+# token scoped to this repository with **Contents: read and write** and
+# **Pull requests: read and write**, and add it as the repository secret
+# `FUZZ_PAT`.
+#
+# Without it everything below still runs — the corpus still accumulates,
+# crashers are still committed and filed — but the pull requests sit
+# without checks and someone has to approve their workflows by hand every
+# time. The "Warn if the pull requests will have no checks" step says so
+# out loud rather than leaving it to be rediscovered.
 
 on:
   schedule:
@@ -94,6 +116,22 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # The token the later `git push` uses, and therefore the one
+          # that decides whether the pull requests this job opens get
+          # checks. See the note at the top of this file.
+          token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
+
+      # Tested as a boolean rather than by reading the secret, so the
+      # token itself never enters the environment just to be checked for
+      # emptiness.
+      - name: Warn if the pull requests will have no checks
+        env:
+          HAVE_PAT: ${{ secrets.FUZZ_PAT != '' }}
+        run: |
+          set -eu
+          if [ "${HAVE_PAT}" != "true" ]; then
+            echo "::warning::FUZZ_PAT is not set. This job will push and open pull requests as GITHUB_TOKEN, and GitHub runs no workflows on those — anything opened tonight sits with no checks until someone approves them by hand. See the note at the top of .github/workflows/fuzzing.yml."
+          fi
 
       - uses: dtolnay/rust-toolchain@nightly
 
@@ -218,8 +256,42 @@ jobs:
         if: steps.found.outputs.corpus == 'grew'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const head = process.env.CORPUS_BRANCH;
+
+            // Let it land on its own. This is the one pull request the
+            // fuzzer opens that is *supposed* to merge — the inputs do
+            // not break anything, and putting them in front of
+            // `tests/fuzz_regressions.rs` is the entire point of opening
+            // it. Auto-merge is not a bypass: GitHub still waits for
+            // every required check, so a corpus that did break something
+            // would sit here instead of landing.
+            //
+            // Nightly work that needs a human to click merge every
+            // morning is nightly work that stops getting merged.
+            const autoMerge = async (number, id) => {
+              try {
+                await github.graphql(
+                  `mutation($id: ID!) {
+                     enablePullRequestAutoMerge(
+                       input: { pullRequestId: $id, mergeMethod: SQUASH }
+                     ) { clientMutationId }
+                   }`,
+                  { id },
+                );
+                core.info(`auto-merge enabled on #${number}`);
+              } catch (e) {
+                // Auto-merge can be disabled for the repository, and
+                // GitHub refuses it on a pull request that is already
+                // mergeable with nothing to wait for. Neither is a
+                // reason to fail a night of fuzzing.
+                core.warning(
+                  `could not enable auto-merge on #${number}: ${e.message}`,
+                );
+              }
+            };
+
             // One long-lived pull request, updated by every push. Opening
             // a new one nightly is how a useful job becomes a muted one.
             const open = await github.rest.pulls.list({
@@ -229,15 +301,21 @@ jobs:
               state: 'open',
             });
             if (open.data.length > 0) {
+              // It may predate the token that lets checks run on it, so
+              // arm it now rather than only at creation.
               core.info(`already open: #${open.data[0].number}`);
+              await autoMerge(open.data[0].number, open.data[0].node_id);
               return;
             }
-            await github.rest.pulls.create({
+            const created = await github.rest.pulls.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
               head,
               base: context.payload.repository.default_branch,
-              draft: true,
+              // Deliberately not a draft, unlike every other pull
+              // request this workflow opens: GitHub refuses auto-merge
+              // on a draft, and this is the one that is meant to land.
+              draft: false,
               title: 'test(fuzz): corpus the nightly run has accumulated',
               body: [
                 `Coverage-increasing inputs the nightly fuzz targets have`,
@@ -250,8 +328,12 @@ jobs:
                 `puts them in front of \`tests/fuzz_regressions.rs\` on every pull`,
                 `request, and what keeps this branch from drifting far from the`,
                 `default branch.`,
+                ``,
+                `Auto-merge is on: it lands by itself once the checks`,
+                `agree, and waits if they do not.`,
               ].join('\n'),
             });
+            await autoMerge(created.data.number, created.data.node_id);
 
       - name: Commit the crasher on a branch
         id: reproducer
@@ -290,6 +372,7 @@ jobs:
         if: steps.reproducer.outputs.pushed == 'yes'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const target = '${{ matrix.target }}';
             const digest = '${{ steps.found.outputs.digest }}';
@@ -480,6 +563,7 @@ jobs:
         if: steps.reproducer.outputs.pushed == 'yes'
         uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const seed = '${{ steps.seed.outputs.seed }}';
             const branch = `fuzz/scenario-seed-${seed}`;
