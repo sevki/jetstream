@@ -8,7 +8,7 @@
 
 load("@rules_rust//cargo:defs.bzl", "cargo_toml_env_vars")
 
-load("@rules_rust//rust:defs.bzl", "rust_proc_macro")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 
 # buildifier: disable=bzl-visibility
 load("@rules_rust//crate_universe/private:selects.bzl", "selects")
@@ -20,18 +20,24 @@ cargo_toml_env_vars(
     src = "Cargo.toml",
 )
 
-rust_proc_macro(
-    name = "jetstream_macros",
+rust_library(
+    name = "jetstream_quic",
     deps = [
-        "@crates__convert_case-0.11.0//:convert_case",
-        "@crates__ident_case-1.0.1//:ident_case",
-        "@crates__jetstream_codegen-16.1.3//:jetstream_codegen",
-        "@crates__lazy_static-1.5.0//:lazy_static",
-        "@crates__prettyplease-0.3.0//:prettyplease",
-        "@crates__proc-macro2-1.0.107//:proc_macro2",
-        "@crates__quote-1.0.47//:quote",
-        "@crates__sha256-1.6.0//:sha256",
-        "@crates__syn-2.0.119//:syn",
+        "@crates__askama-0.16.0//:askama",
+        "@crates__bytes-1.12.1//:bytes",
+        "@crates__futures-0.3.34//:futures",
+        "@crates__h3-0.0.8//:h3",
+        "@crates__h3-quinn-0.0.10//:h3_quinn",
+        "@crates__http-1.5.0//:http",
+        "@crates__jetstream_rpc-16.1.3//:jetstream_rpc",
+        "@crates__quinn-0.11.11//:quinn",
+        "@crates__rustls-0.23.43//:rustls",
+        "@crates__tokio-1.53.1//:tokio",
+        "@crates__tokio-util-0.7.19//:tokio_util",
+        "@crates__tracing-0.1.44//:tracing",
+    ],
+    proc_macro_deps = [
+        "@crates__async-trait-0.1.92//:async_trait",
     ],
     compile_data = glob(
         allow_empty = True,
@@ -59,7 +65,7 @@ rust_proc_macro(
     ),
     tags = [
         "cargo-bazel",
-        "crate-name=jetstream_macros",
+        "crate-name=jetstream_quic",
         "manual",
         "noclippy",
         "norustfmt",
