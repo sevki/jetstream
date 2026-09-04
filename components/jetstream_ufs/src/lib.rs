@@ -5,6 +5,30 @@
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+//! A 9P file server over a local directory.
+//!
+//! # Linux only
+//!
+//! This crate reads directories with `getdents64` through a
+//! `LinuxDirent64` laid out over glibc's LFS64 aliases — `ino64_t` and
+//! `off64_t`, which do not exist on macOS — and handles ownership through
+//! `libc::uid_t`/`gid_t` and `std::os::unix`, neither of which Windows
+//! has. That is a property of what it does, not an accident: serving 9P
+//! from a real filesystem means using the host's directory-reading
+//! syscall.
+//!
+//! So the constraint is declared here rather than worked around in CI.
+//! Off Linux this crate is empty: `cargo build --workspace` succeeds
+//! everywhere, and the crate is simply absent rather than failing to
+//! compile with four errors about missing libc types. The alternative —
+//! excluding it from the build in a workflow file — puts the constraint
+//! somewhere the next person to run `cargo build --workspace` on a Mac
+//! will not find it.
+//!
+//! Making it portable is the other option, and a real one: it means
+//! replacing the `getdents64` path with something BSD and macOS have.
+//! Worth doing when someone wants a 9P filesystem server on macOS.
+#![cfg(target_os = "linux")]
 // Copyright (c) 2024, Sevki <s@sevki.io>
 // Copyright 2018 The ChromiumOS Authors
 // Use of this source code is governed by a BSD-style license that can be
