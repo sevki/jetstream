@@ -1821,8 +1821,12 @@ dependencies = [
 name = "fuzz"
 version = "16.3.0"
 dependencies = [
+ "futures",
  "jetstream",
+ "jetstream_rpc",
  "libfuzzer-sys",
+ "tokio",
+ "turmoil",
 ]
 
 [[package]]

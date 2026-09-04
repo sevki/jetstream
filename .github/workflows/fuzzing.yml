@@ -31,6 +31,9 @@ on:
       fuzz_minutes:
         description: "Minutes to fuzz the wireformat target"
         default: "60"
+      scenario_fuzz_minutes:
+        description: "Minutes to fuzz the scenarios target"
+        default: "60"
       scenario_seeds:
         description: "Scenario seeds to search"
         default: "20000"
@@ -45,11 +48,41 @@ env:
   # Where coverage-increasing inputs accumulate between nights. A branch
   # rather than an artifact: artifacts expire and no later run downloads
   # them, so what the fuzzer learned would be thrown away every midnight.
+  #
+  # One branch for both targets. They write disjoint directories, and a
+  # branch per target would mean a pull request per target for what is
+  # the same thing — inputs the fuzzer thought were worth keeping.
   CORPUS_BRANCH: fuzz/corpus-accumulated
 
 jobs:
-  # Coverage-guided fuzzing of the wire format decoder.
-  wireformat:
+  # Coverage-guided fuzzing, one entry per target.
+  #
+  # A matrix rather than a job each: everything below but the target name
+  # is the same work — restore the corpus, run bounded, keep what was
+  # found, file what broke — and a second copy of two hundred lines is a
+  # second copy to forget to fix.
+  #
+  # Serial on purpose. Both entries push the same corpus branch, and two
+  # jobs racing there means one push is rejected and that target's whole
+  # night is thrown away. An hour each is affordable for work nobody is
+  # waiting on.
+  fuzz:
+    name: ${{ matrix.target }}
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        include:
+          # The wire format decoder: bytes in, frame out.
+          - target: wireformat
+            minutes: ${{ github.event.inputs.fuzz_minutes || '60' }}
+          # A whole session over a simulated network. The invariants
+          # worth the most are about sequences — that a producer stops
+          # when its subscriber goes, that nothing follows an ending —
+          # and reaching those needs a server, a client and a network
+          # that can be cut, not a decode.
+          - target: scenarios
+            minutes: ${{ github.event.inputs.scenario_fuzz_minutes || '60' }}
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -77,9 +110,9 @@ jobs:
             # A named ref, because later steps fetch other branches and
             # FETCH_HEAD would no longer mean this one.
             git update-ref refs/corpus-base FETCH_HEAD
-            git checkout refs/corpus-base -- fuzz/corpus/wireformat
-            git reset -q -- fuzz/corpus/wireformat
-            echo "restored $(find fuzz/corpus/wireformat -type f | wc -l) inputs from ${CORPUS_BRANCH}"
+            git checkout refs/corpus-base -- fuzz/corpus/${{ matrix.target }}
+            git reset -q -- fuzz/corpus/${{ matrix.target }}
+            echo "restored $(find fuzz/corpus/${{ matrix.target }} -type f | wc -l) inputs from ${CORPUS_BRANCH}"
           else
             echo "no ${CORPUS_BRANCH} yet; starting from the committed seeds"
           fi
@@ -90,13 +123,15 @@ jobs:
       # apart from a build failure needs the next step's evidence.
       - name: Fuzz
         id: fuzz
+        env:
+          TARGET: ${{ matrix.target }}
         run: |
           set -uo pipefail
-          minutes="${{ github.event.inputs.fuzz_minutes || '60' }}"
-          find fuzz/corpus/wireformat -type f | sort | xargs -r sha256sum \
+          minutes="${{ matrix.minutes }}"
+          find fuzz/corpus/${{ matrix.target }} -type f | sort | xargs -r sha256sum \
             | sha256sum > /tmp/corpus-before
           status=0
-          cargo fuzz run wireformat -- -max_total_time=$(( minutes * 60 )) || status=$?
+          cargo fuzz run "${TARGET}" -- -max_total_time=$(( minutes * 60 )) || status=$?
           echo "status=${status}" >> "$GITHUB_OUTPUT"
           echo "cargo fuzz exited ${status}"
 
@@ -107,8 +142,8 @@ jobs:
           # Untracked files only: exactly what this run produced, rather
           # than a crasher some earlier fix already committed here.
           crash=$(comm -13 \
-                    <(git ls-files fuzz/artifacts/wireformat | sort) \
-                    <(find fuzz/artifacts/wireformat -type f | sort) \
+                    <(git ls-files fuzz/artifacts/${{ matrix.target }} | sort) \
+                    <(find fuzz/artifacts/${{ matrix.target }} -type f | sort) \
                   | head -1 || true)
           echo "crash=${crash}" >> "$GITHUB_OUTPUT"
           if [ -n "${crash}" ]; then
@@ -121,7 +156,7 @@ jobs:
           # Compared by content, not by git status: the restore step above
           # leaves the accumulated inputs looking "changed" to git, which
           # would report growth on a night that found nothing.
-          find fuzz/corpus/wireformat -type f | sort | xargs -r sha256sum \
+          find fuzz/corpus/${{ matrix.target }} -type f | sort | xargs -r sha256sum \
             | sha256sum > /tmp/corpus-after
           if ! cmp -s /tmp/corpus-before /tmp/corpus-after; then
             echo "corpus=grew" >> "$GITHUB_OUTPUT"
@@ -133,10 +168,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: wireformat-corpus
+          name: ${{ matrix.target }}-corpus
           path: |
-            fuzz/corpus/wireformat
-            fuzz/artifacts/wireformat
+            fuzz/corpus/${{ matrix.target }}
+            fuzz/artifacts/${{ matrix.target }}
           retention-days: 30
 
       # The durable half of the same thing: an artifact expires and no
@@ -151,27 +186,27 @@ jobs:
           # Build on whatever the branch already holds rather than
           # replacing it, so nothing that landed there is dropped.
           tmp=$(mktemp -d)
-          cp -r fuzz/corpus/wireformat/. "${tmp}/"
+          cp -r fuzz/corpus/${{ matrix.target }}/. "${tmp}/"
           # Out of the way before switching: these inputs are untracked
           # here but tracked on the corpus branch, and git refuses a
           # checkout that would overwrite untracked files. They come back
           # from `tmp` immediately below.
-          rm -rf fuzz/corpus/wireformat
+          rm -rf fuzz/corpus/${{ matrix.target }}
           if git rev-parse --verify refs/corpus-base >/dev/null 2>&1; then
             git checkout -B "${CORPUS_BRANCH}" refs/corpus-base
           else
             git checkout -B "${CORPUS_BRANCH}"
           fi
-          mkdir -p fuzz/corpus/wireformat
-          cp -r "${tmp}/." fuzz/corpus/wireformat/
-          git add -f fuzz/corpus/wireformat
+          mkdir -p fuzz/corpus/${{ matrix.target }}
+          cp -r "${tmp}/." fuzz/corpus/${{ matrix.target }}/
+          git add -f fuzz/corpus/${{ matrix.target }}
           if git diff --cached --quiet; then
             echo "nothing new once merged with the branch"
             exit 0
           fi
           git commit -m "test(fuzz): inputs the nightly run found interesting
 
-          Coverage-increasing inputs from the wireformat target, kept so
+          Coverage-increasing inputs from the ${{ matrix.target }} target, kept
           the next run starts where this one left off instead of
           rederiving the same coverage from the committed seeds."
           # No force: this branch is built on top of what it already has,
@@ -205,7 +240,7 @@ jobs:
               draft: true,
               title: 'test(fuzz): corpus the nightly run has accumulated',
               body: [
-                `Coverage-increasing inputs the nightly \`wireformat\` fuzzer has`,
+                `Coverage-increasing inputs the nightly fuzz targets have`,
                 `found. Each night restores this branch before fuzzing and pushes`,
                 `back what it learned, so the corpus compounds instead of being`,
                 `rederived from the committed seeds every midnight.`,
@@ -223,7 +258,7 @@ jobs:
         if: steps.found.outputs.crash != ''
         run: |
           set -euo pipefail
-          branch="fuzz/crash-wireformat-${{ steps.found.outputs.digest }}"
+          branch="fuzz/crash-${{ matrix.target }}-${{ steps.found.outputs.digest }}"
           # If the branch is already there, someone may have pushed a fix
           # onto it — which the pull request below explicitly invites, as
           # that is what makes checks run. Rediscovering the same input is
@@ -241,7 +276,7 @@ jobs:
           # reproducer carrying a corpus commit is not a minimal one.
           git checkout -b "${branch}" "${{ github.sha }}"
           git add -f "${{ steps.found.outputs.crash }}"
-          git commit -m "test(fuzz): a wireformat input that breaks the decoder
+          git commit -m "test(fuzz): a ${{ matrix.target }} input that breaks something
 
           Found by the nightly fuzzer. Committed so it is replayed by
           \`tests/fuzz_regressions.rs\` on every pull request: once this
@@ -256,11 +291,12 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
+            const target = '${{ matrix.target }}';
             const digest = '${{ steps.found.outputs.digest }}';
             const file = '${{ steps.found.outputs.crash }}';
             const hex = '${{ steps.found.outputs.hex }}';
-            const branch = `fuzz/crash-wireformat-${digest}`;
-            const marker = `fuzz-crash:${digest}`;
+            const branch = `fuzz/crash-${target}-${digest}`;
+            const marker = `fuzz-crash:${target}:${digest}`;
 
             // One issue per distinct input. A nightly job that opens the
             // same issue every night is a nightly job people mute.
@@ -273,7 +309,7 @@ jobs:
             }
 
             const body = [
-              `The nightly fuzzer found an input that breaks the \`wireformat\` target.`,
+              `The nightly fuzzer found an input that breaks the \`${target}\` target.`,
               ``,
               `\`${marker}\``,
               ``,
@@ -284,7 +320,7 @@ jobs:
               '```',
               ``,
               `The bytes are committed on \`${branch}\`, which carries them into`,
-              `\`fuzz/artifacts/wireformat/\`. \`tests/fuzz_regressions.rs\` replays`,
+              `\`fuzz/artifacts/${{ matrix.target }}/\`. \`tests/fuzz_regressions.rs\` replays`,
               `everything in there on every pull request, so merging that branch`,
               `**with the fix** is what stops this recurring. Merging it alone would`,
               `only make the tests red — the branch is a reproducer, not a fix.`,
@@ -292,7 +328,7 @@ jobs:
               `Reproduce locally:`,
               ``,
               '```',
-              `cargo +nightly fuzz run wireformat ${file}`,
+              `cargo +nightly fuzz run ${target} ${file}`,
               '```',
               ``,
               `---`,
@@ -302,7 +338,7 @@ jobs:
             const issue = await github.rest.issues.create({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              title: `Fuzz: wireformat decoder breaks on a ${digest} input`,
+              title: `Fuzz: the ${target} target breaks on a ${digest} input`,
               body,
             });
 
@@ -312,9 +348,9 @@ jobs:
               head: branch,
               base: context.payload.repository.default_branch,
               draft: true,
-              title: `test(fuzz): reproducer for the ${digest} wireformat crash`,
+              title: `test(fuzz): reproducer for the ${digest} ${target} crash`,
               body: [
-                `Carries the failing input into \`fuzz/artifacts/wireformat/\`, where`,
+                `Carries the failing input into \`fuzz/artifacts/${{ matrix.target }}/\`, where`,
                 `\`tests/fuzz_regressions.rs\` replays it.`,
                 ``,
                 `**Do not merge this on its own.** It is a reproducer: on its own it`,
@@ -343,10 +379,17 @@ jobs:
           echo "::error::cargo fuzz exited ${{ steps.fuzz.outputs.status }} without producing a crasher: no fuzzing result to file"
           exit 1
 
-  # The turmoil scenario search. No nightly toolchain and no cargo-fuzz:
-  # a failing scenario is one u64, so the corpus is a text file and the
+  # The turmoil seed walk. No nightly toolchain and no cargo-fuzz: a
+  # failing scenario is one u64, so the corpus is a text file and the
   # search is an ordinary test run for longer than CI can afford.
-  scenarios:
+  #
+  # It covers the same runner as the `scenarios` fuzz target above and
+  # does not duplicate it. This walks seeds in order — cheap, exactly
+  # reproducible from one number, and completely blind. That target
+  # steers by coverage, which finds the scenario nobody would have
+  # counted up to but reports it as a byte string rather than a seed.
+  seed-walk:
+    name: scenario seed walk
     runs-on: ubuntu-latest
     permissions:
       contents: write
