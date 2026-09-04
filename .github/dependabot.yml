@@ -1,21 +1,28 @@
 # Dependency updates.
 #
-# This used to be daily and ungrouped, which is a pull request per crate
-# per day: five open at once was normal, and the noise was the reason
-# nobody read any of them. Grouped and weekly, the same updates arrive as
-# one pull request that is worth looking at.
+# Two things make these stop asking for attention, and they only work
+# together. Grouping is what turns a pull request per crate into one
+# pull request per batch. Running daily is what keeps that batch small
+# enough to land on its own: a weekly cadence sounds quieter, but it
+# accumulates a week of bumps into something big enough to need reading,
+# and then it is a weekly chore rather than no chore.
 #
-# Majors are grouped separately rather than mixed in, because they are the
-# ones that actually need reading — a `syn` 2 to 3 bump sat open for days
-# failing four checks while patch bumps queued behind it.
 # `.github/workflows/dependabot-auto-merge.yml` turns on auto-merge for
-# the safe group and leaves majors for a person.
+# the minor-and-patch group, so the daily batch merges itself once CI
+# agrees and never reaches anyone's queue. Dependabot amends the open
+# group pull request rather than opening another, so "daily" is a
+# cadence, not a pile.
+#
+# Majors are grouped separately rather than mixed in, because they are
+# the ones that actually need reading, and because one of them can hold
+# up everything queued behind it — a `syn` 2 to 3 bump sat open for days
+# failing four checks. Auto-merge deliberately does not cover them.
 version: 2
 updates:
   - package-ecosystem: "cargo"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 5
     groups:
       cargo-minor-and-patch:
@@ -28,7 +35,7 @@ updates:
   - package-ecosystem: "bazel"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
     open-pull-requests-limit: 3
     groups:
       bazel:
