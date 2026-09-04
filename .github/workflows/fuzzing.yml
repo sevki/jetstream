@@ -34,6 +34,9 @@ on:
       scenario_seeds:
         description: "Scenario seeds to search"
         default: "20000"
+      scenario_start:
+        description: "First scenario seed (blank: derive a fresh window from the run number)"
+        default: ""
 
 permissions:
   contents: read
@@ -356,12 +359,31 @@ jobs:
 
       - uses: dtolnay/rust-toolchain@stable
 
+      # The seed window has to move. Without a start the test searches
+      # 0..seeds, so every night searched the same 20000 scenarios and
+      # could not find anything the first such night had not already
+      # found — 16 minutes a night re-running a fixed test suite.
+      #
+      # The run number tiles the space: consecutive runs get adjacent,
+      # non-overlapping windows, and nothing needs storing between runs
+      # to know where the last one stopped. A hand-dispatched run with a
+      # different count can overlap or skip a little, which is fine — a
+      # dispatch is a deliberate deep dive, not part of the tiling.
       - name: Search
         id: search
         env:
           JETSTREAM_SCENARIO_SEEDS: ${{ github.event.inputs.scenario_seeds || '20000' }}
+          SCENARIO_START_INPUT: ${{ github.event.inputs.scenario_start }}
+          RUN_NUMBER: ${{ github.run_number }}
         run: |
           set -uo pipefail
+          if [ -n "${SCENARIO_START_INPUT}" ]; then
+            JETSTREAM_SCENARIO_START="${SCENARIO_START_INPUT}"
+          else
+            JETSTREAM_SCENARIO_START=$(( RUN_NUMBER * JETSTREAM_SCENARIO_SEEDS ))
+          fi
+          export JETSTREAM_SCENARIO_START
+          echo "searching seeds ${JETSTREAM_SCENARIO_START}..$(( JETSTREAM_SCENARIO_START + JETSTREAM_SCENARIO_SEEDS ))"
           status=0
           cargo test --test turmoil_scenarios --all-features -- --nocapture \
             2>&1 | tee /tmp/scenarios.log || status=$?
