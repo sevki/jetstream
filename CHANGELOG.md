@@ -1,6 +1,14 @@
 # Changelog
 
 
+## [16.3.1](https://github.com/sevki/jetstream/compare/v16.3.0...v16.3.1) (2026-09-08)
+
+
+### Bug Fixes
+
+* **ufs:** declare that jetstream_ufs is Linux-only ([31a5166](https://github.com/sevki/jetstream/commit/31a5166ae167e4af7994521fcf012d1f4fc03505))
+* **ufs:** declare that jetstream_ufs is Linux-only ([58da1ce](https://github.com/sevki/jetstream/commit/58da1ceb40747a89d20f514662ce41c7e6aef681))
+
 ## [16.3.0](https://github.com/sevki/jetstream/compare/v16.2.0...v16.3.0) (2026-09-02)
 
 
