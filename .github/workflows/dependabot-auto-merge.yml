@@ -1,0 +1,44 @@
+name: Dependabot auto-merge
+
+# Turn on auto-merge for the updates that cannot change an API, so they
+# land on their own once CI agrees and stop asking for attention.
+#
+# Auto-merge is a request, not a bypass: GitHub still waits for every
+# required check, so a bump that breaks the build stays open instead of
+# merging. That is the whole safety argument for this workflow, and it is
+# also why enabling it on a *major* would be wrong — a major that happens
+# to compile can still change behaviour for anyone depending on these
+# crates, and that deserves a person.
+
+on: pull_request_target
+
+permissions:
+  contents: read
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]'
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: What kind of update is this
+        id: meta
+        uses: dependabot/fetch-metadata@v2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Enable auto-merge for patch and minor updates
+        if: |
+          steps.meta.outputs.update-type == 'version-update:semver-patch' ||
+          steps.meta.outputs.update-type == 'version-update:semver-minor'
+        run: gh pr merge --auto --squash "$PR_URL"
+        env:
+          PR_URL: ${{ github.event.pull_request.html_url }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Say why a major was left alone
+        if: steps.meta.outputs.update-type == 'version-update:semver-major'
+        run: |
+          echo "::notice::${{ steps.meta.outputs.dependency-names }} is a major bump; auto-merge not enabled, it needs a look."
