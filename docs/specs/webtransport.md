@@ -23,6 +23,9 @@ The WebTransport CONNECT request URI path identifies the service protocol versio
 r[jetstream.webtransport.handler-trait]
 The `WebTransportHandler` trait defines `handle_session(&self, session, ctx) -> Result<()>`. A blanket implementation is provided for any `T: Server` from `jetstream_rpc`, so any generated service server automatically becomes a WebTransport handler.
 
+r[jetstream.webtransport.handler.context]
+`H3Service` implements `ProtocolHandler::accept(&self, ctx, conn)`, but the `Context` it is handed describes the QUIC connection, not the WebTransport session. A single connection carries many CONNECT requests, and each one may authenticate differently, so `H3Service` MUST build a fresh `Context` per session rather than forwarding the connection's: the remote address comes from the connection (`RemoteAddr::IpAddr`), and the peer identity from that request's own credentials — the `?cert=<base64 DER>` query parameter, verified against the configured client-certificate verifier when one is present, and `None` when there are no credentials. That per-session `Context` is what reaches `handler.handle_session(session, ctx)`.
+
 ## Bidirectional Stream RPC
 
 r[jetstream.webtransport.bidi]
