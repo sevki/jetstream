@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["generate_swift_enum","generate_swift_file","generate_swift_struct","rust_type_to_swift"],"struct":["SwiftConfig"]};
