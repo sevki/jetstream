@@ -5,12 +5,29 @@ use crate::Framer;
 pub type Error = jetstream_error::Error;
 
 pub(crate) const TLERROR: u8 = 6;
-const TERROR: u8 = 106;
 
 pub const RLERROR: u8 = TLERROR + 1;
-const RERROR: u8 = TERROR + 1;
 
 pub const RJETSTREAMERROR: u8 = TLERROR - 1;
+
+/// r[impl jetstream.error.v2.wireformat.error-frame]
+/// A **global** id, below `MESSAGE_ID_START`, like every other id in this
+/// frame.
+///
+/// It used to be 107 — 9P2000's `Rerror`, with a `TERROR = 106` beside it
+/// that named a request 9P never had and that nothing here ever emitted.
+/// `#[service]` allocates per-method ids as `MESSAGE_ID_START + 2 * index`
+/// from 102, so 106 and 107 *are* the request and response of method
+/// index 2: every protocol with three or more methods had this frame
+/// sitting in the middle of its own range.
+///
+/// Harmless only because one code path did not exist. Nothing constructs
+/// `ErrorFrame::RError`, so no encoder has ever written 107 — which is
+/// also why moving it costs nothing: there is no peer speaking the old
+/// id to break compatibility with. Its siblings were already down here
+/// (`RJETSTREAMERROR` 5, `RLERROR` 7), so this is the outlier rejoining
+/// them rather than a new convention.
+pub const RERROR: u8 = 11;
 
 #[derive(Debug, JetStreamWireFormat)]
 pub struct Rlerror {

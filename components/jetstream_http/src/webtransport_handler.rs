@@ -1,12 +1,10 @@
-use std::sync::Arc;
-
 use bytes::Bytes;
 use futures::{SinkExt, StreamExt};
 use h3::quic;
 use h3_webtransport::server::WebTransportSession;
 use jetstream_rpc::{
     server::{Server, ServerCodec},
-    Error, Frame, Router as RpcRouter,
+    Error, Frame,
 };
 use tokio_util::codec::{FramedRead, FramedWrite};
 
@@ -53,9 +51,3 @@ where
 // r[impl jetstream.webtransport.lifecycle]
 // r[impl jetstream.webtransport.errors]
 // r[impl jetstream.webtransport.errors.session]
-// r[impl jetstream.webtransport.router]
-// r[impl jetstream.webtransport.router.per-stream-version]
-/// A WebTransport handler that uses an `RpcRouter` for per-stream
-/// version-based protocol dispatch. Each bidi stream performs its own
-/// Tversion/Rversion negotiation and is routed to the appropriate handler.
-pub struct RouterHandler(pub Arc<RpcRouter>);
