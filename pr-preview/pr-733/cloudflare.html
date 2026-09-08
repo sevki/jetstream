@@ -36,7 +36,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-351597f6.js";
+            window.path_to_searchindex_js = "searchindex-6ee42f99.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7168f768.js"></script>
@@ -175,16 +175,17 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="jetstream-cloudflare"><a class="header" href="#jetstream-cloudflare">JetStream Cloudflare</a></h1>
-<p>Let’s say you’ve defined a service like so</p>
-<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/lib.rs}}
-</code></pre>
-<p>The glue code for running it on Cloudflare Workers is</p>
-<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/server.rs}}
-</code></pre>
-<p>The code for connecting to it is as follows:</p>
-<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/bin/client.rs}}
-</code></pre>
+                        <h1 id="jetstream-cloudflare-deprecated"><a class="header" href="#jetstream-cloudflare-deprecated">JetStream Cloudflare (deprecated)</a></h1>
+<p>Cloudflare Workers support was removed, along with the <code>jetstream_radar</code>
+example crate that this page walked through.</p>
+<p>The page is kept because it was published under this path. Its three code
+listings used to be <code>{{#include}}</code> directives pointing into
+<code>components/jetstream_radar/</code>, which is no longer in the repository —
+mdbook logged an error for each one and rendered the page with three
+empty code blocks, so what stood here was not an example anyone could
+follow.</p>
+<p>For a current, working example of defining a service and connecting to it,
+see <a href="https://github.com/sevki/jetstream/tree/main/examples">the QUIC and iroh examples</a>.</p>
 
                     </main>
 

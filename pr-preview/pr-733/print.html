@@ -37,7 +37,7 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-351597f6.js";
+            window.path_to_searchindex_js = "searchindex-6ee42f99.js";
         </script>
         <!-- Start loading toc.js asap -->
         <script src="toc-7168f768.js"></script>
@@ -2701,7 +2701,6 @@ let response = try await mux.rpc(request)
 <li><a href="#-jetstream_libc"><strong>jetstream_libc</strong></a> - libc bindings</li>
 <li><a href="#-jetstream_macros"><strong>jetstream_macros</strong></a> - Procedural macros</li>
 <li><a href="#-jetstream_quic"><strong>jetstream_quic</strong></a> - QUIC/HTTP3 transport</li>
-<li><a href="doc/jetstream_radar/index.html"><strong>jetstream_radar</strong></a> - Radar functionality</li>
 <li><a href="#-jetstream_rpc"><strong>jetstream_rpc</strong></a> - RPC framework core</li>
 <li><a href="#-jetstream_ufs"><strong>jetstream_ufs</strong></a> - UFS (Unix File System) implementation</li>
 <li><a href="doc/jetstream_websocket/index.html"><strong>jetstream_websocket</strong></a> - WebSocket transport</li>
@@ -4017,16 +4016,17 @@ let response = try await mux.rpc(request)
 <li>release please (<a href="https://github.com/sevki/jetstream/commit/044cceb76e544e8c315b6e1d33a321795280e847">044cceb</a>)</li>
 </ul>
 <div style="break-before: page; page-break-before: always;"></div>
-<h1 id="jetstream-cloudflare"><a class="header" href="#jetstream-cloudflare">JetStream Cloudflare</a></h1>
-<p>Let’s say you’ve defined a service like so</p>
-<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/lib.rs}}
-</code></pre>
-<p>The glue code for running it on Cloudflare Workers is</p>
-<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/server.rs}}
-</code></pre>
-<p>The code for connecting to it is as follows:</p>
-<pre><code class="language-rs">{{#include ../components/jetstream_radar/src/bin/client.rs}}
-</code></pre>
+<h1 id="jetstream-cloudflare-deprecated"><a class="header" href="#jetstream-cloudflare-deprecated">JetStream Cloudflare (deprecated)</a></h1>
+<p>Cloudflare Workers support was removed, along with the <code>jetstream_radar</code>
+example crate that this page walked through.</p>
+<p>The page is kept because it was published under this path. Its three code
+listings used to be <code>{{#include}}</code> directives pointing into
+<code>components/jetstream_radar/</code>, which is no longer in the repository —
+mdbook logged an error for each one and rendered the page with three
+empty code blocks, so what stood here was not an example anyone could
+follow.</p>
+<p>For a current, working example of defining a service and connecting to it,
+see <a href="https://github.com/sevki/jetstream/tree/main/examples">the QUIC and iroh examples</a>.</p>
 
                     </main>
 
