@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["open_upstream_bidi"],"struct":["RouterHandler"]};
+window.SIDEBAR_ITEMS = {"fn":["open_upstream_bidi"]};
