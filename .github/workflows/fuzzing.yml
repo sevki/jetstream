@@ -23,7 +23,7 @@ name: Fuzzing
 # request, and `scenarios_hold_their_invariants` replays every committed
 # seed, so a bug found here cannot come back unnoticed.
 #
-# ## The `FUZZ_PAT` secret
+# ## Why this pushes as `BOT_PAT`
 #
 # There is a fourth thing, and it is GitHub's rule rather than this
 # workflow's: **no workflow runs on anything `GITHUB_TOKEN` did.** A
@@ -33,17 +33,17 @@ name: Fuzzing
 # rule that made the nightly look broken from the outside even on the
 # nights it worked perfectly.
 #
-# `FUZZ_PAT` is the way out: a token that is not `GITHUB_TOKEN` produces
-# events that do trigger workflows. Create a fine-grained personal access
-# token scoped to this repository with **Contents: read and write** and
-# **Pull requests: read and write**, and add it as the repository secret
-# `FUZZ_PAT`.
+# `BOT_PAT` is the way out, and it already exists: `release-please.yml`
+# pushes and opens its release pull requests with it for exactly this
+# reason. Reusing it rather than adding a second token keeps one secret
+# to rotate instead of two.
 #
-# Without it everything below still runs — the corpus still accumulates,
-# crashers are still committed and filed — but the pull requests sit
-# without checks and someone has to approve their workflows by hand every
-# time. The "Warn if the pull requests will have no checks" step says so
-# out loud rather than leaving it to be rediscovered.
+# The fallback to `GITHUB_TOKEN` is a safety net, not the expected state:
+# if the secret is ever missing or unreadable the corpus still
+# accumulates and crashers are still committed and filed, but the pull
+# requests sit without checks. The "Warn if the pull requests will have
+# no checks" step says so out loud rather than leaving it to be
+# rediscovered.
 
 on:
   schedule:
@@ -119,18 +119,18 @@ jobs:
           # The token the later `git push` uses, and therefore the one
           # that decides whether the pull requests this job opens get
           # checks. See the note at the top of this file.
-          token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
 
       # Tested as a boolean rather than by reading the secret, so the
       # token itself never enters the environment just to be checked for
       # emptiness.
       - name: Warn if the pull requests will have no checks
         env:
-          HAVE_PAT: ${{ secrets.FUZZ_PAT != '' }}
+          HAVE_PAT: ${{ secrets.BOT_PAT != '' }}
         run: |
           set -eu
           if [ "${HAVE_PAT}" != "true" ]; then
-            echo "::warning::FUZZ_PAT is not set. This job will push and open pull requests as GITHUB_TOKEN, and GitHub runs no workflows on those — anything opened tonight sits with no checks until someone approves them by hand. See the note at the top of .github/workflows/fuzzing.yml."
+            echo "::warning::BOT_PAT is not readable here, so this job will push and open pull requests as GITHUB_TOKEN. GitHub runs no workflows on those — anything opened tonight sits with no checks until someone approves them by hand. See the note at the top of .github/workflows/fuzzing.yml."
           fi
 
       - uses: dtolnay/rust-toolchain@nightly
@@ -256,7 +256,7 @@ jobs:
         if: steps.found.outputs.corpus == 'grew'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const head = process.env.CORPUS_BRANCH;
 
@@ -372,7 +372,7 @@ jobs:
         if: steps.reproducer.outputs.pushed == 'yes'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const target = '${{ matrix.target }}';
             const digest = '${{ steps.found.outputs.digest }}';
@@ -563,7 +563,7 @@ jobs:
         if: steps.reproducer.outputs.pushed == 'yes'
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.FUZZ_PAT || secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.BOT_PAT || secrets.GITHUB_TOKEN }}
           script: |
             const seed = '${{ steps.seed.outputs.seed }}';
             const branch = `fuzz/scenario-seed-${seed}`;
