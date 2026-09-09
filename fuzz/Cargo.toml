@@ -1,6 +1,6 @@
 [package]
 name = "fuzz"
-version = "16.3.0"
+version = "16.3.1"
 publish = false
 edition = "2021"
 
@@ -19,7 +19,7 @@ tokio = { version = "1.47.1", features = ["full"] }
 turmoil = "0.7.2"
 
 [dependencies.jetstream_rpc]
-version = "16.3.0"
+version = "16.3.1"
 path = "../components/jetstream_rpc"
 features = ["turmoil"]
 
