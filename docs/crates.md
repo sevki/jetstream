@@ -10,7 +10,6 @@ The main crates include:
 - [**jetstream_libc**](doc/jetstream_libc/index.html) - libc bindings
 - [**jetstream_macros**](doc/jetstream_macros/index.html) - Procedural macros
 - [**jetstream_quic**](doc/jetstream_quic/index.html) - QUIC/HTTP3 transport
-- [**jetstream_radar**](doc/jetstream_radar/index.html) - Radar functionality
 - [**jetstream_rpc**](doc/jetstream_rpc/index.html) - RPC framework core
 - [**jetstream_ufs**](doc/jetstream_ufs/index.html) - UFS (Unix File System) implementation
 - [**jetstream_websocket**](doc/jetstream_websocket/index.html) - WebSocket transport

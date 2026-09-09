@@ -23,6 +23,11 @@ use std::{fs, path::Path};
 mod fuzz_body;
 use fuzz_body as body;
 
+// The same again for the scenario target: one runner, one oracle, two
+// callers. `turmoil_scenarios.rs` mounts this module too.
+#[path = "scenario_body/mod.rs"]
+mod scenario_body;
+
 /// Every file directly inside `dir`, ignoring the housekeeping ones.
 fn inputs(dir: &Path) -> Vec<(String, Vec<u8>)> {
     let Ok(entries) = fs::read_dir(dir) else {
@@ -74,6 +79,46 @@ fn every_committed_fuzz_input_still_survives() {
     );
 }
 
+/// The same for the `scenarios` target.
+///
+/// Separate from the wireformat replay because the cost is different by
+/// three orders of magnitude: one wireformat input is a decode, one
+/// scenario input is a whole simulated session at roughly 60ms. That is
+/// affordable while this corpus is small, and it is *supposed* to be
+/// small — the corpus that matters for a scenario is the minimised one.
+/// If this test ever becomes the slow part of a pull request, the answer
+/// is `cargo fuzz cmin scenarios`, not a partial replay: replaying some
+/// of the corpus would go green while a regression sat in the rest.
+#[test]
+fn every_committed_scenario_still_holds() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let corpus = inputs(&root.join("fuzz/corpus/scenarios"));
+    let crashers = inputs(&root.join("fuzz/artifacts/scenarios"));
+
+    for (name, data) in corpus.iter().chain(crashers.iter()) {
+        // A committed input that no longer decodes to a scenario is a
+        // silent hole in the corpus, not a pass: the mapping from bytes
+        // to actions changed and this input now exercises nothing.
+        let scenario = scenario_body::Scenario::from_bytes(data)
+            .unwrap_or_else(|| {
+                panic!(
+                    "committed scenario input `{name}` no longer describes \
+                     a scenario; the byte mapping changed underneath it",
+                )
+            });
+        let seed = scenario.seed;
+        if let Err(e) = scenario_body::run_scenario(scenario) {
+            panic!("committed scenario `{name}` (seed {seed}) failed: {e}");
+        }
+    }
+
+    eprintln!(
+        "replayed {} scenario corpus inputs and {} crashers",
+        corpus.len(),
+        crashers.len(),
+    );
+}
+
 /// The corpus directories must exist, so the nightly run has somewhere
 /// to accumulate into and this replay has somewhere to look.
 ///
@@ -95,7 +140,12 @@ fn the_corpus_directories_are_present() {
         eprintln!("no `fuzz/` tree: packaged crate, nothing to guard");
         return;
     }
-    for dir in ["fuzz/corpus/wireformat", "fuzz/artifacts/wireformat"] {
+    for dir in [
+        "fuzz/corpus/wireformat",
+        "fuzz/artifacts/wireformat",
+        "fuzz/corpus/scenarios",
+        "fuzz/artifacts/scenarios",
+    ] {
         assert!(
             root.join(dir).is_dir(),
             "{dir} is missing: the nightly fuzzer has nowhere to keep \
