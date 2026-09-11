@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["parse_service_trait","parse_services_from_file"],"struct":["MethodDef","ParamDef","ServiceDef"]};
