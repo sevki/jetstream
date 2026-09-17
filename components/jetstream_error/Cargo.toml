@@ -26,6 +26,7 @@ tracing-subscriber = "0.3.23"
 
 [dev-dependencies]
 insta = "1.47.2"
+styled-str = "0.5.0"
 term-transcript = "0.5.0"
 
 [features]

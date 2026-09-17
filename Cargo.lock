@@ -2876,6 +2876,7 @@ dependencies = [
  "quinn",
  "source-map",
  "string-interner",
+ "styled-str",
  "term-transcript 0.5.0",
  "thiserror 2.0.20",
  "tracing",
