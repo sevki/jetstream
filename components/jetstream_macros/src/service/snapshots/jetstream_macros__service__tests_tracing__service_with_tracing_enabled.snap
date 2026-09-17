@@ -262,7 +262,7 @@ pub mod echo_protocol {
     }
     impl Echo for EchoChannel {
         #[tracing::instrument(skip(self))]
-        async fn ping(&mut self, message: String) -> Result<String> {
+        async fn ping(&self, message: String) -> Result<String> {
             let req = Tmessage::Ping(Tping { message });
             let context = Context::default();
             let rframe = self.mux.rpc(context, req).await.await?;
