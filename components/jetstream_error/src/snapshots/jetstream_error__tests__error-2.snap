@@ -1,25 +1,33 @@
 ---
 source: components/jetstream_error/src/tests.rs
-expression: svg_content
+expression: svg_data
 ---
-<!-- Created with term-transcript v0.4.0 (https://github.com/slowli/term-transcript) -->
-<svg viewBox="0 0 720 642" width="720" height="642" xmlns="http://www.w3.org/2000/svg">
+<!-- Created with term-transcript v0.5.0 (https://github.com/slowli/term-transcript) -->
+<svg viewBox="0 0 720 601.2" width="720" height="601.2" xmlns="http://www.w3.org/2000/svg">
   <style>
     .container {
       font: 14px SFMono-Regular, Consolas, Liberation Mono, Menlo, monospace;
-      line-height: 18px;
+      line-height: 16.8px;
     }
-    .input,.output,.output-bg {
-      white-space: pre;
-    }
+    text { white-space: pre; text-decoration-thickness: 1px; }
     .input-bg { fill: #fff; fill-opacity: 0.1; }
-    .output-bg { user-select: none; text-rendering: geometricPrecision; stroke-width: 0.1; }
-    .bold,.prompt { font-weight: 600; }
+    .input-hidden { display: none; }
+    .output-bg { stroke-width: 0.5; }
+    .output-sep { stroke: #e9e9f4; stroke-width: 1; stroke-opacity: 0.35; }
+    .bold,.prompt { font-weight: bold; }
     .italic { font-style: italic; }
-    .underline { text-decoration: underline; }
+    .underline { text-decoration-line: underline; }
+    .strike { text-decoration-line: line-through; }
+    .underline.strike { text-decoration-line: underline line-through; }
     .dimmed { fill-opacity: 0.7; }
-    .hard-br { font-size: 16px; fill-opacity: 0.8; user-select: none; }
-    .fg0 { fill: #282936; } .output-bg .fg0 { stroke: #282936; }
+    .concealed { fill-opacity: 0 !important; }
+    @keyframes blink {
+      0% { fill-opacity: 1; stroke-opacity: 1; }
+      100% { fill-opacity: 0.7; stroke-opacity: 0.7; }
+    }
+    .blink { animation: 2s steps(2, jump-none) 0s infinite blink; }
+    .hard-br { font-weight: bold; fill-opacity: 0.6; user-select: none; }
+    .fg0,.inv.fg-none { fill: #282936; } .output-bg .fg0 { stroke: #282936; }
     .fg1 { fill: #ea51b2; } .output-bg .fg1 { stroke: #ea51b2; }
     .fg2 { fill: #ebff87; } .output-bg .fg2 { stroke: #ebff87; }
     .fg3 { fill: #00f769; } .output-bg .fg3 { stroke: #00f769; }
@@ -36,43 +44,41 @@ expression: svg_content
     .fg14 { fill: #00f769; } .output-bg .fg14 { stroke: #00f769; }
     .fg15 { fill: #f7f7fb; } .output-bg .fg15 { stroke: #f7f7fb; }
   </style>
-  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #282936;" />
-    <svg x="0" y="10" width="720" height="622" viewBox="0 0 720 622">
-      <g class="input-bg"><rect x="0" y="0" width="100%" height="22"></rect></g>
-      <text class="container fg7"><tspan xml:space="preserve" x="10" y="16" class="input"><tspan x="10" y="16"><tspan class="prompt">$</tspan> # do some rpc
-</tspan></tspan><tspan xml:space="preserve" x="10" y="42" class="output"><tspan class="fg1">server::validation::E001</tspan>
-</tspan><tspan xml:space="preserve" x="10" y="60" class="output">
-</tspan><tspan xml:space="preserve" x="10" y="78" class="output">  <tspan class="fg1">×</tspan> [server::validation::E001] Server-side validation failed
-</tspan><tspan xml:space="preserve" x="10" y="96" class="output">
-</tspan><tspan xml:space="preserve" x="10" y="114" class="output">Error: 
-</tspan><tspan xml:space="preserve" x="10" y="132" class="output">  <tspan class="fg1">×</tspan> validate_request
-</tspan><tspan xml:space="preserve" x="10" y="150" class="output">   ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:3:4</tspan>]
-</tspan><tspan xml:space="preserve" x="10" y="168" class="output"> <tspan class="dimmed">2</tspan> │ #[tracing::instrument]
-</tspan><tspan xml:space="preserve" x="10" y="186" class="output"> <tspan class="dimmed">3</tspan> │ fn validate_request(user_id: u64, email: &amp;str) -&gt; super::Error {
-</tspan><tspan xml:space="preserve" x="10" y="204" class="output">   · <tspan class="bold fg5">   ────────┬───────</tspan>
-</tspan><tspan xml:space="preserve" x="10" y="222" class="output">   ·            <tspan class="bold fg5">╰── validate_request(user_id: 42, email: "user@example.com")</tspan>
-</tspan><tspan xml:space="preserve" x="10" y="240" class="output"> <tspan class="dimmed">4</tspan> │     super::Error::with_code(
-</tspan><tspan xml:space="preserve" x="10" y="258" class="output">   ╰────
-</tspan><tspan xml:space="preserve" x="10" y="276" class="output">
-</tspan><tspan xml:space="preserve" x="10" y="294" class="output">Error: 
-</tspan><tspan xml:space="preserve" x="10" y="312" class="output">  <tspan class="fg1">×</tspan> handle_request
-</tspan><tspan xml:space="preserve" x="10" y="330" class="output">    ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:12:4</tspan>]
-</tspan><tspan xml:space="preserve" x="10" y="348" class="output"> <tspan class="dimmed">11</tspan> │ #[tracing::instrument]
-</tspan><tspan xml:space="preserve" x="10" y="366" class="output"> <tspan class="dimmed">12</tspan> │ fn handle_request(endpoint: &amp;str) -&gt; super::Error {
-</tspan><tspan xml:space="preserve" x="10" y="384" class="output">    · <tspan class="bold fg5">   ───────┬──────</tspan>
-</tspan><tspan xml:space="preserve" x="10" y="402" class="output">    ·           <tspan class="bold fg5">╰── handle_request(endpoint: "/api/v1/submit")</tspan>
-</tspan><tspan xml:space="preserve" x="10" y="420" class="output"> <tspan class="dimmed">13</tspan> │     validate_request(42, "user@example.com")
-</tspan><tspan xml:space="preserve" x="10" y="438" class="output">    ╰────
-</tspan><tspan xml:space="preserve" x="10" y="456" class="output">
-</tspan><tspan xml:space="preserve" x="10" y="474" class="output">Error: 
-</tspan><tspan xml:space="preserve" x="10" y="492" class="output">  <tspan class="fg1">×</tspan> make_error
-</tspan><tspan xml:space="preserve" x="10" y="510" class="output">    ╭─[<tspan class="bold underline fg6">components/jetstream_error/src/tests.rs:18:4</tspan>]
-</tspan><tspan xml:space="preserve" x="10" y="528" class="output"> <tspan class="dimmed">17</tspan> │ #[tracing::instrument]
-</tspan><tspan xml:space="preserve" x="10" y="546" class="output"> <tspan class="dimmed">18</tspan> │ fn make_error() -&gt; super::Error {
-</tspan><tspan xml:space="preserve" x="10" y="564" class="output">    · <tspan class="bold fg5">   ─────┬────</tspan>
-</tspan><tspan xml:space="preserve" x="10" y="582" class="output">    ·         <tspan class="bold fg5">╰── make_error()</tspan>
-</tspan><tspan xml:space="preserve" x="10" y="600" class="output"> <tspan class="dimmed">19</tspan> │     handle_request("/api/v1/submit")
-</tspan><tspan xml:space="preserve" x="10" y="618" class="output">    ╰────
-</tspan></text>
-    </svg>
+  <rect width="100%" height="100%" y="0" rx="4.5" style="fill: #282936;"/>
+    <svg x="0" y="10" width="720" height="581.2" viewBox="0 0 720 581.2">
+<g class="input-bg"><rect x="0" y="0" width="100%" height="20.8"></rect></g><g class="container fg7"><g class="input"><g transform="translate(10 14.9)"><text class="prompt" textLength="8">$</text><text x="8" textLength="112"> # do some rpc</text><text>
+</text></g></g><g class="output"><g transform="translate(10 39.7)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="192" class="fg1">server::validation::E001</text><text>
+</text></g><text>
+</text><g transform="translate(10 73.3)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="16">  </text><text x="16" class="fg1">×</text><text x="24" textLength="456"> [server::validation::E001] Server-side validation failed</text><text>
+</text></g><text>
+</text><g transform="translate(10 106.9)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="56">Error: </text><text>
+</text></g><g transform="translate(10 123.7)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="16">  </text><text x="16" class="fg1">×</text><text x="24" textLength="136"> validate_request</text><text>
+</text></g><g transform="translate(10 140.5)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="48">   ╭─[</text><text x="48" textLength="344" class="bold underline fg6">components/jetstream_error/src/tests.rs:3:4</text><text x="392">]</text><text>
+</text></g><g transform="translate(10 157.3)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" class="dimmed">2</text><text x="16" textLength="200"> │ #[tracing::instrument]</text><text>
+</text></g><g transform="translate(10 174.1)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" class="dimmed">3</text><text x="16" textLength="536"> │ fn validate_request(user_id: u64, email: &amp;str) -&gt; super::Error {</text><text>
+</text></g><g transform="translate(10 190.9)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="40">   · </text><text x="40" textLength="152" class="bold fg5">   ────────┬───────</text><text>
+</text></g><g transform="translate(10 207.7)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="128">   ·            </text><text x="128" textLength="480" class="bold fg5">╰── validate_request(user_id: 42, email: &quot;user@example.com&quot;)</text><text>
+</text></g><g transform="translate(10 224.5)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" class="dimmed">4</text><text x="16" textLength="248"> │     super::Error::with_code(</text><text>
+</text></g><g transform="translate(10 241.3)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="64">   ╰────</text><text>
+</text></g><text>
+</text><g transform="translate(10 274.9)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="56">Error: </text><text>
+</text></g><g transform="translate(10 291.7)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="16">  </text><text x="16" class="fg1">×</text><text x="24" textLength="120"> handle_request</text><text>
+</text></g><g transform="translate(10 308.5)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="56">    ╭─[</text><text x="56" textLength="352" class="bold underline fg6">components/jetstream_error/src/tests.rs:12:4</text><text x="408">]</text><text>
+</text></g><g transform="translate(10 325.3)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" textLength="16" class="dimmed">11</text><text x="24" textLength="200"> │ #[tracing::instrument]</text><text>
+</text></g><g transform="translate(10 342.1)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" textLength="16" class="dimmed">12</text><text x="24" textLength="432"> │ fn handle_request(endpoint: &amp;str) -&gt; super::Error {</text><text>
+</text></g><g transform="translate(10 358.9)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="48">    · </text><text x="48" textLength="136" class="bold fg5">   ───────┬──────</text><text>
+</text></g><g transform="translate(10 375.7)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="128">    ·           </text><text x="128" textLength="368" class="bold fg5">╰── handle_request(endpoint: &quot;/api/v1/submit&quot;)</text><text>
+</text></g><g transform="translate(10 392.5)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" textLength="16" class="dimmed">13</text><text x="24" textLength="376"> │     validate_request(42, &quot;user@example.com&quot;)</text><text>
+</text></g><g transform="translate(10 409.3)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="72">    ╰────</text><text>
+</text></g><text>
+</text><g transform="translate(10 442.9)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="56">Error: </text><text>
+</text></g><g transform="translate(10 459.7)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="16">  </text><text x="16" class="fg1">×</text><text x="24" textLength="88"> make_error</text><text>
+</text></g><g transform="translate(10 476.5)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="56">    ╭─[</text><text x="56" textLength="352" class="bold underline fg6">components/jetstream_error/src/tests.rs:18:4</text><text x="408">]</text><text>
+</text></g><g transform="translate(10 493.3)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" textLength="16" class="dimmed">17</text><text x="24" textLength="200"> │ #[tracing::instrument]</text><text>
+</text></g><g transform="translate(10 510.1)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" textLength="16" class="dimmed">18</text><text x="24" textLength="288"> │ fn make_error() -&gt; super::Error {</text><text>
+</text></g><g transform="translate(10 526.9)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="48">    · </text><text x="48" textLength="104" class="bold fg5">   ─────┬────</text><text>
+</text></g><g transform="translate(10 543.7)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="112">    ·         </text><text x="112" textLength="128" class="bold fg5">╰── make_error()</text><text>
+</text></g><g transform="translate(10 560.5)" clip-path="xywh(0 0 100% 16.8px)"><text x="0"> </text><text x="8" textLength="16" class="dimmed">19</text><text x="24" textLength="312"> │     handle_request(&quot;/api/v1/submit&quot;)</text><text>
+</text></g><g transform="translate(10 577.3)" clip-path="xywh(0 0 100% 16.8px)"><text x="0" textLength="72">    ╰────</text><text>
+</text></g></g></g></svg>
 </svg>

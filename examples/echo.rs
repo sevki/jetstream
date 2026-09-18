@@ -11,14 +11,14 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 
 #[service]
 pub trait Echo {
-    async fn ping(&mut self) -> Result<()>;
+    async fn ping(&self) -> Result<()>;
 }
 
 #[derive(Clone)]
 struct EchoImpl {}
 
 impl Echo for EchoImpl {
-    async fn ping(&mut self) -> Result<()> {
+    async fn ping(&self) -> Result<()> {
         eprintln!("Ping received");
         eprintln!("Pong sent");
         Ok(())
