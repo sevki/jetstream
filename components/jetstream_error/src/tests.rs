@@ -33,6 +33,7 @@ fn make_error() -> super::Error {
 #[cfg(all(feature = "test-paths", feature = "miette"))]
 fn test_error() {
     use insta::assert_snapshot;
+    use styled_str::StyledString;
     use term_transcript::{
         svg::{NamedPalette, Template, TemplateOptions},
         Interaction, Transcript,
@@ -98,7 +99,10 @@ fn test_error() {
      [2m19[0m │     handle_request("/api/v1/submit")
         ╰────
     "#);
-    let interaction = Interaction::new("# do some rpc", output);
+    let interaction = Interaction::new(
+        "# do some rpc",
+        StyledString::from_ansi(&output).expect("failed to parse ANSI output"),
+    );
     transcript.add_existing_interaction(interaction);
 
     let template_options = TemplateOptions {
@@ -107,7 +111,11 @@ fn test_error() {
         ..TemplateOptions::default()
     };
     let mut buffer = vec![];
-    Template::pure_svg(template_options)
+    Template::pure_svg(
+        template_options
+            .try_into()
+            .expect("failed to validate template options"),
+    )
         .render(&transcript, &mut buffer)
         .expect("failed to render template");
     let svg_data =

@@ -20,18 +20,18 @@ use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 // r[impl jetstream.webtransport.http-example]
 #[service]
 pub trait EchoHttp {
-    async fn ping(&mut self, message: String) -> Result<String>;
-    async fn add(&mut self, a: i32, b: i32) -> Result<i32>;
+    async fn ping(&self, message: String) -> Result<String>;
+    async fn add(&self, a: i32, b: i32) -> Result<i32>;
 }
 
 #[derive(Clone)]
 struct EchoHttpImpl;
 
 impl EchoHttp for EchoHttpImpl {
-    async fn ping(&mut self, message: String) -> Result<String> {
+    async fn ping(&self, message: String) -> Result<String> {
         Ok(message)
     }
-    async fn add(&mut self, a: i32, b: i32) -> Result<i32> {
+    async fn add(&self, a: i32, b: i32) -> Result<i32> {
         Ok(a + b)
     }
 }

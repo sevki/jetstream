@@ -330,7 +330,7 @@ pub mod complexservice_protocol {
     impl ComplexService for ComplexServiceChannel {
         #[instrument(skip(self, password))]
         async fn login(
-            &mut self,
+            &self,
             username: String,
             password: String,
         ) -> Result<String, std::io::Error> {
@@ -345,7 +345,7 @@ pub mod complexservice_protocol {
             }
         }
         #[tracing::instrument(skip(self))]
-        async fn logout(&mut self) -> Result<(), std::io::Error> {
+        async fn logout(&self) -> Result<(), std::io::Error> {
             let req = Tmessage::Logout(Tlogout {});
             let context = Context::default();
             let rframe = self.mux.rpc(context, req).await.await?;

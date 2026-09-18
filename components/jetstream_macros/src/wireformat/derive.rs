@@ -1,8 +1,8 @@
 use proc_macro2::TokenStream;
 use quote::quote;
 use syn::{
-    punctuated::Punctuated, DeriveInput, GenericParam, Generics, Path,
-    PathSegment, TraitBound, Type, TypeParam, TypeParamBound, WherePredicate,
+    parse_quote, punctuated::Punctuated, DeriveInput, GenericParam, Generics,
+    TypeParam, WherePredicate,
 };
 
 use super::codegen::{byte_size_sum, decode_wire_format, encode_wire_format};
@@ -15,42 +15,8 @@ fn add_wireformat_bounds(
 ) {
     for param in &generics.params {
         if let GenericParam::Type(TypeParam { ident, .. }) = param {
-            let ty = Type::Path(syn::TypePath {
-                qself: None,
-                path: Path {
-                    leading_colon: None,
-                    segments: {
-                        let mut segments = Punctuated::new();
-                        segments.push(PathSegment {
-                            ident: ident.clone(),
-                            arguments: syn::PathArguments::None,
-                        });
-                        segments
-                    },
-                },
-            });
-
-            // Create the WireFormat trait bound
-            let trait_path =
-                syn::parse_str::<Path>("jetstream_wireformat::WireFormat")
-                    .unwrap();
-            let trait_bound = TypeParamBound::Trait(TraitBound {
-                paren_token: None,
-                modifier: syn::TraitBoundModifier::None,
-                lifetimes: None,
-                path: trait_path,
-            });
-
-            // Create the where predicate: T: WireFormat
-            let mut bounds = Punctuated::new();
-            bounds.push(trait_bound);
-
-            let predicate = WherePredicate::Type(syn::PredicateType {
-                lifetimes: None,
-                bounded_ty: ty,
-                colon_token: syn::token::Colon::default(),
-                bounds,
-            });
+            let predicate: WherePredicate =
+                parse_quote!(#ident: jetstream_wireformat::WireFormat);
 
             predicates.push(predicate);
         }
