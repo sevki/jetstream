@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["extract_field_options","extract_jetstream_type","has_skip_attr"],"struct":["Options"]};

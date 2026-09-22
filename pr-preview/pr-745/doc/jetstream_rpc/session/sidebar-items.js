@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["Capability","IdentityKind","LaneSupport","SessionError"],"fn":["check_datagram_size","decode_datagram","encode_datagram"],"mod":["lifetime","local"],"struct":["Capabilities","LaneOrder","NoClientLane","NoServiceLane","OrderTicket","SingleLaneSession"],"trait":["Datagrams","Session"]};
