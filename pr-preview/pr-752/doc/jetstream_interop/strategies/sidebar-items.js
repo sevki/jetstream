@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["message_strategy","point_strategy","shape_strategy"]};
