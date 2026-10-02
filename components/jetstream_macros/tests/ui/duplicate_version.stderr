@@ -1,0 +1,5 @@
+error: `ping` is declared twice at version 0.1.0; each declaration of a method must have a distinct `since`
+ --> tests/ui/duplicate_version.rs:8:13
+  |
+8 |     #[since("0.1.0")]
+  |             ^^^^^^^

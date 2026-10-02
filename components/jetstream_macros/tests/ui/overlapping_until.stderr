@@ -1,0 +1,5 @@
+error: `ping` is active until 2.0.0, which overlaps the declaration introduced at 1.0.0; two declarations of one method may not be active at the same version
+ --> tests/ui/overlapping_until.rs:6:13
+  |
+6 |     #[until("2.0.0")]
+  |             ^^^^^^^

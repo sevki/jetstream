@@ -1,0 +1,5 @@
+error: `pong` has no `#[since("…")]`; every method in a versioned service must say which version introduced it
+ --> tests/ui/missing_since.rs:8:14
+  |
+8 |     async fn pong(&self) -> Result<(), std::io::Error>;
+  |              ^^^^
