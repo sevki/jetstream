@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"struct":["Arena","Bytes","Oom","Reader","Seq","Writer"],"trait":["HardWireFormat"]};
