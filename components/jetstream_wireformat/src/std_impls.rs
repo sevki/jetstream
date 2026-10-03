@@ -303,7 +303,7 @@ impl<T: WireFormat + Send + Sync + Eq + Hash> WireFormat for HashSet<T> {
         Self: Sized,
     {
         if self.len() > u16::MAX as usize {
-            return Err(io::Error::new(io::ErrorKind::Other, "Set too large"));
+            return Err(io::Error::other("Set too large"));
         }
         (self.len() as u16).encode(writer)?;
         for v in self.iter() {
