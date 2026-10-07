@@ -2727,7 +2727,7 @@ dependencies = [
  "rustls",
  "rustls-pemfile",
  "sha256",
- "term-transcript",
+ "term-transcript 0.4.0",
  "tokio",
  "tokio-rustls",
  "tower",
@@ -2781,7 +2781,7 @@ dependencies = [
  "source-map",
  "string-interner",
  "styled-str",
- "term-transcript",
+ "term-transcript 0.5.0",
  "thiserror 2.0.21",
  "tracing",
  "tracing-core",
@@ -3342,9 +3342,9 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "1.2.3"
+version = "1.2.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4b18443e9c262bfe8fa82f51666e2642c53393f7e5c27b3e1aeab922cff5b9d8"
+checksum = "1788edb87fdc09c7e26304471e2f5be8cdefb1b6930d6e3985fc02ff53bf86ee"
 dependencies = [
  "libc",
  "log",
@@ -4196,7 +4196,7 @@ checksum = "7da1d65da6dd5d1e44199ac0f58712d241c0f439f80adea8924d832384087f85"
 dependencies = [
  "base64 0.22.1",
  "indexmap",
- "quick-xml",
+ "quick-xml 0.41.0",
  "serde",
  "time",
 ]
@@ -4422,6 +4422,15 @@ name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
+
+[[package]]
+name = "quick-xml"
+version = "0.37.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "331e97a1af0bf59823e6eadffe373d7b27f485be8748f71471c662c1f269b7fb"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "quick-xml"
@@ -5599,6 +5608,23 @@ dependencies = [
 
 [[package]]
 name = "term-transcript"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "708f42b1f7bd366a5fd49aee3ccef0ef87792735a7e5ebb8529bcfef8e920a1f"
+dependencies = [
+ "bytecount",
+ "handlebars",
+ "os_pipe",
+ "pretty_assertions",
+ "quick-xml 0.37.5",
+ "serde",
+ "serde_json",
+ "termcolor",
+ "unicode-width 0.2.2",
+]
+
+[[package]]
+name = "term-transcript"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8974c1086008987e1fd23c9810aa13e1f43dfde86ad3c4d55ae82a4231eb5cd1"
@@ -5610,7 +5636,7 @@ dependencies = [
  "bytecount",
  "handlebars",
  "os_pipe",
- "quick-xml",
+ "quick-xml 0.41.0",
  "serde",
  "serde_json",
  "styled-str",
@@ -5763,9 +5789,9 @@ checksum = "1f3ccbac311fea05f86f61904b462b55fb3df8837a366dfc601a0161d0532f20"
 
 [[package]]
 name = "tokio"
-version = "1.53.1"
+version = "1.53.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "202caea871b69668250d242070849eb495be178ed697a3e98aebce5bc81a0bed"
+checksum = "e95f91fcc7a621e8b030f6aa23c71fe9838ae2fb4d8118b75602a328f5144044"
 dependencies = [
  "bytes",
  "libc",
