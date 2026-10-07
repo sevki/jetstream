@@ -73,9 +73,8 @@ pub fn wire_format_inner(input: DeriveInput) -> TokenStream {
     // Use const block for hygiene
     quote! {
         const _: () = {
-            extern crate std;
-            use std::io;
-            use std::result::Result::Ok;
+            use jetstream_wireformat::io;
+            use ::core::result::Result::Ok;
             use jetstream_wireformat::WireFormat;
 
             impl #impl_generics WireFormat for #container #ty_generics #where_clause_tokens {

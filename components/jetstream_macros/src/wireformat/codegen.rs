@@ -481,7 +481,7 @@ fn generate_enum_decode(
         .collect::<Vec<_>>();
 
     variant_matches.push(quote! {
-        _ => Err(::std::io::Error::new(::std::io::ErrorKind::InvalidData, "invalid variant index"))
+        _ => Err(io::Error::new(io::ErrorKind::InvalidData, "invalid variant index"))
     });
 
     quote! {
