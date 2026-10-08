@@ -1,6 +1,7 @@
 - [JetStream](0intro.md)
 - [Sessions and Lanes](sessions.md)
 - [Subscriptions](subscriptions.md)
+- [Fixed-size collections (nightly)](nightly-fixed-collections.md)
 - [🌐 Iroh](iroh.md)
 - [🚀 QUIC](quic.md)
 - [🌍 HTTP](http.md)
