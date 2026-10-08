@@ -37,10 +37,10 @@
             const path_to_root = "";
             const default_light_theme = "light";
             const default_dark_theme = "navy";
-            window.path_to_searchindex_js = "searchindex-3bbe0dc8.js";
+            window.path_to_searchindex_js = "searchindex-e637f1a4.js";
         </script>
         <!-- Start loading toc.js asap -->
-        <script src="toc-e40b37b8.js"></script>
+        <script src="toc-addfe581.js"></script>
     </head>
     <body>
     <div id="mdbook-help-container">
@@ -1235,6 +1235,70 @@ reported.</p>
 <p>Which is also why a channel is built over a <strong>session</strong> rather than over a
 lane. A channel handed one transport can only ever tag-multiplex, so the
 caller’s construction would have made the realisation choice.</p>
+<div style="break-before: page; page-break-before: always;"></div>
+<h1 id="fixed-size-collections-nightly"><a class="header" href="#fixed-size-collections-nightly">Fixed-size collections (nightly)</a></h1>
+<p><code>jetstream_wireformat</code> has an opt-in <code>nightly</code> feature that uses
+<a href="https://blog.rust-lang.org/inside-rust/2026/10/02/generic-const-args-and-you/">generic const args</a>
+(GCA) to give fixed-size collections a wire format.</p>
+<blockquote>
+<p><strong>Experimental.</strong> None of the GCA features are stable, so this API can change
+or break with any nightly. The feature is off by default and stable builds
+are unaffected.</p>
+</blockquote>
+<h2 id="enabling-it"><a class="header" href="#enabling-it">Enabling it</a></h2>
+<p>You need a nightly compiler and the new trait solver, which
+<code>gca_const_items</code> requires:</p>
+<pre><code class="language-toml">[dependencies]
+jetstream_wireformat = { version = "16", features = ["nightly"] }
+</code></pre>
+<pre><code class="language-sh">RUSTFLAGS="-Znext-solver" cargo +nightly build
+</code></pre>
+<p>The module is only compiled when all of these hold: the <code>nightly</code> feature is
+on, the compiler is nightly, and <code>-Znext-solver</code> is in <code>RUSTFLAGS</code>. Otherwise
+the feature is a no-op (the build prints a warning), so it is safe under
+<code>--all-features</code> on stable and beta. It is also not built for <code>wasm32</code>.</p>
+<h2 id="arrays-on-the-wire"><a class="header" href="#arrays-on-the-wire">Arrays on the wire</a></h2>
+<p><code>[T; N]</code> implements <code>WireFormat</code>. Unlike <code>Vec&lt;T&gt;</code>, there is <strong>no length
+prefix</strong>: the length is part of the type, so the encoding is exactly <code>N</code>
+consecutive elements.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Type</th><th>Encoding</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Vec&lt;u32&gt;</code></td><td><code>u16</code> length, then the elements</td></tr>
+<tr><td><code>[u32; 3]</code></td><td>three <code>u32</code>s, 12 bytes</td></tr>
+</tbody>
+</table>
+</div>
+<pre><code class="language-rust ignore">use jetstream_wireformat::WireFormat;
+
+let v: [u32; 3] = [1, 2, 3];
+let mut bytes = Vec::new();
+v.encode(&amp;mut bytes)?;
+assert_eq!(bytes.len(), 12);
+assert_eq!(&lt;[u32; 3]&gt;::decode(&amp;mut &amp;bytes[..])?, v);</code></pre>
+<p>Decoding fails with an I/O error if the input has fewer than <code>N</code> elements.</p>
+<h2 id="fixedwireformat-and-encode_array"><a class="header" href="#fixedwireformat-and-encode_array"><code>FixedWireFormat</code> and <code>encode_array</code></a></h2>
+<p><code>FixedWireFormat</code> marks types whose encoded size is known at compile time via
+<code>WIRE_SIZE</code>. It is implemented for the fixed-width integers, floats, <code>bool</code>,
+<code>()</code> and arrays of fixed-size types (<code>WIRE_SIZE = T::WIRE_SIZE * N</code>).</p>
+<p><code>EncodeFixed::encode_array</code> uses it to return a stack array sized by the type,
+with no allocation:</p>
+<pre><code class="language-rust ignore">use jetstream_wireformat::fixed::EncodeFixed;
+
+let a: [u8; 4] = 0x0102_0304u32.encode_array()?;
+assert_eq!(a, [4, 3, 2, 1]); // little endian
+
+let b: [u8; 8] = [1u16, 2, 3, 4].encode_array()?;</code></pre>
+<p>The return type is <code>[u8; gca!(Self::WIRE_SIZE)]</code>. GCA doesn’t allow inline
+arithmetic inside <code>gca!(..)</code>, which is why the size lives in an associated
+const rather than an expression such as <code>T::WIRE_SIZE * N</code>.</p>
+<h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
+<pre><code class="language-sh">RUSTFLAGS="-Znext-solver" cargo +nightly test -p jetstream_wireformat \
+  --features nightly --lib fixed
+</code></pre>
 <div style="break-before: page; page-break-before: always;"></div>
 <h1 id="jetstream-iroh"><a class="header" href="#jetstream-iroh">JetStream Iroh</a></h1>
 <p><a href="https://iroh.computer/">Iroh</a> is a peer-to-peer networking library that provides NAT traversal, hole punching, and relay fallback. JetStream integrates with Iroh to enable peer-to-peer RPC communication.</p>

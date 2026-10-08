@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>🌐 Iroh - JetStream Book</title>
+        <title>Fixed-size collections (nightly) - JetStream Book</title>
 
 
         <!-- Custom HTML head -->
@@ -175,143 +175,79 @@
 
                 <div id="mdbook-content" class="content">
                     <main>
-                        <h1 id="jetstream-iroh"><a class="header" href="#jetstream-iroh">JetStream Iroh</a></h1>
-<p><a href="https://iroh.computer/">Iroh</a> is a peer-to-peer networking library that provides NAT traversal, hole punching, and relay fallback. JetStream integrates with Iroh to enable peer-to-peer RPC communication.</p>
-<h2 id="features"><a class="header" href="#features">Features</a></h2>
-<ul>
-<li><strong>NAT Traversal</strong>: Automatic hole punching for direct peer-to-peer connections</li>
-<li><strong>Relay Fallback</strong>: Falls back to relay servers when direct connection isn’t possible</li>
-<li><strong>Discovery</strong>: Uses JetStream’s discovery service at <code>discovery.jetstream.rs</code></li>
-<li><strong>ALPN-based Protocol Negotiation</strong>: Each service defines its own protocol version</li>
-</ul>
-<h2 id="example"><a class="header" href="#example">Example</a></h2>
-<p>Here’s a complete example of an echo service using Iroh transport:</p>
-<pre><code class="language-rs">#![cfg(feature = "iroh")]
-use crate::square_protocol::{SquareChannel, SquareService};
-use futures::stream::FuturesUnordered;
-use futures::StreamExt;
-use jetstream::prelude::*;
-use jetstream_macros::service;
-
-#[service(tracing)]
-pub trait Square {
-    async fn square(&amp;self, ctx: Context, i: u32) -&gt; Result&lt;String&gt;;
-}
-
-#[derive(Debug, Clone)]
-struct SquareServer;
-
-impl Square for SquareServer {
-    async fn square(&amp;self, _ctx: Context, i: u32) -&gt; Result&lt;String&gt; {
-        Ok((i * i).to_string())
-    }
-}
-
-#[tokio::main]
-async fn main() {
-    // Initialize tracing subscriber
-    tracing_subscriber::fmt()
-        .with_max_level(tracing::Level::DEBUG)
-        .with_thread_ids(true)
-        .with_span_events(
-            tracing_subscriber::fmt::format::FmtSpan::ENTER
-                | tracing_subscriber::fmt::format::FmtSpan::EXIT,
-        )
-        .init();
-    // Build the server router with the echo service
-    let router = jetstream_iroh::server_builder(SquareService {
-        inner: SquareServer {},
-    })
-    .await
-    .unwrap();
-
-    // Wait for the server endpoint to be reachable via the relay before
-    // publishing its address, otherwise clients can dial before the
-    // relay connection is established and time out.
-    router.endpoint().online().await;
-
-    // get our own address. At this point we have a running router
-    // that's ready to accept connections.
-    let addr = router.endpoint().addr();
-
-    // Build client transport and connect
-    let transport = jetstream_iroh::client_builder::&lt;SquareChannel&gt;(addr)
-        .await
-        .unwrap();
-
-    let ec = SquareChannel::new(10, Box::new(transport));
-    let mut futures = FuturesUnordered::new();
-    for i in 0..1000 {
-        futures.push(ec.square(Context::default(), i));
-    }
-
-    while let Some(result) = futures.next().await {
-        let response = result.unwrap();
-        println!("Response: {}", response);
-    }
-    router.shutdown().await.unwrap();
-}
-</code></pre>
-<h2 id="server-setup"><a class="header" href="#server-setup">Server Setup</a></h2>
-<p>To create an Iroh server, use the <code>server_builder</code> function:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use jetstream_iroh::server_builder;
-
-let router = server_builder(EchoService { inner: EchoServer {} })
-    .await
-    .unwrap();
-
-// Get the node address to share with clients
-let addr = router.endpoint().node_addr();
-<span class="boring">}</span></code></pre>
-<h2 id="client-setup"><a class="header" href="#client-setup">Client Setup</a></h2>
-<p>To connect to an Iroh server, use the <code>client_builder</code> function:</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use jetstream_iroh::client_builder;
-
-let mut transport = client_builder::&lt;EchoChannel&gt;(addr)
-    .await
-    .unwrap();
-<span class="boring">}</span></code></pre>
-<h2 id="discovery"><a class="header" href="#discovery">Discovery</a></h2>
-<p>JetStream uses a custom discovery service for Iroh nodes. The discovery URL is:</p>
-<pre><code>https://discovery.jetstream.rs
-</code></pre>
-<p>This allows nodes to find each other using their public keys without needing to exchange IP addresses directly.</p>
-<h2 id="sessions-and-lanes"><a class="header" href="#sessions-and-lanes">Sessions and Lanes</a></h2>
-<p><code>IrohSession</code> binds an iroh connection to the
-<a href="sessions.html">session model</a>, which is what lets a client open more than
-one stream: <code>client_builder</code> opens a single bidi stream at connect and
-recovers concurrency by tag, whereas a session opens a lane per call.</p>
-<pre class="playground"><code class="language-rust"><span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>use jetstream_iroh::IrohSession;
-use jetstream_rpc::session::{IdentityKind, Session};
-
-let session = IrohSession::&lt;SquareChannel&gt;::new(connection);
-let lane = Session::&lt;SquareChannel&gt;::open_lane(&amp;session).await?;
-<span class="boring">}</span></code></pre>
-<p>iroh is the one transport reporting <code>IdentityKind::Key</code>: the peer’s public
-key <em>is</em> its address, so <code>requires_address()</code> is false and a caller need
-not carry placement information alongside the identity.</p>
-<h2 id="feature-flag"><a class="header" href="#feature-flag">Feature Flag</a></h2>
-<p>To use Iroh transport, enable the <code>iroh</code> feature in your <code>Cargo.toml</code>:</p>
+                        <h1 id="fixed-size-collections-nightly"><a class="header" href="#fixed-size-collections-nightly">Fixed-size collections (nightly)</a></h1>
+<p><code>jetstream_wireformat</code> has an opt-in <code>nightly</code> feature that uses
+<a href="https://blog.rust-lang.org/inside-rust/2026/10/02/generic-const-args-and-you/">generic const args</a>
+(GCA) to give fixed-size collections a wire format.</p>
+<blockquote>
+<p><strong>Experimental.</strong> None of the GCA features are stable, so this API can change
+or break with any nightly. The feature is off by default and stable builds
+are unaffected.</p>
+</blockquote>
+<h2 id="enabling-it"><a class="header" href="#enabling-it">Enabling it</a></h2>
+<p>You need a nightly compiler and the new trait solver, which
+<code>gca_const_items</code> requires:</p>
 <pre><code class="language-toml">[dependencies]
-jetstream = { version = "10", features = ["iroh"] }
+jetstream_wireformat = { version = "16", features = ["nightly"] }
 </code></pre>
-<p>For more details, see the <a href="doc/jetstream_iroh/index.html">jetstream_iroh API documentation</a>.</p>
+<pre><code class="language-sh">RUSTFLAGS="-Znext-solver" cargo +nightly build
+</code></pre>
+<p>The module is only compiled when all of these hold: the <code>nightly</code> feature is
+on, the compiler is nightly, and <code>-Znext-solver</code> is in <code>RUSTFLAGS</code>. Otherwise
+the feature is a no-op (the build prints a warning), so it is safe under
+<code>--all-features</code> on stable and beta. It is also not built for <code>wasm32</code>.</p>
+<h2 id="arrays-on-the-wire"><a class="header" href="#arrays-on-the-wire">Arrays on the wire</a></h2>
+<p><code>[T; N]</code> implements <code>WireFormat</code>. Unlike <code>Vec&lt;T&gt;</code>, there is <strong>no length
+prefix</strong>: the length is part of the type, so the encoding is exactly <code>N</code>
+consecutive elements.</p>
+<div class="table-wrapper">
+<table>
+<thead>
+<tr><th>Type</th><th>Encoding</th></tr>
+</thead>
+<tbody>
+<tr><td><code>Vec&lt;u32&gt;</code></td><td><code>u16</code> length, then the elements</td></tr>
+<tr><td><code>[u32; 3]</code></td><td>three <code>u32</code>s, 12 bytes</td></tr>
+</tbody>
+</table>
+</div>
+<pre><code class="language-rust ignore">use jetstream_wireformat::WireFormat;
+
+let v: [u32; 3] = [1, 2, 3];
+let mut bytes = Vec::new();
+v.encode(&amp;mut bytes)?;
+assert_eq!(bytes.len(), 12);
+assert_eq!(&lt;[u32; 3]&gt;::decode(&amp;mut &amp;bytes[..])?, v);</code></pre>
+<p>Decoding fails with an I/O error if the input has fewer than <code>N</code> elements.</p>
+<h2 id="fixedwireformat-and-encode_array"><a class="header" href="#fixedwireformat-and-encode_array"><code>FixedWireFormat</code> and <code>encode_array</code></a></h2>
+<p><code>FixedWireFormat</code> marks types whose encoded size is known at compile time via
+<code>WIRE_SIZE</code>. It is implemented for the fixed-width integers, floats, <code>bool</code>,
+<code>()</code> and arrays of fixed-size types (<code>WIRE_SIZE = T::WIRE_SIZE * N</code>).</p>
+<p><code>EncodeFixed::encode_array</code> uses it to return a stack array sized by the type,
+with no allocation:</p>
+<pre><code class="language-rust ignore">use jetstream_wireformat::fixed::EncodeFixed;
+
+let a: [u8; 4] = 0x0102_0304u32.encode_array()?;
+assert_eq!(a, [4, 3, 2, 1]); // little endian
+
+let b: [u8; 8] = [1u16, 2, 3, 4].encode_array()?;</code></pre>
+<p>The return type is <code>[u8; gca!(Self::WIRE_SIZE)]</code>. GCA doesn’t allow inline
+arithmetic inside <code>gca!(..)</code>, which is why the size lives in an associated
+const rather than an expression such as <code>T::WIRE_SIZE * N</code>.</p>
+<h2 id="testing"><a class="header" href="#testing">Testing</a></h2>
+<pre><code class="language-sh">RUSTFLAGS="-Znext-solver" cargo +nightly test -p jetstream_wireformat \
+  --features nightly --lib fixed
+</code></pre>
 
                     </main>
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
-                            <a rel="prev" href="nightly-fixed-collections.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                            <a rel="prev" href="subscriptions.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                             </a>
 
-                            <a rel="next prefetch" href="quic.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                            <a rel="next prefetch" href="iroh.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                                 <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                             </a>
 
@@ -321,11 +257,11 @@ jetstream = { version = "10", features = ["iroh"] }
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
-                    <a rel="prev" href="nightly-fixed-collections.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                    <a rel="prev" href="subscriptions.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M41.4 233.4c-12.5 12.5-12.5 32.8 0 45.3l160 160c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3L109.3 256 246.6 118.6c12.5-12.5 12.5-32.8 0-45.3s-32.8-12.5-45.3 0l-160 160z"/></svg></span>
                     </a>
 
-                    <a rel="next prefetch" href="quic.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                    <a rel="next prefetch" href="iroh.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
                         <span class=fa-svg><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512"><!--! Font Awesome Free 6.2.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2022 Fonticons, Inc. --><path d="M278.6 233.4c12.5 12.5 12.5 32.8 0 45.3l-160 160c-12.5 12.5-32.8 12.5-45.3 0s-12.5-32.8 0-45.3L210.7 256 73.4 118.6c-12.5-12.5-12.5-32.8 0-45.3s32.8-12.5 45.3 0l160 160z"/></svg></span>
                     </a>
             </nav>
