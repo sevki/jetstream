@@ -22,7 +22,10 @@ jetstream_wireformat = { version = "16", features = ["nightly"] }
 RUSTFLAGS="-Znext-solver" cargo +nightly build
 ```
 
-The module is not built for `wasm32`.
+The module is only compiled when all of these hold: the `nightly` feature is
+on, the compiler is nightly, and `-Znext-solver` is in `RUSTFLAGS`. Otherwise
+the feature is a no-op (the build prints a warning), so it is safe under
+`--all-features` on stable and beta. It is also not built for `wasm32`.
 
 ## Arrays on the wire
 

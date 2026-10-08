@@ -6,7 +6,7 @@
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
 #![cfg_attr(
-    feature = "nightly",
+    jetstream_gca,
     feature(gca_const_items, gca_min_const_items, min_adt_const_params),
     allow(incomplete_features)
 )]
@@ -38,7 +38,7 @@ pub mod wire_format_extensions;
 
 /// Fixed-size collections using generic const args. Needs a nightly compiler
 /// and `RUSTFLAGS="-Znext-solver"`.
-#[cfg(all(feature = "nightly", not(target_arch = "wasm32")))]
+#[cfg(all(jetstream_gca, not(target_arch = "wasm32")))]
 pub mod fixed;
 
 #[cfg(target_arch = "wasm32")]
