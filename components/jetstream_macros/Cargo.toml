@@ -17,6 +17,7 @@ lazy_static = "1.5.0"
 prettyplease = "0.3.0"
 ident_case = "1.0.1"
 jetstream_codegen = { version = "16.3.1", path = "../jetstream_codegen" }
+semver = "1.0.28"
 
 [lib]
 proc-macro = true
