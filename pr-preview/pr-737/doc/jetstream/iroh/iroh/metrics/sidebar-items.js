@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"struct":["EndpointMetrics","NetReportMetrics","SocketMetrics"]};
+window.SIDEBAR_ITEMS = {"struct":["AddressLookupMetrics","EndpointMetrics","NetReportMetrics","SocketMetrics"]};
