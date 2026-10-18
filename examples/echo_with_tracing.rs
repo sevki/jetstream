@@ -27,13 +27,13 @@ pub trait Echo {
         level = "debug"
     )]
     async fn ping(
-        &mut self,
+        &self,
         ctx: Context,
         message: String,
     ) -> jetstream_error::Result<String>;
 
     /// This method uses default auto-instrumentation from #[service(tracing)]
-    async fn echo(&mut self, text: String) -> jetstream_error::Result<String>;
+    async fn echo(&self, text: String) -> jetstream_error::Result<String>;
 }
 
 #[derive(Clone)]
@@ -41,7 +41,7 @@ struct EchoImpl {}
 
 impl Echo for EchoImpl {
     async fn ping(
-        &mut self,
+        &self,
         ctx: Context,
         message: String,
     ) -> jetstream_error::Result<String> {
@@ -50,7 +50,7 @@ impl Echo for EchoImpl {
         Ok(format!("Pong: {}", message))
     }
 
-    async fn echo(&mut self, text: String) -> jetstream_error::Result<String> {
+    async fn echo(&self, text: String) -> jetstream_error::Result<String> {
         tracing::info!("Echo received: {}", text);
         Ok(text)
     }

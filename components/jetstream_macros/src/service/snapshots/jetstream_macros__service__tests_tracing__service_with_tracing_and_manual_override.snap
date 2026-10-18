@@ -293,7 +293,7 @@ pub mod echo_protocol {
     }
     impl Echo for EchoChannel {
         #[instrument(level = "trace")]
-        async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
+        async fn ping(&self, message: String) -> Result<String, std::io::Error> {
             let req = Tmessage::Ping(Tping { message });
             let context = Context::default();
             let rframe = self.mux.rpc(context, req).await.await?;
@@ -305,7 +305,7 @@ pub mod echo_protocol {
             }
         }
         #[tracing::instrument(skip(self))]
-        async fn pong(&mut self) -> Result<(), std::io::Error> {
+        async fn pong(&self) -> Result<(), std::io::Error> {
             let req = Tmessage::Pong(Tpong {});
             let context = Context::default();
             let rframe = self.mux.rpc(context, req).await.await?;

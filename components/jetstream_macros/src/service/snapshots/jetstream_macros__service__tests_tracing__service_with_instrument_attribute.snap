@@ -258,7 +258,7 @@ pub mod echo_protocol {
     }
     impl Echo for EchoChannel {
         #[instrument(skip(self))]
-        async fn ping(&mut self, message: String) -> Result<String, std::io::Error> {
+        async fn ping(&self, message: String) -> Result<String, std::io::Error> {
             let req = Tmessage::Ping(Tping { message });
             let context = Context::default();
             let rframe = self.mux.rpc(context, req).await.await?;

@@ -11,23 +11,23 @@ use turmoil::{
 
 #[service]
 pub trait Echo: Debug {
-    async fn ping(&mut self) -> Result<()>;
-    async fn pong(&mut self) -> Result<()>;
-    async fn fail_with_error(&mut self) -> Result<String>;
+    async fn ping(&self) -> Result<()>;
+    async fn pong(&self) -> Result<()>;
+    async fn fail_with_error(&self) -> Result<String>;
 }
 
 struct EchoImpl {}
 
 impl Echo for EchoImpl {
-    async fn ping(&mut self) -> Result<()> {
+    async fn ping(&self) -> Result<()> {
         Ok(())
     }
 
-    async fn pong(&mut self) -> Result<()> {
+    async fn pong(&self) -> Result<()> {
         todo!()
     }
 
-    async fn fail_with_error(&mut self) -> Result<String> {
+    async fn fail_with_error(&self) -> Result<String> {
         // Return an error with diagnostic information
         let err = Error::with_code(
             "Server-side validation failed",
