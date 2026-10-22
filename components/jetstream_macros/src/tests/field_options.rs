@@ -19,9 +19,8 @@ fn test_with_option() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for ItemWithWith {
             fn byte_size(&self) -> u32 {
@@ -66,9 +65,8 @@ fn test_specific_encode_decode_options() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for ItemWithSpecificEncodeDecode {
             fn byte_size(&self) -> u32 {
@@ -116,9 +114,8 @@ fn test_from_into_as_options() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for ItemWithFromIntoAs {
             fn byte_size(&self) -> u32 {
@@ -171,9 +168,8 @@ fn test_options_with_enum() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r#"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for EnumWithOptions {
             fn byte_size(&self) -> u32 {
@@ -217,8 +213,8 @@ fn test_options_with_enum() {
                     }
                     _ => {
                         Err(
-                            ::std::io::Error::new(
-                                ::std::io::ErrorKind::InvalidData,
+                            io::Error::new(
+                                io::ErrorKind::InvalidData,
                                 "invalid variant index",
                             ),
                         )
