@@ -1,0 +1,5 @@
+error: `1.0` is not a semantic version: unexpected end of input while parsing minor version number
+ --> tests/ui/bad_version.rs:5:13
+  |
+5 |     #[since("1.0")]
+  |             ^^^^^
