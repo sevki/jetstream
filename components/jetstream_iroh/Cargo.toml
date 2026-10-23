@@ -6,7 +6,7 @@ description.workspace = true
 license.workspace = true
 repository.workspace = true
 documentation.workspace = true
-readme.workspace = true
+readme = "README.md"
 
 [dependencies]
 async-trait = "0.1.89"
