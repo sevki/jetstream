@@ -21,6 +21,8 @@ async = ["dep:futures"]
 testing = ["serde"]
 serde = ["dep:serde"]
 tokio = ["dep:tokio", "dep:tokio-util"]
+# Nightly-only: generic const args (gca) fixed-size collections. Needs `-Znext-solver`.
+nightly = []
 
 [dependencies]
 zerocopy = "0.8.48"
