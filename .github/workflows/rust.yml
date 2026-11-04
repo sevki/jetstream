@@ -39,6 +39,24 @@ jobs:
         run: |
           cargo build -p ${{ matrix.package }} --verbose --target wasm32-unknown-unknown
 
+  # Hard Mode Rust: the no_std, no-alloc core of jetstream_wireformat must
+  # build for a target that has no `std` at all. Only the `std` feature
+  # (the "shell") may use the OS or an allocator.
+  jetstream-no-std:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: thumbv7em-none-eabihf
+          override: true
+      - name: Build no_std core
+        run: |
+          cargo rustc -p jetstream_wireformat --lib --crate-type rlib \
+            --no-default-features --target thumbv7em-none-eabihf
+
   jetstream:
     runs-on: ${{ matrix.os }}
     strategy:

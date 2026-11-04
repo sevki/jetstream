@@ -18,9 +18,8 @@ fn test_generics_support() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl<T, U> WireFormat for GenericItem<T, U>
         where
@@ -68,9 +67,8 @@ fn test_generic_enum() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r#"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl<T, U> WireFormat for GenericEnum<T, U>
         where
@@ -114,8 +112,8 @@ fn test_generic_enum() {
                     2u8 => Ok(Self::VariantNone),
                     _ => {
                         Err(
-                            ::std::io::Error::new(
-                                ::std::io::ErrorKind::InvalidData,
+                            io::Error::new(
+                                io::ErrorKind::InvalidData,
                                 "invalid variant index",
                             ),
                         )
