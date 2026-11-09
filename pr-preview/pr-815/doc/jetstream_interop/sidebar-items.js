@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"constant":["TAG_END","TAG_MESSAGE","TAG_POINT","TAG_SHAPE"],"enum":["Shape"],"fn":["encode_value","read_frame","roundtrip_one","write_end","write_frame"],"mod":["strategies"],"struct":["ColorPoint","Message","Point"]};
