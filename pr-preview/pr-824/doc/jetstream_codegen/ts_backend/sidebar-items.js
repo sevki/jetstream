@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["generate_ts_enum","generate_ts_file","generate_ts_struct","rust_type_to_ts","rust_type_to_ts_codec"],"struct":["TsConfig"]};

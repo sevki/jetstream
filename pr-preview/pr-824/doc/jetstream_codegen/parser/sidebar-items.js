@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["parse_derive_input","parse_file","parse_rust_type"]};
