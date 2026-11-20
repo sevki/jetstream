@@ -16,22 +16,22 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 [features]
 default = ["async", "std" ]
 all = ["std", "async", "testing", "serde", "tokio" ]
-std = []
-async = ["dep:futures"]
+std = ["dep:bytes", "dep:url", "dep:hashbrown", "dep:libc", "dep:time", "dep:mio"]
+async = ["std", "dep:futures"]
 testing = ["serde"]
 serde = ["dep:serde"]
-tokio = ["dep:tokio", "dep:tokio-util"]
+tokio = ["std", "dep:tokio", "dep:tokio-util"]
 
 [dependencies]
 zerocopy = "0.8.48"
 paste = "1.0.15"
-bytes = { version = "1.11.1", features = ["serde"] }
+bytes = { version = "1.11.1", features = ["serde"], optional = true }
 jetstream_macros = { version = "16.3.1", path = "../jetstream_macros" }
-url = { workspace = true }
-hashbrown = "0.17.0"
+url = { workspace = true, optional = true }
+hashbrown = { version = "0.17.0", optional = true }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
-libc = "0.2.186"
+libc = { version = "0.2.186", optional = true }
 
 futures = { version = "0.3.32", optional = true }
 tokio-util = { version = "0.7.16", features = [
@@ -39,10 +39,10 @@ tokio-util = { version = "0.7.16", features = [
   "io",
   "time",
 ], optional = true }
-time = "0.3.47"
+time = { version = "0.3.47", optional = true }
 serde = { version = "1.0.218", features = ["derive"], optional = true }
 jetstream_macros = { version = "16.3.1", path = "../jetstream_macros" }
-mio = "1.2.0"
+mio = { version = "1.2.0", optional = true }
 tokio = { version = "1.48.0", optional = true }
 
 

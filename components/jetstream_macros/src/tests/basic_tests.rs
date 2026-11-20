@@ -97,9 +97,8 @@ fn end_to_end() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for Niijima_先輩 {
             fn byte_size(&self) -> u32 {
@@ -152,9 +151,8 @@ fn end_to_end_unnamed() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for Niijima_先輩 {
             fn byte_size(&self) -> u32 {
@@ -265,7 +263,7 @@ fn enum_decode() {
                 let __0 = WireFormat::decode(_reader)?;
                 Ok(Self::Binary(__0))
             },
-            _ => Err(::std::io::Error::new(::std::io::ErrorKind::InvalidData, "invalid variant index"))
+            _ => Err(io::Error::new(io::ErrorKind::InvalidData, "invalid variant index"))
         }
     };
 
@@ -289,9 +287,8 @@ fn enum_end_to_end() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r#"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for Message {
             fn byte_size(&self) -> u32 {
@@ -331,8 +328,8 @@ fn enum_end_to_end() {
                     }
                     _ => {
                         Err(
-                            ::std::io::Error::new(
-                                ::std::io::ErrorKind::InvalidData,
+                            io::Error::new(
+                                io::ErrorKind::InvalidData,
                                 "invalid variant index",
                             ),
                         )
@@ -506,7 +503,7 @@ fn test_enum_skip_field() {
                 let __0 = WireFormat::decode(_reader)?;
                 Ok(Self::Binary(__0, Default::default()))
             },
-            _ => Err(::std::io::Error::new(::std::io::ErrorKind::InvalidData, "invalid variant index"))
+            _ => Err(io::Error::new(io::ErrorKind::InvalidData, "invalid variant index"))
         }
     };
 
@@ -535,9 +532,8 @@ fn test_end_to_end_with_skip() {
     let output_str = prettyplease::unparse(&syntax_tree);
     insta::assert_snapshot!(output_str, @r"
     const _: () = {
-        extern crate std;
-        use std::io;
-        use std::result::Result::Ok;
+        use jetstream_wireformat::io;
+        use ::core::result::Result::Ok;
         use jetstream_wireformat::WireFormat;
         impl WireFormat for Item {
             fn byte_size(&self) -> u32 {
