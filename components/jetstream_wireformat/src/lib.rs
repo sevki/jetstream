@@ -24,6 +24,9 @@ use std::{
     vec::Vec,
 };
 
+#[cfg(feature = "allocator")]
+use std::alloc::Allocator;
+
 use bytes::Buf;
 use hashbrown::{HashMap, HashSet};
 pub use jetstream_macros::JetStreamWireFormat;
@@ -366,6 +369,44 @@ impl WireFormat for String {
 
 // The wire format for repeated types is similar to that of strings: a little endian
 // encoded u16 |N|, followed by |N| instances of the given type.
+/// With the `allocator` feature (requires Rust 1.100+), `Vec` is encoded for any
+/// allocator `A`, and decoded using `A::default()`.
+#[cfg(feature = "allocator")]
+impl<T: WireFormat, A: Allocator + Default + Send> WireFormat for Vec<T, A> {
+    fn byte_size(&self) -> u32 {
+        mem::size_of::<u16>() as u32
+            + self.iter().map(|elem| elem.byte_size()).sum::<u32>()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()> {
+        if self.len() > u16::MAX as usize {
+            return Err(std::io::Error::new(
+                std::io::ErrorKind::InvalidInput,
+                "too many elements in vector",
+            ));
+        }
+
+        (self.len() as u16).encode(writer)?;
+        for elem in self {
+            elem.encode(writer)?;
+        }
+
+        Ok(())
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self> {
+        let len: u16 = WireFormat::decode(reader)?;
+        let mut result = Vec::with_capacity_in(len as usize, A::default());
+
+        for _ in 0..len {
+            result.push(WireFormat::decode(reader)?);
+        }
+
+        Ok(result)
+    }
+}
+
+#[cfg(not(feature = "allocator"))]
 impl<T: WireFormat> WireFormat for Vec<T> {
     fn byte_size(&self) -> u32 {
         mem::size_of::<u16>() as u32
@@ -606,6 +647,31 @@ where
     }
 }
 
+/// With the `allocator` feature (requires Rust 1.100+), `Box` is encoded for any
+/// allocator `A`, and decoded using `A::default()`.
+#[cfg(feature = "allocator")]
+impl<T: WireFormat, A: Allocator + Default + Send> WireFormat for Box<T, A> {
+    fn byte_size(&self) -> u32 {
+        (**self).byte_size()
+    }
+
+    fn encode<W: Write>(&self, writer: &mut W) -> io::Result<()>
+    where
+        Self: Sized,
+    {
+        (**self).encode(writer)
+    }
+
+    fn decode<R: Read>(reader: &mut R) -> io::Result<Self>
+    where
+        Self: Sized,
+    {
+        let inner = T::decode(reader)?;
+        Ok(Box::new_in(inner, A::default()))
+    }
+}
+
+#[cfg(not(feature = "allocator"))]
 impl<T: WireFormat> WireFormat for Box<T> {
     fn byte_size(&self) -> u32 {
         (**self).byte_size()
@@ -902,5 +968,60 @@ impl WireFormat for url::Url {
         let string = String::decode(reader)?;
         url::Url::parse(&string)
             .map_err(|e| io::Error::new(io::ErrorKind::InvalidData, e))
+    }
+}
+
+#[cfg(all(test, feature = "allocator"))]
+mod allocator_tests {
+    use std::{
+        alloc::{AllocError, Allocator, Global, Layout},
+        ptr::NonNull,
+        sync::atomic::{AtomicUsize, Ordering},
+    };
+
+    use super::*;
+
+    static ALLOCS: AtomicUsize = AtomicUsize::new(0);
+
+    /// Forwards to the global allocator while counting allocations.
+    #[derive(Default, Clone, Copy)]
+    struct Counting;
+
+    unsafe impl Allocator for Counting {
+        fn allocate(&self, layout: Layout) -> Result<NonNull<[u8]>, AllocError> {
+            ALLOCS.fetch_add(1, Ordering::SeqCst);
+            Global.allocate(layout)
+        }
+
+        unsafe fn deallocate(&self, ptr: NonNull<u8>, layout: Layout) {
+            unsafe { Global.deallocate(ptr, layout) }
+        }
+    }
+
+    #[test]
+    fn vec_roundtrips_in_custom_allocator() {
+        let mut v: Vec<u32, Counting> = Vec::new_in(Counting);
+        v.extend([1, 2, 3]);
+
+        let mut buf = Vec::new();
+        v.encode(&mut buf).unwrap();
+        assert_eq!(buf.len() as u32, v.byte_size());
+
+        let before = ALLOCS.load(Ordering::SeqCst);
+        let decoded = <Vec<u32, Counting>>::decode(&mut buf.as_slice()).unwrap();
+        assert!(ALLOCS.load(Ordering::SeqCst) > before);
+        assert_eq!(&decoded[..], &[1, 2, 3]);
+    }
+
+    #[test]
+    fn box_roundtrips_in_custom_allocator() {
+        let b: Box<u64, Counting> = Box::new_in(0xdead_beef, Counting);
+        let mut buf = Vec::new();
+        b.encode(&mut buf).unwrap();
+
+        let before = ALLOCS.load(Ordering::SeqCst);
+        let decoded = <Box<u64, Counting>>::decode(&mut buf.as_slice()).unwrap();
+        assert!(ALLOCS.load(Ordering::SeqCst) > before);
+        assert_eq!(*decoded, 0xdead_beef);
     }
 }

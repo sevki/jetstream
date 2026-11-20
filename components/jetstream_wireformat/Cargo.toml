@@ -17,6 +17,8 @@ crate-type = ["rlib", "staticlib", "cdylib"]
 default = ["async", "std" ]
 all = ["std", "async", "testing", "serde", "tokio" ]
 std = []
+# Generic-over-allocator `Vec`/`Box` impls. Needs Rust 1.100+ (stable `Allocator`).
+allocator = []
 async = ["dep:futures"]
 testing = ["serde"]
 serde = ["dep:serde"]
