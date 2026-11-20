@@ -1,0 +1,5 @@
+error: `until` must be greater than `since`, but 0.9.0 <= 1.0.0; `until` is exclusive, so this declaration would never be active
+ --> tests/ui/until_before_since.rs:6:13
+  |
+6 |     #[until("0.9.0")]
+  |             ^^^^^^^
