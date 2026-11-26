@@ -7,7 +7,7 @@
     <body>
         <div class="container">
     <nav class="breadcrumb is-right" aria-label="breadcrumbs">
-        <ul><li><a href="../../../index.html">top_level</a></li><li><a href="./index.html">components&#x2F;jetstream_iroh&#x2F;src</a></li><li class="is-active"><a href="#">client.rs</a></li>
+        <ul><li><a href="../../../index.html">top_level</a></li><li><a href="./index.html">components/jetstream_iroh/src</a></li><li class="is-active"><a href="#">client.rs</a></li>
         </ul>
     </nav>
     <nav class="level">
@@ -32,7 +32,7 @@
         <div>
             <p class="heading">Branches</p>
             <p class="title has-text-success">
-                <abbr title="0 / 0">100 %</abbr></p>
+                <abbr title="0 / 0">100.0 %</abbr></p>
         </div>
     </div>
 
@@ -261,7 +261,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; Kept alive for as long as the transport is: iroh aborts the</pre>
+                <pre class="has-background-white py-0 px-2">    // Kept alive for as long as the transport is: iroh aborts the</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -277,7 +277,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; connection ungracefully if the `Connection`&#x2F;`Endpoint` are dropped</pre>
+                <pre class="has-background-white py-0 px-2">    // connection ungracefully if the `Connection`/`Endpoint` are dropped</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -293,7 +293,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F; while streams opened from them are still in use.</pre>
+                <pre class="has-background-white py-0 px-2">    // while streams opened from them are still in use.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -581,7 +581,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Build a transport that keeps `connection` and `endpoint` alive for</pre>
+                <pre class="has-background-white py-0 px-2">    /// Build a transport that keeps `connection` and `endpoint` alive for</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -597,7 +597,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; as long as the transport itself is alive. Use this whenever the</pre>
+                <pre class="has-background-white py-0 px-2">    /// as long as the transport itself is alive. Use this whenever the</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -613,7 +613,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; caller doesn&#x27;t otherwise hold on to the `Connection`&#x2F;`Endpoint`</pre>
+                <pre class="has-background-white py-0 px-2">    /// caller doesn&#39;t otherwise hold on to the `Connection`/`Endpoint`</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -629,7 +629,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; (e.g. inside a helper function that would otherwise drop them on</pre>
+                <pre class="has-background-white py-0 px-2">    /// (e.g. inside a helper function that would otherwise drop them on</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -645,7 +645,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; return).</pre>
+                <pre class="has-background-white py-0 px-2">    /// return).</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -965,7 +965,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        cx: &amp;mut Context&lt;&#x27;_&gt;,</pre>
+                <pre class="has-background-success-light py-0 px-2">        cx: &amp;mut Context&lt;&#39;_&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1189,7 +1189,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        cx: &amp;mut Context&lt;&#x27;_&gt;,</pre>
+                <pre class="has-background-success-light py-0 px-2">        cx: &amp;mut Context&lt;&#39;_&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1301,7 +1301,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">        cx: &amp;mut Context&lt;&#x27;_&gt;,</pre>
+                <pre class="has-background-danger-light py-0 px-2">        cx: &amp;mut Context&lt;&#39;_&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1525,7 +1525,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        cx: &amp;mut Context&lt;&#x27;_&gt;,</pre>
+                <pre class="has-background-success-light py-0 px-2">        cx: &amp;mut Context&lt;&#39;_&gt;,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1596,7 +1596,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-11-24 03:23</p>
+                    <p class="heading">Date: 2026-11-26 01:22</p>
                 </div>
             
         </footer>

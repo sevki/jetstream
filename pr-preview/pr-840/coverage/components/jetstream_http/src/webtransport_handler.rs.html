@@ -7,7 +7,7 @@
     <body>
         <div class="container">
     <nav class="breadcrumb is-right" aria-label="breadcrumbs">
-        <ul><li><a href="../../../index.html">top_level</a></li><li><a href="./index.html">components&#x2F;jetstream_http&#x2F;src</a></li><li class="is-active"><a href="#">webtransport_handler.rs</a></li>
+        <ul><li><a href="../../../index.html">top_level</a></li><li><a href="./index.html">components/jetstream_http/src</a></li><li class="is-active"><a href="#">webtransport_handler.rs</a></li>
         </ul>
     </nav>
     <nav class="level">
@@ -15,7 +15,7 @@
         <div>
             <p class="heading">Lines</p>
             <p class="title has-text-danger">
-                <abbr title="0 / 24">0 %</abbr></p>
+                <abbr title="0 / 24">0.0 %</abbr></p>
         </div>
     </div>
 
@@ -23,7 +23,7 @@
         <div>
             <p class="heading">Functions</p>
             <p class="title has-text-danger">
-                <abbr title="0 / 3">0 %</abbr></p>
+                <abbr title="0 / 3">0.0 %</abbr></p>
         </div>
     </div>
 
@@ -32,7 +32,7 @@
         <div>
             <p class="heading">Branches</p>
             <p class="title has-text-success">
-                <abbr title="0 / 0">100 %</abbr></p>
+                <abbr title="0 / 0">100.0 %</abbr></p>
         </div>
     </div>
 
@@ -213,7 +213,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.webtransport.upstream-initiated]</pre>
+                <pre class="has-background-white py-0 px-2">// r[impl jetstream.webtransport.upstream-initiated]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -229,7 +229,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; Opens a server-initiated bidirectional stream to the downstream client.</pre>
+                <pre class="has-background-white py-0 px-2">/// Opens a server-initiated bidirectional stream to the downstream client.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -245,7 +245,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">///</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -261,7 +261,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; This allows the server to push RPC frames to the client over a new bidi stream.</pre>
+                <pre class="has-background-white py-0 px-2">/// This allows the server to push RPC frames to the client over a new bidi stream.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -277,7 +277,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; The returned writer&#x2F;reader pair uses `ServerCodec` for frame encoding&#x2F;decoding.</pre>
+                <pre class="has-background-white py-0 px-2">/// The returned writer/reader pair uses `ServerCodec` for frame encoding/decoding.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -293,7 +293,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">///</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -309,7 +309,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; # r[impl jetstream.webtransport.upstream-initiated.use-case]</pre>
+                <pre class="has-background-white py-0 px-2">/// # r[impl jetstream.webtransport.upstream-initiated.use-case]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -325,7 +325,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; Use this for server-push scenarios where the server needs to initiate</pre>
+                <pre class="has-background-white py-0 px-2">/// Use this for server-push scenarios where the server needs to initiate</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -341,7 +341,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; communication with the client (e.g., pushing notifications, streaming updates).</pre>
+                <pre class="has-background-white py-0 px-2">/// communication with the client (e.g., pushing notifications, streaming updates).</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -437,7 +437,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    T: Server&lt;Error = Error&gt; + Send + Sync + Clone + &#x27;static,</pre>
+                <pre class="has-background-danger-light py-0 px-2">    T: Server&lt;Error = Error&gt; + Send + Sync + Clone + &#39;static,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -805,7 +805,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.webtransport.bidi]</pre>
+                <pre class="has-background-white py-0 px-2">// r[impl jetstream.webtransport.bidi]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -821,7 +821,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.webtransport.bidi.concurrent]</pre>
+                <pre class="has-background-white py-0 px-2">// r[impl jetstream.webtransport.bidi.concurrent]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -837,7 +837,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.webtransport.bidi.multi-stream]</pre>
+                <pre class="has-background-white py-0 px-2">// r[impl jetstream.webtransport.bidi.multi-stream]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -853,7 +853,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.webtransport.lifecycle]</pre>
+                <pre class="has-background-white py-0 px-2">// r[impl jetstream.webtransport.lifecycle]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -869,7 +869,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.webtransport.errors]</pre>
+                <pre class="has-background-white py-0 px-2">// r[impl jetstream.webtransport.errors]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -885,14 +885,14 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F; r[impl jetstream.webtransport.errors.session]</pre>
+                <pre class="has-background-white py-0 px-2">// r[impl jetstream.webtransport.errors.session]</pre>
             </div>
         </div></div>
 </div>
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-11-24 03:23</p>
+                    <p class="heading">Date: 2026-11-26 01:22</p>
                 </div>
             
         </footer>

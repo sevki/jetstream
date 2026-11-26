@@ -7,7 +7,7 @@
     <body>
         <div class="container">
     <nav class="breadcrumb is-right" aria-label="breadcrumbs">
-        <ul><li><a href="../../../index.html">top_level</a></li><li><a href="./index.html">components&#x2F;jetstream_rpc&#x2F;src</a></li><li class="is-active"><a href="#">router.rs</a></li>
+        <ul><li><a href="../../../index.html">top_level</a></li><li><a href="./index.html">components/jetstream_rpc/src</a></li><li class="is-active"><a href="#">router.rs</a></li>
         </ul>
     </nav>
     <nav class="level">
@@ -32,7 +32,7 @@
         <div>
             <p class="heading">Branches</p>
             <p class="title has-text-success">
-                <abbr title="0 / 0">100 %</abbr></p>
+                <abbr title="0 / 0">100.0 %</abbr></p>
         </div>
     </div>
 
@@ -629,7 +629,7 @@
             </div>
             <div class="column has-background-danger-light p-0"
                  role="cell">
-                <pre class="has-background-danger-light py-0 px-2">    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;&#x27;_&gt;) -&gt; std::fmt::Result {</pre>
+                <pre class="has-background-danger-light py-0 px-2">    fn fmt(&amp;self, f: &amp;mut std::fmt::Formatter&lt;&#39;_&gt;) -&gt; std::fmt::Result {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -853,7 +853,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Register a handler for a protocol name.</pre>
+                <pre class="has-background-white py-0 px-2">    /// Register a handler for a protocol name.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -869,7 +869,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; The name should match the protocol name portion from</pre>
+                <pre class="has-background-white py-0 px-2">    /// The name should match the protocol name portion from</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -885,7 +885,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; `rs.jetstream.proto&#x2F;{name}&#x2F;{version}`, or `9P2000`&#x2F;`9P2000.L` for legacy protocols.</pre>
+                <pre class="has-background-white py-0 px-2">    /// `rs.jetstream.proto/{name}/{version}`, or `9P2000`/`9P2000.L` for legacy protocols.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -949,7 +949,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        handler: impl Handler + &#x27;static,</pre>
+                <pre class="has-background-success-light py-0 px-2">        handler: impl Handler + &#39;static,</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1317,7 +1317,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    const VERSION: &amp;&#x27;static str = &quot;&quot;;</pre>
+                <pre class="has-background-white py-0 px-2">    const VERSION: &amp;&#39;static str = &quot;&quot;;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1349,7 +1349,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    const NAME: &amp;&#x27;static str = &quot;&quot;;</pre>
+                <pre class="has-background-white py-0 px-2">    const NAME: &amp;&#39;static str = &quot;&quot;;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3045,7 +3045,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">impl&lt;T: Server + Clone + &#x27;static&gt; Handler for T {</pre>
+                <pre class="has-background-white py-0 px-2">impl&lt;T: Server + Clone + &#39;static&gt; Handler for T {</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3237,7 +3237,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            &#x2F;&#x2F; Channel for sending responses back to the writer</pre>
+                <pre class="has-background-white py-0 px-2">            // Channel for sending responses back to the writer</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3301,7 +3301,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            &#x2F;&#x2F; Spawn a task to write responses as they complete</pre>
+                <pre class="has-background-white py-0 px-2">            // Spawn a task to write responses as they complete</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3445,7 +3445,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            &#x2F;&#x2F; Process requests concurrently</pre>
+                <pre class="has-background-white py-0 px-2">            // Process requests concurrently</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3893,7 +3893,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">            &#x2F;&#x2F; Drop the sender so the writer task knows to finish</pre>
+                <pre class="has-background-white py-0 px-2">            // Drop the sender so the writer task knows to finish</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -3996,7 +3996,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-11-24 03:23</p>
+                    <p class="heading">Date: 2026-11-26 01:22</p>
                 </div>
             
         </footer>

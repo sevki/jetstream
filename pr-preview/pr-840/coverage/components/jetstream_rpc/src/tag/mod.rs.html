@@ -7,7 +7,7 @@
     <body>
         <div class="container">
     <nav class="breadcrumb is-right" aria-label="breadcrumbs">
-        <ul><li><a href="../../../../index.html">top_level</a></li><li><a href="./index.html">components&#x2F;jetstream_rpc&#x2F;src&#x2F;tag</a></li><li class="is-active"><a href="#">mod.rs</a></li>
+        <ul><li><a href="../../../../index.html">top_level</a></li><li><a href="./index.html">components/jetstream_rpc/src/tag</a></li><li class="is-active"><a href="#">mod.rs</a></li>
         </ul>
     </nav>
     <nav class="level">
@@ -15,7 +15,7 @@
         <div>
             <p class="heading">Lines</p>
             <p class="title has-text-success">
-                <abbr title="27 / 30">90 %</abbr></p>
+                <abbr title="27 / 30">90.0 %</abbr></p>
         </div>
     </div>
 
@@ -32,7 +32,7 @@
         <div>
             <p class="heading">Branches</p>
             <p class="title has-text-success">
-                <abbr title="0 / 0">100 %</abbr></p>
+                <abbr title="0 / 0">100.0 %</abbr></p>
         </div>
     </div>
 
@@ -277,7 +277,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; r[impl jetstream.subscription.cancel]</pre>
+                <pre class="has-background-white py-0 px-2">/// r[impl jetstream.subscription.cancel]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -293,7 +293,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; Three regions of the tag space, not one pool.</pre>
+                <pre class="has-background-white py-0 px-2">/// Three regions of the tag space, not one pool.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -309,7 +309,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">///</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -325,7 +325,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; A subscription holds its tag for its whole life. Drawing</pre>
+                <pre class="has-background-white py-0 px-2">/// A subscription holds its tag for its whole life. Drawing</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -341,7 +341,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; subscriptions and unary calls from one pool therefore means enough</pre>
+                <pre class="has-background-white py-0 px-2">/// subscriptions and unary calls from one pool therefore means enough</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -357,7 +357,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; live subscriptions make an ordinary call impossible — at</pre>
+                <pre class="has-background-white py-0 px-2">/// live subscriptions make an ordinary call impossible — at</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -373,7 +373,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; `max_concurrent_requests = 1`, one open room blocks every `post` for</pre>
+                <pre class="has-background-white py-0 px-2">/// `max_concurrent_requests = 1`, one open room blocks every `post` for</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -389,7 +389,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; its duration.</pre>
+                <pre class="has-background-white py-0 px-2">/// its duration.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -405,7 +405,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">///</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -421,7 +421,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; Cancellation is worse than starved, it deadlocks: a cancellation</pre>
+                <pre class="has-background-white py-0 px-2">/// Cancellation is worse than starved, it deadlocks: a cancellation</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -437,7 +437,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; needs a **fresh** tag, the subscription&#x27;s own tag is not released</pre>
+                <pre class="has-background-white py-0 px-2">/// needs a **fresh** tag, the subscription&#39;s own tag is not released</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -453,7 +453,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; until its terminator arrives, and the terminator cannot arrive until</pre>
+                <pre class="has-background-white py-0 px-2">/// until its terminator arrives, and the terminator cannot arrive until</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -469,7 +469,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; the cancellation is sent. The pool is saturated by exactly the</pre>
+                <pre class="has-background-white py-0 px-2">/// the cancellation is sent. The pool is saturated by exactly the</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -485,7 +485,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; subscriptions the cancellation exists to end.</pre>
+                <pre class="has-background-white py-0 px-2">/// subscriptions the cancellation exists to end.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -501,7 +501,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">///</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -517,7 +517,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; `r[jetstream.subscription.cancel]` requires control capacity reserved</pre>
+                <pre class="has-background-white py-0 px-2">/// `r[jetstream.subscription.cancel]` requires control capacity reserved</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -533,7 +533,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; outside the pool and forbids subscriptions exhausting the capacity</pre>
+                <pre class="has-background-white py-0 px-2">/// outside the pool and forbids subscriptions exhausting the capacity</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -549,7 +549,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; available to ordinary calls. Both are satisfied here by giving each</pre>
+                <pre class="has-background-white py-0 px-2">/// available to ordinary calls. Both are satisfied here by giving each</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -565,7 +565,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; its own region: ordinary calls keep `1..=size`, and the meaning</pre>
+                <pre class="has-background-white py-0 px-2">/// its own region: ordinary calls keep `1..=size`, and the meaning</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -581,7 +581,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; `max_concurrent_requests` always had, while subscriptions and</pre>
+                <pre class="has-background-white py-0 px-2">/// `max_concurrent_requests` always had, while subscriptions and</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -597,7 +597,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; cancellations are drawn from above it.</pre>
+                <pre class="has-background-white py-0 px-2">/// cancellations are drawn from above it.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -613,7 +613,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">///</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -629,7 +629,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; The control region is sized equal to the streaming region, which is</pre>
+                <pre class="has-background-white py-0 px-2">/// The control region is sized equal to the streaming region, which is</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -645,7 +645,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; what makes the deadlock unreachable rather than merely unlikely: at</pre>
+                <pre class="has-background-white py-0 px-2">/// what makes the deadlock unreachable rather than merely unlikely: at</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -661,7 +661,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; most `span` subscriptions can exist, so at most `span` cancellations</pre>
+                <pre class="has-background-white py-0 px-2">/// most `span` subscriptions can exist, so at most `span` cancellations</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -677,7 +677,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; can ever be in flight at once.</pre>
+                <pre class="has-background-white py-0 px-2">/// can ever be in flight at once.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -693,7 +693,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F;</pre>
+                <pre class="has-background-white py-0 px-2">///</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -709,7 +709,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; The backend is whichever of `channel`, `notify` or `semaphor`</pre>
+                <pre class="has-background-white py-0 px-2">/// The backend is whichever of `channel`, `notify` or `semaphor`</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -725,7 +725,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; `JETSTREAM_TAG_POOL_BACKEND` selected; each region is one instance of</pre>
+                <pre class="has-background-white py-0 px-2">/// `JETSTREAM_TAG_POOL_BACKEND` selected; each region is one instance of</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -741,7 +741,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; it, and the offsets live here so no backend has to know about any of</pre>
+                <pre class="has-background-white py-0 px-2">/// it, and the offsets live here so no backend has to know about any of</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -757,7 +757,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">&#x2F;&#x2F;&#x2F; this.</pre>
+                <pre class="has-background-white py-0 px-2">/// this.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -837,7 +837,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; First tag of the streaming region; also one past the ordinary one.</pre>
+                <pre class="has-background-white py-0 px-2">    /// First tag of the streaming region; also one past the ordinary one.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -869,7 +869,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; First tag of the control region.</pre>
+                <pre class="has-background-white py-0 px-2">    /// First tag of the control region.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -981,7 +981,7 @@
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
-                <pre class="has-background-success-light py-0 px-2">        let span = rest &#x2F; 2;</pre>
+                <pre class="has-background-success-light py-0 px-2">        let span = rest / 2;</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1141,7 +1141,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; A tag for a unary call. Bounded by `max_concurrent_requests`, and</pre>
+                <pre class="has-background-white py-0 px-2">    /// A tag for a unary call. Bounded by `max_concurrent_requests`, and</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1157,7 +1157,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; unaffected by how many subscriptions are open.</pre>
+                <pre class="has-background-white py-0 px-2">    /// unaffected by how many subscriptions are open.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1237,7 +1237,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.subscription.cancel]</pre>
+                <pre class="has-background-white py-0 px-2">    /// r[impl jetstream.subscription.cancel]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1253,7 +1253,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; A tag for a subscription, from its own region, so no number of</pre>
+                <pre class="has-background-white py-0 px-2">    /// A tag for a subscription, from its own region, so no number of</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1269,7 +1269,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; live subscriptions can make an ordinary call impossible.</pre>
+                <pre class="has-background-white py-0 px-2">    /// live subscriptions can make an ordinary call impossible.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1349,7 +1349,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; r[impl jetstream.subscription.cancel]</pre>
+                <pre class="has-background-white py-0 px-2">    /// r[impl jetstream.subscription.cancel]</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1365,7 +1365,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; A tag for a cancellation, from capacity reserved outside both</pre>
+                <pre class="has-background-white py-0 px-2">    /// A tag for a cancellation, from capacity reserved outside both</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1381,7 +1381,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; other regions.</pre>
+                <pre class="has-background-white py-0 px-2">    /// other regions.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1456,8 +1456,8 @@
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="23212">
-                23212
+                role="cell" aria-label="23268">
+                23268
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
@@ -1472,8 +1472,8 @@
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="829">
-                829
+                role="cell" aria-label="831">
+                831
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
@@ -1488,8 +1488,8 @@
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="232">
-                232
+                role="cell" aria-label="233">
+                233
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
@@ -1504,8 +1504,8 @@
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="597">
-                597
+                role="cell" aria-label="598">
+                598
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
@@ -1520,8 +1520,8 @@
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="251">
-                251
+                role="cell" aria-label="252">
+                252
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
@@ -1584,8 +1584,8 @@
             </div>
             <div
                 class="column is-1 is-narrow p-0 has-text-centered has-text-success-light has-background-success"
-                role="cell" aria-label="829">
-                829
+                role="cell" aria-label="831">
+                831
             </div>
             <div class="column has-background-success-light p-0"
                  role="cell">
@@ -1621,7 +1621,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; Which region a tag came from. Used by the multiplexer to tell a</pre>
+                <pre class="has-background-white py-0 px-2">    /// Which region a tag came from. Used by the multiplexer to tell a</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1637,7 +1637,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; subscription&#x27;s tag from an ordinary call&#x27;s without consulting the</pre>
+                <pre class="has-background-white py-0 px-2">    /// subscription&#39;s tag from an ordinary call&#39;s without consulting the</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1653,7 +1653,7 @@
             </div>
             <div class="column has-background-white p-0"
                  role="cell">
-                <pre class="has-background-white py-0 px-2">    &#x2F;&#x2F;&#x2F; in-flight map.</pre>
+                <pre class="has-background-white py-0 px-2">    /// in-flight map.</pre>
             </div>
         </div><div class="columns p-0 m-0" role="row">
             <div
@@ -1772,7 +1772,7 @@
         <footer class="footer">
             
                 <div class="content has-text-centered">
-                    <p class="heading">Date: 2026-11-24 03:23</p>
+                    <p class="heading">Date: 2026-11-26 01:22</p>
                 </div>
             
         </footer>
