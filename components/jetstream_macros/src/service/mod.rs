@@ -5,7 +5,9 @@ mod server;
 pub(crate) mod subscription;
 mod tests;
 mod tests_tracing;
+mod tests_versioned;
 mod tracing;
+mod versioned;
 
 use proc_macro2::{Literal, TokenStream};
 use quote::{format_ident, quote, ToTokens};
@@ -20,7 +22,7 @@ mod kw {
 }
 
 /// Parsed service attribute arguments
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub(crate) struct ServiceAttr {
     pub use_paths: Vec<syn::UseTree>,
     pub enable_tracing: bool,
@@ -68,7 +70,31 @@ pub(crate) fn parse_service_attr(attr: TokenStream) -> ServiceAttr {
     syn::parse2::<ServiceAttr>(attr).unwrap_or_default()
 }
 
+/// Expand a `#[service]` trait.
+///
+/// A trait that uses `#[since]`/`#[until]` describes a history rather
+/// than one API, so it is never emitted as written — duplicate method
+/// names are not valid Rust. Each version it names becomes a snapshot
+/// trait, and every snapshot goes through `expand_one` below, the same
+/// path an unversioned trait takes. A trait with no version attributes
+/// reaches `expand_one` directly and expands exactly as it always has.
 pub(crate) fn service_impl(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
+    if !versioned::is_versioned(&item) {
+        return expand_one(item, attr);
+    }
+
+    match versioned::snapshots(&item) {
+        Ok(snapshots) => snapshots
+            .into_iter()
+            .map(|snapshot| expand_one(snapshot, attr.clone()))
+            .collect(),
+        Err(e) => e.to_compile_error(),
+    }
+}
+
+/// Expand exactly one service trait: its protocol module, messages,
+/// frames, server, client, and the trait itself.
+fn expand_one(item: ItemTrait, attr: ServiceAttr) -> TokenStream {
     let ServiceAttr {
         use_paths,
         enable_tracing,

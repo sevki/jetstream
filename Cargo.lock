@@ -2895,6 +2895,7 @@ dependencies = [
  "prettyplease 0.3.0",
  "proc-macro2",
  "quote",
+ "semver",
  "sha256",
  "syn 3.0.10",
  "tokio",
