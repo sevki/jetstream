@@ -5,6 +5,11 @@
     html_favicon_url = "https://raw.githubusercontent.com/sevki/jetstream/main/logo/JetStream.png"
 )]
 #![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(
+    jetstream_gca,
+    feature(gca_const_items, gca_min_const_items, min_adt_const_params),
+    allow(incomplete_features)
+)]
 #[cfg(feature = "std")]
 use std::collections::{BTreeMap, BinaryHeap};
 // Copyright (c) 2024, Sevki <s@sevki.io>
@@ -30,6 +35,11 @@ pub use jetstream_macros::JetStreamWireFormat;
 use zerocopy::LittleEndian;
 
 pub mod wire_format_extensions;
+
+/// Fixed-size collections using generic const args. Needs a nightly compiler
+/// and `RUSTFLAGS="-Znext-solver"`.
+#[cfg(all(jetstream_gca, not(target_arch = "wasm32")))]
+pub mod fixed;
 
 #[cfg(target_arch = "wasm32")]
 pub mod wasm;
