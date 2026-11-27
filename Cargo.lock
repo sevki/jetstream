@@ -167,9 +167,9 @@ dependencies = [
 
 [[package]]
 name = "anyhow"
-version = "1.0.104"
+version = "1.0.105"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "330a5ed07fa54e4702c9d6c4174f74427fc0ef6e214bbd677ae50a5099946470"
+checksum = "2cb931c189b85683d69a5cfad41d4d418671e1ac413dd209f3f2fc31e3cfd902"
 
 [[package]]
 name = "arbitrary"
@@ -2204,9 +2204,9 @@ dependencies = [
 
 [[package]]
 name = "hyper"
-version = "1.12.0"
+version = "1.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2c3e324da4c95177d6291d4c8730197c0d1822f8a9766814a4a44fa5ab797c9c"
+checksum = "229c6ff5584df4c6becbfe00567128bac768c8cd32ebc8a8366bd81ed072e8f3"
 dependencies = [
  "atomic-waker",
  "bytes",
@@ -2752,7 +2752,7 @@ dependencies = [
  "rustls",
  "rustls-pemfile",
  "sha256",
- "term-transcript",
+ "term-transcript 0.4.0",
  "tokio",
  "tokio-rustls",
  "tower",
@@ -2806,7 +2806,7 @@ dependencies = [
  "source-map",
  "string-interner",
  "styled-str",
- "term-transcript",
+ "term-transcript 0.5.0",
  "thiserror 2.0.21",
  "tracing",
  "tracing-core",
@@ -4134,7 +4134,7 @@ checksum = "7da1d65da6dd5d1e44199ac0f58712d241c0f439f80adea8924d832384087f85"
 dependencies = [
  "base64 0.22.1",
  "indexmap",
- "quick-xml",
+ "quick-xml 0.41.0",
  "serde",
  "time",
 ]
@@ -4358,6 +4358,15 @@ name = "quick-error"
 version = "1.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1d01941d82fa2ab50be1e79e6714289dd7cde78eba4c074bc5a4374f650dfe0"
+
+[[package]]
+name = "quick-xml"
+version = "0.37.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "331e97a1af0bf59823e6eadffe373d7b27f485be8748f71471c662c1f269b7fb"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "quick-xml"
@@ -5544,6 +5553,23 @@ dependencies = [
 
 [[package]]
 name = "term-transcript"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "708f42b1f7bd366a5fd49aee3ccef0ef87792735a7e5ebb8529bcfef8e920a1f"
+dependencies = [
+ "bytecount",
+ "handlebars",
+ "os_pipe",
+ "pretty_assertions",
+ "quick-xml 0.37.5",
+ "serde",
+ "serde_json",
+ "termcolor",
+ "unicode-width 0.2.2",
+]
+
+[[package]]
+name = "term-transcript"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8974c1086008987e1fd23c9810aa13e1f43dfde86ad3c4d55ae82a4231eb5cd1"
@@ -5555,7 +5581,7 @@ dependencies = [
  "bytecount",
  "handlebars",
  "os_pipe",
- "quick-xml",
+ "quick-xml 0.41.0",
  "serde",
  "serde_json",
  "styled-str",
