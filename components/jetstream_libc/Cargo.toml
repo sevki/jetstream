@@ -5,7 +5,7 @@ edition = { workspace = true }
 description = "Platform-specific libc bindings for jetstream"
 license = { workspace = true }
 repository = { workspace = true }
-readme = { workspace = true }
+readme = "README.md"
 documentation.workspace = true
 
 [lib]

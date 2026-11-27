@@ -6,7 +6,7 @@ description.workspace = true
 license.workspace = true
 repository.workspace = true
 documentation.workspace = true
-readme.workspace = true
+readme = "README.md"
 
 [dependencies]
 h3-quinn = { version = "0.0.10", features = ["datagram", "tracing"] }
